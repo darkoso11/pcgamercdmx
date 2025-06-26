@@ -1,1 +1,29 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+html, body { height: 100%; }
+
+.neon-title {
+  text-shadow:
+    0 0 10px #0ea5e9,
+    0 0 20px #0ea5e9,
+    0 0 40px #0ea5e9,
+    0 0 80px #0ea5e9;
+}
+
+.neon-btn {
+  box-shadow:
+    0 0 10px #ec4899,
+    0 0 20px #ec4899,
+    0 0 40px #ec4899;
+  transition: box-shadow 0.3s;
+}
+.neon-btn:hover {
+  box-shadow:
+    0 0 20px #ec4899,
+    0 0 40px #ec4899,
+    0 0 80px #ec4899;
+}
+
+
+
