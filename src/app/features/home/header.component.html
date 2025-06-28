@@ -1,0 +1,81 @@
+<div class="relative min-h-screen flex flex-col justify-between bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
+  <!-- Efecto pantalla antigua -->
+  <div class="absolute inset-0 pointer-events-none z-0 opacity-40 mix-blend-lighten" style="background: repeating-linear-gradient(0deg, #fff1 0 2px, transparent 2px 6px);"></div>
+  
+  <!-- Menú superior izquierdo -->
+  <div class="absolute top-6 left-6 z-20 flex items-center gap-3">
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-pink-500 rounded-sm shadow-neon"></div>
+        <a class="menu-btn" routerLink="/">PC Gamer</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-cyan-400 rounded-sm shadow-neon"></div>
+        <a class="menu-btn" routerLink="/contacto">Contacto</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-purple-500 rounded-sm shadow-neon"></div>
+        <a class="menu-btn" routerLink="/productos">Productos</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-yellow-400 rounded-sm shadow-neon"></div>
+        <a class="menu-btn" routerLink="/cotiza-tu-pc">Cotiza</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menú lateral columna (izquierda, comprimible en desktop) -->
+  <div class="fixed top-1/3 left-0 z-30 group">
+    <div class="bg-black/60 backdrop-blur border-r-4 border-cyan-500 rounded-r-2xl py-4 px-2 flex flex-col gap-4 transition-all duration-300 w-12 group-hover:w-40">
+      <a class="side-btn" routerLink="/blog"><span class="icon">📰</span><span class="side-label">Blog</span></a>
+      <a class="side-btn" routerLink="/galeria"><span class="icon">🖼️</span><span class="side-label">Galería</span></a>
+      <a class="side-btn" routerLink="/nosotros"><span class="icon">👤</span><span class="side-label">Nosotros</span></a>
+      <a class="side-btn" routerLink="/sorteos"><span class="icon">🎁</span><span class="side-label">Sorteos</span></a>
+    </div>
+  </div>
+
+  <!-- Slider superior derecho -->
+  <div class="absolute top-6 right-6 z-20 flex gap-4">
+    <ng-container *ngFor="let img of sliderImages; let i = index">
+      <a *ngIf="i === sliderIndex" [href]="img.link" class="block transition-transform duration-300 hover:scale-110">
+        <img [src]="img.src" alt="Banner" class="rounded-lg shadow-neon border-2 border-cyan-400 w-32 h-20 object-cover" />
+      </a>
+    </ng-container>
+  </div>
+
+  <!-- Centro: Logo, texto typing y ensamble PC -->
+  <div class="flex flex-1 items-center justify-center z-10">
+    <div class="flex flex-col items-center gap-6">
+      <!-- Logo placeholder -->
+      <div class="w-32 h-32 bg-gradient-to-br from-pink-500 via-cyan-400 to-purple-500 rounded-full flex items-center justify-center shadow-neon mb-2">
+        <span class="text-4xl font-extrabold text-white">LOGO</span>
+      </div>
+      <!-- Texto typing cyberpunk -->
+      <h1 class="text-4xl md:text-6xl font-extrabold font-orbitron text-cyan-300 neon-title text-center tracking-widest drop-shadow-[0_0_20px_#0ea5e9]">
+        <span>{{ typingText }}</span>
+      </h1>
+    </div>
+    <!-- Imagen ensamble PC y botón comprar -->
+    <div class="ml-12 flex flex-col items-center">
+      <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-80 h-96 object-cover rounded-2xl shadow-neon border-4 border-pink-500 mb-4 animate-fadein" />
+      <a [routerLink]="pcBuilds[pcIndex].link"
+         class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-10 rounded-full shadow-lg border-4 border-pink-400 neon-btn transition duration-300 text-xl">
+        Comprar
+      </a>
+    </div>
+  </div>
+
+  <!-- Barra inferior con redes sociales -->
+  <div class="fixed bottom-0 left-0 w-full flex items-center justify-between px-8 py-3 bg-black/60 backdrop-blur border-t border-cyan-500 z-40">
+    <div class="flex gap-4">
+      <a href="https://facebook.com" target="_blank" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://instagram.com" target="_blank" class="social-btn"><i class="fab fa-instagram"></i></a>
+      <a href="https://tiktok.com" target="_blank" class="social-btn"><i class="fab fa-tiktok"></i></a>
+      <a href="https://wa.me/5215555555555" target="_blank" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <a [routerLink]="pcBuilds[pcIndex].link"
+       class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-8 rounded-full shadow-lg border-2 border-pink-400 neon-btn transition duration-300 text-lg">
+      Comprar
+    </a>
+  </div>
+</div>
