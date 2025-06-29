@@ -1,1 +1,78 @@
-/* Estilos específicos para el home si los necesitas */
+/* Estilos para el Home */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+.font-orbitron {
+  font-family: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
+}
+
+.menu-btn {
+  color: #fff;
+  background: transparent;
+  font-family: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 8px #0ea5e9, 0 0 4px #ec4899;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.menu-btn:hover {
+  background: #0ea5e933;
+  color: #ec4899;
+  box-shadow: 0 0 12px #ec4899, 0 0 8px #0ea5e9;
+}
+
+.shadow-neon {
+  box-shadow: 0 0 16px 4px #0ea5e9, 0 0 8px 2px #ec4899;
+}
+
+.social-btn-cyber {
+  color: #fff;
+  font-size: 1.7rem;
+  border-radius: 6px;
+  padding: 0.2em 0.6em;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 8px #0ea5e9;
+}
+
+.social-btn-cyber:hover {
+  color: #ec4899;
+  background: #0ea5e933;
+  box-shadow: 0 0 16px #ec4899;
+}
+
+.btn-comprar-cyber {
+  background: #fff;
+  color: #222;
+  font-family: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.7em 2.5em;
+  border: none;
+  box-shadow: 0 0 8px #0ea5e9;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.btn-comprar-cyber:hover {
+  background: #ec4899;
+  color: #fff;
+  box-shadow: 0 0 16px #ec4899;
+}
+
+@media (max-width: 900px) {
+  .fixed.bottom-32.left-12 {
+    left: 2vw;
+    bottom: 90px;
+  }
+  .absolute.top-8.right-16 {
+    right: 2vw;
+    top: 70px;
+  }
+  nav.absolute.top-8.left-1\/2 {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

@@ -1,3 +1,22 @@
 nav {
   z-index: 50;
 }
+
+.menu-btn {
+  font-family: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px #0ea5e9, 0 0 4px #ec4899;
+  transition: filter 0.2s, text-shadow 0.2s;
+}
+
+.menu-btn:hover {
+  filter: brightness(1.5) drop-shadow(0 0 8px #ec4899);
+  text-shadow: 0 0 16px #ec4899, 0 0 8px #0ea5e9;
+}
+
+.shadow-neon {
+  box-shadow: 0 0 16px 4px #fff, 0 0 8px 2px #ec4899;
+}
