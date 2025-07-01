@@ -62,6 +62,25 @@
   box-shadow: 0 0 16px #ec4899;
 }
 
+.menu-secundario {
+  background: transparent;
+  color: #fff;
+  font-family: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.menu-secundario:hover {
+  background: var(--hover-bg, #fff);
+  color: var(--hover-text, #222);
+  border-color: var(--hover-bg, #fff);
+  filter: none;
+}
+
 @media (max-width: 900px) {
   .fixed.bottom-32.left-12 {
     left: 2vw;
