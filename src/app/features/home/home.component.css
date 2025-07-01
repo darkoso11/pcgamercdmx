@@ -37,10 +37,28 @@
   box-shadow: 0 0 8px #0ea5e9;
 }
 
-.social-btn-cyber:hover {
-  color: #ec4899;
-  background: #0ea5e933;
-  box-shadow: 0 0 16px #ec4899;
+/* Facebook */
+.social-btn-cyber:hover .fa-facebook-f {
+  color: #ec4899; /* pink-500 */
+  text-shadow: 0 0 8px #ec4899;
+}
+
+/* TikTok */
+.social-btn-cyber:hover .fa-tiktok {
+  color: #22d3ee; /* cyan-400 */
+  text-shadow: 0 0 8px #22d3ee;
+}
+
+/* Instagram */
+.social-btn-cyber:hover .fa-instagram {
+  color: #a78bfa; /* purple-400 */
+  text-shadow: 0 0 8px #a78bfa;
+}
+
+/* WhatsApp */
+.social-btn-cyber:hover .fa-whatsapp {
+  color: #25d366; /* WhatsApp green */
+  text-shadow: 0 0 8px #25d366;
 }
 
 .btn-comprar-cyber {
@@ -79,6 +97,47 @@
   color: var(--hover-text, #222);
   border-color: var(--hover-bg, #fff);
   filter: none;
+}
+
+@keyframes cyber-seq {
+  0%, 10% { opacity: 0.3; }
+  12%, 100% { opacity: 1; }
+}
+
+@keyframes cyber-seq-blue {
+  0%, 22% { opacity: 0.3; }
+  24%, 100% { opacity: 1; }
+}
+
+@keyframes cyber-seq-purple {
+  0%, 36% { opacity: 0.3; }
+  38%, 100% { opacity: 1; }
+}
+
+@keyframes cyber-seq-yellow {
+  0%, 50% { opacity: 0.3; }
+  52%, 99.5% { opacity: 1; }
+  99.6%, 100% { opacity: 0.3; }
+}
+
+/* Apagado general para todos al final del ciclo */
+@keyframes cyber-seq-off {
+  0%, 90% { opacity: 1; }
+  92%, 100% { opacity: 0.3; }
+}
+
+/* Aplica a cada punto según el color */
+.cyber-dot-magenta {
+  animation: cyber-seq 3.6s linear infinite;
+}
+.cyber-dot-cyan {
+  animation: cyber-seq-blue 3.6s linear infinite;
+}
+.cyber-dot-purple {
+  animation: cyber-seq-purple 3.6s linear infinite;
+}
+.cyber-dot-yellow {
+  animation: cyber-seq-yellow 3.6s linear infinite;
 }
 
 @media (max-width: 900px) {
