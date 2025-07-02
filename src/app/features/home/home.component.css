@@ -98,26 +98,36 @@
   border-color: var(--hover-bg, #fff);
   filter: none;
 }
-
+/* Efecto de secuencia cibernética para los puntos */
 @keyframes cyber-seq {
-  0%, 10% { opacity: 0.3; }
-  12%, 100% { opacity: 1; }
+  /* Apagado inicial: 0% a 4% */
+  0%, 4% { opacity: 0.3; }
+  /* Encendido: 6% a 70% */
+  6%, 70% { opacity: 1; }
+  /* Apagado final: 72% a 100% */
+  72%, 75% { opacity: 0.3; }
+  78%, 100% { opacity: 0.3; }
 }
 
 @keyframes cyber-seq-blue {
-  0%, 22% { opacity: 0.3; }
-  24%, 100% { opacity: 1; }
+  0%, 16% { opacity: 0.3; }
+  18%, 70% { opacity: 1; }
+  72%, 75% { opacity: 0.3; }
+  78%, 100% { opacity: 0.3; }
 }
 
 @keyframes cyber-seq-purple {
-  0%, 36% { opacity: 0.3; }
-  38%, 100% { opacity: 1; }
+  0%, 28% { opacity: 0.3; }
+  30%, 70% { opacity: 1; }
+  72%, 75% { opacity: 0.3; }
+  78%, 100% { opacity: 0.3; }
 }
 
 @keyframes cyber-seq-yellow {
-  0%, 50% { opacity: 0.3; }
-  52%, 99.5% { opacity: 1; }
-  99.6%, 100% { opacity: 0.3; }
+  0%, 42% { opacity: 0.3; }
+  44%, 70% { opacity: 1; }
+  72%, 75% { opacity: 0.3; }
+  78%, 100% { opacity: 0.3; }
 }
 
 /* Apagado general para todos al final del ciclo */

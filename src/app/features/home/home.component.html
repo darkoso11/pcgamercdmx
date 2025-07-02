@@ -73,14 +73,17 @@
   </div>
 
   <!-- Barra inferior, redes sociales y botón comprar -->
-  <div class="fixed bottom-0 left-0 w-full flex items-center justify-between px-8 py-3 bg-black/70 backdrop-blur border-t border-white z-40">
-    <!-- <div class="text-white text-xs opacity-60"></div> -->
+  <div class="fixed bottom-0 left-0 w-full flex items-center px-8 py-3 bg-black/70 backdrop-blur border-t border-white z-40">
     <div class="flex gap-6">
       <a href="https://tiktok.com" target="_blank" class="social-btn-cyber"><i class="fab fa-tiktok"></i></a>
       <a href="https://facebook.com" target="_blank" class="social-btn-cyber"><i class="fab fa-facebook-f"></i></a>
       <a href="https://instagram.com" target="_blank" class="social-btn-cyber"><i class="fab fa-instagram"></i></a>
       <a href="https://wa.me/5215555555555" target="_blank" class="social-btn-cyber"><i class="fab fa-whatsapp"></i></a>
     </div>
-    <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber">Comprar</a>
+    <div class="flex-1 flex">
+      <div class="w-full flex justify-end">
+        <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber mr-0 md:mr-[calc(50vw-22rem)] lg:mr-[calc(50vw-28rem)] xl:mr-[calc(50vw-32rem)]">Comprar</a>
+      </div>
+    </div>
   </div>
 </div>
