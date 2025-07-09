@@ -1,21 +1,218 @@
-<nav class="fixed top-6 left-12 z-50 flex items-center gap-4">
+<!-- Navbar para desktop -->
+<nav class="fixed top-6 left-12 z-50 hidden md:flex items-center gap-4">
   <!-- Cuadrado decorativo izquierdo -->
   <div class="w-3 h-3 bg-white rounded-sm shadow-neon"></div>
   <!-- Menú horizontal SIN caja envolvente -->
   <ul class="flex gap-4 items-center">
     <li>
-      <a routerLink="/" class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-pink-400 font-bold">Pc Gamer</a>
+      <a
+        routerLink="/"
+        class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-pink-400 font-bold"
+        >Pc Gamer</a
+      >
     </li>
     <li>
-      <a routerLink="/contacto" class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-cyan-400 font-bold">Contacto</a>
+      <a
+        routerLink="/contacto"
+        class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-cyan-400 font-bold"
+        >Contacto</a
+      >
     </li>
     <li>
-      <a routerLink="/productos" class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-purple-400 font-bold">Productos</a>
+      <a
+        routerLink="/productos"
+        class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-purple-400 font-bold"
+        >Productos</a
+      >
     </li>
     <li>
-      <a routerLink="/cotiza-tu-pc" class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-yellow-400 font-bold">Cotiza</a>
+      <a
+        routerLink="/cotiza-tu-pc"
+        class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-yellow-400 font-bold"
+        >Cotiza</a
+      >
     </li>
   </ul>
   <!-- Cuadrado decorativo derecho -->
   <div class="w-3 h-3 bg-white rounded-sm shadow-neon"></div>
 </nav>
+
+<!-- Navbar para móvil con botón hamburguesa -->
+<div class="md:hidden fixed top-4 left-4 z-50">
+  <button
+    (click)="toggleMobileMenu()"
+    class="bg-black/50 p-3 rounded-md border border-white/50"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-6 w-6 text-white"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="{2}"
+        d="M4 6h16M4 12h16M4 18h16"
+      />
+    </svg>
+  </button>
+</div>
+
+<!-- Menú móvil desplegable -->
+<div
+  [ngClass]="{
+    'translate-x-0': mobileMenuOpen,
+    '-translate-x-full': !mobileMenuOpen
+  }"
+  class="fixed top-0 left-0 w-full h-full z-40 bg-gradient-to-br from-[#0f172a] to-[#0ea5e9] transform transition-transform duration-300 ease-in-out md:hidden"
+>
+  <div class="flex flex-col h-full">
+    <!-- Botón de cerrar -->
+    <div class="flex justify-end p-4">
+      <button (click)="toggleMobileMenu()" class="text-white p-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="{2}"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Menú principal -->
+    <div class="px-6 py-4">
+      <h3
+        class="text-white text-lg font-bold mb-4 border-b border-white/30 pb-2"
+      >
+        Navegación principal
+      </h3>
+      <ul class="space-y-4">
+        <li>
+          <a
+            routerLink="/"
+            class="menu-btn-mobile flex items-center px-4 py-3 rounded-md bg-black/30 text-white"
+            (click)="toggleMobileMenu()"
+          >
+            <i class="fas fa-home mr-3"></i>
+            <span>Pc Gamer</span>
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/contacto"
+            class="menu-btn-mobile flex items-center px-4 py-3 rounded-md bg-black/30 text-white"
+            (click)="toggleMobileMenu()"
+          >
+            <i class="fas fa-envelope mr-3"></i>
+            <span>Contacto</span>
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/productos"
+            class="menu-btn-mobile flex items-center px-4 py-3 rounded-md bg-black/30 text-white"
+            (click)="toggleMobileMenu()"
+          >
+            <i class="fas fa-laptop mr-3"></i>
+            <span>Productos</span>
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/cotiza-tu-pc"
+            class="menu-btn-mobile flex items-center px-4 py-3 rounded-md bg-black/30 text-white"
+            (click)="toggleMobileMenu()"
+          >
+            <i class="fas fa-calculator mr-3"></i>
+            <span>Cotiza</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Menú secundario con estilo compacto de la barra inferior -->
+    <div class="px-6 py-4 mt-4">
+      <h3
+        class="text-white text-lg font-bold mb-4 border-b border-white/30 pb-2"
+      >
+        Accesos rápidos
+      </h3>
+      <div class="flex justify-center gap-4">
+        <a
+          routerLink="/sorteos"
+          class="menu-mobile-item flex flex-col items-center p-3 bg-pink-500/20 rounded-lg"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="fas fa-gamepad text-xl mb-1"></i>
+          <span class="text-xs text-white">Play</span>
+        </a>
+        <a
+          routerLink="/galeria"
+          class="menu-mobile-item flex flex-col items-center p-3 bg-cyan-400/20 rounded-lg"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="fas fa-images text-xl mb-1"></i>
+          <span class="text-xs text-white">Galería</span>
+        </a>
+        <a
+          routerLink="/nosotros"
+          class="menu-mobile-item flex flex-col items-center p-3 bg-purple-500/20 rounded-lg"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="fas fa-users text-xl mb-1"></i>
+          <span class="text-xs text-white">Nosotros</span>
+        </a>
+        <a
+          routerLink="/blog"
+          class="menu-mobile-item flex flex-col items-center p-3 bg-yellow-400/20 rounded-lg"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="fas fa-blog text-xl mb-1"></i>
+          <span class="text-xs text-white">Blog</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Espacio flexible para empujar el contenido hacia abajo -->
+    <div class="flex-grow"></div>
+
+    <!-- Redes sociales + Botón comprar -->
+    <div class="p-4 border-t border-white/30">
+      <div class="flex justify-center gap-6 py-4">
+        <a href="https://tiktok.com" target="_blank" class="social-btn-cyber"
+          ><i class="fab fa-tiktok"></i
+        ></a>
+        <a href="https://facebook.com" target="_blank" class="social-btn-cyber"
+          ><i class="fab fa-facebook-f"></i
+        ></a>
+        <a href="https://instagram.com" target="_blank" class="social-btn-cyber"
+          ><i class="fab fa-instagram"></i
+        ></a>
+        <a
+          href="https://wa.me/5215555555555"
+          target="_blank"
+          class="social-btn-cyber"
+          ><i class="fab fa-whatsapp"></i
+        ></a>
+      </div>
+      <div class="mt-4">
+        <a
+          routerLink="/productos/destacado"
+          class="btn-comprar-cyber block text-center w-full"
+          (click)="toggleMobileMenu()"
+          >Comprar</a>
+      </div>
+    </div>
+  </div>
+</div>
+<a href="https://wa.me/5215555555555" target="_blank" class="social-btn-cyber"><i class="fab fa-whatsapp"></i></a>
