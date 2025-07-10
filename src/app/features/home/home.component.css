@@ -151,7 +151,7 @@
   animation: cyber-seq-yellow 3.6s linear infinite;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1150px) {
   .fixed.bottom-32.left-12 {
     left: 2vw;
     bottom: 90px;

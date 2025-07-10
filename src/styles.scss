@@ -1,0 +1,11 @@
+/* Estilos globales para la aplicación */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Media query personalizada para breakpoint en 1150px */
+@media (min-width: 1150px) {
+  /* Aquí puedes añadir estilos específicos para pantallas de 1150px o más anchas si es necesario */
+}
+
+/* Otros estilos globales... */

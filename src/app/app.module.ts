@@ -18,3 +18,5 @@ module.exports = {
   },
   plugins: [],
 }
+
+// Verifica si hay alguna configuración de breakpoints
