@@ -25,7 +25,7 @@
 }
 
 .shadow-neon {
-  box-shadow: 0 0 16px 4px #0ea5e9, 0 0 8px 2px #ec4899;
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.7);
 }
 
 .social-btn-cyber {
@@ -62,8 +62,8 @@
 }
 
 .btn-comprar-cyber {
-  background: #fff;
-  color: #222;
+  background: linear-gradient(45deg, #ec4899, #8b5cf6);
+  color: white;
   font-family: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
   font-size: 1.2rem;
   font-weight: 600;
@@ -72,16 +72,34 @@
   padding: 0.7em 2.5em;
   border: none;
   box-shadow: 0 0 8px #0ea5e9;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-comprar-cyber:hover {
-  background: #ec4899;
-  color: #fff;
-  box-shadow: 0 0 16px #ec4899;
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+}
+
+.btn-comprar-cyber::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -100%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: rotate(45deg);
+  transition: all 0.5s;
+}
+
+.btn-comprar-cyber:hover::after {
+  left: 100%;
 }
 
 .menu-secundario {
+  position: relative;
   background: transparent;
   color: #fff;
   font-family: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
@@ -90,15 +108,14 @@
   border-radius: 0;
   border-left: none;
   border-right: none;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  transition: all 0.3s;
 }
 
 .menu-secundario:hover {
-  background: var(--hover-bg, #fff);
-  color: var(--hover-text, #222);
-  border-color: var(--hover-bg, #fff);
-  filter: none;
+  background-color: var(--hover-bg);
+  color: var(--hover-text);
 }
+
 /* Efecto de secuencia cibernética para los puntos */
 @keyframes cyber-seq {
   /* Apagado inicial: 0% a 4% */
@@ -149,6 +166,55 @@
 }
 .cyber-dot-yellow {
   animation: cyber-seq-yellow 3.6s linear infinite;
+}
+
+/* Animaciones para los dots cyberpunk */
+.cyber-dot-magenta {
+  animation: pulse-magenta 2s infinite;
+}
+
+.cyber-dot-cyan {
+  animation: pulse-cyan 2s infinite;
+  animation-delay: 0.5s;
+}
+
+.cyber-dot-purple {
+  animation: pulse-purple 2s infinite;
+  animation-delay: 1s;
+}
+
+.cyber-dot-yellow {
+  animation: pulse-yellow 2s infinite;
+  animation-delay: 1.5s;
+}
+
+@keyframes pulse-magenta {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px #ec4899; }
+  50% { opacity: 0.5; box-shadow: 0 0 4px #ec4899; }
+}
+
+@keyframes pulse-cyan {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px #22d3ee; }
+  50% { opacity: 0.5; box-shadow: 0 0 4px #22d3ee; }
+}
+
+@keyframes pulse-purple {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px #a78bfa; }
+  50% { opacity: 0.5; box-shadow: 0 0 4px #a78bfa; }
+}
+
+@keyframes pulse-yellow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px #fde047; }
+  50% { opacity: 0.5; box-shadow: 0 0 4px #fde047; }
+}
+
+/* Ocultar scrollbars pero mantener funcionalidad */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @media (max-width: 1150px) {
