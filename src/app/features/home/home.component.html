@@ -1,97 +1,98 @@
-<div
-  class="relative min-h-screen flex flex-col justify-between bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden font-orbitron"
->
-  <!-- Slider superior derecho - ajustado más abajo en escritorio -->
-  <div class="absolute top-16 md:top-20 right-12 z-20 hidden md:block">
-    <ng-container *ngFor="let img of sliderImages; let i = index">
-      <a *ngIf="i === sliderIndex" [href]="img.link">
-        <img [src]="img.src" [alt]="img.alt" class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
-      </a>
-    </ng-container>
-  </div>
+<div class="font-orbitron">
+  <!-- PRIMERA SECCIÓN: HERO CON ALTURA COMPLETA -->
+  <section class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
+    <!-- Slider superior derecho - ajustado más abajo en escritorio -->
+    <div class="absolute top-16 md:top-20 right-12 z-20 hidden md:block">
+      <ng-container *ngFor="let img of sliderImages; let i = index">
+        <a *ngIf="i === sliderIndex" [href]="img.link">
+          <img [src]="img.src" [alt]="img.alt" class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
+        </a>
+      </ng-container>
+    </div>
 
-  <!-- Menú lateral columna inferior izquierdo - oculto en móvil -->
-  <div class="bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start md:absolute">
-    <ul class="flex flex-col min-w-[180px]">
-      <li>
-        <a routerLink="/sorteos"
-           class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
-           style="--hover-bg: #ec4899; --hover-text: #fff;">
-          Play
-        </a>
-      </li>
-      <li>
-        <a routerLink="/galeria"
-           class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
-           style="--hover-bg: #22d3ee; --hover-text: #222;">
-          Galería
-        </a>
-      </li>
-      <li>
-        <a routerLink="/nosotros"
-           class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
-           style="--hover-bg: #a78bfa; --hover-text: #222;">
-          Nosotros
-        </a>
-      </li>
-      <li>
-        <a routerLink="/blog"
-           class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200"
-           style="--hover-bg: #fde047; --hover-text: #222;">
-          Blog
-        </a>
-      </li>
-    </ul>
-  </div>
+    <!-- Menú lateral izquierdo - posicionado absolutamente respecto al hero section -->
+    <div class="absolute bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start">
+      <ul class="flex flex-col min-w-[180px]">
+        <li>
+          <a routerLink="/sorteos"
+             class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+             style="--hover-bg: #ec4899; --hover-text: #fff;">
+            Play
+          </a>
+        </li>
+        <li>
+          <a routerLink="/galeria"
+             class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+             style="--hover-bg: #22d3ee; --hover-text: #222;">
+            Galería
+          </a>
+        </li>
+        <li>
+          <a routerLink="/nosotros"
+             class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+             style="--hover-bg: #a78bfa; --hover-text: #222;">
+            Nosotros
+          </a>
+        </li>
+        <li>
+          <a routerLink="/blog"
+             class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200"
+             style="--hover-bg: #fde047; --hover-text: #222;">
+            Blog
+          </a>
+        </li>
+      </ul>
+    </div>
 
-  <!-- Lucesitas de colores debajo del navbar con efecto de carga secuencial -->
-  <div class="fixed top-20 md:left-12 left-4 z-50 flex gap-2">
-    <div class="w-2 h-2 md:w-3 md:h-3 bg-pink-500 rounded-sm shadow-neon cyber-dot-magenta"></div>
-    <div class="w-2 h-2 md:w-3 md:h-3 bg-cyan-400 rounded-sm shadow-neon cyber-dot-cyan"></div>
-    <div class="w-2 h-2 md:w-3 md:h-3 bg-purple-500 rounded-sm shadow-neon cyber-dot-purple"></div>
-    <div class="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-sm shadow-neon cyber-dot-yellow"></div>
-  </div>
+    <!-- Lucesitas de colores debajo del navbar con efecto de carga secuencial -->
+    <div class="fixed top-20 md:left-12 left-4 z-50 flex gap-2">
+      <div class="w-2 h-2 md:w-3 md:h-3 bg-pink-500 rounded-sm shadow-neon cyber-dot-magenta"></div>
+      <div class="w-2 h-2 md:w-3 md:h-3 bg-cyan-400 rounded-sm shadow-neon cyber-dot-cyan"></div>
+      <div class="w-2 h-2 md:w-3 md:h-3 bg-purple-500 rounded-sm shadow-neon cyber-dot-purple"></div>
+      <div class="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-sm shadow-neon cyber-dot-yellow"></div>
+    </div>
 
-  <!-- Centro: Logo, texto typing y PC - modificar esta sección para ocupar toda la altura -->
-  <div class="flex-1 flex flex-col md:flex-row items-center justify-center z-10 relative h-screen">
-    <!-- Asegurarse de que el contenedor del texto está centrado verticalmente -->
-    <div class="flex flex-col items-center justify-center gap-8 w-full md:w-1/2 md:items-center mt-4 md:mt-0 h-full py-20">
-      <!-- Logo placeholder centrado -->
-      <div class="w-24 h-24 bg-white rounded-full mb-4 mx-auto z-30 relative">
-        <!-- Puedes colocar tu logo aquí -->
+    <!-- Centro: Logo, texto typing y PC -->
+    <div class="flex-1 flex flex-col md:flex-row items-center justify-center z-10">
+      <!-- Contenedor de logo y texto -->
+      <div class="flex flex-col items-center justify-center gap-8 w-full md:w-1/2 h-full py-20">
+        <!-- Logo placeholder centrado -->
+        <div class="w-24 h-24 bg-white rounded-full mb-4 mx-auto z-30 relative">
+          <!-- Puedes colocar tu logo aquí -->
+        </div>
+        
+        <!-- Texto typing cyberpunk con más espacio vertical -->
+        <h1 class="text-4xl md:text-6xl font-extrabold text-white text-center tracking-wide drop-shadow-[0_0_20px_#0ea5e9] whitespace-pre-line">
+          <span>{{ typingText }}</span>
+        </h1>
       </div>
       
-      <!-- Texto typing cyberpunk con más espacio vertical -->
-      <h1 class="text-4xl md:text-6xl font-extrabold text-white text-center tracking-wide drop-shadow-[0_0_20px_#0ea5e9] whitespace-pre-line">
-        <span>{{ typingText }}</span>
-      </h1>
-    </div>
-    
-    <!-- Imagen ensamble PC alineada exactamente a la misma altura que el menú secundario -->
-    <div class="hidden md:block absolute right-12 bottom-[calc(32px+2rem)]">
-      <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-72 h-88 2xl:w-80 2xl:h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
-    </div>
-    <!-- Para móviles, sigue centrada -->
-    <div class="flex flex-col items-center w-full md:hidden mt-8">
-      <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-80 h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
-    </div>
-  </div>
-
-
-  <!-- Barra inferior, redes sociales y botón comprar - oculta en móvil -->
-  <div class="sticky bottom-0 left-0 w-full hidden md:flex items-center px-8 py-3 bg-black/70 backdrop-blur border-t border-white z-40">
-    <div class="flex gap-6">
-      <a href="https://tiktok.com" target="_blank" class="social-btn-cyber"><i class="fab fa-tiktok"></i></a>
-      <a href="https://facebook.com" target="_blank" class="social-btn-cyber"><i class="fab fa-facebook-f"></i></a>
-      <a href="https://instagram.com" target="_blank" class="social-btn-cyber"><i class="fab fa-instagram"></i></a>
-      <a href="https://wa.me/5215555555555" target="_blank" class="social-btn-cyber"><i class="fab fa-whatsapp"></i></a>
-    </div>
-    <div class="flex-1 flex">
-      <div class="w-full flex justify-end">
-        <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber mr-4 md:mr-32 lg:mr-40 xl:mr-17">Comprar</a>
+      <!-- Imagen ensamble PC alineada a la derecha -->
+      <div class="hidden md:block absolute right-12 bottom-32">
+        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-72 h-88 2xl:w-80 2xl:h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
+      </div>
+      
+      <!-- Para móviles, sigue centrada -->
+      <div class="flex flex-col items-center w-full md:hidden mt-8">
+        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-80 h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
       </div>
     </div>
-  </div>
+
+    <!-- Barra inferior, redes sociales y botón comprar - oculta en móvil -->
+    <div class="w-full hidden md:flex items-center px-8 py-3 bg-black/70 backdrop-blur border-t border-white z-40">
+      <div class="flex gap-6">
+        <a href="https://tiktok.com" target="_blank" class="social-btn-cyber"><i class="fab fa-tiktok"></i></a>
+        <a href="https://facebook.com" target="_blank" class="social-btn-cyber"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://instagram.com" target="_blank" class="social-btn-cyber"><i class="fab fa-instagram"></i></a>
+        <a href="https://wa.me/5215555555555" target="_blank" class="social-btn-cyber"><i class="fab fa-whatsapp"></i></a>
+      </div>
+      <div class="flex-1 flex">
+        <div class="w-full flex justify-end">
+          <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber mr-4 md:mr-32 lg:mr-40 xl:mr-17">Comprar</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- SECCIÓN 3: SLIDER DE PRODUCTOS/PAQUETES -->
   <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-[#090b20]">

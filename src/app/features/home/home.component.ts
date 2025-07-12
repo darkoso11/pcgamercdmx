@@ -208,4 +208,69 @@ export class HomeComponent implements OnInit, OnDestroy {
       clearInterval(this._intervalId);
     }
   }
+
+  // Productos para el carrusel de ensambles
+  carruselProducts = [
+    {
+      id: 1,
+      title: "CPU PRE ARMADO 1",
+      image: "https://picsum.photos/id/251/600/400",
+      price: 11999,
+      processor: "AMD RYZEN 7 5700",
+      ram: "16 GB DDR4",
+      storage: "SSD M.2 NVME 1TB",
+      graphicsCard: "NVIDIA RTX 3060",
+      slug: "cpu-pre-armado-1"
+    },
+    {
+      id: 2,
+      title: "CPU PRE ARMADO 2",
+      image: "https://picsum.photos/id/252/600/400",
+      price: 15999,
+      processor: "INTEL CORE i5-12400F",
+      ram: "32 GB DDR4",
+      storage: "SSD M.2 NVME 1TB",
+      graphicsCard: "NVIDIA RTX 3070",
+      slug: "cpu-pre-armado-2"
+    },
+    {
+      id: 3,
+      title: "CPU PRE ARMADO 3",
+      image: "https://picsum.photos/id/253/600/400",
+      price: 21999,
+      processor: "AMD RYZEN 9 5900X",
+      ram: "32 GB DDR4",
+      storage: "SSD M.2 NVME 2TB",
+      graphicsCard: "NVIDIA RTX 3080",
+      slug: "cpu-pre-armado-3"
+    },
+    {
+      id: 4,
+      title: "CPU PRE ARMADO 4",
+      image: "https://picsum.photos/id/254/600/400",
+      price: 29999,
+      processor: "INTEL CORE i9-12900K",
+      ram: "64 GB DDR5",
+      storage: "SSD M.2 NVME 2TB",
+      graphicsCard: "NVIDIA RTX 4080",
+      slug: "cpu-pre-armado-4"
+    }
+  ];
+
+  // Método para navegar entre productos
+  nextProduct() {
+    if (this.currentProductIndex < this.carruselProducts.length - 1) {
+      this.currentProductIndex++;
+    } else {
+      this.currentProductIndex = 0;
+    }
+  }
+  
+  prevProduct() {
+    if (this.currentProductIndex > 0) {
+      this.currentProductIndex--;
+    } else {
+      this.currentProductIndex = this.carruselProducts.length - 1;
+    }
+  }
 }
