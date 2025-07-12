@@ -1,5 +1,5 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { App } from './app/app';
+import { AppComponent } from './app/app.component';  // Corregido de './app/app' a './app/app.component'
 import { config } from './app/app.config.server';
 
 export function getPrerenderParams() {
@@ -14,6 +14,6 @@ export function getPrerenderParams() {
   ];
 }
 
-const bootstrap = () => bootstrapApplication(App, config);
+const bootstrap = () => bootstrapApplication(AppComponent, config);
 
 export default bootstrap;

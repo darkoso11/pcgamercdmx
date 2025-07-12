@@ -1,11 +1,13 @@
 <div class="font-orbitron">
   <!-- PRIMERA SECCIÓN: HERO CON ALTURA COMPLETA -->
-  <section class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
+  <section
+    class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
     <!-- Slider superior derecho - ajustado más abajo en escritorio -->
     <div class="absolute top-16 md:top-20 right-12 z-20 hidden md:block">
       <ng-container *ngFor="let img of sliderImages; let i = index">
         <a *ngIf="i === sliderIndex" [href]="img.link">
-          <img [src]="img.src" [alt]="img.alt" class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
+          <img [src]="img.src" [alt]="img.alt"
+            class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
         </a>
       </ng-container>
     </div>
@@ -15,29 +17,29 @@
       <ul class="flex flex-col min-w-[180px]">
         <li>
           <a routerLink="/sorteos"
-             class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
-             style="--hover-bg: #ec4899; --hover-text: #fff;">
+            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+            style="--hover-bg: #ec4899; --hover-text: #fff">
             Play
           </a>
         </li>
         <li>
           <a routerLink="/galeria"
-             class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
-             style="--hover-bg: #22d3ee; --hover-text: #222;">
+            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+            style="--hover-bg: #22d3ee; --hover-text: #222">
             Galería
           </a>
         </li>
         <li>
           <a routerLink="/nosotros"
-             class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
-             style="--hover-bg: #a78bfa; --hover-text: #222;">
+            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+            style="--hover-bg: #a78bfa; --hover-text: #222">
             Nosotros
           </a>
         </li>
         <li>
           <a routerLink="/blog"
-             class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200"
-             style="--hover-bg: #fde047; --hover-text: #222;">
+            class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200"
+            style="--hover-bg: #fde047; --hover-text: #222">
             Blog
           </a>
         </li>
@@ -54,27 +56,38 @@
 
     <!-- Centro: Logo, texto typing y PC -->
     <div class="flex-1 flex flex-col md:flex-row items-center justify-center z-10">
-      <!-- Contenedor de logo y texto -->
-      <div class="flex flex-col items-center justify-center gap-8 w-full md:w-1/2 h-full py-20">
-        <!-- Logo placeholder centrado -->
-        <div class="w-24 h-24 bg-white rounded-full mb-4 mx-auto z-30 relative">
+      <!-- Contenedor de logo y texto - ajuste para móvil -->
+      <div class="flex flex-col items-center justify-center gap-1 w-full md:w-1/2 max-h-80 py-2 md:py-4">
+        <!-- Logo placeholder - más grande en móvil -->
+        <div class="w-20 h-20 md:w-16 md:h-16 bg-white rounded-full mx-auto z-30 relative -mt-6 md:mt-0">
           <!-- Puedes colocar tu logo aquí -->
         </div>
-        
-        <!-- Texto typing cyberpunk con más espacio vertical -->
-        <h1 class="text-4xl md:text-6xl font-extrabold text-white text-center tracking-wide drop-shadow-[0_0_20px_#0ea5e9] whitespace-pre-line">
+
+        <!-- Texto typing cyberpunk - más grande en móvil -->
+        <h1
+          class="text-3xl md:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
           <span>{{ typingText }}</span>
         </h1>
       </div>
-      
-      <!-- Imagen ensamble PC alineada a la derecha -->
+
+      <!-- Imagen ensamble PC alineada a la derecha para desktop -->
       <div class="hidden md:block absolute right-12 bottom-32">
-        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-72 h-88 2xl:w-80 2xl:h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
+        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
+          class="w-72 h-88 2xl:w-80 2xl:h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
+      </div>
+
+      <!-- Para móviles, ajustada para ser más grande y con padding superior -->
+      <div class="flex flex-col items-center w-full md:hidden mt-4 pt-10 mb-20">
+        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
+          class="w-[90%] h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
       </div>
       
-      <!-- Para móviles, sigue centrada -->
-      <div class="flex flex-col items-center w-full md:hidden mt-8">
-        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-80 h-96 object-cover rounded-2xl border-4 border-white shadow-neon bg-[#222]" />
+      <!-- Botón comprar móvil - simplificado -->
+      <div class="md:hidden w-full flex justify-center mt-8">
+        <a [routerLink]="pcBuilds[pcIndex].link" 
+           class="btn-comprar-cyber py-3 px-8 w-[80%] text-center rounded-lg text-white bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg hover:shadow-pink-500/50">
+          Comprar
+        </a>
       </div>
     </div>
 
@@ -84,7 +97,8 @@
         <a href="https://tiktok.com" target="_blank" class="social-btn-cyber"><i class="fab fa-tiktok"></i></a>
         <a href="https://facebook.com" target="_blank" class="social-btn-cyber"><i class="fab fa-facebook-f"></i></a>
         <a href="https://instagram.com" target="_blank" class="social-btn-cyber"><i class="fab fa-instagram"></i></a>
-        <a href="https://wa.me/5215555555555" target="_blank" class="social-btn-cyber"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://wa.me/5215555555555" target="_blank" class="social-btn-cyber"><i
+            class="fab fa-whatsapp"></i></a>
       </div>
       <div class="flex-1 flex">
         <div class="w-full flex justify-end">
@@ -96,85 +110,125 @@
 
   <!-- SECCIÓN 3: SLIDER DE PRODUCTOS/PAQUETES -->
   <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-[#090b20]">
-    <h2 class="text-4xl font-bold text-white mb-10 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">Nuestros Paquetes</h2>
-    
+    <h2
+      class="text-4xl font-bold text-white mb-10 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Nuestros Paquetes
+    </h2>
+
     <!-- Slider de productos con navegación -->
     <div class="relative w-full max-w-7xl px-4">
       <div class="flex overflow-x-hidden snap-x scroll-smooth">
-        <div class="flex gap-8 transition-transform duration-300" [style.transform]="'translateX(' + (-currentProductIndex * 100) + '%)'">
+        <div class="flex gap-8 transition-transform duration-300"
+          [style.transform]="'translateX(' + -currentProductIndex * 100 + '%)'">
           <ng-container *ngFor="let product of carruselProducts">
             <!-- Card de producto con estilo cyberpunk -->
-            <div class="min-w-[300px] md:min-w-[350px] bg-[#161a3c] border border-white/20 rounded-xl p-6 flex flex-col items-center cyber-card relative">
+            <div
+              class="min-w-[300px] md:min-w-[350px] bg-[#161a3c] border border-white/20 rounded-xl p-6 flex flex-col items-center cyber-card relative">
               <!-- Detalles visuales similar a la imagen compartida -->
               <span class="absolute top-3 right-3 bg-pink-500 text-xs px-2 py-1 rounded">Oferta</span>
-              <img [src]="product.image" [alt]="product.title" class="h-48 object-contain mb-4">
-              <h3 class="text-xl font-bold text-white">{{product.title}}</h3>
-              <p class="text-cyan-400 text-2xl font-bold">${{product.price | number}}</p>
-              
+              <img [src]="product.image" [alt]="product.title" class="h-48 object-contain mb-4" />
+              <h3 class="text-xl font-bold text-white">{{ product.title }}</h3>
+              <p class="text-cyan-400 text-2xl font-bold">
+                ${{ product.price | number }}
+              </p>
+
               <!-- Specs con iconos -->
               <div class="w-full my-4 space-y-2">
-                <div class="flex items-center text-sm"><i class="fas fa-microchip mr-2 text-pink-400"></i> {{product.processor}}</div>
-                <div class="flex items-center text-sm"><i class="fas fa-memory mr-2 text-cyan-400"></i> {{product.ram}}</div>
-                <div class="flex items-center text-sm"><i class="fas fa-hdd mr-2 text-purple-400"></i> {{product.storage}}</div>
-                <div class="flex items-center text-sm"><i class="fas fa-gamepad mr-2 text-yellow-400"></i> {{product.graphicsCard}}</div>
+                <div class="flex items-center text-sm">
+                  <i class="fas fa-microchip mr-2 text-pink-400"></i>
+                  {{ product.processor }}
+                </div>
+                <div class="flex items-center text-sm">
+                  <i class="fas fa-memory mr-2 text-cyan-400"></i>
+                  {{ product.ram }}
+                </div>
+                <div class="flex items-center text-sm">
+                  <i class="fas fa-hdd mr-2 text-purple-400"></i>
+                  {{ product.storage }}
+                </div>
+                <div class="flex items-center text-sm">
+                  <i class="fas fa-gamepad mr-2 text-yellow-400"></i>
+                  {{ product.graphicsCard }}
+                </div>
               </div>
-              
-              <a [routerLink]="['/productos', product.slug]" class="mt-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition">Ver detalles</a>
+
+              <a [routerLink]="['/productos', product.slug]"
+                class="mt-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition">Ver
+                detalles</a>
             </div>
           </ng-container>
         </div>
       </div>
-      
+
       <!-- Botones de navegación -->
-      <button (click)="prevProduct()" class="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
+      <button (click)="prevProduct()"
+        class="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
         <i class="fas fa-chevron-left"></i>
       </button>
-      <button (click)="nextProduct()" class="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
+      <button (click)="nextProduct()"
+        class="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
         <i class="fas fa-chevron-right"></i>
       </button>
-      
+
       <!-- Indicadores de página -->
       <div class="flex justify-center gap-3 mt-8">
         <ng-container *ngFor="let _ of carruselProducts; let i = index">
-          <button (click)="goToProduct(i)" [class.bg-pink-500]="i === currentProductIndex" [class.bg-gray-500]="i !== currentProductIndex" class="w-3 h-3 rounded-full"></button>
+          <button (click)="goToProduct(i)" [class.bg-pink-500]="i === currentProductIndex"
+            [class.bg-gray-500]="i !== currentProductIndex" class="w-3 h-3 rounded-full"></button>
         </ng-container>
       </div>
     </div>
   </section>
-  
+
   <!-- SECCIÓN 4: JUEGOS FAMOSOS -->
-  <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d]">
-    <h2 class="text-4xl font-bold text-white mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">Juegos Recomendados</h2>
-    
+  <section
+    class="min-h-screen flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d]">
+    <h2
+      class="text-4xl font-bold text-white mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Juegos Recomendados
+    </h2>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
       <ng-container *ngFor="let game of popularGames">
         <div class="game-card relative overflow-hidden rounded-xl group cursor-pointer">
-          <img [src]="game.image" [alt]="game.title" class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110">
+          <img [src]="game.image" [alt]="game.title"
+            class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" />
           <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
           <div class="absolute bottom-0 left-0 p-4">
-            <h3 class="text-xl font-bold text-white">{{game.title}}</h3>
-            <p class="text-sm text-gray-300">{{game.specs}}</p>
+            <h3 class="text-xl font-bold text-white">{{ game.title }}</h3>
+            <p class="text-sm text-gray-300">{{ game.specs }}</p>
           </div>
-          <div class="absolute top-3 right-3 bg-cyan-500 text-xs px-2 py-1 rounded">{{game.fps}} FPS</div>
+          <div class="absolute top-3 right-3 bg-cyan-500 text-xs px-2 py-1 rounded">
+            {{ game.fps }} FPS
+          </div>
         </div>
       </ng-container>
     </div>
   </section>
-  
+
   <!-- SECCIÓN 5: COLLAGE PARA INFLUENCERS -->
   <section class="py-16 bg-[#0a0d22]">
-    <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">Comunidad Gaming</h2>
-    
+    <h2
+      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Comunidad Gaming
+    </h2>
+
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1 max-w-7xl mx-auto px-4">
       <ng-container *ngFor="let influencer of influencers">
         <div class="aspect-square overflow-hidden relative group">
-          <img [src]="influencer.image" [alt]="influencer.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+          <img [src]="influencer.image" [alt]="influencer.name"
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
             <div class="p-2">
-              <h4 class="text-white text-sm font-bold">{{influencer.name}}</h4>
+              <h4 class="text-white text-sm font-bold">
+                {{ influencer.name }}
+              </h4>
               <div class="flex gap-2 text-xs mt-1">
-                <a [href]="influencer.social.twitch" target="_blank" class="text-purple-400"><i class="fab fa-twitch"></i></a>
-                <a [href]="influencer.social.instagram" target="_blank" class="text-pink-400"><i class="fab fa-instagram"></i></a>
+                <a [href]="influencer.social.twitch" target="_blank" class="text-purple-400"><i
+                    class="fab fa-twitch"></i></a>
+                <a [href]="influencer.social.instagram" target="_blank" class="text-pink-400"><i
+                    class="fab fa-instagram"></i></a>
               </div>
             </div>
           </div>
@@ -182,88 +236,118 @@
       </ng-container>
     </div>
   </section>
-  
+
   <!-- SECCIÓN 6: PC PARA NECESIDADES ESPECÍFICAS -->
   <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
-    <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">Computadoras por Necesidad</h2>
-    
+    <h2
+      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Computadoras por Necesidad
+    </h2>
+
     <div class="flex overflow-x-auto snap-x scrollbar-hide pb-8 max-w-7xl mx-auto px-4">
       <div class="flex gap-6">
         <ng-container *ngFor="let need of pcNeeds">
-          <div class="min-w-[250px] h-64 bg-gradient-to-br from-black/60 to-black/20 backdrop-blur-sm rounded-lg flex flex-col justify-end p-6 relative border border-white/10 snap-center" [ngStyle]="{'background-image': 'url(' + need.bgImage + ')', 'background-size': 'cover', 'background-position': 'center'}">
+          <div
+            class="min-w-[250px] h-64 bg-gradient-to-br from-black/60 to-black/20 backdrop-blur-sm rounded-lg flex flex-col justify-end p-6 relative border border-white/10 snap-center"
+            [ngStyle]="{
+              'background-image': 'url(' + need.bgImage + ')',
+              'background-size': 'cover',
+              'background-position': 'center'
+            }">
             <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70 rounded-lg"></div>
-            <h3 class="text-xl font-bold text-white relative z-10">{{need.title}}</h3>
-            <p class="text-sm text-gray-300 mt-2 relative z-10">{{need.description}}</p>
-            <a routerLink="/cotiza-tu-pc" [queryParams]="{need: need.id}" class="mt-4 bg-yellow-400 text-black py-2 px-4 rounded text-sm font-bold hover:bg-yellow-300 transition relative z-10 inline-block text-center">Cotizar ahora</a>
+            <h3 class="text-xl font-bold text-white relative z-10">
+              {{ need.title }}
+            </h3>
+            <p class="text-sm text-gray-300 mt-2 relative z-10">
+              {{ need.description }}
+            </p>
+            <a routerLink="/cotiza-tu-pc" [queryParams]="{ need: need.id }"
+              class="mt-4 bg-yellow-400 text-black py-2 px-4 rounded text-sm font-bold hover:bg-yellow-300 transition relative z-10 inline-block text-center">Cotizar
+              ahora</a>
           </div>
         </ng-container>
       </div>
     </div>
   </section>
-  
+
   <!-- SECCIÓN 7: MARCAS -->
   <section class="py-16 bg-[#090b20]">
-    <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-gray-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">Marcas Premium</h2>
-    
+    <h2
+      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-gray-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Marcas Premium
+    </h2>
+
     <div class="flex justify-center flex-wrap gap-12 max-w-7xl mx-auto px-4">
       <ng-container *ngFor="let brand of brands">
-        <div class="w-32 h-32 flex items-center justify-center p-4 bg-[#161a3c]/80 rounded-lg hover:bg-[#1e2350] transition-all duration-300 cursor-pointer group">
-          <img [src]="brand.logo" [alt]="brand.name" class="max-h-full max-w-full transition-transform duration-300 group-hover:scale-110">
+        <div
+          class="w-32 h-32 flex items-center justify-center p-4 bg-[#161a3c]/80 rounded-lg hover:bg-[#1e2350] transition-all duration-300 cursor-pointer group">
+          <img [src]="brand.logo" [alt]="brand.name"
+            class="max-h-full max-w-full transition-transform duration-300 group-hover:scale-110" />
         </div>
       </ng-container>
     </div>
   </section>
-  
+
   <!-- SECCIÓN 8: SERVICIOS -->
   <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9]">
-    <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">Servicios Técnicos</h2>
-    
+    <h2
+      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Servicios Técnicos
+    </h2>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-4">
       <ng-container *ngFor="let service of services">
-        <div class="bg-black/30 backdrop-blur-sm border border-white/10 p-6 rounded-lg group hover:border-pink-500/50 transition-all duration-300">
-          <div class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center mb-4 text-pink-400 text-2xl group-hover:bg-pink-500/30 transition-all">
+        <div
+          class="bg-black/30 backdrop-blur-sm border border-white/10 p-6 rounded-lg group hover:border-pink-500/50 transition-all duration-300">
+          <div
+            class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center mb-4 text-pink-400 text-2xl group-hover:bg-pink-500/30 transition-all">
             <i [class]="service.icon"></i>
           </div>
-          <h3 class="text-xl font-bold text-white mb-2">{{service.title}}</h3>
-          <p class="text-gray-300 text-sm">{{service.description}}</p>
+          <h3 class="text-xl font-bold text-white mb-2">{{ service.title }}</h3>
+          <p class="text-gray-300 text-sm">{{ service.description }}</p>
         </div>
       </ng-container>
     </div>
-    
+
     <div class="text-center mt-12">
-      <a routerLink="/servicios" class="bg-white text-blue-900 py-3 px-8 rounded-lg font-bold hover:bg-pink-400 hover:text-white transition-colors">Ver todos los servicios</a>
+      <a routerLink="/servicios"
+        class="bg-white text-blue-900 py-3 px-8 rounded-lg font-bold hover:bg-pink-400 hover:text-white transition-colors">Ver
+        todos los servicios</a>
     </div>
   </section>
-  
+
   <!-- SECCIÓN 9: BLOG -->
   <section class="py-16 bg-[#0a0d22]">
-    <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">Últimas del Blog</h2>
-    
+    <h2
+      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Últimas del Blog
+    </h2>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
       <ng-container *ngFor="let post of latestPosts">
-        <a [routerLink]="['/blog', post.slug]" class="block bg-[#161a3c] rounded-xl overflow-hidden group hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300">
+        <a [routerLink]="['/blog', post.slug]"
+          class="block bg-[#161a3c] rounded-xl overflow-hidden group hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300">
           <div class="h-48 overflow-hidden">
-            <img [src]="post.image" [alt]="post.title" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+            <img [src]="post.image" [alt]="post.title"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
           </div>
           <div class="p-6">
-            <span class="text-xs text-cyan-400">{{post.date | date}}</span>
-            <h3 class="text-xl font-bold text-white mt-2 group-hover:text-cyan-400 transition-colors">{{post.title}}</h3>
-            <p class="text-gray-300 text-sm mt-2 line-clamp-2">{{post.excerpt}}</p>
+            <span class="text-xs text-cyan-400">{{ post.date | date }}</span>
+            <h3 class="text-xl font-bold text-white mt-2 group-hover:text-cyan-400 transition-colors">
+              {{ post.title }}
+            </h3>
+            <p class="text-gray-300 text-sm mt-2 line-clamp-2">
+              {{ post.excerpt }}
+            </p>
           </div>
         </a>
       </ng-container>
     </div>
-    
+
     <div class="text-center mt-12">
-      <a routerLink="/blog" class="border-2 border-cyan-400 text-cyan-400 py-3 px-8 rounded-lg font-bold hover:bg-cyan-400 hover:text-[#0a0d22] transition-colors">Ver más artículos</a>
+      <a routerLink="/blog"
+        class="border-2 border-cyan-400 text-cyan-400 py-3 px-8 rounded-lg font-bold hover:bg-cyan-400 hover:text-[#0a0d22] transition-colors">Ver
+        más artículos</a>
     </div>
   </section>
-
-  <!-- Versión móvil: ajustes específicos para dispositivos pequeños -->
-  <div class="md:hidden fixed bottom-0 left-0 w-full flex flex-col items-center bg-black/70 backdrop-blur">
-    <!-- Botón comprar móvil -->
-    <div class="w-full border-t border-white/30 p-3">
-      <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber block text-center w-full">Comprar</a>
-    </div>
-  </div>
 </div>

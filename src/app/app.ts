@@ -3,10 +3,10 @@ import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [RouterOutlet], // Esta importación es necesaria aunque el linter la marque como no usada
+  templateUrl: './app.component.html'
 })
-export class App {
-  protected title = 'pcgamercdmx';
+export class AppComponent {
+  title = 'PC Gamer CDMX';
 }
