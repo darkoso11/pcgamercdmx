@@ -1,6 +1,8 @@
-import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { interval, Subscription } from 'rxjs';
+import { take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -10,11 +12,6 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  typingText = '';
-  fullText = 'El futuro es hoy, oiste viejo\nBienvenido a Pc Gamer CDMX';
-  typingIndex = 0;
-  typingSpeed = 40;
-
   // Slider superior derecho con Lorem Picsum
   sliderImages = [
     { src: 'https://picsum.photos/id/11/200/100', link: '/productos/1', alt: 'Slider 1' },
@@ -184,31 +181,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Variable para almacenar referencia al intervalo
   private _intervalId: any;
 
-  ngOnInit(): void {
-    this.typeText();
-    // Añade la rotación de imágenes del slider y PC
-    this._intervalId = setInterval(() => {
-      this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
-      this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
-    }, 4000);
-  }
-
-  // Función para escribir texto con efecto typing
-  typeText(): void {
-    if (this.typingIndex < this.fullText.length) {
-      this.typingText += this.fullText[this.typingIndex++];
-      setTimeout(() => this.typeText(), this.typingSpeed);
-    }
-  }
-  
-  // Implementación requerida de ngOnDestroy
-  ngOnDestroy(): void {
-    // Limpiar el intervalo cuando el componente se destruye para prevenir memory leaks
-    if (this._intervalId) {
-      clearInterval(this._intervalId);
-    }
-  }
-
   // Productos para el carrusel de ensambles
   carruselProducts = [
     {
@@ -273,4 +245,70 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.currentProductIndex = this.carruselProducts.length - 1;
     }
   }
+
+  // Para el efecto typing - usando un enfoque con Observable para mejor fiabilidad
+  typingText = '';
+  fullText = 'El futuro es hoy, oiste viejo\nBienvenido a Pc Gamer CDMX';
+  private typingSubscription?: Subscription;
+
+  constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    console.log('Home component initialized');
+    
+    // Usar un setTimeout para asegurar que la vista está lista
+    setTimeout(() => {
+      console.log('Starting typing effect');
+      this.startTypingWithObservable();
+    }, 500);
+    
+    // Añade la rotación de imágenes del slider y PC
+    this._intervalId = setInterval(() => {
+      this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
+      this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
+    }, 4000);
+  }
+
+  startTypingWithObservable(): void {
+    console.log('Initial text:', this.typingText);
+    // Reiniciar texto
+    this.typingText = '';
+    
+    // Cancelar suscripción anterior si existe
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    
+    // Crear Observable que emitirá cada carácter con un delay inicial
+    this.typingSubscription = interval(this.typingSpeed)
+      .pipe(
+        take(this.fullText.length),
+        tap(index => {
+          this.ngZone.run(() => {
+            this.typingText += this.fullText.charAt(index);
+            console.log('Current text:', this.typingText);
+            // Forzar detección de cambios explícitamente
+            this.cdr.detectChanges();
+          });
+        })
+      )
+      .subscribe({
+        complete: () => console.log('Typing effect completed')
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar todas las suscripciones y timers
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+    }
+  }
+
+  // Velocidad de escritura en milisegundos
+  private typingSpeed = 40;
 }
+
