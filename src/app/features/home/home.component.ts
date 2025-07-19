@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ViewChildren, QueryList, ElementRef, AfterViewInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
@@ -11,7 +11,7 @@ import { take, tap } from 'rxjs/operators';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   // Slider superior derecho con Lorem Picsum
   sliderImages = [
     { src: 'https://picsum.photos/id/11/200/100', link: '/productos/1', alt: 'Slider 1' },
@@ -229,20 +229,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
+  @ViewChildren('productCard') productCards!: QueryList<ElementRef>;
+  
+  // Variables para el slider de productos mejorado
+  cardWidth: number = 0;
+  cardsPerView: number = 1;
+  totalPages: number = 0;
+  maxVisibleIndex: number = 0;
+  containerWidth: number = 0;
+
   // Método para navegar entre productos
   nextProduct() {
-    if (this.currentProductIndex < this.carruselProducts.length - 1) {
+    if (this.currentProductIndex < this.maxVisibleIndex) {
       this.currentProductIndex++;
-    } else {
-      this.currentProductIndex = 0;
     }
   }
   
   prevProduct() {
     if (this.currentProductIndex > 0) {
       this.currentProductIndex--;
-    } else {
-      this.currentProductIndex = this.carruselProducts.length - 1;
     }
   }
 
@@ -267,6 +272,62 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
       this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
     }, 4000);
+  }
+
+  ngAfterViewInit() {
+    // Calcular dimensiones después de que la vista se ha inicializado
+    setTimeout(() => {
+      this.calculateSliderDimensions();
+    }, 100);
+  }
+
+  calculateSliderDimensions() {
+    if (this.productCards && this.productCards.length > 0) {
+      try {
+        // Obtener el ancho de una tarjeta incluyendo margen
+        const card = this.productCards.first.nativeElement;
+        this.cardWidth = card.offsetWidth + 32; // 32px es el valor del gap (gap-8 = 2rem = 32px)
+        
+        // Obtener el ancho del contenedor
+        const container = card.parentElement.parentElement;
+        this.containerWidth = container.offsetWidth;
+        
+        // Calcular cuántas tarjetas caben en la vista
+        this.cardsPerView = Math.max(1, Math.floor(this.containerWidth / this.cardWidth));
+        
+        // Calcular el índice máximo al que se puede desplazar
+        this.maxVisibleIndex = this.carruselProducts.length - this.cardsPerView;
+        
+        // Asegurarse de que el currentProductIndex no exceda el máximo
+        if (this.currentProductIndex > this.maxVisibleIndex) {
+          this.currentProductIndex = this.maxVisibleIndex;
+        }
+      } catch (error) {
+        console.error('Error calculating slider dimensions:', error);
+      }
+    }
+  }
+  
+  getSlideTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.cardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.currentProductIndex * this.cardWidth * -1;
+  }
+
+  // Método para detectar si estamos en un dispositivo móvil
+  isMobile(): boolean {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768; // 768px es el breakpoint md en Tailwind
+    }
+    return false;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    // Recalcular en cambios de tamaño de pantalla
+    this.calculateSliderDimensions();
   }
 
   startTypingWithObservable(): void {
