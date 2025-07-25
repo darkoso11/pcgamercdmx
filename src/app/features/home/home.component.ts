@@ -308,6 +308,54 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   fullText = 'El futuro es hoy, oiste viejo\nBienvenido a Pc Gamer CDMX';
   private typingSubscription?: Subscription;
 
+  // Datos para el slider de banners promocionales
+  banners = [
+    {
+      id: 1,
+      title: "Ensambles Personalizados",
+      description: "Construimos la PC de tus sueños con los mejores componentes y la máxima calidad.",
+      imageUrl: "assets/img/banners/custom-builds.jpg",
+      link: "/ensambles-personalizados",
+      ctaText: "Personaliza tu PC",
+      badgeText: "POPULAR"
+    },
+    {
+      id: 2,
+      title: "Ofertas Especiales",
+      description: "Aprovecha nuestras promociones exclusivas con descuentos de hasta 30% en productos seleccionados.",
+      imageUrl: "assets/img/banners/special-offers.jpg",
+      link: "/ofertas",
+      ctaText: "Ver Ofertas",
+      badgeText: "OFERTA"
+    },
+    {
+      id: 3,
+      title: "Sorteos Mensuales",
+      description: "Participa en nuestros sorteos mensuales y gana componentes premium para tu setup.",
+      imageUrl: "assets/img/banners/giveaways.jpg",
+      link: "/sorteos",
+      ctaText: "Participar Ahora",
+      badgeText: "SORTEO"
+    }
+  ];
+
+  // Control del índice actual del banner
+  bannerIndex = 0;
+  private bannerIntervalId: any;
+
+  // Métodos para controlar la navegación del banner
+  prevBanner() {
+    this.bannerIndex = (this.bannerIndex - 1 + this.banners.length) % this.banners.length;
+  }
+
+  nextBanner() {
+    this.bannerIndex = (this.bannerIndex + 1) % this.banners.length;
+  }
+
+  goToBanner(index: number) {
+    this.bannerIndex = index;
+  }
+
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
@@ -326,6 +374,11 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
         this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
         this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
       }, 4000);
+
+      // Añadir rotación automática de banners
+      this.bannerIntervalId = setInterval(() => {
+        this.nextBanner();
+      }, 5000); // Cambiar cada 5 segundos
     }
   }
 
@@ -422,6 +475,11 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this._intervalId) {
       clearInterval(this._intervalId);
     }
+
+    // Limpiar el intervalo de los banners
+    if (this.bannerIntervalId) {
+      clearInterval(this.bannerIntervalId);
+    }
   }
 
   // Velocidad de escritura en milisegundos
@@ -498,6 +556,166 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     // Aquí implementarías la lógica para mostrar el modal
     // Por ahora solo mostramos en consola
     console.log('Abriendo modal para:', customCase.title);
+  }
+
+  // Datos para sección de periféricos
+  peripheralCategories = [
+    { name: 'Todo', value: 'all' },
+    { name: 'Mouse', value: 'mouse' },
+    { name: 'Teclados', value: 'keyboard' },
+    { name: 'Auriculares', value: 'headset' },
+    { name: 'Sillas Gaming', value: 'chair' },
+    { name: 'Monitores', value: 'monitor' },
+    { name: 'Mandos', value: 'gamepad' }
+  ];
+  
+  peripherals = [
+    {
+      id: 1,
+      name: "Razer DeathAdder V2",
+      category: "mouse",
+      image: "assets/img/perifericos/razer-deathadder.png",
+      price: 1299,
+      originalPrice: 1499,
+      discount: 13,
+      rating: 4.8,
+      slug: "razer-deathadder-v2"
+    },
+    {
+      id: 2,
+      name: "HyperX Alloy FPS Pro",
+      category: "keyboard",
+      image: "assets/img/perifericos/hyperx-alloy.png",
+      price: 1799,
+      originalPrice: 1999,
+      discount: 10,
+      rating: 4.7,
+      slug: "hyperx-alloy-fps-pro"
+    },
+    {
+      id: 3,
+      name: "Logitech G Pro X",
+      category: "headset",
+      image: "assets/img/perifericos/logitech-gpro-x.png",
+      price: 2299,
+      originalPrice: 2599,
+      discount: 12,
+      rating: 4.9,
+      slug: "logitech-g-pro-x"
+    },
+    {
+      id: 4,
+      name: "Corsair T1 Race",
+      category: "chair",
+      image: "assets/img/perifericos/corsair-t1.png",
+      price: 5499,
+      originalPrice: 6299,
+      discount: 13,
+      rating: 4.6,
+      slug: "corsair-t1-race"
+    },
+    {
+      id: 5,
+      name: "ASUS TUF Gaming VG27AQ",
+      category: "monitor",
+      image: "assets/img/perifericos/asus-tuf-vg27aq.png",
+      price: 8999,
+      originalPrice: 9999,
+      discount: 10,
+      rating: 4.8,
+      slug: "asus-tuf-vg27aq"
+    },
+    {
+      id: 6,
+      name: "Xbox Elite Controller Series 2",
+      category: "gamepad",
+      image: "assets/img/perifericos/xbox-elite-2.png",
+      price: 3299,
+      originalPrice: 3799,
+      discount: 13,
+      rating: 4.9,
+      slug: "xbox-elite-controller-series-2"
+    },
+    {
+      id: 7,
+      name: "SteelSeries Arctis 7",
+      category: "headset",
+      image: "assets/img/perifericos/steelseries-arctis7.png",
+      price: 2799,
+      originalPrice: 3199,
+      discount: 12,
+      rating: 4.7,
+      slug: "steelseries-arctis-7"
+    },
+    {
+      id: 8,
+      name: "Logitech G502 HERO",
+      category: "mouse",
+      image: "assets/img/perifericos/logitech-g502.png",
+      price: 1399,
+      originalPrice: 1699,
+      discount: 18,
+      rating: 4.8,
+      slug: "logitech-g502-hero"
+    },
+    {
+      id: 9,
+      name: "Razer BlackWidow Elite",
+      category: "keyboard",
+      image: "assets/img/perifericos/razer-blackwidow.png",
+      price: 2999,
+      originalPrice: 3499,
+      discount: 14,
+      rating: 4.6,
+      slug: "razer-blackwidow-elite"
+    },
+    {
+      id: 10,
+      name: "AOC C27G2Z 27\" Curvo 240Hz",
+      category: "monitor",
+      image: "assets/img/perifericos/aoc-c27g2z.png",
+      price: 7299,
+      originalPrice: 7999,
+      discount: 9,
+      rating: 4.5,
+      slug: "aoc-c27g2z"
+    }
+  ];
+  
+  // Control de navegación de periféricos
+  selectedPeripheralCategory = 0;
+  peripheralScrollPosition = 0;
+  peripheralScrollStep = 300;
+  
+  get filteredPeripherals() {
+    const selectedCategory = this.peripheralCategories[this.selectedPeripheralCategory].value;
+    return selectedCategory === 'all' 
+      ? this.peripherals 
+      : this.peripherals.filter(p => p.category === selectedCategory);
+  }
+  
+  selectPeripheralCategory(index: number) {
+    this.selectedPeripheralCategory = index;
+    this.peripheralScrollPosition = 0; // Reset scroll position when category changes
+  }
+  
+  scrollPeripheralsLeft() {
+    this.peripheralScrollPosition = Math.max(0, this.peripheralScrollPosition - this.peripheralScrollStep);
+  }
+  
+  scrollPeripheralsRight() {
+    const maxScroll = this.getMaxPeripheralScroll();
+    this.peripheralScrollPosition = Math.min(maxScroll, this.peripheralScrollPosition + this.peripheralScrollStep);
+  }
+  
+  getMaxPeripheralScroll(): number {
+    // Calcular el ancho total del contenido menos el ancho visible
+    if (typeof window !== 'undefined') {
+      const containerWidth = window.innerWidth > 768 ? 1200 : window.innerWidth - 32; // Aproximado para diferentes tamaños
+      const totalWidth = this.filteredPeripherals.length * 256; // Ancho aproximado de cada item + gap
+      return Math.max(0, totalWidth - containerWidth);
+    }
+    return 0;
   }
 }
 
