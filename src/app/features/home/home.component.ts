@@ -12,7 +12,7 @@ import { take, tap } from 'rxjs/operators';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
-  // Slider superior derecho con Lorem Picsum
+  // Slider superior derecho
   sliderImages = [
     { src: 'https://picsum.photos/id/11/200/100', link: '/productos/1', alt: 'Slider 1' },
     { src: 'https://picsum.photos/id/12/200/100', link: '/productos/2', alt: 'Slider 2' },
@@ -22,8 +22,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Imagen de PC usando Lorem Picsum
   pcBuilds = [
-    { img: 'https://picsum.photos/id/14/350/400', link: '/productos/1' },
-    { img: 'https://picsum.photos/id/15/350/400', link: '/productos/2' }
+    { img: 'assets/img/gabinetes/BR-938686_1.png', link: '/productos/1' },
+    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/productos/2' }
   ];
   pcIndex = 0;
 
@@ -186,46 +186,98 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     {
       id: 1,
       title: "CPU PRE ARMADO 1",
-      image: "https://picsum.photos/id/251/600/400",
+      image: "assets/img/gabinetes/BR-938686_1.png",
       price: 11999,
       processor: "AMD RYZEN 7 5700",
+      motherboard: "ASUS ROG STRIX B550-F",
       ram: "16 GB DDR4",
       storage: "SSD M.2 NVME 1TB",
       graphicsCard: "NVIDIA RTX 3060",
-      slug: "cpu-pre-armado-1"
+      slug: "cpu-pre-armado-1",
+      // Aseguramos que las propiedades existan incluso si están vacías
+      brandLogos: [
+        { src: "assets/img/marcas/nvidia_tag.svg", alt: "NVIDIA", position: "top-left" },
+        { src: "assets/img/marcas/ryzen_tag.svg", alt: "AMD Ryzen", position: "top-right" },
+        { src: "assets/img/marcas/corsairbrand.png", alt: "Corsair", position: "bottom-left" },
+      ],
+      powerCertificate: "assets/img/certificaciones/80plusgold.png",
+      watts: 650
     },
     {
       id: 2,
       title: "CPU PRE ARMADO 2",
-      image: "https://picsum.photos/id/252/600/400",
+      image: "assets/img/gabinetes/HBJNKHGNM.png",
       price: 15999,
       processor: "INTEL CORE i5-12400F",
+      motherboard: "ASUS PRIME B660M-A",
       ram: "32 GB DDR4",
       storage: "SSD M.2 NVME 1TB",
       graphicsCard: "NVIDIA RTX 3070",
-      slug: "cpu-pre-armado-2"
+      slug: "cpu-pre-armado-2",
+      brandLogos: [
+        { src: "assets/img/marcas/nvidia_tag.svg", alt: "NVIDIA", position: "top-left" },
+        { src: "assets/img/marcas/ryzen_tag.svg", alt: "AMD Ryzen", position: "top-right" },
+        { src: "assets/img/marcas/corsairbrand.png", alt: "Corsair", position: "bottom-left" },
+      ],
+      powerCertificate: "assets/img/certificaciones/80plusgold.png",
+      watts: 650
     },
     {
       id: 3,
       title: "CPU PRE ARMADO 3",
-      image: "https://picsum.photos/id/253/600/400",
+      image: "assets/img/gabinetes/product-section-01.png",
       price: 21999,
       processor: "AMD RYZEN 9 5900X",
+      motherboard: "ASUS ROG STRIX X570-E",
       ram: "32 GB DDR4",
       storage: "SSD M.2 NVME 2TB",
       graphicsCard: "NVIDIA RTX 3080",
-      slug: "cpu-pre-armado-3"
+      slug: "cpu-pre-armado-3",
+      brandLogos: [
+        { src: "assets/img/marcas/nvidia_tag.svg", alt: "NVIDIA", position: "top-left" },
+        { src: "assets/img/marcas/ryzen_tag.svg", alt: "AMD Ryzen", position: "top-right" },
+        { src: "assets/img/marcas/corsairbrand.png", alt: "Corsair", position: "bottom-left" },                                                 
+      ],
+      powerCertificate: "assets/img/certificaciones/80plusgold.png",
+      watts: 650
     },
     {
       id: 4,
       title: "CPU PRE ARMADO 4",
-      image: "https://picsum.photos/id/254/600/400",
+      image: "assets/img/gabinetes/rog-hyperion-gr701.png",
       price: 29999,
       processor: "INTEL CORE i9-12900K",
+      motherboard: "ASUS ROG MAXIMUS Z690 HERO",
       ram: "64 GB DDR5",
       storage: "SSD M.2 NVME 2TB",
       graphicsCard: "NVIDIA RTX 4080",
-      slug: "cpu-pre-armado-4"
+      slug: "cpu-pre-armado-4",
+      brandLogos: [
+        { src: "assets/img/marcas/nvidia_tag.svg", alt: "NVIDIA", position: "top-left" },
+        { src: "assets/img/marcas/ryzen_tag.svg", alt: "AMD Ryzen", position: "top-right" },
+        { src: "assets/img/marcas/corsairbrand.png", alt: "Corsair", position: "bottom-left" },
+      ],
+      powerCertificate: "assets/img/certificaciones/80plusgold.png",
+      watts: 650
+    },
+    {
+      id: 5,
+      title: "CPU PRE ARMADO 5",
+      image: "assets/img/gabinetes/rog-hyperion-gr701.png",
+      price: 34999,
+      processor: "AMD RYZEN 9 5950X",
+      motherboard: "ASUS ROG CROSSHAIR VIII HERO",
+      ram: "64 GB DDR4",
+      storage: "SSD M.2 NVME 2TB",
+      graphicsCard: "NVIDIA RTX 4090",
+      slug: "cpu-pre-armado-5",
+      brandLogos: [
+        { src: "assets/img/marcas/nvidia_tag.svg", alt: "NVIDIA", position: "top-left" },
+        { src: "assets/img/marcas/ryzen_tag.svg", alt: "AMD Ryzen", position: "top-right" },
+        { src: "assets/img/marcas/corsairbrand.png", alt: "Corsair", position: "bottom-left" },
+      ],
+      powerCertificate: "assets/img/certificaciones/80plusgold.png",
+      watts: 650
     }
   ];
 
@@ -259,19 +311,22 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    console.log('Home component initialized');
-    
-    // Usar un setTimeout para asegurar que la vista está lista
-    setTimeout(() => {
-      console.log('Starting typing effect');
-      this.startTypingWithObservable();
-    }, 500);
-    
-    // Añade la rotación de imágenes del slider y PC
-    this._intervalId = setInterval(() => {
-      this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
-      this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
-    }, 4000);
+    // Encapsulamos las operaciones del navegador para evitar problemas con SSR
+    if (typeof window !== 'undefined') {
+      console.log('Home component initialized');
+      
+      // Usar un setTimeout para asegurar que la vista está lista
+      setTimeout(() => {
+        console.log('Starting typing effect');
+        this.startTypingWithObservable();
+      }, 500);
+      
+      // Añade la rotación de imágenes del slider y PC
+      this._intervalId = setInterval(() => {
+        this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
+        this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
+      }, 4000);
+    }
   }
 
   ngAfterViewInit() {
@@ -371,5 +426,14 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Velocidad de escritura en milisegundos
   private typingSpeed = 40;
+
+  // Método para manejar errores de carga de imágenes
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      img.src = 'assets/img/placeholder.png'; // Ruta a una imagen predeterminada
+      img.onerror = null; // Evita bucles infinitos
+    }
+  }
 }
 
