@@ -435,5 +435,69 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       img.onerror = null; // Evita bucles infinitos
     }
   }
+
+  // Datos para la sección Custom Case
+  customCases = [
+    {
+      id: "case001",
+      title: "CyberShadow V3",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0075.jpg",
+      description: "Gabinete con panel de vidrio templado, refrigeración líquida y luces RGB direccionables.",
+      tags: ["RGB", "Vidrio", "Refrigeración Líquida"]
+    },
+    {
+      id: "case002",
+      title: "Neon Pulse",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0059.jpg",
+      description: "Compacto pero potente, con sistema de iluminación personalizado y cable management optimizado.",
+      tags: ["Compacto", "RGB", "Silencioso"]
+    },
+    {
+      id: "case003",
+      title: "Arctic Frost",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0066.jpg",
+      description: "Diseño blanco minimalista con acentos LED azules y excelente flujo de aire.",
+      tags: ["Blanco", "Airflow", "Minimalista"]
+    },
+    {
+      id: "case004",
+      title: "Dragon Fire",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0071.jpg",
+      description: "Gabinete gaming agresivo con panel lateral de vidrio templado y soporte para múltiples radiadores.",
+      tags: ["Gaming", "RGB", "ATX"]
+    },
+    {
+      id: "case005",
+      title: "Phantom Stealth",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0072.jpg",
+      description: "Diseño negro mate con detalles sutiles y configuración silenciosa.",
+      tags: ["Silencioso", "Negro", "Minimalista"]
+    },
+    {
+      id: "case006",
+      title: "Quantum Flux",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0056.jpg",
+      description: "Gabinete premium con iluminación RGB integrada y soporte para hardware de alta gama.",
+      tags: ["Premium", "E-ATX", "RGB"]
+    },
+    {
+      id: "case007",
+      title: "Vortex Core",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0078.jpg",
+      description: "Diseño compacto optimizado para máximo rendimiento térmico.",
+      tags: ["Compacto", "Airflow", "Mini-ITX"]
+    }
+  ];
+
+  // Variable para almacenar el case seleccionado para el modal
+  selectedCustomCase: any = null;
+
+  // Método para abrir el modal de custom case
+  openCustomCaseModal(customCase: any): void {
+    this.selectedCustomCase = customCase;
+    // Aquí implementarías la lógica para mostrar el modal
+    // Por ahora solo mostramos en consola
+    console.log('Abriendo modal para:', customCase.title);
+  }
 }
 

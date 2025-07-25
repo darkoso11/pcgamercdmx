@@ -107,6 +107,72 @@
     </div>
   </section>
 
+  <!-- SECCIÓN 3: CUSTOM CASE / GABINETES PERSONALIZADOS -->
+  <section class="py-16 bg-[#0a0d22]">
+    <h2
+      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Custom Case
+      <span class="block text-xl text-gray-300 mt-2 font-medium">Gabinetes Personalizados</span>
+    </h2>
+
+    <!-- Grid de galería de gabinetes personalizados -->
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <!-- Imagen destacada más grande -->
+        <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-xl group">
+          <img [src]="customCases[0].imageUrl" [alt]="customCases[0].title" 
+               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+               (error)="handleImageError($event)" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+          <div class="absolute bottom-0 left-0 p-6">
+            <h3 class="text-2xl font-bold text-white mb-2">{{ customCases[0].title }}</h3>
+            <p class="text-gray-300 text-sm line-clamp-2">{{ customCases[0].description }}</p>
+            <div class="flex gap-2 mt-4">
+              <ng-container *ngFor="let tag of customCases[0].tags">
+                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag }}</span>
+              </ng-container>
+            </div>
+          </div>
+          <button (click)="openCustomCaseModal(customCases[0])" 
+                  class="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="fas fa-search-plus"></i>
+          </button>
+        </div>
+
+        <!-- Grid de imágenes más pequeñas -->
+        <ng-container *ngFor="let customCase of customCases.slice(1)">
+          <div class="relative overflow-hidden rounded-xl group h-64 cyber-card">
+            <img [src]="customCase.imageUrl" [alt]="customCase.title" 
+                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                 (error)="handleImageError($event)" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-80 transition-opacity"></div>
+            <div class="absolute bottom-0 left-0 p-4">
+              <h3 class="text-lg font-bold text-white mb-1">{{ customCase.title }}</h3>
+              <div class="flex flex-wrap gap-1 mt-2">
+                <ng-container *ngFor="let tag of customCase.tags.slice(0, 2)">
+                  <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-0.5 rounded">{{ tag }}</span>
+                </ng-container>
+              </div>
+            </div>
+            <button (click)="openCustomCaseModal(customCase)" 
+                    class="absolute top-3 right-3 bg-black/50 p-1.5 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
+              <i class="fas fa-search-plus"></i>
+            </button>
+            <div class="absolute inset-0 border-2 border-transparent group-hover:border-purple-500/50 rounded-xl pointer-events-none transition-all duration-300"></div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Botón CTA -->
+      <div class="text-center mt-12">
+        <a routerLink="/custom-cases"
+          class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-8 rounded-lg font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-purple-500/30">
+          <i class="fas fa-desktop mr-2"></i>Explorar todos los gabinetes
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- SECCIÓN 3: SLIDER DE PRODUCTOS/PAQUETES -->
   <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-[#090b20]">
     <h2
@@ -348,6 +414,45 @@
         todos los servicios</a>
     </div>
   </section>
+
+  <!-- Modal para Custom Case -->
+  <div *ngIf="selectedCustomCase" 
+       class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-[#161a3c] border border-purple-500/30 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-start">
+          <h3 class="text-2xl font-bold text-white">{{ selectedCustomCase.title }}</h3>
+          <button (click)="selectedCustomCase = null" 
+                  class="bg-black/30 hover:bg-black/60 rounded-full p-2 text-white transition-colors">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="rounded-lg overflow-hidden">
+            <img [src]="selectedCustomCase.imageUrl" [alt]="selectedCustomCase.title" 
+                 class="w-full h-auto object-cover"
+                 (error)="handleImageError($event)" />
+          </div>
+          
+          <div>
+            <p class="text-gray-300 mb-4">{{ selectedCustomCase.description }}</p>
+            
+            <div class="flex flex-wrap gap-2 mb-6">
+              <ng-container *ngFor="let tag of selectedCustomCase.tags">
+                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag }}</span>
+              </ng-container>
+            </div>
+            
+            <a routerLink="/custom-cases" [queryParams]="{id: selectedCustomCase.id}" 
+               class="bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition inline-block">
+              Solicitar uno similar
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- SECCIÓN 9: BLOG -->
   <section class="py-16 bg-[#0a0d22]">
