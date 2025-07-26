@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:pcgamercdmx": "node dist/pcgamercdmx/server/server.mjs",
-    "build:ssr": "ng build && ng run pcgamercdmx:prerender"
+    "build:ssr": "ng build && ng run pcgamercdmx:server"
   },
   "private": true,
   "dependencies": {
