@@ -4,7 +4,8 @@ import { HomeComponent } from './features/home/home.component';
 export const routes: Routes = [
   {
     path: '',
-    component: HomeComponent
+    component: HomeComponent,
+    title: 'Inicio | PC Gamer CDMX',
   },
   {
     path: 'contacto',
@@ -45,8 +46,10 @@ export const routes: Routes = [
   {
     path: 'productos/:slug',
     loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
+    title: 'Productos | PC Gamer CDMX',
+    // Importante: Especificar que esta ruta usa prerenderizado
     data: {
-      renderMode: 'dynamic'
+      prerender: true
     }
   },
   {
@@ -59,8 +62,10 @@ export const routes: Routes = [
   {
     path: 'blog/:slug',
     loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent),
+    title: 'Blog | PC Gamer CDMX',
+    // Importante: Especificar que esta ruta usa prerenderizado
     data: {
-      renderMode: 'dynamic'
+      prerender: true
     }
   },
 

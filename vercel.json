@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build:ssr",
+  "installCommand": "npm install",
+  "framework": "angular",
+  "outputDirectory": "dist/pcgamercdmx/browser",
+  "prerenderManifest": "./prerender-routes.js",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
