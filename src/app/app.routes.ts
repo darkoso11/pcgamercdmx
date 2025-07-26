@@ -47,9 +47,9 @@ export const routes: Routes = [
     path: 'productos/:slug',
     loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
     title: 'Productos | PC Gamer CDMX',
-    // Importante: Especificar que esta ruta usa prerenderizado
+    // Cambiamos el modo de renderizado para evitar el error
     data: {
-      prerender: true
+      renderMode: 'dynamic' // Cambiamos de prerender a dynamic
     }
   },
   {
@@ -63,9 +63,9 @@ export const routes: Routes = [
     path: 'blog/:slug',
     loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent),
     title: 'Blog | PC Gamer CDMX',
-    // Importante: Especificar que esta ruta usa prerenderizado
+    // Cambiamos el modo de renderizado para evitar el error
     data: {
-      prerender: true
+      renderMode: 'dynamic' // Cambiamos de prerender a dynamic
     }
   },
 
