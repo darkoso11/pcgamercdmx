@@ -388,12 +388,14 @@
     <!-- Slider de periféricos -->
     <div class="relative w-full max-w-7xl mx-auto px-4">
       <!-- Contenedor con efecto de desplazamiento -->
-      <div class="overflow-x-auto md:overflow-hidden snap-x pb-6">
-        <div class="flex gap-6 md:transition-transform md:duration-500 md:ease-out"
-             style="min-width: fit-content"
+      <div class="overflow-x-auto md:overflow-hidden">
+        <div class="flex gap-6 md:transition-transform md:duration-500 md:ease-out pb-6"
+             style="min-width: max-content;"
              [style.transform]="isMobile() ? 'none' : 'translateX(-' + peripheralScrollPosition + 'px)'">
-          <ng-container *ngFor="let peripheral of filteredPeripherals">
-            <div class="min-w-[200px] sm:min-w-[250px] flex-shrink-0 snap-start bg-[#161a3c] rounded-xl overflow-hidden border border-white/10 group hover:border-red-500/50 transition-all duration-300">
+          <ng-container *ngFor="let peripheral of filteredPeripherals; let last = last">
+            <div [id]="'peripheral-' + peripheral.id" 
+                 class="min-w-[200px] sm:min-w-[250px] flex-shrink-0 bg-[#161a3c] rounded-xl overflow-hidden border border-white/10 group hover:border-red-500/50 transition-all duration-300"
+                 [class.last-peripheral]="last">
               <!-- Imagen -->
               <div class="relative h-48 overflow-hidden bg-[#0a0d22]">
                 <img [src]="peripheral.image" 
@@ -436,13 +438,13 @@
         </div>
       </div>
       
-      <!-- Controles de navegación - ajustamos la posición y el tamaño -->
+      <!-- Controles de navegación - Mejoramos posición y visibilidad -->
       <button (click)="scrollPeripheralsLeft()" 
-          class="absolute -left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:block shadow-lg">
+          class="absolute -left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:flex items-center justify-center shadow-lg shadow-black/30 w-10 h-10">
         <i class="fas fa-chevron-left"></i>
       </button>
       <button (click)="scrollPeripheralsRight()" 
-          class="absolute -right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:block shadow-lg">
+          class="absolute -right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:flex items-center justify-center shadow-lg shadow-black/30 w-10 h-10">
         <i class="fas fa-chevron-right"></i>
       </button>
       

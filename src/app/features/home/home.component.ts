@@ -379,7 +379,45 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       this.bannerIntervalId = setInterval(() => {
         this.nextBanner();
       }, 5000); // Cambiar cada 5 segundos
+      
+      // Registrar evento de carga completa para diagnosticar
+      window.addEventListener('load', () => {
+        console.log('Window fully loaded');
+      });
+      
+      // Diagnosticar posibles problemas de carga
+      this.checkForLoadingIssues();
     }
+  }
+
+  // Método para diagnosticar problemas de carga
+  checkForLoadingIssues(): void {
+    console.log('Checking for loading issues...');
+    
+    // Verificar si hay muchas suscripciones activas (posible memory leak)
+    setTimeout(() => {
+      console.log('Active subscriptions check');
+      if (this.typingSubscription) {
+        console.log('Typing subscription is active');
+      }
+      
+      // Comprobar si hay muchas imágenes sin cargar
+      const images = document.querySelectorAll('img');
+      let pendingImages = 0;
+      
+      images.forEach(img => {
+        if (!img.complete) {
+          pendingImages++;
+        }
+      });
+      
+      console.log(`Pending images: ${pendingImages}/${images.length}`);
+      
+      // Verificar si hay demasiados logs (puede ralentizar la aplicación)
+      if (console.log.toString().indexOf('native code') === -1) {
+        console.warn('Console logging might be overridden, which can cause performance issues');
+      }
+    }, 2000);
   }
 
   ngAfterViewInit() {
@@ -438,8 +476,18 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.calculateSliderDimensions();
   }
 
+  // Mejorar manejo de errores en imágenes
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      console.warn(`Failed to load image: ${img.src}`);
+      img.src = 'https://picsum.photos/id/204/400/400'; // Ruta a una imagen predeterminada
+      img.onerror = null; // Evita bucles infinitos
+    }
+  }
+
+  // Mejorar el método de typing para evitar posibles fugas de memoria
   startTypingWithObservable(): void {
-    console.log('Initial text:', this.typingText);
     // Reiniciar texto
     this.typingText = '';
     
@@ -448,51 +496,63 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       this.typingSubscription.unsubscribe();
     }
     
-    // Crear Observable que emitirá cada carácter con un delay inicial
+    // Crear Observable con límite de tiempo para evitar ejecución indefinida
     this.typingSubscription = interval(this.typingSpeed)
       .pipe(
-        take(this.fullText.length),
+        take(this.fullText.length), // Limitar emisiones al tamaño del texto
         tap(index => {
           this.ngZone.run(() => {
             this.typingText += this.fullText.charAt(index);
-            console.log('Current text:', this.typingText);
-            // Forzar detección de cambios explícitamente
+            // Eliminar el log para reducir la sobrecarga
+            // console.log('Current text:', this.typingText);
             this.cdr.detectChanges();
           });
         })
       )
       .subscribe({
-        complete: () => console.log('Typing effect completed')
+        complete: () => {
+          console.log('Typing effect completed');
+          // Asegurar que la suscripción se limpia
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        },
+        error: (err) => {
+          console.error('Error in typing effect:', err);
+          // Limpiar recursos en caso de error
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        }
       });
   }
 
+  // Mejorar método de destrucción para asegurar la limpieza de recursos
   ngOnDestroy(): void {
+    console.log('Home component destroyed - cleaning up resources');
+    
     // Limpiar todas las suscripciones y timers
     if (this.typingSubscription) {
       this.typingSubscription.unsubscribe();
+      this.typingSubscription = undefined;
     }
     
     if (this._intervalId) {
       clearInterval(this._intervalId);
+      this._intervalId = null;
     }
 
     // Limpiar el intervalo de los banners
     if (this.bannerIntervalId) {
       clearInterval(this.bannerIntervalId);
+      this.bannerIntervalId = null;
     }
   }
 
   // Velocidad de escritura en milisegundos
   private typingSpeed = 40;
-
-  // Método para manejar errores de carga de imágenes
-  handleImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    if (img) {
-      img.src = 'assets/img/placeholder.png'; // Ruta a una imagen predeterminada
-      img.onerror = null; // Evita bucles infinitos
-    }
-  }
 
   // Datos para la sección Custom Case
   customCases = [
@@ -618,7 +678,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 5,
       name: "ASUS TUF Gaming VG27AQ",
       category: "monitor",
-      image: "https://picsum.photos/id/205/400/400",
+      image: "assets/img/marcas/asuspng.png",
       price: 8999,
       originalPrice: 9999,
       discount: 10,
@@ -640,7 +700,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 7,
       name: "SteelSeries Arctis 7",
       category: "headset",
-      image: "https://picsum.photos/id/207/400/400",
+      image: "assets/img/marcas/Logitechpngg.png",
       price: 2799,
       originalPrice: 3199,
       discount: 12,
@@ -700,32 +760,56 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   
   scrollPeripheralsLeft() {
-    this.peripheralScrollPosition = Math.max(0, this.peripheralScrollPosition - this.peripheralScrollStep);
+    // Ajustamos para mostrar más elementos por clic
+    const scrollStep = this.peripheralScrollStep * 2;
+    this.peripheralScrollPosition = Math.max(0, this.peripheralScrollPosition - scrollStep);
   }
   
   scrollPeripheralsRight() {
     const maxScroll = this.getMaxPeripheralScroll();
-    // Ajustamos el step para mostrar aproximadamente 3 elementos nuevos
-    const scrollStep = this.peripheralScrollStep * 3;
-    this.peripheralScrollPosition = Math.min(maxScroll, this.peripheralScrollPosition + scrollStep);
+    
+    // Si estamos cerca del final, nos vamos directamente al final para mostrar el último elemento
+    if (this.peripheralScrollPosition + this.peripheralScrollStep * 2 >= maxScroll * 0.8) {
+      this.peripheralScrollPosition = maxScroll;
+    } else {
+      // Ajustamos para mostrar más elementos por clic
+      const scrollStep = this.peripheralScrollStep * 2;
+      this.peripheralScrollPosition = Math.min(maxScroll, this.peripheralScrollPosition + scrollStep);
+    }
+    
+    console.log(`Current scroll: ${this.peripheralScrollPosition}, Max: ${maxScroll}`);
   }
   
   getMaxPeripheralScroll(): number {
-    // Calcular el ancho total del contenido menos el ancho visible
     if (typeof window !== 'undefined') {
-      // Ancho del contenedor visible
-      const containerWidth = window.innerWidth > 1280 ? 1140 : window.innerWidth - 64;
-      
-      // Ancho total de todos los productos
-      const itemWidth = 250; // Ancho base de cada tarjeta
-      const gap = 24; // 6 * 4px = 24px (gap-6 en tailwind)
+      // 1. Cálculo preciso del ancho total del contenido
       const totalItems = this.filteredPeripherals.length;
+      // Ajustamos el ancho para considerar el padding interno, bordes, etc.
+      const itemWidth = 300; // 250px de ancho base + bordes y márgenes
+      const gap = 24; // 6 * 4px (gap-6 en Tailwind)
       
-      // Ancho total de todos los elementos con sus gaps
-      const totalWidth = totalItems * itemWidth + (totalItems - 1) * gap;
+      // 2. Ancho total del slider (suma de todos los items con sus gaps)
+      const totalContentWidth = (totalItems * itemWidth) + ((totalItems - 1) * gap);
       
-      // Máximo scroll posible: ancho total - ancho visible
-      return Math.max(0, totalWidth - containerWidth);
+      // 3. Ancho visible del contenedor (viewport)
+      let containerWidth = 0;
+      if (window.innerWidth > 1280) {
+        containerWidth = 1140; // max-w-7xl con padding
+      } else if (window.innerWidth > 768) {
+        containerWidth = window.innerWidth - 90; 
+      } else {
+        containerWidth = window.innerWidth - 40;
+      }
+      
+      // 4. Margen extra para garantizar que el último producto sea totalmente visible
+      const extraMargin = 50;
+      
+      // 5. Cálculo final: el desplazamiento máximo es la diferencia total menos el viewport
+      const maxScroll = Math.max(0, totalContentWidth - containerWidth + extraMargin);
+      
+      console.log(`Slider info - Items: ${totalItems}, Content Width: ${totalContentWidth}, 
+                  Container: ${containerWidth}, Max Scroll: ${maxScroll}`);
+      return maxScroll;
     }
     return 0;
   }
