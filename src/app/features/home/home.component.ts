@@ -305,7 +305,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Para el efecto typing - usando un enfoque con Observable para mejor fiabilidad
   typingText = '';
-  fullText = 'El futuro es hoy, oiste viejo\nBienvenido a Pc Gamer CDMX';
+  fullText = 'El futuro es hoy, oiste viejo.\nBienvenido a Pc Gamer CDMX';
   private typingSubscription?: Subscription;
 
   // Datos para el slider de banners promocionales
@@ -574,7 +574,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 1,
       name: "Razer DeathAdder V2",
       category: "mouse",
-      image: "assets/img/perifericos/razer-deathadder.png",
+      image: "https://picsum.photos/id/201/400/400",
       price: 1299,
       originalPrice: 1499,
       discount: 13,
@@ -585,7 +585,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 2,
       name: "HyperX Alloy FPS Pro",
       category: "keyboard",
-      image: "assets/img/perifericos/hyperx-alloy.png",
+      image: "https://picsum.photos/id/202/400/400",
       price: 1799,
       originalPrice: 1999,
       discount: 10,
@@ -596,7 +596,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 3,
       name: "Logitech G Pro X",
       category: "headset",
-      image: "assets/img/perifericos/logitech-gpro-x.png",
+      image: "https://picsum.photos/id/203/400/400",
       price: 2299,
       originalPrice: 2599,
       discount: 12,
@@ -607,7 +607,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 4,
       name: "Corsair T1 Race",
       category: "chair",
-      image: "assets/img/perifericos/corsair-t1.png",
+      image: "https://picsum.photos/id/204/400/400",
       price: 5499,
       originalPrice: 6299,
       discount: 13,
@@ -618,7 +618,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 5,
       name: "ASUS TUF Gaming VG27AQ",
       category: "monitor",
-      image: "assets/img/perifericos/asus-tuf-vg27aq.png",
+      image: "https://picsum.photos/id/205/400/400",
       price: 8999,
       originalPrice: 9999,
       discount: 10,
@@ -629,7 +629,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 6,
       name: "Xbox Elite Controller Series 2",
       category: "gamepad",
-      image: "assets/img/perifericos/xbox-elite-2.png",
+      image: "https://picsum.photos/id/206/400/400",
       price: 3299,
       originalPrice: 3799,
       discount: 13,
@@ -640,7 +640,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 7,
       name: "SteelSeries Arctis 7",
       category: "headset",
-      image: "assets/img/perifericos/steelseries-arctis7.png",
+      image: "https://picsum.photos/id/207/400/400",
       price: 2799,
       originalPrice: 3199,
       discount: 12,
@@ -651,7 +651,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 8,
       name: "Logitech G502 HERO",
       category: "mouse",
-      image: "assets/img/perifericos/logitech-g502.png",
+      image: "https://picsum.photos/id/208/400/400",
       price: 1399,
       originalPrice: 1699,
       discount: 18,
@@ -662,7 +662,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 9,
       name: "Razer BlackWidow Elite",
       category: "keyboard",
-      image: "assets/img/perifericos/razer-blackwidow.png",
+      image: "https://picsum.photos/id/209/400/400",
       price: 2999,
       originalPrice: 3499,
       discount: 14,
@@ -673,7 +673,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 10,
       name: "AOC C27G2Z 27\" Curvo 240Hz",
       category: "monitor",
-      image: "assets/img/perifericos/aoc-c27g2z.png",
+      image: "https://picsum.photos/id/210/400/400",
       price: 7299,
       originalPrice: 7999,
       discount: 9,
@@ -705,14 +705,26 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   
   scrollPeripheralsRight() {
     const maxScroll = this.getMaxPeripheralScroll();
-    this.peripheralScrollPosition = Math.min(maxScroll, this.peripheralScrollPosition + this.peripheralScrollStep);
+    // Ajustamos el step para mostrar aproximadamente 3 elementos nuevos
+    const scrollStep = this.peripheralScrollStep * 3;
+    this.peripheralScrollPosition = Math.min(maxScroll, this.peripheralScrollPosition + scrollStep);
   }
   
   getMaxPeripheralScroll(): number {
     // Calcular el ancho total del contenido menos el ancho visible
     if (typeof window !== 'undefined') {
-      const containerWidth = window.innerWidth > 768 ? 1200 : window.innerWidth - 32; // Aproximado para diferentes tamaños
-      const totalWidth = this.filteredPeripherals.length * 256; // Ancho aproximado de cada item + gap
+      // Ancho del contenedor visible
+      const containerWidth = window.innerWidth > 1280 ? 1140 : window.innerWidth - 64;
+      
+      // Ancho total de todos los productos
+      const itemWidth = 250; // Ancho base de cada tarjeta
+      const gap = 24; // 6 * 4px = 24px (gap-6 en tailwind)
+      const totalItems = this.filteredPeripherals.length;
+      
+      // Ancho total de todos los elementos con sus gaps
+      const totalWidth = totalItems * itemWidth + (totalItems - 1) * gap;
+      
+      // Máximo scroll posible: ancho total - ancho visible
       return Math.max(0, totalWidth - containerWidth);
     }
     return 0;

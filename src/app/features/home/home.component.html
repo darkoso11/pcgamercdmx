@@ -388,14 +388,15 @@
     <!-- Slider de periféricos -->
     <div class="relative w-full max-w-7xl mx-auto px-4">
       <!-- Contenedor con efecto de desplazamiento -->
-      <div class="overflow-hidden">
-        <div class="flex gap-6 transition-transform duration-500 ease-out pb-6"
-             [style.transform]="'translateX(-' + peripheralScrollPosition + 'px)'">
+      <div class="overflow-x-auto md:overflow-hidden snap-x pb-6">
+        <div class="flex gap-6 md:transition-transform md:duration-500 md:ease-out"
+             style="min-width: fit-content"
+             [style.transform]="isMobile() ? 'none' : 'translateX(-' + peripheralScrollPosition + 'px)'">
           <ng-container *ngFor="let peripheral of filteredPeripherals">
-            <div class="min-w-[200px] sm:min-w-[250px] flex-shrink-0 bg-[#161a3c] rounded-xl overflow-hidden border border-white/10 group hover:border-red-500/50 transition-all duration-300">
+            <div class="min-w-[200px] sm:min-w-[250px] flex-shrink-0 snap-start bg-[#161a3c] rounded-xl overflow-hidden border border-white/10 group hover:border-red-500/50 transition-all duration-300">
               <!-- Imagen -->
               <div class="relative h-48 overflow-hidden bg-[#0a0d22]">
-                <img [src]="peripheral.image || 'https://picsum.photos/id/' + (200 + peripheral.id) + '/400/400'" 
+                <img [src]="peripheral.image" 
                      [alt]="peripheral.name"
                      class="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
                      (error)="handleImageError($event)" />
@@ -423,9 +424,10 @@
                     <span class="text-red-400 font-bold">${{ peripheral.price | number }}</span>
                   </div>
                   
+                  <!-- Reemplazando el botón de carrito por un botón de ver detalles -->
                   <a [routerLink]="['/productos', peripheral.slug]" 
-                     class="bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white p-2 rounded transition-all duration-300">
-                    <i class="fas fa-shopping-cart"></i>
+                     class="text-xs text-red-300 hover:text-red-400 transition-all">
+                    Ver más <i class="fas fa-chevron-right ml-1"></i>
                   </a>
                 </div>
               </div>
@@ -434,13 +436,13 @@
         </div>
       </div>
       
-      <!-- Controles de navegación -->
+      <!-- Controles de navegación - ajustamos la posición y el tamaño -->
       <button (click)="scrollPeripheralsLeft()" 
-              class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:block">
+          class="absolute -left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:block shadow-lg">
         <i class="fas fa-chevron-left"></i>
       </button>
       <button (click)="scrollPeripheralsRight()" 
-              class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:block">
+          class="absolute -right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:block shadow-lg">
         <i class="fas fa-chevron-right"></i>
       </button>
       
