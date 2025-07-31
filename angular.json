@@ -43,7 +43,7 @@
                   "maximumError": "8kb"
                 },
                 {
-                  "type": "css-inline-fonts",
+                  "type": "anyComponentStyle",
                   "maximumWarning": "2kb",
                   "maximumError": "8kb"
                 }
@@ -84,6 +84,36 @@
             "styles": [
               "@angular/material/prebuilt-themes/cyan-orange.css",
               "src/styles.css"
+            ]
+          }
+        },
+        "prerender": {
+          "builder": "@angular-devkit/build-angular:prerender",
+          "options": {
+            "routes": [
+              "/",
+              "/productos/laptop-dell-xps",
+              "/productos/monitor-lg-4k",
+              "/productos/cpu-pre-armado-1",
+              "/productos/cpu-pre-armado-2",
+              "/productos/cpu-pre-armado-3",
+              "/productos/cpu-pre-armado-4",
+              "/productos/cpu-pre-armado-5",
+              "/productos/razer-deathadder-v2",
+              "/productos/hyperx-alloy-fps-pro",
+              "/productos/logitech-g-pro-x",
+              "/productos/corsair-t1-race",
+              "/productos/asus-tuf-vg27aq",
+              "/productos/xbox-elite-controller-series-2",
+              "/productos/steelseries-arctis-7",
+              "/productos/logitech-g502-hero",
+              "/productos/razer-blackwidow-elite",
+              "/productos/aoc-c27g2z",
+              "/blog/como-armar-tu-pc",
+              "/blog/guia-componentes-2024",
+              "/blog/mejores-tarjetas-graficas-2024",
+              "/blog/guia-overclock-seguro-cpu",
+              "/blog/configurar-pc-para-streaming"
             ]
           }
         }

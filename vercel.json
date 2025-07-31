@@ -1,0 +1,27 @@
+{
+  "buildCommand": "npm run build:ssr",
+  "installCommand": "npm install",
+  "framework": "angular",
+  "outputDirectory": "dist/pcgamercdmx/browser",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
