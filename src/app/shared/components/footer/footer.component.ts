@@ -4,11 +4,20 @@ import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
-  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './footer.component.html'
 })
 export class FooterComponent {
+  public contacts: {
+    href: string;
+    icon: string;
+    hoverColor: string;
+  }[] =
+  [{
+    href: 'https://facebook.com/pcgamercdmx',
+    icon: 'fa fa-facebook-f',
+    hoverColor: 'bg-cyan'
+  }];
   year: number = new Date().getFullYear();
 }
 

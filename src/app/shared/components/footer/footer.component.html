@@ -1,4 +1,6 @@
-<footer class="w-full py-10 bg-[#0a0d22] border-t border-cyan-500/40 text-gray-300">
+<footer
+  class="w-full py-10 bg-[#0a0d22] border-t border-cyan-500/40 text-gray-300"
+>
   <div class="max-w-7xl mx-auto px-4">
     <!-- Grid principal del footer -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
@@ -6,14 +8,21 @@
       <div>
         <div class="mb-6">
           <h2 class="text-2xl font-bold text-white">PC Gamer CDMX</h2>
-          <div class="w-12 h-1 bg-gradient-to-r from-cyan-500 to-purple-500 mt-2"></div>
+          <div
+            class="w-12 h-1 bg-gradient-to-r from-cyan-500 to-purple-500 mt-2"
+          ></div>
         </div>
-        
-        <p class="text-sm mb-4">Tu destino para hardware de gaming de alto rendimiento y configuraciones personalizadas.</p>
-        
+
+        <p class="text-sm mb-4">
+          Tu destino para hardware de gaming de alto rendimiento y
+          configuraciones personalizadas.
+        </p>
+
         <div class="space-y-2">
           <div class="flex items-center">
-            <i class="fas fa-map-marker-alt text-cyan-400 mr-2 w-5 text-center"></i>
+            <i
+              class="fas fa-map-marker-alt text-cyan-400 mr-2 w-5 text-center"
+            ></i>
             <span class="text-sm">Ciudad de México, CDMX</span>
           </div>
           <div class="flex items-center">
@@ -26,38 +35,50 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Columna 2: Enlaces rápidos -->
       <div>
         <h3 class="text-lg font-bold text-white mb-4">Enlaces Rápidos</h3>
         <ul class="space-y-2">
           <li>
-            <a routerLink="/" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
+            <a
+              routerLink="/"
+              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
+            >
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Inicio
             </a>
           </li>
           <li>
-            <a routerLink="/productos" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
+            <a
+              routerLink="/productos"
+              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
+            >
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Productos
             </a>
           </li>
           <li>
-            <a routerLink="/cotiza-tu-pc" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
+            <a
+              routerLink="/cotiza-tu-pc"
+              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
+            >
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Cotiza tu PC
             </a>
           </li>
           <li>
-            <a routerLink="/blog" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
+            <a
+              routerLink="/blog"
+              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
+            >
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Blog
             </a>
           </li>
         </ul>
       </div>
-      
+
       <!-- Columna 3: Horario de atención -->
       <div>
         <h3 class="text-lg font-bold text-white mb-4">Horario de Atención</h3>
@@ -75,7 +96,7 @@
             <span class="text-cyan-400">Cerrado</span>
           </li>
         </ul>
-        
+
         <div class="mt-6">
           <h3 class="text-lg font-bold text-white mb-3">Formas de Pago</h3>
           <div class="flex flex-wrap gap-2">
@@ -86,52 +107,99 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Columna 4: Newsletter y redes sociales -->
       <div>
         <h3 class="text-lg font-bold text-white mb-4">Mantente Conectado</h3>
-        <p class="text-sm mb-4">Suscríbete para recibir ofertas exclusivas y novedades.</p>
-        
+        <p class="text-sm mb-4">
+          Suscríbete para recibir ofertas exclusivas y novedades.
+        </p>
+
         <div class="flex mb-6">
-          <input type="email" placeholder="Tu correo electrónico" class="flex-1 py-2 px-3 bg-[#161a3c] border border-cyan-500/30 focus:border-cyan-500 rounded-l-lg text-white text-sm focus:outline-none">
-          <button class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-2 px-4 rounded-r-lg hover:from-cyan-600 hover:to-blue-700 transition-colors">
+          <input
+            type="email"
+            placeholder="Tu correo electrónico"
+            class="flex-1 py-2 px-3 bg-[#161a3c] border border-cyan-500/30 focus:border-cyan-500 rounded-l-lg text-white text-sm focus:outline-none"
+          />
+          <button
+            class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-2 px-4 rounded-r-lg hover:from-cyan-600 hover:to-blue-700 transition-colors"
+          >
             <i class="fas fa-paper-plane"></i>
           </button>
         </div>
-        
+
         <h3 class="text-lg font-bold text-white mb-3">Síguenos</h3>
         <div class="flex gap-4">
-          <a href="https://facebook.com/pcgamercdmx" target="_blank" class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-cyan-500 transition-colors">
+          @for (contact of contacts; track contact) {
+          <a
+            [href]="contact.href"
+            target="_blank"
+            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:{{
+              contact.hoverColor
+            }}-500 transition-colors"
+          >
+            <i [class]="contact.icon"></i>
+          </a>
+          }
+          <a
+            href="https://facebook.com/pcgamercdmx"
+            target="_blank"
+            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-cyan-500 transition-colors"
+          >
             <i class="fab fa-facebook-f"></i>
           </a>
-          <a href="https://instagram.com/pcgamercdmx" target="_blank" class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-pink-500 transition-colors">
+          <a
+            href="https://instagram.com/pcgamercdmx"
+            target="_blank"
+            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-pink-500 transition-colors"
+          >
             <i class="fab fa-instagram"></i>
           </a>
-          <a href="https://twitter.com/pcgamercdmx" target="_blank" class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-blue-400 transition-colors">
+          <a
+            href="https://twitter.com/pcgamercdmx"
+            target="_blank"
+            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-blue-400 transition-colors"
+          >
             <i class="fab fa-twitter"></i>
           </a>
-          <a href="https://discord.gg/pcgamercdmx" target="_blank" class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-indigo-500 transition-colors">
+          <a
+            href="https://discord.gg/pcgamercdmx"
+            target="_blank"
+            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-indigo-500 transition-colors"
+          >
             <i class="fab fa-discord"></i>
           </a>
-          <a href="https://youtube.com/pcgamercdmx" target="_blank" class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-red-500 transition-colors">
+          <a
+            href="https://youtube.com/pcgamercdmx"
+            target="_blank"
+            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-red-500 transition-colors"
+          >
             <i class="fab fa-youtube"></i>
           </a>
         </div>
       </div>
     </div>
-    
+
     <!-- Línea divisoria -->
     <div class="border-t border-gray-800 my-6"></div>
-    
+
     <!-- Texto de copyright -->
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="text-sm">
         &copy; {{ year }} PC Gamer CDMX. Todos los derechos reservados.
       </div>
-      
+
       <div class="text-sm flex gap-6">
-        <a href="/politica-privacidad" class="text-gray-400 hover:text-cyan-400 transition-colors">Política de Privacidad</a>
-        <a href="/terminos" class="text-gray-400 hover:text-cyan-400 transition-colors">Términos y Condiciones</a>
+        <a
+          href="/politica-privacidad"
+          class="text-gray-400 hover:text-cyan-400 transition-colors"
+          >Política de Privacidad</a
+        >
+        <a
+          href="/terminos"
+          class="text-gray-400 hover:text-cyan-400 transition-colors"
+          >Términos y Condiciones</a
+        >
       </div>
     </div>
   </div>
@@ -139,10 +207,18 @@
     <div class="text-sm">
       &copy; {{ year }} PC Gamer CDMX. Todos los derechos reservados.
     </div>
-    
+
     <div class="text-sm flex gap-6">
-      <a href="/politica-privacidad" class="text-gray-400 hover:text-cyan-400 transition-colors">Política de Privacidad</a>
-      <a href="/terminos" class="text-gray-400 hover:text-cyan-400 transition-colors">Términos y Condiciones</a>
+      <a
+        href="/politica-privacidad"
+        class="text-gray-400 hover:text-cyan-400 transition-colors"
+        >Política de Privacidad</a
+      >
+      <a
+        href="/terminos"
+        class="text-gray-400 hover:text-cyan-400 transition-colors"
+        >Términos y Condiciones</a
+      >
     </div>
   </div>
 </footer>

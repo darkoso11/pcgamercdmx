@@ -424,6 +424,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     // Calcular dimensiones después de que la vista se ha inicializado
     setTimeout(() => {
       this.calculateSliderDimensions();
+      this.calculateNeedsSliderDimensions(); // Agregamos esta línea
     }, 100);
   }
 
@@ -454,12 +455,87 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
   
+  // Agregar referencias a los elementos del slider de necesidades
+  @ViewChildren('needCard') needCards!: QueryList<ElementRef>;
+  
+  // Variables para el slider de necesidades
+  needCardWidth: number = 0;
+  needsCardsPerView: number = 1;
+  needsMaxVisibleIndex: number = 0;
+  needsContainerWidth: number = 0;
+  needsCurrentIndex: number = 0;
+
+  // Método específico para calcular dimensiones del slider de necesidades
+  calculateNeedsSliderDimensions() {
+    if (this.needCards && this.needCards.length > 0) {
+      try {
+        // Obtener el ancho de una tarjeta incluyendo margen
+        const card = this.needCards.first.nativeElement;
+        this.needCardWidth = card.offsetWidth + 24; // 24px es el valor del gap (gap-6 = 1.5rem = 24px)
+        
+        // Obtener el ancho del contenedor
+        const container = card.parentElement.parentElement;
+        this.needsContainerWidth = container.offsetWidth;
+        
+        // Calcular cuántas tarjetas caben en la vista
+        this.needsCardsPerView = Math.max(1, Math.floor(this.needsContainerWidth / this.needCardWidth));
+        
+        // Calcular el índice máximo al que se puede desplazar
+        this.needsMaxVisibleIndex = this.pcNeeds.length - this.needsCardsPerView;
+        
+        // Asegurarse de que el índice actual no exceda el máximo
+        if (this.needsCurrentIndex > this.needsMaxVisibleIndex) {
+          this.needsCurrentIndex = this.needsMaxVisibleIndex;
+        }
+        
+        console.log(`Needs slider dimensions: Cards per view: ${this.needsCardsPerView}, Max index: ${this.needsMaxVisibleIndex}`);
+      } catch (error) {
+        console.error('Error calculating needs slider dimensions:', error);
+      }
+    }
+  }
+  
+  // Métodos mejorados para navegación del slider de necesidades
+  scrollNeedsLeft() {
+    if (this.needsCurrentIndex > 0) {
+      this.needsCurrentIndex--;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  scrollNeedsRight() {
+    if (this.needsCurrentIndex < this.needsMaxVisibleIndex) {
+      this.needsCurrentIndex++;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  goToNeed(index: number) {
+    // Asegurar que el índice está dentro de los límites
+    const boundedIndex = Math.min(Math.max(0, index), this.needsMaxVisibleIndex);
+    this.needsCurrentIndex = boundedIndex;
+    this.updateNeedsScrollPosition();
+  }
+  
+  updateNeedsScrollPosition() {
+    // Actualizar la posición de scroll basada en el índice actual
+    this.needsScrollPosition = this.needsCurrentIndex * this.needCardWidth;
+  }
+  
   getSlideTransform(): number {
     // Si el cálculo aún no se ha realizado, devuelve 0
     if (this.cardWidth === 0) return 0;
     
     // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
     return this.currentProductIndex * this.cardWidth * -1;
+  }
+
+  getNeedsTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.needCardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.needsCurrentIndex * this.needCardWidth * -1;
   }
 
   // Método para detectar si estamos en un dispositivo móvil
@@ -472,10 +548,11 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @HostListener('window:resize')
   onResize() {
-    // Recalcular en cambios de tamaño de pantalla
+    // Recalcular dimensiones de todos los sliders
     this.calculateSliderDimensions();
+    this.calculateNeedsSliderDimensions(); // Agregamos esta línea
   }
-
+  
   // Mejorar manejo de errores en imágenes
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
@@ -813,5 +890,983 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     return 0;
   }
-}
 
+  // Agregar estas propiedades para el slider de necesidades
+  needsScrollPosition = 0;
+  needsScrollStep = 300;
+  needsActiveIndex = 0;
+  needsItemsPerView = 3; // Cuántos items se ven a la vez
+
+  // Métodos para navegación del slider de necesidades
+  scrollNeedsLeft() {
+    if (this.needsCurrentIndex > 0) {
+      this.needsCurrentIndex--;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  scrollNeedsRight() {
+    if (this.needsCurrentIndex < this.needsMaxVisibleIndex) {
+      this.needsCurrentIndex++;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  goToNeed(index: number) {
+    // Asegurar que el índice está dentro de los límites
+    const boundedIndex = Math.min(Math.max(0, index), this.needsMaxVisibleIndex);
+    this.needsCurrentIndex = boundedIndex;
+    this.updateNeedsScrollPosition();
+  }
+  
+  updateNeedsScrollPosition() {
+    // Actualizar la posición de scroll basada en el índice actual
+    this.needsScrollPosition = this.needsCurrentIndex * this.needCardWidth;
+  }
+  
+  getSlideTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.cardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.currentProductIndex * this.cardWidth * -1;
+  }
+
+  getNeedsTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.needCardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.needsCurrentIndex * this.needCardWidth * -1;
+  }
+
+  // Método para detectar si estamos en un dispositivo móvil
+  isMobile(): boolean {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768; // 768px es el breakpoint md en Tailwind
+    }
+    return false;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    // Recalcular dimensiones de todos los sliders
+    this.calculateSliderDimensions();
+    this.calculateNeedsSliderDimensions(); // Agregamos esta línea
+  }
+  
+  // Mejorar manejo de errores en imágenes
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      console.warn(`Failed to load image: ${img.src}`);
+      img.src = 'https://picsum.photos/id/204/400/400'; // Ruta a una imagen predeterminada
+      img.onerror = null; // Evita bucles infinitos
+    }
+  }
+
+  // Mejorar el método de typing para evitar posibles fugas de memoria
+  startTypingWithObservable(): void {
+    // Reiniciar texto
+    this.typingText = '';
+    
+    // Cancelar suscripción anterior si existe
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    
+    // Crear Observable con límite de tiempo para evitar ejecución indefinida
+    this.typingSubscription = interval(this.typingSpeed)
+      .pipe(
+        take(this.fullText.length), // Limitar emisiones al tamaño del texto
+        tap(index => {
+          this.ngZone.run(() => {
+            this.typingText += this.fullText.charAt(index);
+            // Eliminar el log para reducir la sobrecarga
+            // console.log('Current text:', this.typingText);
+            this.cdr.detectChanges();
+          });
+        })
+      )
+      .subscribe({
+        complete: () => {
+          console.log('Typing effect completed');
+          // Asegurar que la suscripción se limpia
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        },
+        error: (err) => {
+          console.error('Error in typing effect:', err);
+          // Limpiar recursos en caso de error
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        }
+      });
+  }
+
+  // Mejorar método de destrucción para asegurar la limpieza de recursos
+  ngOnDestroy(): void {
+    console.log('Home component destroyed - cleaning up resources');
+    
+    // Limpiar todas las suscripciones y timers
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+      this.typingSubscription = undefined;
+    }
+    
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      this._intervalId = null;
+    }
+
+    // Limpiar el intervalo de los banners
+    if (this.bannerIntervalId) {
+      clearInterval(this.bannerIntervalId);
+      this.bannerIntervalId = null;
+    }
+  }
+
+  // Velocidad de escritura en milisegundos
+  private typingSpeed = 40;
+
+  // Datos para la sección Custom Case
+  customCases = [
+    {
+      id: "case001",
+      title: "CyberShadow V3",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0075.jpg",
+      description: "Gabinete con panel de vidrio templado, refrigeración líquida y luces RGB direccionables.",
+      tags: ["RGB", "Vidrio", "Refrigeración Líquida"]
+    },
+    {
+      id: "case002",
+      title: "Neon Pulse",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0059.jpg",
+      description: "Compacto pero potente, con sistema de iluminación personalizado y cable management optimizado.",
+      tags: ["Compacto", "RGB", "Silencioso"]
+    },
+    {
+      id: "case003",
+      title: "Arctic Frost",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0066.jpg",
+      description: "Diseño blanco minimalista con acentos LED azules y excelente flujo de aire.",
+      tags: ["Blanco", "Airflow", "Minimalista"]
+    },
+    {
+      id: "case004",
+      title: "Dragon Fire",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0071.jpg",
+      description: "Gabinete gaming agresivo con panel lateral de vidrio templado y soporte para múltiples radiadores.",
+      tags: ["Gaming", "RGB", "ATX"]
+    },
+    {
+      id: "case005",
+      title: "Phantom Stealth",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0072.jpg",
+      description: "Diseño negro mate con detalles sutiles y configuración silenciosa.",
+      tags: ["Silencioso", "Negro", "Minimalista"]
+    },
+    {
+      id: "case006",
+      title: "Quantum Flux",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0056.jpg",
+      description: "Gabinete premium con iluminación RGB integrada y soporte para hardware de alta gama.",
+      tags: ["Premium", "E-ATX", "RGB"]
+    },
+    {
+      id: "case007",
+      title: "Vortex Core",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0078.jpg",
+      description: "Diseño compacto optimizado para máximo rendimiento térmico.",
+      tags: ["Compacto", "Airflow", "Mini-ITX"]
+    }
+  ];
+
+  // Variable para almacenar el case seleccionado para el modal
+  selectedCustomCase: any = null;
+
+  // Método para abrir el modal de custom case
+  openCustomCaseModal(customCase: any): void {
+    this.selectedCustomCase = customCase;
+    // Aquí implementarías la lógica para mostrar el modal
+    // Por ahora solo mostramos en consola
+    console.log('Abriendo modal para:', customCase.title);
+  }
+
+  // Datos para sección de periféricos
+  peripheralCategories = [
+    { name: 'Todo', value: 'all' },
+    { name: 'Mouse', value: 'mouse' },
+    { name: 'Teclados', value: 'keyboard' },
+    { name: 'Auriculares', value: 'headset' },
+    { name: 'Sillas Gaming', value: 'chair' },
+    { name: 'Monitores', value: 'monitor' },
+    { name: 'Mandos', value: 'gamepad' }
+  ];
+  
+  peripherals = [
+    {
+      id: 1,
+      name: "Razer DeathAdder V2",
+      category: "mouse",
+      image: "https://picsum.photos/id/201/400/400",
+      price: 1299,
+      originalPrice: 1499,
+      discount: 13,
+      rating: 4.8,
+      slug: "razer-deathadder-v2"
+    },
+    {
+      id: 2,
+      name: "HyperX Alloy FPS Pro",
+      category: "keyboard",
+      image: "https://picsum.photos/id/202/400/400",
+      price: 1799,
+      originalPrice: 1999,
+      discount: 10,
+      rating: 4.7,
+      slug: "hyperx-alloy-fps-pro"
+    },
+    {
+      id: 3,
+      name: "Logitech G Pro X",
+      category: "headset",
+      image: "https://picsum.photos/id/203/400/400",
+      price: 2299,
+      originalPrice: 2599,
+      discount: 12,
+      rating: 4.9,
+      slug: "logitech-g-pro-x"
+    },
+    {
+      id: 4,
+      name: "Corsair T1 Race",
+      category: "chair",
+      image: "https://picsum.photos/id/204/400/400",
+      price: 5499,
+      originalPrice: 6299,
+      discount: 13,
+      rating: 4.6,
+      slug: "corsair-t1-race"
+    },
+    {
+      id: 5,
+      name: "ASUS TUF Gaming VG27AQ",
+      category: "monitor",
+      image: "assets/img/marcas/asuspng.png",
+      price: 8999,
+      originalPrice: 9999,
+      discount: 10,
+      rating: 4.8,
+      slug: "asus-tuf-vg27aq"
+    },
+    {
+      id: 6,
+      name: "Xbox Elite Controller Series 2",
+      category: "gamepad",
+      image: "https://picsum.photos/id/206/400/400",
+      price: 3299,
+      originalPrice: 3799,
+      discount: 13,
+      rating: 4.9,
+      slug: "xbox-elite-controller-series-2"
+    },
+    {
+      id: 7,
+      name: "SteelSeries Arctis 7",
+      category: "headset",
+      image: "assets/img/marcas/Logitechpngg.png",
+      price: 2799,
+      originalPrice: 3199,
+      discount: 12,
+      rating: 4.7,
+      slug: "steelseries-arctis-7"
+    },
+    {
+      id: 8,
+      name: "Logitech G502 HERO",
+      category: "mouse",
+      image: "https://picsum.photos/id/208/400/400",
+      price: 1399,
+      originalPrice: 1699,
+      discount: 18,
+      rating: 4.8,
+      slug: "logitech-g502-hero"
+    },
+    {
+      id: 9,
+      name: "Razer BlackWidow Elite",
+      category: "keyboard",
+      image: "https://picsum.photos/id/209/400/400",
+      price: 2999,
+      originalPrice: 3499,
+      discount: 14,
+      rating: 4.6,
+      slug: "razer-blackwidow-elite"
+    },
+    {
+      id: 10,
+      name: "AOC C27G2Z 27\" Curvo 240Hz",
+      category: "monitor",
+      image: "https://picsum.photos/id/210/400/400",
+      price: 7299,
+      originalPrice: 7999,
+      discount: 9,
+      rating: 4.5,
+      slug: "aoc-c27g2z"
+    }
+  ];
+  
+  // Control de navegación de periféricos
+  selectedPeripheralCategory = 0;
+  peripheralScrollPosition = 0;
+  peripheralScrollStep = 300;
+  
+  get filteredPeripherals() {
+    const selectedCategory = this.peripheralCategories[this.selectedPeripheralCategory].value;
+    return selectedCategory === 'all' 
+      ? this.peripherals 
+      : this.peripherals.filter(p => p.category === selectedCategory);
+  }
+  
+  selectPeripheralCategory(index: number) {
+    this.selectedPeripheralCategory = index;
+    this.peripheralScrollPosition = 0; // Reset scroll position when category changes
+  }
+  
+  scrollPeripheralsLeft() {
+    // Ajustamos para mostrar más elementos por clic
+    const scrollStep = this.peripheralScrollStep * 2;
+    this.peripheralScrollPosition = Math.max(0, this.peripheralScrollPosition - scrollStep);
+  }
+  
+  scrollPeripheralsRight() {
+    const maxScroll = this.getMaxPeripheralScroll();
+    
+    // Si estamos cerca del final, nos vamos directamente al final para mostrar el último elemento
+    if (this.peripheralScrollPosition + this.peripheralScrollStep * 2 >= maxScroll * 0.8) {
+      this.peripheralScrollPosition = maxScroll;
+    } else {
+      // Ajustamos para mostrar más elementos por clic
+      const scrollStep = this.peripheralScrollStep * 2;
+      this.peripheralScrollPosition = Math.min(maxScroll, this.peripheralScrollPosition + scrollStep);
+    }
+    
+    console.log(`Current scroll: ${this.peripheralScrollPosition}, Max: ${maxScroll}`);
+  }
+  
+  getMaxPeripheralScroll(): number {
+    if (typeof window !== 'undefined') {
+      // 1. Cálculo preciso del ancho total del contenido
+      const totalItems = this.filteredPeripherals.length;
+      // Ajustamos el ancho para considerar el padding interno, bordes, etc.
+      const itemWidth = 300; // 250px de ancho base + bordes y márgenes
+      const gap = 24; // 6 * 4px (gap-6 en Tailwind)
+      
+      // 2. Ancho total del slider (suma de todos los items con sus gaps)
+      const totalContentWidth = (totalItems * itemWidth) + ((totalItems - 1) * gap);
+      
+      // 3. Ancho visible del contenedor (viewport)
+      let containerWidth = 0;
+      if (window.innerWidth > 1280) {
+        containerWidth = 1140; // max-w-7xl con padding
+      } else if (window.innerWidth > 768) {
+        containerWidth = window.innerWidth - 90; 
+      } else {
+        containerWidth = window.innerWidth - 40;
+      }
+      
+      // 4. Margen extra para garantizar que el último producto sea totalmente visible
+      const extraMargin = 50;
+      
+      // 5. Cálculo final: el desplazamiento máximo es la diferencia total menos el viewport
+      const maxScroll = Math.max(0, totalContentWidth - containerWidth + extraMargin);
+      
+      console.log(`Slider info - Items: ${totalItems}, Content Width: ${totalContentWidth}, 
+                  Container: ${containerWidth}, Max Scroll: ${maxScroll}`);
+      return maxScroll;
+    }
+    return 0;
+  }
+
+  // Agregar estas propiedades para el slider de necesidades
+  needsScrollPosition = 0;
+  needsScrollStep = 300;
+  needsActiveIndex = 0;
+  needsItemsPerView = 3; // Cuántos items se ven a la vez
+
+  // Métodos para navegación del slider de necesidades
+  scrollNeedsLeft() {
+    if (this.needsCurrentIndex > 0) {
+      this.needsCurrentIndex--;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  scrollNeedsRight() {
+    if (this.needsCurrentIndex < this.needsMaxVisibleIndex) {
+      this.needsCurrentIndex++;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  goToNeed(index: number) {
+    // Asegurar que el índice está dentro de los límites
+    const boundedIndex = Math.min(Math.max(0, index), this.needsMaxVisibleIndex);
+    this.needsCurrentIndex = boundedIndex;
+    this.updateNeedsScrollPosition();
+  }
+  
+  updateNeedsScrollPosition() {
+    // Actualizar la posición de scroll basada en el índice actual
+    this.needsScrollPosition = this.needsCurrentIndex * this.needCardWidth;
+  }
+  
+  getSlideTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.cardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.currentProductIndex * this.cardWidth * -1;
+  }
+
+  getNeedsTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.needCardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.needsCurrentIndex * this.needCardWidth * -1;
+  }
+
+  // Método para detectar si estamos en un dispositivo móvil
+  isMobile(): boolean {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768; // 768px es el breakpoint md en Tailwind
+    }
+    return false;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    // Recalcular dimensiones de todos los sliders
+    this.calculateSliderDimensions();
+    this.calculateNeedsSliderDimensions(); // Agregamos esta línea
+  }
+  
+  // Mejorar manejo de errores en imágenes
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      console.warn(`Failed to load image: ${img.src}`);
+      img.src = 'https://picsum.photos/id/204/400/400'; // Ruta a una imagen predeterminada
+      img.onerror = null; // Evita bucles infinitos
+    }
+  }
+
+  // Mejorar el método de typing para evitar posibles fugas de memoria
+  startTypingWithObservable(): void {
+    // Reiniciar texto
+    this.typingText = '';
+    
+    // Cancelar suscripción anterior si existe
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    
+    // Crear Observable con límite de tiempo para evitar ejecución indefinida
+    this.typingSubscription = interval(this.typingSpeed)
+      .pipe(
+        take(this.fullText.length), // Limitar emisiones al tamaño del texto
+        tap(index => {
+          this.ngZone.run(() => {
+            this.typingText += this.fullText.charAt(index);
+            // Eliminar el log para reducir la sobrecarga
+            // console.log('Current text:', this.typingText);
+            this.cdr.detectChanges();
+          });
+        })
+      )
+      .subscribe({
+        complete: () => {
+          console.log('Typing effect completed');
+          // Asegurar que la suscripción se limpia
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        },
+        error: (err) => {
+          console.error('Error in typing effect:', err);
+          // Limpiar recursos en caso de error
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        }
+      });
+  }
+
+  // Mejorar método de destrucción para asegurar la limpieza de recursos
+  ngOnDestroy(): void {
+    console.log('Home component destroyed - cleaning up resources');
+    
+    // Limpiar todas las suscripciones y timers
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+      this.typingSubscription = undefined;
+    }
+    
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      this._intervalId = null;
+    }
+
+    // Limpiar el intervalo de los banners
+    if (this.bannerIntervalId) {
+      clearInterval(this.bannerIntervalId);
+      this.bannerIntervalId = null;
+    }
+  }
+
+  // Velocidad de escritura en milisegundos
+  private typingSpeed = 40;
+
+  // Datos para la sección Custom Case
+  customCases = [
+    {
+      id: "case001",
+      title: "CyberShadow V3",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0075.jpg",
+      description: "Gabinete con panel de vidrio templado, refrigeración líquida y luces RGB direccionables.",
+      tags: ["RGB", "Vidrio", "Refrigeración Líquida"]
+    },
+    {
+      id: "case002",
+      title: "Neon Pulse",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0059.jpg",
+      description: "Compacto pero potente, con sistema de iluminación personalizado y cable management optimizado.",
+      tags: ["Compacto", "RGB", "Silencioso"]
+    },
+    {
+      id: "case003",
+      title: "Arctic Frost",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0066.jpg",
+      description: "Diseño blanco minimalista con acentos LED azules y excelente flujo de aire.",
+      tags: ["Blanco", "Airflow", "Minimalista"]
+    },
+    {
+      id: "case004",
+      title: "Dragon Fire",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0071.jpg",
+      description: "Gabinete gaming agresivo con panel lateral de vidrio templado y soporte para múltiples radiadores.",
+      tags: ["Gaming", "RGB", "ATX"]
+    },
+    {
+      id: "case005",
+      title: "Phantom Stealth",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0072.jpg",
+      description: "Diseño negro mate con detalles sutiles y configuración silenciosa.",
+      tags: ["Silencioso", "Negro", "Minimalista"]
+    },
+    {
+      id: "case006",
+      title: "Quantum Flux",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0056.jpg",
+      description: "Gabinete premium con iluminación RGB integrada y soporte para hardware de alta gama.",
+      tags: ["Premium", "E-ATX", "RGB"]
+    },
+    {
+      id: "case007",
+      title: "Vortex Core",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0078.jpg",
+      description: "Diseño compacto optimizado para máximo rendimiento térmico.",
+      tags: ["Compacto", "Airflow", "Mini-ITX"]
+    }
+  ];
+
+  // Variable para almacenar el case seleccionado para el modal
+  selectedCustomCase: any = null;
+
+  // Método para abrir el modal de custom case
+  openCustomCaseModal(customCase: any): void {
+    this.selectedCustomCase = customCase;
+    // Aquí implementarías la lógica para mostrar el modal
+    // Por ahora solo mostramos en consola
+    console.log('Abriendo modal para:', customCase.title);
+  }
+
+  // Datos para sección de periféricos
+  peripheralCategories = [
+    { name: 'Todo', value: 'all' },
+    { name: 'Mouse', value: 'mouse' },
+    { name: 'Teclados', value: 'keyboard' },
+    { name: 'Auriculares', value: 'headset' },
+    { name: 'Sillas Gaming', value: 'chair' },
+    { name: 'Monitores', value: 'monitor' },
+    { name: 'Mandos', value: 'gamepad' }
+  ];
+  
+  peripherals = [
+    {
+      id: 1,
+      name: "Razer DeathAdder V2",
+      category: "mouse",
+      image: "https://picsum.photos/id/201/400/400",
+      price: 1299,
+      originalPrice: 1499,
+      discount: 13,
+      rating: 4.8,
+      slug: "razer-deathadder-v2"
+    },
+    {
+      id: 2,
+      name: "HyperX Alloy FPS Pro",
+      category: "keyboard",
+      image: "https://picsum.photos/id/202/400/400",
+      price: 1799,
+      originalPrice: 1999,
+      discount: 10,
+      rating: 4.7,
+      slug: "hyperx-alloy-fps-pro"
+    },
+    {
+      id: 3,
+      name: "Logitech G Pro X",
+      category: "headset",
+      image: "https://picsum.photos/id/203/400/400",
+      price: 2299,
+      originalPrice: 2599,
+      discount: 12,
+      rating: 4.9,
+      slug: "logitech-g-pro-x"
+    },
+    {
+      id: 4,
+      name: "Corsair T1 Race",
+      category: "chair",
+      image: "https://picsum.photos/id/204/400/400",
+      price: 5499,
+      originalPrice: 6299,
+      discount: 13,
+      rating: 4.6,
+      slug: "corsair-t1-race"
+    },
+    {
+      id: 5,
+      name: "ASUS TUF Gaming VG27AQ",
+      category: "monitor",
+      image: "assets/img/marcas/asuspng.png",
+      price: 8999,
+      originalPrice: 9999,
+      discount: 10,
+      rating: 4.8,
+      slug: "asus-tuf-vg27aq"
+    },
+    {
+      id: 6,
+      name: "Xbox Elite Controller Series 2",
+      category: "gamepad",
+      image: "https://picsum.photos/id/206/400/400",
+      price: 3299,
+      originalPrice: 3799,
+      discount: 13,
+      rating: 4.9,
+      slug: "xbox-elite-controller-series-2"
+    },
+    {
+      id: 7,
+      name: "SteelSeries Arctis 7",
+      category: "headset",
+      image: "assets/img/marcas/Logitechpngg.png",
+      price: 2799,
+      originalPrice: 3199,
+      discount: 12,
+      rating: 4.7,
+      slug: "steelseries-arctis-7"
+    },
+    {
+      id: 8,
+      name: "Logitech G502 HERO",
+      category: "mouse",
+      image: "https://picsum.photos/id/208/400/400",
+      price: 1399,
+      originalPrice: 1699,
+      discount: 18,
+      rating: 4.8,
+      slug: "logitech-g502-hero"
+    },
+    {
+      id: 9,
+      name: "Razer BlackWidow Elite",
+      category: "keyboard",
+      image: "https://picsum.photos/id/209/400/400",
+      price: 2999,
+      originalPrice: 3499,
+      discount: 14,
+      rating: 4.6,
+      slug: "razer-blackwidow-elite"
+    },
+    {
+      id: 10,
+      name: "AOC C27G2Z 27\" Curvo 240Hz",
+      category: "monitor",
+      image: "https://picsum.photos/id/210/400/400",
+      price: 7299,
+      originalPrice: 7999,
+      discount: 9,
+      rating: 4.5,
+      slug: "aoc-c27g2z"
+    }
+  ];
+  
+  // Control de navegación de periféricos
+  selectedPeripheralCategory = 0;
+  peripheralScrollPosition = 0;
+  peripheralScrollStep = 300;
+  
+  get filteredPeripherals() {
+    const selectedCategory = this.peripheralCategories[this.selectedPeripheralCategory].value;
+    return selectedCategory === 'all' 
+      ? this.peripherals 
+      : this.peripherals.filter(p => p.category === selectedCategory);
+  }
+  
+  selectPeripheralCategory(index: number) {
+    this.selectedPeripheralCategory = index;
+    this.peripheralScrollPosition = 0; // Reset scroll position when category changes
+  }
+  
+  scrollPeripheralsLeft() {
+    // Ajustamos para mostrar más elementos por clic
+    const scrollStep = this.peripheralScrollStep * 2;
+    this.peripheralScrollPosition = Math.max(0, this.peripheralScrollPosition - scrollStep);
+  }
+  
+  scrollPeripheralsRight() {
+    const maxScroll = this.getMaxPeripheralScroll();
+    
+    // Si estamos cerca del final, nos vamos directamente al final para mostrar el último elemento
+    if (this.peripheralScrollPosition + this.peripheralScrollStep * 2 >= maxScroll * 0.8) {
+      this.peripheralScrollPosition = maxScroll;
+    } else {
+      // Ajustamos para mostrar más elementos por clic
+      const scrollStep = this.peripheralScrollStep * 2;
+      this.peripheralScrollPosition = Math.min(maxScroll, this.peripheralScrollPosition + scrollStep);
+    }
+    
+    console.log(`Current scroll: ${this.peripheralScrollPosition}, Max: ${maxScroll}`);
+  }
+  
+  getMaxPeripheralScroll(): number {
+    if (typeof window !== 'undefined') {
+      // 1. Cálculo preciso del ancho total del contenido
+      const totalItems = this.filteredPeripherals.length;
+      // Ajustamos el ancho para considerar el padding interno, bordes, etc.
+      const itemWidth = 300; // 250px de ancho base + bordes y márgenes
+      const gap = 24; // 6 * 4px (gap-6 en Tailwind)
+      
+      // 2. Ancho total del slider (suma de todos los items con sus gaps)
+      const totalContentWidth = (totalItems * itemWidth) + ((totalItems - 1) * gap);
+      
+      // 3. Ancho visible del contenedor (viewport)
+      let containerWidth = 0;
+      if (window.innerWidth > 1280) {
+        containerWidth = 1140; // max-w-7xl con padding
+      } else if (window.innerWidth > 768) {
+        containerWidth = window.innerWidth - 90; 
+      } else {
+        containerWidth = window.innerWidth - 40;
+      }
+      
+      // 4. Margen extra para garantizar que el último producto sea totalmente visible
+      const extraMargin = 50;
+      
+      // 5. Cálculo final: el desplazamiento máximo es la diferencia total menos el viewport
+      const maxScroll = Math.max(0, totalContentWidth - containerWidth + extraMargin);
+      
+      console.log(`Slider info - Items: ${totalItems}, Content Width: ${totalContentWidth}, 
+                  Container: ${containerWidth}, Max Scroll: ${maxScroll}`);
+      return maxScroll;
+    }
+    return 0;
+  }
+
+  // Agregar estas propiedades para el slider de necesidades
+  needsScrollPosition = 0;
+  needsScrollStep = 300;
+  needsActiveIndex = 0;
+  needsItemsPerView = 3; // Cuántos items se ven a la vez
+
+  // Métodos para navegación del slider de necesidades
+  scrollNeedsLeft() {
+    if (this.needsCurrentIndex > 0) {
+      this.needsCurrentIndex--;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  scrollNeedsRight() {
+    if (this.needsCurrentIndex < this.needsMaxVisibleIndex) {
+      this.needsCurrentIndex++;
+      this.updateNeedsScrollPosition();
+    }
+  }
+
+  goToNeed(index: number) {
+    // Asegurar que el índice está dentro de los límites
+    const boundedIndex = Math.min(Math.max(0, index), this.needsMaxVisibleIndex);
+    this.needsCurrentIndex = boundedIndex;
+    this.updateNeedsScrollPosition();
+  }
+  
+  updateNeedsScrollPosition() {
+    // Actualizar la posición de scroll basada en el índice actual
+    this.needsScrollPosition = this.needsCurrentIndex * this.needCardWidth;
+  }
+  
+  getSlideTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.cardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.currentProductIndex * this.cardWidth * -1;
+  }
+
+  getNeedsTransform(): number {
+    // Si el cálculo aún no se ha realizado, devuelve 0
+    if (this.needCardWidth === 0) return 0;
+    
+    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
+    return this.needsCurrentIndex * this.needCardWidth * -1;
+  }
+
+  // Método para detectar si estamos en un dispositivo móvil
+  isMobile(): boolean {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768; // 768px es el breakpoint md en Tailwind
+    }
+    return false;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    // Recalcular dimensiones de todos los sliders
+    this.calculateSliderDimensions();
+    this.calculateNeedsSliderDimensions(); // Agregamos esta línea
+  }
+  
+  // Mejorar manejo de errores en imágenes
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      console.warn(`Failed to load image: ${img.src}`);
+      img.src = 'https://picsum.photos/id/204/400/400'; // Ruta a una imagen predeterminada
+      img.onerror = null; // Evita bucles infinitos
+    }
+  }
+
+  // Mejorar el método de typing para evitar posibles fugas de memoria
+  startTypingWithObservable(): void {
+    // Reiniciar texto
+    this.typingText = '';
+    
+    // Cancelar suscripción anterior si existe
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+    }
+    
+    // Crear Observable con límite de tiempo para evitar ejecución indefinida
+    this.typingSubscription = interval(this.typingSpeed)
+      .pipe(
+        take(this.fullText.length), // Limitar emisiones al tamaño del texto
+        tap(index => {
+          this.ngZone.run(() => {
+            this.typingText += this.fullText.charAt(index);
+            // Eliminar el log para reducir la sobrecarga
+            // console.log('Current text:', this.typingText);
+            this.cdr.detectChanges();
+          });
+        })
+      )
+      .subscribe({
+        complete: () => {
+          console.log('Typing effect completed');
+          // Asegurar que la suscripción se limpia
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        },
+        error: (err) => {
+          console.error('Error in typing effect:', err);
+          // Limpiar recursos en caso de error
+          if (this.typingSubscription) {
+            this.typingSubscription.unsubscribe();
+            this.typingSubscription = undefined;
+          }
+        }
+      });
+  }
+
+  // Mejorar método de destrucción para asegurar la limpieza de recursos
+  ngOnDestroy(): void {
+    console.log('Home component destroyed - cleaning up resources');
+    
+    // Limpiar todas las suscripciones y timers
+    if (this.typingSubscription) {
+      this.typingSubscription.unsubscribe();
+      this.typingSubscription = undefined;
+    }
+    
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      this._intervalId = null;
+    }
+
+    // Limpiar el intervalo de los banners
+    if (this.bannerIntervalId) {
+      clearInterval(this.bannerIntervalId);
+      this.bannerIntervalId = null;
+    }
+  }
+
+  // Velocidad de escritura en milisegundos
+  private typingSpeed = 40;
+
+  // Datos para la sección Custom Case
+  customCases = [
+    {
+      id: "case001",
+      title: "CyberShadow V3",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0075.jpg",
+      description: "Gabinete con panel de vidrio templado, refrigeración líquida y luces RGB direccionables.",
+      tags: ["RGB", "Vidrio", "Refrigeración Líquida"]
+    },
+    {
+      id: "case002",
+      title: "Neon Pulse",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0059.jpg",
+      description: "Compacto pero potente, con sistema de iluminación personalizado y cable management optimizado.",
+      tags: ["Compacto", "RGB", "Silencioso"]
+    },
+    {
+      id: "case003",
+      title: "Arctic Frost",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0066.jpg",
+      description: "Diseño blanco minimalista con acentos LED azules y excelente flujo de aire.",
+      tags: ["Blanco", "Airflow", "Minimalista"]
+    },
+    {
+      id: "case004",
+      title: "Dragon Fire",
+      imageUrl: "assets/img/custom/IMG-20250208-WA0071.jpg",
+      description: "Gabinete gaming agresivo con panel lateral de vidrio templado y soporte para múltiples radiadores.",
+      tags: ["Gaming", "RGB", "ATX"]
+    },
+    {
+      id: "case005",
+      title: "Phantom Stealth",
