@@ -1,0 +1,98 @@
+<div class="relative w-full">
+  <!-- Slider con scroll táctil en móvil -->
+  <div class="md:flex md:overflow-x-hidden block overflow-x-auto snap-x scroll-smooth pb-4">
+    <!-- En móvil: contenedor con scroll nativo, en desktop: contenedor con transform -->
+    <div class="flex gap-8 md:transition-transform md:duration-300"
+      [class.transform-none]="isMobile()"
+      [style.transform]="isMobile() ? 'none' : 'translateX(' + getSlideTransform() + 'px)'">
+      <ng-container *ngFor="let product of products">
+        <!-- Card de producto con estilo cyberpunk -->
+        <div #productCard
+          class="min-w-[95vw] sm:min-w-[300px] md:min-w-[350px] flex-shrink-0 snap-center bg-[#161a3c] border border-white/20 rounded-xl p-6 flex flex-col items-center cyber-card relative">
+          
+          <!-- Etiqueta de oferta -->
+          <span class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded z-20">
+            Oferta
+          </span>
+          
+          <!-- Contenedor de imagen principal con logotipos -->
+          <div class="relative w-full h-60 mb-4 bg-[#0a0d22] rounded-lg overflow-hidden">
+            <!-- Imagen principal del gabinete -->
+            <img [src]="product.image" [alt]="product.title" class="w-full h-full object-contain" (error)="handleImageError($event)" />
+            
+            <!-- Logos de marcas en la esquina superior izquierda -->
+            <div class="absolute top-2 left-2 flex flex-col gap-2 z-10">
+              <ng-container *ngFor="let logo of product.brandLogos">
+                <img [src]="logo.src" [alt]="logo.alt" class="h-6 w-auto" />
+              </ng-container>
+            </div>
+            
+            <!-- Certificación de fuente en esquina inferior izquierda -->
+            <div class="absolute bottom-2 left-2 rounded px-2 py-1 flex items-center z-10">
+              <img [src]="product.powerCertificate" alt="80 Plus Gold" class="h-8 w-auto" />
+            </div>
+            
+            <!-- Indicador de watts en esquina inferior derecha -->
+            <div class="absolute bottom-2 right-2 bg-black/50 rounded px-2 py-1 z-10">
+              <span class="text-white font-bold">{{ product.watts }}W</span>
+            </div>
+          </div>
+          
+          <!-- Resto de información de la tarjeta -->
+          <h3 class="text-xl font-bold text-white">{{ product.title }}</h3>
+          <p class="text-cyan-400 text-2xl font-bold">
+            ${{ product.price | number }}
+          </p>
+
+          <!-- Specs con iconos -->
+          <div class="w-full my-4 space-y-2">
+            <div class="flex items-center text-sm">
+              <i class="fas fa-microchip mr-2 text-pink-400"></i>
+              <span class="text-pink-300">{{ product.processor }}</span>
+            </div>
+            <!-- Añadimos la placa madre -->
+            <div class="flex items-center text-sm">
+              <i class="fas fa-server mr-2 text-green-400"></i>
+              <span class="text-green-300">{{ product.motherboard }}</span>
+            </div>
+            <div class="flex items-center text-sm">
+              <i class="fas fa-memory mr-2 text-cyan-400"></i>
+              <span class="text-cyan-300">{{ product.ram }}</span>
+            </div>
+            <div class="flex items-center text-sm">
+              <i class="fas fa-hdd mr-2 text-purple-400"></i>
+              <span class="text-purple-300">{{ product.storage }}</span>
+            </div>
+            <div class="flex items-center text-sm">
+              <i class="fas fa-gamepad mr-2 text-yellow-400"></i>
+              <span class="text-yellow-300">{{ product.graphicsCard }}</span>
+            </div>
+          </div>
+
+          <a [routerLink]="['/productos', product.slug]"
+            class="mt-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition">Ver
+            detalles</a>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Botones de navegación - solo visibles en desktop -->
+  <button *ngIf="showArrows" 
+    (click)="prevProduct()"
+    class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  <button *ngIf="showArrows" 
+    (click)="nextProduct()"
+    class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+  
+  <!-- Indicador de deslizamiento para móvil -->
+  <div *ngIf="showMobileIndicator" class="flex justify-center gap-2 mt-4 md:hidden">
+    <div class="text-white text-xs">
+      <i class="fas fa-arrow-right"></i> Desliza para ver más
+    </div>
+  </div>
+</div>

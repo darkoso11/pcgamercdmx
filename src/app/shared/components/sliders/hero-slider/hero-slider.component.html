@@ -1,0 +1,53 @@
+<div class="hero-slider relative">
+  <div class="slider-container">
+    <ng-container *ngFor="let item of items; let i = index">
+      <ng-container *ngIf="i === currentIndex">
+        <!-- Si es un enlace externo usamos href, sino routerLink -->
+        <a *ngIf="item.link && isExternalLink(item.link)" 
+           [href]="item.link" 
+           target="_blank"
+           class="slide-item">
+          <img [src]="item.src || item.image || item.imageUrl" 
+               [alt]="item.alt || 'Slider image'" 
+               class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
+        </a>
+        
+        <a *ngIf="item.link && !isExternalLink(item.link)" 
+           [routerLink]="item.link"
+           class="slide-item">
+          <img [src]="item.src || item.image || item.imageUrl" 
+               [alt]="item.alt || 'Slider image'"
+               class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
+        </a>
+        
+        <!-- Si no hay enlace, solo muestra la imagen -->
+        <div *ngIf="!item.link" class="slide-item">
+          <img [src]="item.src || item.image || item.imageUrl" 
+               [alt]="item.alt || 'Slider image'"
+               class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222]" />
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+  
+  <!-- Controles de navegación -->
+  <div *ngIf="options.showArrows" class="slider-controls">
+    <button (click)="prev()" 
+            class="slider-arrow slider-arrow-prev">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <button (click)="next()" 
+            class="slider-arrow slider-arrow-next">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+  
+  <!-- Indicadores -->
+  <div *ngIf="options.showIndicators" class="slider-indicators">
+    <button *ngFor="let item of items; let i = index" 
+            [class.active]="i === currentIndex"
+            (click)="goToSlide(i)"
+            class="slider-indicator">
+    </button>
+  </div>
+</div>

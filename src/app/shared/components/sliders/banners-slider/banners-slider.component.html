@@ -1,0 +1,67 @@
+<div class="relative">
+  <!-- Banner Principal -->
+  <div class="overflow-hidden rounded-xl">
+    <div class="relative flex transition-transform duration-700 ease-in-out" 
+         [style.transform]="'translateX(-' + (currentIndex * 100) + '%)'">
+      <ng-container *ngFor="let banner of banners">
+        <div class="min-w-full h-80 md:h-96 relative">
+          <!-- Usamos la imagen del banner si existe, si no, usamos una imagen de Lorem Picsum -->
+          <img [src]="banner.imageUrl || 'https://picsum.photos/id/' + (240 + banner.id) + '/1200/600'" 
+               [attr.data-id]="banner.id"
+               [alt]="banner.title"
+               class="w-full h-full object-cover"
+               (error)="handleImageError($event)" />
+          
+          <!-- Overlay con contenido -->
+          <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center">
+            <div class="pl-8 md:pl-16 pr-4 md:max-w-lg">
+              <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">{{ banner.title }}</h2>
+              <p class="text-gray-200 mb-6 hidden md:block">{{ banner.description }}</p>
+              
+              <!-- Si es un enlace externo usamos href, sino routerLink -->
+              <a *ngIf="isExternalLink(banner.link)" 
+                 [href]="banner.link" 
+                 target="_blank"
+                 class="bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all inline-block">
+                {{ banner.ctaText }}
+              </a>
+              
+              <a *ngIf="!isExternalLink(banner.link)" 
+                 [routerLink]="banner.link" 
+                 class="bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all inline-block">
+                {{ banner.ctaText }}
+              </a>
+            </div>
+          </div>
+          
+          <!-- Efecto de esquina -->
+          <div class="absolute top-0 right-0 w-16 h-16 overflow-hidden">
+            <div class="absolute transform rotate-45 bg-[#ec4899] text-white font-bold py-1 px-16 text-xs top-6 right-[-60px] shadow-lg">
+              {{ banner.badgeText }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  
+  <!-- Navegación -->
+  <button *ngIf="showArrows" (click)="prev()" 
+          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#ec4899]/70 p-3 rounded-full text-white z-10 transition">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  <button *ngIf="showArrows" (click)="next()" 
+          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#ec4899]/70 p-3 rounded-full text-white z-10 transition">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+  
+  <!-- Indicadores -->
+  <div *ngIf="showIndicators" class="flex justify-center gap-3 mt-6">
+    <ng-container *ngFor="let banner of banners; let i = index">
+      <button (click)="goToSlide(i)" 
+              [class.bg-pink-500]="i === currentIndex"
+              [class.bg-gray-500]="i !== currentIndex"
+              class="w-3 h-3 rounded-full transition-colors"></button>
+    </ng-container>
+  </div>
+</div>

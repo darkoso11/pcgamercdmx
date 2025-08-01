@@ -2,14 +2,12 @@
   <!-- PRIMERA SECCIÓN: HERO CON ALTURA COMPLETA -->
   <section
     class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
-    <!-- Slider superior derecho - ajustado más abajo en escritorio -->
+    <!-- Slider superior derecho - Usando el nuevo componente HeroSlider -->
     <div class="absolute top-16 md:top-20 right-12 z-20 hidden md:block">
-      <ng-container *ngFor="let img of sliderImages; let i = index">
-        <a *ngIf="i === sliderIndex" [href]="img.link">
-          <img [src]="img.src" [alt]="img.alt"
-            class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
-        </a>
-      </ng-container>
+      <app-hero-slider 
+        [items]="sliderImages"
+        [options]="{ autoplay: true, autoplayDelay: 4000 }">
+      </app-hero-slider>
     </div>
 
     <!-- Menú lateral izquierdo - posicionado absolutamente respecto al hero section -->
@@ -115,107 +113,17 @@
       Nuestros Paquetes
     </h2>
 
-    <!-- Slider de productos con navegación -->
+    <!-- Usando el nuevo componente ProductsSlider -->
     <div class="relative w-full max-w-7xl px-4">
-      <!-- Slider con scroll táctil en móvil -->
-      <div class="md:flex md:overflow-x-hidden block overflow-x-auto snap-x scroll-smooth pb-4">
-        <!-- En móvil: contenedor con scroll nativo, en desktop: contenedor con transform -->
-        <div class="flex gap-8 md:transition-transform md:duration-300"
-          [class.transform-none]="isMobile()"
-          [style.transform]="isMobile() ? 'none' : 'translateX(' + getSlideTransform() + 'px)'">
-          <ng-container *ngFor="let product of carruselProducts">
-            <!-- Card de producto con estilo cyberpunk -->
-            <div #productCard
-              class="min-w-[95vw] sm:min-w-[300px] md:min-w-[350px] flex-shrink-0 snap-center bg-[#161a3c] border border-white/20 rounded-xl p-6 flex flex-col items-center cyber-card relative">
-              
-              <!-- Etiqueta de oferta -->
-              <span class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded z-20">
-                Oferta
-              </span>
-              
-              <!-- Contenedor de imagen principal con logotipos -->
-              <div class="relative w-full h-60 mb-4 bg-[#0a0d22] rounded-lg overflow-hidden">
-                <!-- Imagen principal del gabinete -->
-                <img [src]="product.image" [alt]="product.title" class="w-full h-full object-contain" />
-                
-                <!-- Logos de marcas en la esquina superior izquierda -->
-                <div class="absolute top-2 left-2 flex flex-col gap-2 z-10">
-                  <img [src]="product.brandLogos[0].src" [alt]="product.brandLogos[0].alt" class="h-6 w-auto" />
-                  <img [src]="product.brandLogos[1].src" [alt]="product.brandLogos[1].alt" class="h-6 w-auto" />
-                  <img [src]="product.brandLogos[2].src" [alt]="product.brandLogos[2].alt" class="h-6 w-auto" />
-                </div>
-                
-                <!-- Certificación de fuente en esquina inferior izquierda -->
-                <div class="absolute bottom-2 left-2 rounded px-2 py-1 flex items-center z-10">
-                  <img [src]="product.powerCertificate" alt="80 Plus Gold" class="h-8 w-auto" />
-                </div>
-                
-                <!-- Indicador de watts en esquina inferior derecha -->
-                <div class="absolute bottom-2 right-2 bg-black/50 rounded px-2 py-1 z-10">
-                  <span class="text-white font-bold">650W</span>
-                </div>
-              </div>
-              
-              <!-- Resto de información de la tarjeta -->
-              <h3 class="text-xl font-bold text-white">{{ product.title }}</h3>
-              <p class="text-cyan-400 text-2xl font-bold">
-                ${{ product.price | number }}
-              </p>
-
-              <!-- Specs con iconos -->
-              <div class="w-full my-4 space-y-2">
-                <div class="flex items-center text-sm">
-                  <i class="fas fa-microchip mr-2 text-pink-400"></i>
-                  <span class="text-pink-300">{{ product.processor }}</span>
-                </div>
-                <!-- Añadimos la placa madre -->
-                <div class="flex items-center text-sm">
-                  <i class="fas fa-server mr-2 text-green-400"></i>
-                  <span class="text-green-300">{{ product.motherboard }}</span>
-                </div>
-                <div class="flex items-center text-sm">
-                  <i class="fas fa-memory mr-2 text-cyan-400"></i>
-                  <span class="text-cyan-300">{{ product.ram }}</span>
-                </div>
-                <div class="flex items-center text-sm">
-                  <i class="fas fa-hdd mr-2 text-purple-400"></i>
-                  <span class="text-purple-300">{{ product.storage }}</span>
-                </div>
-                <div class="flex items-center text-sm">
-                  <i class="fas fa-gamepad mr-2 text-yellow-400"></i>
-                  <span class="text-yellow-300">{{ product.graphicsCard }}</span>
-                </div>
-              </div>
-
-              <a [routerLink]="['/productos', product.slug]"
-                class="mt-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition">Ver
-                detalles</a>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-
-      <!-- Botones de navegación - solo visibles en desktop -->
-      <button (click)="prevProduct()"
-        class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <button (click)="nextProduct()"
-        class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-      
-      <!-- Indicador de deslizamiento para móvil -->
-      <div class="flex justify-center gap-2 mt-4 md:hidden">
-        <div class="text-white text-xs">
-          <i class="fas fa-arrow-right"></i> Desliza para ver más
-        </div>
-      </div>
+      <app-products-slider 
+        [products]="carruselProducts"
+        [showArrows]="true"
+        [showMobileIndicator]="true">
+      </app-products-slider>
     </div>
   </section>
 
-  
- <!-- SECCIÓN 3: CUSTOM CASE / GABINETES PERSONALIZADOS -->
+  <!-- SECCIÓN 3: CUSTOM CASE / GABINETES PERSONALIZADOS -->
   <section class="py-16 bg-[#0a0d22]">
     <h2
       class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
@@ -286,84 +194,15 @@
       Periféricos Gaming
     </h2>
     
-    <!-- Categorías de periféricos -->
-    <div class="flex justify-center flex-wrap gap-4 mb-12 max-w-7xl mx-auto px-4">
-      <button *ngFor="let category of peripheralCategories; let i = index" 
-              (click)="selectPeripheralCategory(i)"
-              [class]="selectedPeripheralCategory === i ? 'bg-red-500' : 'bg-[#161a3c]/80'"
-              class="px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 hover:bg-red-500 text-white">
-        {{ category.name }}
-      </button>
-    </div>
-    
-    <!-- Slider de periféricos -->
-    <div class="relative w-full max-w-7xl mx-auto px-4">
-      <!-- Contenedor con efecto de desplazamiento -->
-      <div class="overflow-x-auto md:overflow-hidden">
-        <div class="flex gap-6 md:transition-transform md:duration-500 md:ease-out pb-6"
-             style="min-width: max-content;"
-             [style.transform]="isMobile() ? 'none' : 'translateX(-' + peripheralScrollPosition + 'px)'">
-          <ng-container *ngFor="let peripheral of filteredPeripherals; let last = last">
-            <div [id]="'peripheral-' + peripheral.id" 
-                 class="min-w-[200px] sm:min-w-[250px] flex-shrink-0 bg-[#161a3c] rounded-xl overflow-hidden border border-white/10 group hover:border-red-500/50 transition-all duration-300"
-                 [class.last-peripheral]="last">
-              <!-- Imagen -->
-              <div class="relative h-48 overflow-hidden bg-[#0a0d22]">
-                <img [src]="peripheral.image" 
-                     [alt]="peripheral.name"
-                     class="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
-                     (error)="handleImageError($event)" />
-                
-                <!-- Etiqueta de descuento si existe -->
-                <div *ngIf="peripheral.discount" 
-                     class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                  {{ peripheral.discount }}% OFF
-                </div>
-              </div>
-              
-              <!-- Detalles -->
-              <div class="p-4">
-                <div class="flex justify-between items-start mb-2">
-                  <h3 class="text-white font-bold text-lg leading-tight line-clamp-1">{{ peripheral.name }}</h3>
-                  <div class="flex items-center">
-                    <span class="text-yellow-400 text-xs mr-1">★</span>
-                    <span class="text-gray-300 text-xs">{{ peripheral.rating }}</span>
-                  </div>
-                </div>
-                
-                <div class="flex justify-between items-end">
-                  <div class="text-white">
-                    <span *ngIf="peripheral.discount" class="text-gray-400 line-through text-sm mr-2">${{ peripheral.originalPrice | number }}</span>
-                    <span class="text-red-400 font-bold">${{ peripheral.price | number }}</span>
-                  </div>
-                  
-                  <!-- Reemplazando el botón de carrito por un botón de ver detalles -->
-                  <a [routerLink]="['/productos', peripheral.slug]" 
-                     class="text-xs text-red-300 hover:text-red-400 transition-all">
-                    Ver más <i class="fas fa-chevron-right ml-1"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-      
-      <!-- Controles de navegación - Mejoramos posición y visibilidad -->
-      <button (click)="scrollPeripheralsLeft()" 
-          class="absolute -left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:flex items-center justify-center shadow-lg shadow-black/30 w-10 h-10">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <button (click)="scrollPeripheralsRight()" 
-          class="absolute -right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:flex items-center justify-center shadow-lg shadow-black/30 w-10 h-10">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-      
-      <!-- Indicador de scroll para móvil -->
-      <div class="text-center text-white text-sm mt-4 md:hidden">
-        <i class="fas fa-arrow-right animate-pulse mr-2"></i>
-        Desliza para ver más productos
-      </div>
+    <!-- Usando el nuevo componente PeripheralsSlider -->
+    <div class="max-w-7xl mx-auto px-4">
+      <app-peripherals-slider 
+        [items]="peripherals" 
+        [categories]="peripheralCategories"
+        [showFilters]="true"
+        [showArrows]="true"
+        [showMobileIndicator]="true">
+      </app-peripherals-slider>
     </div>
     
     <!-- Botón CTA -->
@@ -378,66 +217,18 @@
   <!-- SECCIÓN 5: SLIDER DE BANNERS -->
   <section class="py-16 bg-[#080a1e]">
     <div class="max-w-7xl mx-auto px-4">
-      <div class="relative">
-        <!-- Banner Principal -->
-        <div class="overflow-hidden rounded-xl">
-          <div class="relative flex transition-transform duration-700 ease-in-out" 
-               [style.transform]="'translateX(-' + (bannerIndex * 100) + '%)'">
-            <ng-container *ngFor="let banner of banners">
-              <div class="min-w-full h-80 md:h-96 relative">
-                <!-- Usamos la imagen del banner si existe, si no, usamos una imagen de Lorem Picsum -->
-                <img [src]="banner.imageUrl || 'https://picsum.photos/id/' + (240 + banner.id) + '/1200/600'" 
-                     [alt]="banner.title"
-                     class="w-full h-full object-cover"
-                     (error)="handleImageError($event)" />
-                
-                <!-- Overlay con contenido -->
-                <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center">
-                  <div class="pl-8 md:pl-16 pr-4 md:max-w-lg">
-                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">{{ banner.title }}</h2>
-                    <p class="text-gray-200 mb-6 hidden md:block">{{ banner.description }}</p>
-                    <a [href]="banner.link" 
-                      class="bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all inline-block">
-                      {{ banner.ctaText }}
-                    </a>
-                  </div>
-                </div>
-                
-                <!-- Efecto de esquina -->
-                <div class="absolute top-0 right-0 w-16 h-16 overflow-hidden">
-                  <div class="absolute transform rotate-45 bg-[#ec4899] text-white font-bold py-1 px-16 text-xs top-6 right-[-60px] shadow-lg">
-                    {{ banner.badgeText }}
-                  </div>
-                </div>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-        
-        <!-- Navegación -->
-        <button (click)="prevBanner()" 
-                class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#ec4899]/70 p-3 rounded-full text-white z-10 transition">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button (click)="nextBanner()" 
-                class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#ec4899]/70 p-3 rounded-full text-white z-10 transition">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-        
-        <!-- Indicadores -->
-        <div class="flex justify-center gap-3 mt-6">
-          <ng-container *ngFor="let banner of banners; let i = index">
-            <button (click)="goToBanner(i)" 
-                    [class.bg-pink-500]="i === bannerIndex"
-                    [class.bg-gray-500]="i !== bannerIndex"
-                    class="w-3 h-3 rounded-full transition-colors"></button>
-          </ng-container>
-        </div>
-      </div>
+      <!-- Usando el nuevo componente BannersSlider -->
+      <app-banners-slider 
+        [banners]="banners"
+        [autoPlay]="true"
+        [autoPlayDelay]="5000"
+        [showArrows]="true"
+        [showIndicators]="true">
+      </app-banners-slider>
     </div>
   </section>
 
-  <!-- NUEVA SECCIÓN 6: COMUNIDAD -->
+  <!-- SECCIÓN 6: COMUNIDAD -->
   <section class="py-16 bg-[#0d1127]">
     <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-violet-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Nuestra Comunidad
@@ -563,71 +354,13 @@
       Computadoras por Necesidad
     </h2>
 
-    <!-- Contenedor del slider con navegación -->
+    <!-- Usando el nuevo componente NeedsSlider -->
     <div class="relative max-w-7xl mx-auto px-4">
-      <!-- Slider mejorado con scrollbar oculta en móvil y control de navegación en desktop -->
-      <div class="md:overflow-hidden overflow-x-auto snap-x scrollbar-hide">
-        <div class="flex gap-6 md:transition-transform md:duration-300"
-             [class.transform-none]="isMobile()"
-             [style.transform]="isMobile() ? 'none' : 'translateX(' + getNeedsTransform() + 'px)'">
-          <ng-container *ngFor="let need of pcNeeds">
-            <div #needCard
-              class="min-w-[280px] h-72 bg-gradient-to-br from-black/60 to-black/20 backdrop-blur-sm rounded-lg flex flex-col justify-end p-6 relative border border-white/10 snap-center transition-transform hover:scale-[1.02] duration-300"
-              [ngStyle]="{
-                'background-image': 'url(' + need.bgImage + ')',
-                'background-size': 'cover',
-                'background-position': 'center'
-              }">
-              <!-- Overlay de gradiente -->
-              <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-80 rounded-lg"></div>
-              
-              <!-- Icono de categoría (opcional) -->
-              <div class="absolute top-4 right-4 w-10 h-10 rounded-full bg-yellow-400/30 backdrop-blur-sm flex items-center justify-center z-10">
-                <i class="fas fa-desktop text-yellow-400"></i>
-              </div>
-              
-              <!-- Contenido -->
-              <h3 class="text-xl font-bold text-white relative z-10">
-                {{ need.title }}
-              </h3>
-              <p class="text-sm text-gray-300 mt-2 relative z-10 line-clamp-2">
-                {{ need.description }}
-              </p>
-              <a routerLink="/cotiza-tu-pc" [queryParams]="{ need: need.id }"
-                class="mt-4 bg-yellow-400 text-black py-2 px-4 rounded text-sm font-bold hover:bg-yellow-300 transition-all relative z-10 inline-block text-center">
-                Cotizar ahora <i class="fas fa-arrow-right ml-1"></i>
-              </a>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-      
-      <!-- Botones de navegación - solo visibles en desktop -->
-      <button (click)="scrollNeedsLeft()"
-        class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-yellow-500/80 transition">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <button (click)="scrollNeedsRight()"
-        class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-yellow-500/80 transition">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-      
-      <!-- Indicadores de navegación -->
-      <div class="flex justify-center gap-2 mt-6 md:flex hidden">
-        <ng-container *ngFor="let need of pcNeeds; let i = index">
-          <button (click)="goToNeed(i)" 
-                  [class.bg-yellow-400]="needsCurrentIndex === i"
-                  [class.bg-gray-700]="needsCurrentIndex !== i"
-                  class="w-2 h-2 rounded-full transition-colors"></button>
-        </ng-container>
-      </div>
-      
-      <!-- Indicador de deslizamiento para móvil -->
-      <div class="flex justify-center gap-2 mt-4 md:hidden">
-        <div class="text-white text-xs">
-          <i class="fas fa-arrow-right"></i> Desliza para ver más
-        </div>
-      </div>
+      <app-needs-slider 
+        [needs]="pcNeeds"
+        [showArrows]="true"
+        [showIndicators]="true">
+      </app-needs-slider>
     </div>
   </section>
 

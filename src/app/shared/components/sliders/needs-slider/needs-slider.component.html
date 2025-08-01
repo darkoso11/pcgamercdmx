@@ -1,0 +1,67 @@
+<div class="relative">
+  <!-- Slider mejorado con scrollbar oculta en móvil y control de navegación en desktop -->
+  <div class="md:overflow-hidden overflow-x-auto snap-x scrollbar-hide">
+    <div class="flex gap-6 md:transition-transform md:duration-300"
+         [class.transform-none]="isMobile()"
+         [style.transform]="isMobile() ? 'none' : 'translateX(' + getSlideTransform() + 'px)'">
+      <ng-container *ngFor="let need of needs">
+        <div #needCard
+          class="min-w-[280px] h-72 bg-gradient-to-br from-black/60 to-black/20 backdrop-blur-sm rounded-lg flex flex-col justify-end p-6 relative border border-white/10 snap-center transition-transform hover:scale-[1.02] duration-300"
+          [ngStyle]="{
+            'background-image': 'url(' + need.bgImage + ')',
+            'background-size': 'cover',
+            'background-position': 'center'
+          }">
+          <!-- Overlay de gradiente -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-80 rounded-lg"></div>
+          
+          <!-- Icono de categoría (opcional) -->
+          <div class="absolute top-4 right-4 w-10 h-10 rounded-full bg-yellow-400/30 backdrop-blur-sm flex items-center justify-center z-10">
+            <i class="fas fa-desktop text-yellow-400"></i>
+          </div>
+          
+          <!-- Contenido -->
+          <h3 class="text-xl font-bold text-white relative z-10">
+            {{ need.title }}
+          </h3>
+          <p class="text-sm text-gray-300 mt-2 relative z-10 line-clamp-2">
+            {{ need.description }}
+          </p>
+          <a [routerLink]="['/cotiza-tu-pc']" [queryParams]="{ need: need.id }"
+            class="mt-4 bg-yellow-400 text-black py-2 px-4 rounded text-sm font-bold hover:bg-yellow-300 transition-all relative z-10 inline-block text-center">
+            Cotizar ahora <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  
+  <!-- Botones de navegación - solo visibles en desktop -->
+  <button *ngIf="showArrows" 
+    (click)="prevSlide()"
+    class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-yellow-500/80 transition">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+  <button *ngIf="showArrows" 
+    (click)="nextSlide()"
+    class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-yellow-500/80 transition">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+  
+  <!-- Indicadores de navegación -->
+  <div *ngIf="showIndicators" class="flex justify-center gap-2 mt-6 md:flex hidden">
+    <ng-container *ngFor="let need of needs; let i = index">
+      <button (click)="goToSlide(i)" 
+              [class.bg-yellow-400]="currentIndex === i"
+              [class.bg-gray-700]="currentIndex !== i"
+              class="w-2 h-2 rounded-full transition-colors"></button>
+    </ng-container>
+  </div>
+  
+  <!-- Indicador de deslizamiento para móvil -->
+  <div class="flex justify-center gap-2 mt-4 md:hidden">
+    <div class="text-white text-xs">
+      <i class="fas fa-arrow-right"></i> Desliza para ver más
+    </div>
+  </div>
+</div>
