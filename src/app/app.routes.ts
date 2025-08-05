@@ -23,7 +23,7 @@ export const routes: Routes = [
   },
   {
     path: 'blog',
-    loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent)
+    loadChildren: () => import('./features/blog/blog.routes').then(mod => mod.BLOG_ROUTES)
   },
   {
     path: 'galeria',

@@ -1,22 +1,13 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./src/**/*.{html,ts,css,scss,sass,less,styl}"
-  ],
-  theme: {
-    extend: {
-      screens: {
-        // Redefinir los breakpoints estándar
-        // Cambio clave: 'md' ahora está en 1150px en lugar de 768px
-        'sm': '640px',
-        'md': '1150px',  // Ahora el breakpoint móvil/desktop está en 1150px
-        'lg': '1280px',
-        'xl': '1440px',
-        '2xl': '1536px',
-      },
-    },
-  },
-  plugins: [],
+import { enableProdMode } from '@angular/core';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import { AppModule } from './app/app.module';
+import { environment } from './environments/environment';
+
+if (environment.production) {
+  enableProdMode();
 }
 
-// Verifica si hay alguna configuración de breakpoints
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .catch((err) => console.error(err));

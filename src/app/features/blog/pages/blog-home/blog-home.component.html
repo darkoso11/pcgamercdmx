@@ -1,0 +1,203 @@
+<div class="font-orbitron bg-[#0a0d22] min-h-screen">
+  <!-- Header del blog -->
+  <header class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22] relative overflow-hidden">
+    <!-- Líneas de circuito decorativas -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent"></div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent"></div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+      <h1 class="text-5xl font-bold text-white text-center mb-4">Blog de PC Gamer CDMX</h1>
+      <p class="text-xl text-gray-300 text-center max-w-3xl mx-auto">
+        Descubre las últimas tendencias, guías y consejos sobre hardware, gaming y tecnología
+      </p>
+      
+      <!-- Barra de búsqueda -->
+      <div class="mt-8 max-w-xl mx-auto relative">
+        <div class="relative">
+          <input 
+            type="text" 
+            [formControl]="searchControl"
+            placeholder="Buscar artículos..." 
+            class="w-full bg-[#161a3c]/80 border border-cyan-500/30 text-white py-3 px-4 pl-10 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/50"
+          />
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-cyan-500"></i>
+        </div>
+        
+        <!-- Resultados de búsqueda -->
+        <div *ngIf="showSearchResults" class="absolute z-20 mt-2 w-full bg-[#161a3c] border border-cyan-500/30 rounded-lg shadow-lg py-2 max-h-80 overflow-y-auto">
+          <div *ngIf="searchResults.length === 0" class="px-4 py-2 text-gray-400">
+            No se encontraron resultados
+          </div>
+          <a 
+            *ngFor="let result of searchResults" 
+            [routerLink]="['/blog', result.slug]" 
+            class="block px-4 py-2 hover:bg-cyan-500/10 transition-colors"
+          >
+            <h4 class="text-white font-semibold">{{ result.title }}</h4>
+            <p class="text-sm text-gray-400 truncate">{{ result.excerpt }}</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Contenido principal -->
+      <div class="lg:col-span-2">
+        <!-- Filtros activos -->
+        <div *ngIf="selectedCategory || selectedTag" class="mb-6 flex items-center">
+          <span class="text-gray-400 mr-2">Filtros:</span>
+          <div *ngIf="selectedCategory" class="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-sm flex items-center mr-2">
+            <span>Categoría: {{ selectedCategory }}</span>
+            <button (click)="clearFilters()" class="ml-2 hover:text-white">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div *ngIf="selectedTag" class="bg-pink-500/20 text-pink-400 px-3 py-1 rounded-full text-sm flex items-center mr-2">
+            <span>Etiqueta: {{ selectedTag }}</span>
+            <button (click)="clearFilters()" class="ml-2 hover:text-white">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Spinner de carga -->
+        <div *ngIf="isLoading" class="flex justify-center py-20">
+          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+        </div>
+        
+        <!-- Grid de artículos -->
+        <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <article *ngFor="let post of posts" class="bg-[#161a3c] rounded-xl overflow-hidden hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 border border-white/5 h-full flex flex-col">
+            <a [routerLink]="['/blog', post.slug]" class="block h-48 overflow-hidden">
+              <img [src]="post.coverImage" [alt]="post.title" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+            </a>
+            <div class="p-6 flex-1 flex flex-col">
+              <div class="mb-3 flex items-center text-xs">
+                <span class="text-cyan-400">{{ getFormattedDate(post.publishDate) }}</span>
+                <span class="mx-2 text-gray-500">•</span>
+                <span class="text-gray-400">{{ post.readTime }} min de lectura</span>
+              </div>
+              <h2 class="text-xl font-bold text-white mb-2 hover:text-cyan-400 transition-colors">
+                <a [routerLink]="['/blog', post.slug]">{{ post.title }}</a>
+              </h2>
+              <p class="text-gray-400 text-sm mb-4 flex-1">{{ post.excerpt }}</p>
+              
+              <div class="mt-auto">
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <a *ngFor="let tag of post.tags" 
+                     [routerLink]="['/blog/tag', tag.toLowerCase()]" 
+                     class="text-xs bg-pink-500/20 text-pink-400 px-2 py-1 rounded-full hover:bg-pink-500/30 transition-colors">
+                    #{{ tag }}
+                  </a>
+                </div>
+                
+                <div class="flex items-center">
+                  <img [src]="post.author.avatar" [alt]="post.author.name" class="w-8 h-8 rounded-full mr-3">
+                  <span class="text-sm text-white">{{ post.author.name }}</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        
+        <!-- Paginación -->
+        <div *ngIf="!isLoading && totalPosts > postsPerPage" class="mt-10 flex justify-center">
+          <nav class="flex space-x-2">
+            <button 
+              *ngFor="let page of [].constructor(getTotalPages()); let i = index" 
+              (click)="onPageChange(i + 1)" 
+              [class.bg-cyan-500]="currentPage === i + 1"
+              [class.text-white]="currentPage === i + 1"
+              [class.bg-[#161a3c]]="currentPage !== i + 1"
+              [class.text-gray-400]="currentPage !== i + 1"
+              class="w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-cyan-600"
+            >
+              {{ i + 1 }}
+            </button>
+          </nav>
+        </div>
+        
+        <!-- Mensaje de no hay artículos -->
+        <div *ngIf="!isLoading && posts.length === 0" class="text-center py-12">
+          <i class="fas fa-file-alt text-5xl text-gray-700 mb-4"></i>
+          <h3 class="text-xl font-bold text-white mb-2">No hay artículos disponibles</h3>
+          <p class="text-gray-400">No se encontraron artículos con los filtros actuales.</p>
+          <button 
+            (click)="clearFilters()" 
+            class="mt-4 bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded-lg transition-colors"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+      
+      <!-- Sidebar -->
+      <div class="lg:col-span-1">
+        <!-- Artículos destacados -->
+        <div class="bg-[#161a3c] rounded-xl p-6 mb-6 border border-white/5">
+          <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+            <i class="fas fa-star text-yellow-400 mr-2"></i>
+            Artículos destacados
+          </h3>
+          
+          <div class="space-y-4">
+            <a 
+              *ngFor="let post of featuredPosts" 
+              [routerLink]="['/blog', post.slug]" 
+              class="flex items-start hover:bg-white/5 p-2 rounded transition-colors"
+            >
+              <img [src]="post.coverImage" [alt]="post.title" class="w-16 h-16 object-cover rounded mr-3">
+              <div>
+                <h4 class="text-white font-semibold line-clamp-2 text-sm hover:text-cyan-400 transition-colors">{{ post.title }}</h4>
+                <p class="text-xs text-gray-400 mt-1">{{ getFormattedDate(post.publishDate) }}</p>
+              </div>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Categorías -->
+        <div class="bg-[#161a3c] rounded-xl p-6 mb-6 border border-white/5">
+          <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+            <i class="fas fa-folder text-cyan-400 mr-2"></i>
+            Categorías
+          </h3>
+          
+          <div class="space-y-2">
+            <a 
+              *ngFor="let category of categories" 
+              [routerLink]="['/blog/categoria', category.slug]" 
+              class="flex items-center justify-between hover:bg-white/5 p-2 rounded transition-colors group"
+            >
+              <span class="text-gray-300 group-hover:text-white transition-colors">{{ category.name }}</span>
+              <span class="bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full text-xs">{{ category.postCount }}</span>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Etiquetas -->
+        <div class="bg-[#161a3c] rounded-xl p-6 border border-white/5">
+          <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+            <i class="fas fa-tags text-pink-400 mr-2"></i>
+            Etiquetas
+          </h3>
+          
+          <div class="flex flex-wrap gap-2">
+            <a 
+              *ngFor="let tag of tags" 
+              [routerLink]="['/blog/tag', tag.slug]" 
+              class="text-sm bg-pink-500/20 text-pink-400 px-3 py-1 rounded-full hover:bg-pink-500/30 transition-colors"
+            >
+              #{{ tag.name }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
