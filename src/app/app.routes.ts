@@ -23,7 +23,7 @@ export const routes: Routes = [
   },
   {
     path: 'blog',
-    loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent)
+    loadChildren: () => import('./features/blog/blog.routes').then(m => m.BLOG_ROUTES)
   },
   {
     path: 'galeria',
@@ -59,15 +59,6 @@ export const routes: Routes = [
       renderMode: 'dynamic'
     }
   },
-  {
-    path: 'blog/:slug',
-    loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent),
-    title: 'Blog | PC Gamer CDMX',
-    // Importante: Especificar modo de renderizado dinámico para evitar el error
-    data: {
-      renderMode: 'dynamic'
-    }
-  },
 
   // Ruta fallback
   {
@@ -75,3 +66,4 @@ export const routes: Routes = [
     redirectTo: ''
   }
 ];
+
