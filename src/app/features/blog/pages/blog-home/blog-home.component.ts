@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+<<<<<<< HEAD
 import { NgIf, NgFor } from '@angular/common';
+=======
+import { CommonModule } from '@angular/common';
+>>>>>>> 95468a2760a4c4557224cca0eea84a0aa0f43325
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BlogService } from '../../services/blog.service';
 import { BlogPost, BlogCategory, BlogTag } from '../../models/blog.model';
@@ -9,11 +13,15 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 @Component({
   selector: 'app-blog-home',
   standalone: true,
+<<<<<<< HEAD
   imports: [
     NgIf, NgFor,
     RouterModule,
     ReactiveFormsModule
   ],
+=======
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+>>>>>>> 95468a2760a4c4557224cca0eea84a0aa0f43325
   templateUrl: './blog-home.component.html',
   styleUrls: ['./blog-home.component.css']
 })
