@@ -57,9 +57,8 @@
       <!-- Contenedor de logo y texto - ajuste para móvil -->
       <div class="flex flex-col items-center justify-center gap-1 w-full md:w-1/2 max-h-80 py-2 md:py-4">
         <!-- Logo placeholder - más pequeño en móvil -->
-        <div class="w-16 h-16 md:w-16 md:h-16 rounded-full mx-auto z-30 relative -mt-6 md:mt-0 overflow-hidden flex items-center justify-center bg-black/50">
-          <!-- Logo de la empresa -->
-          <img src="assets/img/LOGO PC GAMER RGB.png" alt="PC Gamer CDMX" class="w-full h-full object-contain p-1">
+        <div class="w-16 h-16 md:w-16 md:h-16 bg-white rounded-full mx-auto z-30 relative -mt-6 md:mt-0">
+          <!-- Puedes colocar tu logo aquí -->
         </div>
 
         <!-- Texto typing cyberpunk - texto más pequeño en móvil -->
@@ -108,15 +107,7 @@
 
 
   <!-- SECCIÓN 2: SLIDER DE PRODUCTOS/PAQUETES -->
-  <section class="py-16 bg-[#090b20] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-pink-500 to-transparent"></div>
-    </div>
-    
+  <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-[#090b20]">
     <h2
       class="text-4xl font-bold text-white mb-10 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Nuestros Paquetes
@@ -133,15 +124,7 @@
   </section>
 
   <!-- SECCIÓN 3: CUSTOM CASE / GABINETES PERSONALIZADOS -->
-  <section class="py-16 bg-[#0a0d22] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
-    </div>
-    
+  <section class="py-16 bg-[#0a0d22]">
     <h2
       class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Custom Case
@@ -205,17 +188,8 @@
       </div>
     </div>
   </section>
-  
-  <!-- SECCIÓN 4: SLIDER DE PERIFÉRICOS -->
-  <section class="py-16 bg-[#0a0d22] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-red-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-red-500 to-transparent"></div>
-    </div>
-    
+    <!-- SECCIÓN 4: SLIDER DE PERIFÉRICOS -->
+  <section class="py-16 bg-[#0a0d22]">
     <h2 class="text-4xl font-bold text-white text-center mb-8 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-red-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Periféricos Gaming
     </h2>
@@ -241,15 +215,7 @@
   </section>
 
   <!-- SECCIÓN 5: SLIDER DE BANNERS -->
-  <section class="py-16 bg-[#080a1e] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-500 to-transparent"></div>
-    </div>
-    
+  <section class="py-16 bg-[#080a1e]">
     <div class="max-w-7xl mx-auto px-4">
       <!-- Usando el nuevo componente BannersSlider -->
       <app-banners-slider 
@@ -263,15 +229,7 @@
   </section>
 
   <!-- SECCIÓN 6: COMUNIDAD -->
-  <section class="py-16 bg-[#0d1127] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-violet-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-violet-500 to-transparent"></div>
-    </div>
-    
+  <section class="py-16 bg-[#0d1127]">
     <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-violet-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Nuestra Comunidad
     </h2>
@@ -309,7 +267,7 @@
       </div>
       
       <!-- Botones CTA para redes sociales -->
-<!--       <div class="flex flex-wrap justify-center gap-4">
+      <div class="flex flex-wrap justify-center gap-4">
         <a href="https://discord.gg/pcgamercdmx" target="_blank" 
            class="bg-[#5865F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#4752c4] transition-colors flex items-center">
           <i class="fab fa-discord mr-2 text-xl"></i>
@@ -325,10 +283,10 @@
           <i class="fab fa-instagram mr-2 text-xl"></i>
           Síguenos en Instagram
         </a>
-      </div> -->
+      </div>
       
       <!-- Próximos eventos/transmisiones (opcional) -->
-   <!--    <div class="mt-16 bg-black/30 backdrop-blur-sm border border-violet-500/20 rounded-xl p-6 md:p-8">
+      <div class="mt-16 bg-black/30 backdrop-blur-sm border border-violet-500/20 rounded-xl p-6 md:p-8">
         <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
           <i class="fas fa-calendar-alt text-violet-400 mr-3"></i>
           Próximos Eventos
@@ -359,20 +317,12 @@
             </div>
           </div>
         </div>
-      </div> -->
+      </div>
     </div>
   </section>
 
   <!-- SECCIÓN 7: JUEGOS FAMOSOS (anteriormente sección 6) -->
-  <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent"></div>
-    </div>
-    
+  <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d]">
     <h2
       class="text-4xl font-bold text-white mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Juegos Recomendados
@@ -398,25 +348,11 @@
 
 
   <!-- SECCIÓN 8: PC PARA NECESIDADES ESPECÍFICAS -->
-  <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-yellow-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-yellow-500 to-transparent"></div>
-    </div>
-    
+  <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
     <h2
-      class="text-4xl font-bold text-white text-center mb-4 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Equipos Especializados
+      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Computadoras por Necesidad
     </h2>
-    
-    <p class="text-center text-gray-300 max-w-3xl mx-auto mb-12">
-      Cada profesión, disciplina y pasión tiene necesidades específicas. 
-      Ya sea que estés en el mundo del diseño, la ingeniería, el streaming o el desarrollo, 
-      tenemos la configuración ideal para potenciar tu talento.
-    </p>
 
     <!-- Usando el nuevo componente NeedsSlider -->
     <div class="relative max-w-7xl mx-auto px-4">
@@ -429,15 +365,7 @@
   </section>
 
   <!-- SECCIÓN 9: MARCAS -->
-  <section class="py-16 bg-[#090b20] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-gray-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-gray-500 to-transparent"></div>
-    </div>
-    
+  <section class="py-16 bg-[#090b20]">
     <h2
       class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-gray-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Marcas Premium
@@ -455,15 +383,7 @@
   </section>
 
   <!-- SECCIÓN 10: SERVICIOS -->
-  <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-pink-500 to-transparent"></div>
-    </div>
-    
+  <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9]">
     <h2
       class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Servicios Técnicos
@@ -530,15 +450,7 @@
   </div>
 
   <!-- SECCIÓN 11: BLOG -->
-  <section class="py-16 bg-[#0a0d22] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas para esta sección -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500 to-transparent"></div>
-    </div>
-    
+  <section class="py-16 bg-[#0a0d22]">
     <h2
       class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Últimas del Blog

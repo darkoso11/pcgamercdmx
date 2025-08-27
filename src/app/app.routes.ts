@@ -23,11 +23,7 @@ export const routes: Routes = [
   },
   {
     path: 'blog',
-<<<<<<< HEAD
-    loadChildren: () => import('./features/blog/blog.routes').then(m => m.BLOG_ROUTES)
-=======
-    loadChildren: () => import('./features/blog/blog.routes').then(mod => mod.BLOG_ROUTES)
->>>>>>> 95468a2760a4c4557224cca0eea84a0aa0f43325
+    loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent)
   },
   {
     path: 'galeria',
@@ -79,4 +75,3 @@ export const routes: Routes = [
     redirectTo: ''
   }
 ];
-
