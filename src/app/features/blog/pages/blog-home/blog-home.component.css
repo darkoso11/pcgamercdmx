@@ -1,0 +1,60 @@
+<<<<<<< HEAD
+/* Estilos específicos para el componente blog-home */
+=======
+/* Animaciones y efectos especiales */
+.shadow-neon {
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+}
+
+/* Estilos para la scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0891b2;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+/* Estilos adicionales para el texto */
+>>>>>>> 95468a2760a4c4557224cca0eea84a0aa0f43325
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+<<<<<<< HEAD
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+=======
+/* Animación para los bordes cyberpunk */
+@keyframes borderGlow {
+  0% {
+    border-color: rgba(6, 182, 212, 0.5);
+  }
+  50% {
+    border-color: rgba(236, 72, 153, 0.5);
+  }
+  100% {
+    border-color: rgba(6, 182, 212, 0.5);
+  }
+}
+
+.cyber-border {
+  animation: borderGlow 4s infinite;
+>>>>>>> 95468a2760a4c4557224cca0eea84a0aa0f43325
+}
