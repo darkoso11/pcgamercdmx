@@ -3,9 +3,8 @@ import { AppComponent } from './app/app.component';
 import { config } from './app/app.config.server';
 
 // La función getPrerenderParams debe devolver un array de rutas válidas
-export function getPrerenderParams() {
+/* export function getPrerenderParams() {
   return [
-    // Ruta dinámica para productos
     { 
       route: '/productos/:slug',
       params: [
@@ -16,7 +15,6 @@ export function getPrerenderParams() {
         { slug: 'cpu-pre-armado-3' },
         { slug: 'cpu-pre-armado-4' },
         { slug: 'cpu-pre-armado-5' },
-        // Slugs de periféricos
         { slug: 'razer-deathadder-v2' },
         { slug: 'hyperx-alloy-fps-pro' },
         { slug: 'logitech-g-pro-x' },
@@ -30,7 +28,7 @@ export function getPrerenderParams() {
       ]
     },
     
-    // Ruta dinámica para entradas de blog
+
     {
       route: '/blog/:slug',
       params: [
@@ -42,7 +40,7 @@ export function getPrerenderParams() {
       ]
     }
   ];
-}
+} */
 
 // Función de bootstrap para SSR
 const bootstrap = () => bootstrapApplication(AppComponent, config);
