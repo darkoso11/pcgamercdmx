@@ -21,10 +21,10 @@ export const routes: Routes = [
     path: 'nosotros',
     loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent)
   },
-  {
+/*   {
     path: 'blog',
     loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent)
-  },
+  }, */
   {
     path: 'galeria',
     loadComponent: () => import('./features/gallery/gallery.component').then(m => m.GalleryComponent)
@@ -43,7 +43,7 @@ export const routes: Routes = [
   },
 
   // Rutas con parámetros - usar renderMode: 'dynamic'
-  {
+/*   {
     path: 'productos/:slug',
     loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
     title: 'Productos | PC Gamer CDMX',
@@ -51,7 +51,7 @@ export const routes: Routes = [
     data: {
       renderMode: 'dynamic' 
     }
-  },
+  }, */
   {
     path: 'categorias/:tag',
     loadComponent: () => import('./features/products/category.component').then(m => m.CategoryComponent),
@@ -60,14 +60,14 @@ export const routes: Routes = [
     }
   },
   // Importante: Especificar modo de renderizado dinámico para evitar el error
-  {
+/*   {
     path: 'blog/:slug',
     loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent),
     title: 'Blog | PC Gamer CDMX',
     data: {
       renderMode: 'dynamic'
     }
-  },
+  }, */
 
   // Ruta fallback
   {
