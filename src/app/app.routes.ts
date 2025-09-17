@@ -21,10 +21,10 @@ export const routes: Routes = [
     path: 'nosotros',
     loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent)
   },
-/*   {
+ {
     path: 'blog',
     loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent)
-  }, */
+  },
   {
     path: 'galeria',
     loadComponent: () => import('./features/gallery/gallery.component').then(m => m.GalleryComponent)
@@ -52,13 +52,13 @@ export const routes: Routes = [
       renderMode: 'dynamic' 
     }
   }, */
-  {
+/*   {
     path: 'categorias/:tag',
     loadComponent: () => import('./features/products/category.component').then(m => m.CategoryComponent),
     data: {
       renderMode: 'dynamic'
     }
-  },
+  }, */
   // Importante: Especificar modo de renderizado dinámico para evitar el error
 /*   {
     path: 'blog/:slug',
