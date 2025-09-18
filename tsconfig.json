@@ -22,7 +22,10 @@
     "typeCheckHostBindings": true,
     "strictTemplates": true
   },
-  "files": [],
+  "files": [    
+    "src/main.server.ts",
+    "server.ts"
+  ],
   "references": [
     {
       "path": "./tsconfig.app.json"
