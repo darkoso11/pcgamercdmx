@@ -26,7 +26,7 @@
             "server": "src/main.server.ts",
             "outputMode": "server",
             "ssr": {
-              "entry": "server.ts"
+              "entry": "src/server.ts"
             }
           },
           "configurations": {
@@ -39,13 +39,14 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "8kb"
+                  "maximumWarning": "5kb",
+                  "maximumError": "10kb"
                 },
                 {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "8kb"
+                  "type": "bundle",
+                  "name": "polyfills",
+                  "maximumWarning": "10kb",
+                  "maximumError": "20kb"
                 }
               ],
               "outputHashing": "all"

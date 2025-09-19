@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/server",
+    "module": "commonjs",
+    "types": ["node"],
+    "composite": true
+  },
+  "files": [
+    "src/main.server.ts",
+    "src/server.ts"
+  ]
+}
