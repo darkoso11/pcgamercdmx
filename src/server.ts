@@ -63,7 +63,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Archivos estáticos
-app.get('*', async (req: Request, res: Response, next: NextFunction) => {
+app.get(/(.*)/, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { originalUrl, baseUrl } = req;
     const app = await bootstrap();
