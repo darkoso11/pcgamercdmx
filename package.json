@@ -7,8 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build:ssr": "ng build --ssr",
-    "serve:ssr": "node dist/pcgamercdmx/server/server.mjs"
+    "build:ssr": "ng build && ng run pcgamercdmx:server",
+    "serve:ssr": "node dist/pcgamercdmx/server/main.js",
+    "prerender": "ng run pcgamercdmx:prerender",
+    "dev:ssr": "ng run pcgamercdmx:serve-ssr"
   },
   "private": true,
   "dependencies": {
@@ -38,7 +40,6 @@
     "@angular-devkit/build-angular": "^20.0.3",
     "@angular/cli": "^20.0.3",
     "@angular/compiler-cli": "^20.0.3",
-    "@tailwindcss/postcss": "^4.1.10",
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
@@ -52,7 +53,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.10",
+    "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2"
   }
 }

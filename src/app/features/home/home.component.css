@@ -39,14 +39,15 @@
 
 /* Facebook */
 .social-btn-cyber:hover .fa-facebook-f {
-  color: #ec4899; /* pink-500 */
-  text-shadow: 0 0 8px #ec4899;
+    color: #22d3ee; /* cyan-400 */
+  text-shadow: 0 0 8px #22d3ee;
+
 }
 
 /* TikTok */
 .social-btn-cyber:hover .fa-tiktok {
-  color: #22d3ee; /* cyan-400 */
-  text-shadow: 0 0 8px #22d3ee;
+  color: #ec4899; /* pink-500 */
+  text-shadow: 0 0 8px #ec4899;
 }
 
 /* Instagram */
