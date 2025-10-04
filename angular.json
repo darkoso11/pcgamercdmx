@@ -10,11 +10,9 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "css",
             "assets": [
@@ -32,7 +30,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "budgets": [
                 {
@@ -55,60 +52,69 @@
             },
             "development": {
               "optimization": false,
-              "extractCss": false,
               "sourceMap": true,
-              "namedChunks": true,
-              "budgets": []
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "development"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "pcgamercdmx:build"
+            "buildTarget": "pcgamercdmx:build:development"
           },
           "configurations": {
             "production": {
-              "browserTarget": "pcgamercdmx:build:production"
+              "buildTarget": "pcgamercdmx:build:production"
             },
             "development": {
-              "browserTarget": "pcgamercdmx:build:development"
+              "buildTarget": "pcgamercdmx:build:development"
             }
           },
           "defaultConfiguration": "development"
         },
         "server": {
-          "builder": "@angular/build:server",
+          "builder": "@angular-devkit/build-angular:server",
           "options": {
             "outputPath": "dist/server",
             "main": "src/main.server.ts",
             "tsConfig": "tsconfig.server.json"
           },
           "configurations": {
-            "production": { "optimization": true, "sourceMap": false },
-            "development": { "optimization": false, "sourceMap": true }
+            "production": {
+              "optimization": true,
+              "sourceMap": false
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
           },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular/devkit/build-angular:extract-i18n",
-          "options": { "browserTarget": "pcgamercdmx:build" }
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "pcgamercdmx:build"
+          }
         },
         "test": {
-          "builder": "@angular/devkit/build-angular:karma",
+          "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "assets": ["src/favicon.ico","src/assets"],
-            "styles": ["src/styles.css"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/styles.css"
+            ],
             "scripts": []
           }
         }
       }
     }
-  },
-  "defaultProject": "pcgamercdmx"
+  }
 }
