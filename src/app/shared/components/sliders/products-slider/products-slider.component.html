@@ -1,6 +1,14 @@
 <div class="relative w-full">
+  <!-- Mensaje cuando no hay productos -->
+  <div *ngIf="products.length === 0" class="text-center py-12">
+    <div class="text-gray-400 text-lg">
+      <i class="fas fa-search mb-4 text-3xl block"></i>
+      No se encontraron productos que coincidan con tu búsqueda.
+    </div>
+  </div>
+
   <!-- Slider con scroll táctil en móvil -->
-  <div class="md:flex md:overflow-x-hidden block overflow-x-auto snap-x scroll-smooth pb-4">
+  <div *ngIf="products.length > 0" class="md:flex md:overflow-x-hidden block overflow-x-auto snap-x scroll-smooth pb-4">
     <!-- En móvil: contenedor con scroll nativo, en desktop: contenedor con transform -->
     <div class="flex gap-8 md:transition-transform md:duration-300"
       [class.transform-none]="isMobile()"
@@ -77,20 +85,20 @@
     </div>
   </div>
 
-  <!-- Botones de navegación - solo visibles en desktop -->
-  <button *ngIf="showArrows" 
+  <!-- Botones de navegación - solo visibles en desktop y cuando hay suficientes productos -->
+  <button *ngIf="showArrows && canNavigatePrev()" 
     (click)="prevProduct()"
     class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
     <i class="fas fa-chevron-left"></i>
   </button>
-  <button *ngIf="showArrows" 
+  <button *ngIf="showArrows && canNavigateNext()" 
     (click)="nextProduct()"
     class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition">
     <i class="fas fa-chevron-right"></i>
   </button>
   
   <!-- Indicador de deslizamiento para móvil -->
-  <div *ngIf="showMobileIndicator" class="flex justify-center gap-2 mt-4 md:hidden">
+  <div *ngIf="showMobileIndicator && products.length > 0" class="flex justify-center gap-2 mt-4 md:hidden">
     <div class="text-white text-xs">
       <i class="fas fa-arrow-right"></i> Desliza para ver más
     </div>

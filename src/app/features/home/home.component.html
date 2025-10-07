@@ -123,7 +123,7 @@
         [showArrows]="true"
         [showMobileIndicator]="true"
         [wasFiltered]="wasFiltered"
-        (filterApplied)="wasFiltered = false"
+        (filterChange)="onCarouselReset()"
         >
       </app-products-slider>
     </div>

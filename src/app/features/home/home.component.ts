@@ -448,38 +448,49 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   public searchTerm: string = '';
   public wasFiltered: boolean = false;
   public filterProducts(): void {
-    const term = this.searchTerm.toLowerCase();
-    console.log(`Filtering products with term: ${term}`);
-    this.filteredCarruselProducts = this.carruselProducts.filter((product) => {
-      // Check all string and number properties
-      const propsToCheck = [
-        product.title,
-        product.processor,
-        product.motherboard,
-        product.ram,
-        product.storage,
-        product.graphicsCard,
-        product.price?.toString(),
-        product.slug,
-        product.image,
-        product.powerCertificate,
-        product.watts?.toString(),
-        product.id?.toString(),
-      ];
+    const term = this.searchTerm.toLowerCase().trim();
+    const wasFilteredBefore = this.wasFiltered;
+    
+    if (term === '') {
+      // No filter term, show all products
+      this.filteredCarruselProducts = [...this.carruselProducts];
+      this.wasFiltered = false;
+    } else {
+      // Filter products based on search term
+      this.filteredCarruselProducts = this.carruselProducts.filter((product) => {
+        const propsToCheck = [
+          product.title,
+          product.processor,
+          product.motherboard,
+          product.ram,
+          product.storage,
+          product.graphicsCard,
+          product.price?.toString(),
+          product.slug,
+          product.image,
+          product.powerCertificate,
+          product.watts?.toString(),
+          product.id?.toString(),
+        ];
 
-      // Check brandLogos array
-      if (Array.isArray(product.brandLogos)) {
-        product.brandLogos.forEach((logo) => {
-          propsToCheck.push(logo.src, logo.alt, logo.position);
-        });
-      }
+        if (Array.isArray(product.brandLogos)) {
+          product.brandLogos.forEach((logo) => {
+            propsToCheck.push(logo.src, logo.alt, logo.position);
+          });
+        }
 
-      // Check if any property includes the term
-      return propsToCheck.some(
-        (prop) => typeof prop === 'string' && prop.toLowerCase().includes(term)
-      );
-    });
-    this.wasFiltered = true;
+        return propsToCheck.some(
+          (prop) => typeof prop === 'string' && prop.toLowerCase().includes(term)
+        );
+      });
+      this.wasFiltered = true;
+    }
+  }
+
+  public onCarouselReset(): void {
+    if (this.wasFiltered) {
+      this.wasFiltered = false;
+    }
   }
 
   // Para el efecto typing - usando un enfoque con Observable para mejor fiabilidad

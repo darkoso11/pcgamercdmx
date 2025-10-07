@@ -5,6 +5,8 @@ import {
   QueryList,
   ViewChildren,
   AfterViewInit,
+  OnChanges,
+  SimpleChanges,
   HostListener,
   Output,
   EventEmitter,
@@ -19,7 +21,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './products-slider.component.html',
   styleUrls: ['./products-slider.component.css'],
 })
-export class ProductsSliderComponent implements AfterViewInit {
+export class ProductsSliderComponent implements AfterViewInit, OnChanges {
   @Input() products: any[] = [];
   @Input() showArrows: boolean = true;
   @Input() showMobileIndicator: boolean = true;
@@ -35,19 +37,44 @@ export class ProductsSliderComponent implements AfterViewInit {
   maxVisibleIndex: number = 0;
   containerWidth: number = 0;
 
-  // Add something that change the current index to 0 when was filtered becomes true
-  ngOnChanges() {
-    if (this.wasFiltered) {
-      this.currentIndex = 0;
-      setTimeout(() => {
-        this.calculateSliderDimensions();
-      }, 100);
-      console.log(
-        'Products were filtered, resetting currentIndex to ',
-        this.currentIndex
-      );
-      this.filterChange.emit(true);
+  // Reset carousel when products are filtered or products array changes
+  ngOnChanges(changes: SimpleChanges) {
+    let shouldReset = false;
+    
+    // Reset when products array changes
+    if (changes['products'] && !changes['products'].firstChange) {
+      shouldReset = true;
     }
+    
+    // Reset when wasFiltered changes
+    if (changes['wasFiltered']) {
+      const currentValue = changes['wasFiltered'].currentValue;
+      
+      if (currentValue) {
+        shouldReset = true;
+        this.filterChange.emit(true);
+      } else if (changes['wasFiltered'].previousValue && !currentValue) {
+        shouldReset = true;
+      }
+    }
+    
+    if (shouldReset) {
+      this.resetCarousel();
+    }
+  }
+
+  // Method to reset carousel to initial state
+  private resetCarousel() {
+    this.currentIndex = 0;
+    this.cardWidth = 0;
+    this.cardsPerView = 1;
+    this.maxVisibleIndex = 0;
+    this.containerWidth = 0;
+    
+    // Single timeout for dimension calculation
+    setTimeout(() => {
+      this.calculateSliderDimensions();
+    }, 100);
   }
 
   ngAfterViewInit() {
@@ -57,37 +84,43 @@ export class ProductsSliderComponent implements AfterViewInit {
   }
 
   calculateSliderDimensions() {
-    if (this.productCards && this.productCards.length > 0) {
+    if (this.productCards && this.productCards.length > 0 && this.products.length > 0) {
       try {
-        // Obtener el ancho de una tarjeta incluyendo margen
         const card = this.productCards.first.nativeElement;
-        this.cardWidth = card.offsetWidth + 32; // 32px es el valor del gap (gap-8 = 2rem = 32px)
-
-        // Obtener el ancho del contenedor
+        
+        // Skip calculation if card is not ready
+        if (card.offsetWidth === 0) {
+          return;
+        }
+        
+        this.cardWidth = card.offsetWidth + 32; // 32px gap
         const container = card.parentElement.parentElement;
         this.containerWidth = container.offsetWidth;
 
-        // Calcular cuántas tarjetas caben en la vista
         this.cardsPerView = Math.max(
           1,
           Math.floor(this.containerWidth / this.cardWidth)
         );
 
-        // Calcular el índice máximo al que se puede desplazar
-        this.maxVisibleIndex = this.products.length - this.cardsPerView;
-
-        // Asegurarse de que el currentIndex no exceda el máximo
-        if (this.currentIndex > this.maxVisibleIndex) {
-          this.currentIndex = this.maxVisibleIndex;
-        }
+        this.maxVisibleIndex = Math.max(0, this.products.length - this.cardsPerView);
+        this.currentIndex = Math.max(0, Math.min(this.currentIndex, this.maxVisibleIndex));
+        
       } catch (error) {
-        console.error('Error calculating slider dimensions:', error);
+        // Reset to safe defaults in case of error
+        this.currentIndex = 0;
+        this.maxVisibleIndex = 0;
+        this.cardsPerView = 1;
       }
+    } else {
+      // No products available, reset to safe defaults
+      this.currentIndex = 0;
+      this.maxVisibleIndex = 0;
+      this.cardsPerView = 1;
     }
   }
 
   nextProduct() {
-    if (this.currentIndex < this.maxVisibleIndex) {
+    if (this.currentIndex < this.maxVisibleIndex && this.products.length > this.cardsPerView) {
       this.currentIndex++;
     }
   }
@@ -105,11 +138,10 @@ export class ProductsSliderComponent implements AfterViewInit {
   }
 
   getSlideTransform(): number {
-    // Si el cálculo aún no se ha realizado, devuelve 0
-    if (this.cardWidth === 0) return 0;
+    if (this.cardWidth === 0 || this.products.length === 0) return 0;
 
-    // Calcular la posición de desplazamiento basada en el ancho de la tarjeta
-    return this.currentIndex * this.cardWidth * -1;
+    const safeIndex = Math.max(0, Math.min(this.currentIndex, this.maxVisibleIndex));
+    return safeIndex * this.cardWidth * -1;
   }
 
   // Método para detectar si estamos en un dispositivo móvil
@@ -122,7 +154,20 @@ export class ProductsSliderComponent implements AfterViewInit {
 
   @HostListener('window:resize')
   onResize() {
-    this.calculateSliderDimensions();
+    this.cardWidth = 0;
+    this.containerWidth = 0;
+    setTimeout(() => {
+      this.calculateSliderDimensions();
+    }, 200);
+  }
+
+  // Helper methods for better UX
+  canNavigatePrev(): boolean {
+    return this.currentIndex > 0 && this.products.length > this.cardsPerView;
+  }
+
+  canNavigateNext(): boolean {
+    return this.currentIndex < this.maxVisibleIndex && this.products.length > this.cardsPerView;
   }
 
   // Para manejar errores de carga de imagen
