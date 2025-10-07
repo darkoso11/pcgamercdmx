@@ -113,12 +113,18 @@
       Nuestros Paquetes
     </h2>
 
+    <input type="text" placeholder="Buscar productos..." class="mb-4 p-2 rounded bg-white"
+      [(ngModel)]="searchTerm" (ngModelChange)="filterProducts()" />
+
     <!-- Usando el nuevo componente ProductsSlider -->
     <div class="relative w-full max-w-7xl px-4">
       <app-products-slider 
-        [products]="carruselProducts"
+        [products]="filteredCarruselProducts"
         [showArrows]="true"
-        [showMobileIndicator]="true">
+        [showMobileIndicator]="true"
+        [wasFiltered]="wasFiltered"
+        (filterApplied)="wasFiltered = false"
+        >
       </app-products-slider>
     </div>
   </section>
