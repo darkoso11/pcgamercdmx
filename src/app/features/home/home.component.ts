@@ -3,6 +3,7 @@ import {
   OnInit,
   OnDestroy,
   NgZone,
+  ViewChild,
   ViewChildren,
   QueryList,
   ElementRef,
@@ -220,14 +221,24 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   ];
 
   brands = [
-    { name: 'NVIDIA', logo: 'assets/img/marcas/nvidia.png' },
-    { name: 'AMD', logo: 'assets/img/marcas/amd.png' },
-    { name: 'Intel', logo: 'assets/img/marcas/intel.png' },
-    { name: 'ASUS', logo: 'assets/img/marcas/asus.png' },
-    { name: 'MSI', logo: 'assets/img/marcas/msi.png' },
-    { name: 'Corsair', logo: 'assets/img/marcas/corsair.png' },
+    { name: 'NVIDIA', logo: 'assets/img/marcas/nvidia_tag.svg' },
+    { name: 'AMD', logo: 'assets/img/marcas/AMD-Ryzen.png' },
+    { name: 'Intel', logo: 'assets/img/marcas/Intel-qe15un7mdheilkp4kk4kc0rkl23pw8q1hb0dtjivj2.png' },
+    { name: 'ASUS', logo: 'assets/img/marcas/asuspng.png' },
+    { name: 'MSI', logo: 'assets/img/marcas/MSI-qe15ugmr1n5icayomza6ckfcfd05eczx4efzglsmlc.png' },
+    { name: 'Corsair', logo: 'assets/img/marcas/corsairbrand.png' },
     { name: 'Gigabyte', logo: 'assets/img/marcas/gigabyte.png' },
     { name: 'HyperX', logo: 'assets/img/marcas/hyperx.png' },
+    { name: 'Logitech', logo: 'assets/img/marcas/Logitech.png' },
+    { name: 'Noctua', logo: 'assets/img/marcas/Noctua.png' },
+    { name: 'EVGA', logo: 'assets/img/marcas/EVGA.png' },
+    { name: 'InWin', logo: 'assets/img/marcas/inwin.png' },
+    { name: 'Kingston', logo: 'assets/img/marcas/kingston.png' },
+    { name: 'ASRock', logo: 'assets/img/marcas/Asrock.png' },
+    { name: 'Thermaltake', logo: 'assets/img/marcas/thermaltake.png' },
+    { name: 'Redragon', logo: 'assets/img/marcas/Redragon.png' },
+    { name: 'Aerocool', logo: 'assets/img/marcas/aerocool.png' },
+    { name: 'Ocelot', logo: 'assets/img/marcas/ocelot-512x512-1-300x300.png' },
   ];
 
   services = [
@@ -535,8 +546,22 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   // Control del índice actual del banner
   bannerIndex = 0;
   private bannerIntervalId: any;
+  @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
 
   constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
+
+  // Métodos para controlar la navegación de los banners
+  nextBanner(): void {
+    if (this.bannersSlider) {
+      this.bannersSlider.nextSlide();
+    }
+  }
+
+  previousBanner(): void {
+    if (this.bannersSlider) {
+      this.bannersSlider.previousSlide();
+    }
+  }
 
   ngOnInit(): void {
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR

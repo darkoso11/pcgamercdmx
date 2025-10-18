@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -15,9 +15,59 @@ export class BannersSliderComponent implements OnInit, OnDestroy {
   @Input() autoPlayDelay: number = 5000;
   @Input() showArrows: boolean = true;
   @Input() showIndicators: boolean = true;
+  @Input() enableSwipe: boolean = true;
   
   currentIndex: number = 0;
   private intervalId: any;
+  private touchStartX: number = 0;
+  private touchEndX: number = 0;
+  private minSwipeDistance: number = 50;
+
+  constructor(private elementRef: ElementRef) {}
+
+  @HostListener('touchstart', ['$event'])
+  onTouchStart(event: TouchEvent) {
+    if (!this.enableSwipe) return;
+    this.touchStartX = event.touches[0].clientX;
+    this.stopAutoPlay(); // Pausar autoplay durante el swipe
+  }
+
+  @HostListener('touchmove', ['$event'])
+  onTouchMove(event: TouchEvent) {
+    if (!this.enableSwipe) return;
+    this.touchEndX = event.touches[0].clientX;
+  }
+
+  @HostListener('touchend')
+  onTouchEnd() {
+    if (!this.enableSwipe) return;
+    const swipeDistance = this.touchEndX - this.touchStartX;
+    
+    if (Math.abs(swipeDistance) > this.minSwipeDistance) {
+      if (swipeDistance > 0) {
+        this.previousSlide();
+      } else {
+        this.nextSlide();
+      }
+    }
+    
+    this.startAutoPlay(); // Reanudar autoplay después del swipe
+  }
+  
+  // Métodos para navegación externa
+  nextSlide(): void {
+    this.next();
+    if (this.autoPlay) {
+      this.startAutoPlay(); // Reinicia el autoplay después de una navegación manual
+    }
+  }
+
+  previousSlide(): void {
+    this.prev();
+    if (this.autoPlay) {
+      this.startAutoPlay(); // Reinicia el autoplay después de una navegación manual
+    }
+  }
   
   ngOnInit(): void {
     if (this.autoPlay) {

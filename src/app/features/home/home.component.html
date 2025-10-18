@@ -141,7 +141,7 @@
     <div class="max-w-7xl mx-auto px-4">
       <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         <!-- Imagen destacada más grande -->
-        <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-xl group">
+        <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-xl group cyber-card">
           <img [src]="customCases[0].imageUrl" [alt]="customCases[0].title" 
                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                (error)="handleImageError($event)" />
@@ -159,6 +159,7 @@
                   class="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
             <i class="fas fa-search-plus"></i>
           </button>
+          <div class="absolute inset-0 border-2 border-transparent group-hover:border-purple-500/50 rounded-xl pointer-events-none transition-all duration-300"></div>
         </div>
 
         <!-- Grid de imágenes más pequeñas -->
@@ -224,13 +225,31 @@
   <section class="py-16 bg-[#080a1e]">
     <div class="max-w-7xl mx-auto px-4">
       <!-- Usando el nuevo componente BannersSlider -->
-      <app-banners-slider 
-        [banners]="banners"
-        [autoPlay]="true"
-        [autoPlayDelay]="5000"
-        [showArrows]="true"
-        [showIndicators]="true">
-      </app-banners-slider>
+      <div class="relative">
+        <app-banners-slider 
+          #bannersSlider
+          [banners]="banners"
+          [autoPlay]="true"
+          [autoPlayDelay]="5000"
+          [showArrows]="false"
+          [showIndicators]="true"
+          [enableSwipe]="true"
+          class="touch-pan-y">
+        </app-banners-slider>
+        
+        <!-- Flechas de navegación - Solo visibles en desktop -->
+        <button 
+          class="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10"
+          (click)="previousBanner()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <button 
+          class="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10"
+          (click)="nextBanner()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -357,7 +376,7 @@
   <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
     <h2
       class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Computadoras por Necesidad
+      Equipos Especializados
     </h2>
 
     <!-- Usando el nuevo componente NeedsSlider -->
