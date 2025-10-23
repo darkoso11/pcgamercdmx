@@ -219,7 +219,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       bgImage: 'https://picsum.photos/id/205/500/500',
     },
   ];
-
+ /* Marcas brand */
   brands = [
     { name: 'NVIDIA', logo: 'assets/img/marcas/nvidia_tag.svg' },
     { name: 'AMD', logo: 'assets/img/marcas/AMD-Ryzen.png' },
