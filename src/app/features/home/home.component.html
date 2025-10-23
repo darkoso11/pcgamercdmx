@@ -390,22 +390,7 @@
   </section>
 
   <!-- SECCIÓN 9: MARCAS -->
-  <section class="py-16 bg-[#090b20]">
-    <h2
-      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-gray-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Marcas Premium
-    </h2>
-
-    <div class="flex justify-center flex-wrap gap-12 max-w-7xl mx-auto px-4">
-      <ng-container *ngFor="let brand of brands">
-        <div
-          class="w-32 h-32 flex items-center justify-center p-4 bg-[#161a3c]/80 rounded-lg hover:bg-[#1e2350] transition-all duration-300 cursor-pointer group">
-          <img [src]="brand.logo" [alt]="brand.name"
-            class="max-h-full max-w-full transition-transform duration-300 group-hover:scale-110" />
-        </div>
-      </ng-container>
-    </div>
-  </section>
+  <app-brands-section></app-brands-section>
 
   <!-- SECCIÓN 10: SERVICIOS -->
   <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9]">
