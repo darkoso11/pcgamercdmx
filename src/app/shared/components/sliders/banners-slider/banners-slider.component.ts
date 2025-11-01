@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ElementRef, HostListener } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef, HostListener, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -23,7 +23,13 @@ export class BannersSliderComponent implements OnInit, OnDestroy {
   private touchEndX: number = 0;
   private minSwipeDistance: number = 50;
 
-  constructor(private elementRef: ElementRef) {}
+  transform: string = 'translateX(0%)';
+  
+  constructor(
+    private elementRef: ElementRef,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   @HostListener('touchstart', ['$event'])
   onTouchStart(event: TouchEvent) {
@@ -92,17 +98,27 @@ export class BannersSliderComponent implements OnInit, OnDestroy {
     }
   }
   
+  private updateTransform(): void {
+    this.ngZone.run(() => {
+      this.transform = `translateX(-${this.currentIndex * 100}%)`;
+      this.cdr.detectChanges();
+    });
+  }
+
   prev(): void {
     this.currentIndex = (this.currentIndex - 1 + this.banners.length) % this.banners.length;
+    this.updateTransform();
   }
   
   next(): void {
     this.currentIndex = (this.currentIndex + 1) % this.banners.length;
+    this.updateTransform();
   }
   
   goToSlide(index: number): void {
     if (index >= 0 && index < this.banners.length) {
       this.currentIndex = index;
+      this.updateTransform();
     }
   }
   

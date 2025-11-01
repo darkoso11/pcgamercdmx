@@ -11,10 +11,11 @@ interface Brand {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="py-16 bg-[#090b20] relative overflow-hidden">
+    <section class="py-16 bg-[#0a0f1f] relative overflow-hidden">
       <!-- Efecto de fondo cyberpunk -->
-      <div class="absolute inset-0 bg-gradient-to-r from-[#090b20] via-[#1a1c3d] to-[#090b20] opacity-50"></div>
-      <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQgPSJNMzAgMzBMNjAgNjBIMHoiIGZpbGw9IiMxYTFjM2QiIG9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')] opacity-10"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-[#0a0f1f] via-[#162032] to-[#0a0f1f] opacity-70"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-cyan-900/10 via-purple-900/10 to-cyan-900/10 opacity-30"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.15),transparent_35%)] opacity-40"></div>
 
       <!-- Título con efecto glitch -->
       <h2 class="text-4xl font-bold text-white text-center mb-16 relative glitch-text"
@@ -31,14 +32,15 @@ interface Brand {
       <!-- Carrusel de marcas -->
       <div class="relative max-w-7xl mx-auto px-4">
         <div class="overflow-hidden relative">
-          <div class="flex transition-transform duration-[3000ms] ease-linear"
-               [style.transform]="'translateX(' + -currentTranslation + '%)'">
+          <div class="flex transition-all duration-[3000ms] ease-linear infinite-scroll"
+               style="animation: scroll 45s linear infinite;">
             <div class="flex justify-center items-center gap-8 animate-slide">
               <div *ngFor="let brand of brands"
-                   class="w-32 h-32 flex-none flex items-center justify-center p-4 
-                          bg-gradient-to-br from-[#161a3c]/80 to-[#1e2350]/80
-                          rounded-lg backdrop-blur-sm border border-cyan-500/10
-                          hover:border-cyan-400/30 hover:from-[#1e2350]/90 hover:to-[#2a2f6d]/90
+                   class="w-32 h-32 flex items-center justify-center p-4 
+                          bg-gradient-to-br from-[#1a2942]/80 to-[#2a3e5d]/90
+                          rounded-lg backdrop-blur-md border border-cyan-500/30
+                          hover:border-cyan-400/70 hover:shadow-lg hover:shadow-cyan-500/20
+                          hover:from-[#1e2b45]/90 hover:to-[#2d3f61]/90
                           transition-all duration-300 cursor-pointer group">
                 <img [src]="brand.logo"
                      [alt]="brand.name"
@@ -49,9 +51,10 @@ interface Brand {
               <!-- Duplicar las marcas para el efecto infinito -->
               <div *ngFor="let brand of brands"
                    class="w-32 h-32 flex-none flex items-center justify-center p-4 
-                          bg-gradient-to-br from-[#161a3c]/80 to-[#1e2350]/80
-                          rounded-lg backdrop-blur-sm border border-cyan-500/10
-                          hover:border-cyan-400/30 hover:from-[#1e2350]/90 hover:to-[#2a2f6d]/90
+                          bg-gradient-to-br from-[#1a2942]/80 to-[#2a3e5d]/90
+                          rounded-lg backdrop-blur-md border border-cyan-500/30
+                          hover:border-cyan-400/70 hover:shadow-lg hover:shadow-cyan-500/20
+                          hover:from-[#1e2b45]/90 hover:to-[#2d3f61]/90
                           transition-all duration-300 cursor-pointer group">
                 <img [src]="brand.logo"
                      [alt]="brand.name"
@@ -75,7 +78,7 @@ interface Brand {
       }
     }
     .animate-slide {
-      animation: slide 30s linear infinite;
+      animation: slide 45s linear infinite;
     }
     .glitch-text {
       position: relative;

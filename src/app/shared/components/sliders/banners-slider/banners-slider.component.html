@@ -2,7 +2,7 @@
   <!-- Banner Principal -->
 l  <div class="overflow-hidden rounded-xl touch-pan-x">
     <div class="relative flex transition-transform duration-700 ease-in-out will-change-transform" 
-         [style.transform]="'translateX(-' + (currentIndex * 100) + '%)'">
+         [style.transform]="transform">
       <ng-container *ngFor="let banner of banners">
         <div class="min-w-full h-80 md:h-96 relative">
           <!-- Usamos la imagen del banner si existe, si no, usamos una imagen de Lorem Picsum -->

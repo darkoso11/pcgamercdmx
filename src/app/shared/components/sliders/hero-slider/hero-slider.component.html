@@ -1,29 +1,30 @@
 <div class="hero-slider relative">
   <div class="slider-container">
-    <ng-container *ngFor="let item of items; let i = index">
+    <ng-container *ngFor="let itemData of itemsWithLinkType; let i = index">
       <ng-container *ngIf="i === currentIndex">
-        <!-- Si es un enlace externo usamos href, sino routerLink -->
-        <a *ngIf="item.link && isExternalLink(item.link)" 
-           [href]="item.link" 
+        <!-- Si es un enlace externo usamos href -->
+        <a *ngIf="itemData.item.link && itemData.isExternal" 
+           [href]="itemData.item.link" 
            target="_blank"
            class="slide-item">
-          <img [src]="item.src || item.image || item.imageUrl" 
-               [alt]="item.alt || 'Slider image'" 
+          <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
+               [alt]="itemData.item.alt || 'Slider image'" 
                class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
         </a>
         
-        <a *ngIf="item.link && !isExternalLink(item.link)" 
-           [routerLink]="item.link"
+        <!-- Si es un enlace interno usamos routerLink -->
+        <a *ngIf="itemData.item.link && !itemData.isExternal" 
+           [routerLink]="itemData.item.link"
            class="slide-item">
-          <img [src]="item.src || item.image || item.imageUrl" 
-               [alt]="item.alt || 'Slider image'"
+          <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
+               [alt]="itemData.item.alt || 'Slider image'"
                class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
         </a>
         
         <!-- Si no hay enlace, solo muestra la imagen -->
-        <div *ngIf="!item.link" class="slide-item">
-          <img [src]="item.src || item.image || item.imageUrl" 
-               [alt]="item.alt || 'Slider image'"
+        <div *ngIf="!itemData.item.link" class="slide-item">
+          <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
+               [alt]="itemData.item.alt || 'Slider image'"
                class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222]" />
         </div>
       </ng-container>
