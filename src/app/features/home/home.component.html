@@ -4,9 +4,7 @@
     class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
     <!-- Slider superior derecho - Usando el nuevo componente HeroSlider -->
     <div class="absolute top-16 md:top-20 right-12 z-20 hidden md:block">
-      <app-hero-slider 
-        [items]="sliderImages"
-        [options]="{ autoplay: true, autoplayDelay: 4000 }">
+      <app-hero-slider [items]="sliderImages" [options]="{ autoplay: true, autoplayDelay: 4000 }">
       </app-hero-slider>
     </div>
 
@@ -62,7 +60,8 @@
         </div>
 
         <!-- Texto typing cyberpunk - texto más pequeño en móvil -->
-        <h1 class="text-2xl md:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
+        <h1
+          class="text-2xl md:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
           <span>{{ typingText }}</span>
         </h1>
       </div>
@@ -75,14 +74,13 @@
 
       <!-- Para móviles, ajustada para ser más grande y con padding superior -->
       <div class="flex flex-col items-center w-full md:hidden mt-2 mb-5">
-        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
-          class="w-[90%] h-96 object-cover" />
+        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-[90%] h-96 object-cover" />
       </div>
-      
+
       <!-- Botón comprar móvil - simplificado -->
       <div class="md:hidden w-full flex justify-center mt-8">
-        <a [routerLink]="pcBuilds[pcIndex].link" 
-           class="btn-comprar-cyber py-3 px-8 w-[80%] text-center rounded-lg text-white bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg hover:shadow-pink-500/50">
+        <a [routerLink]="pcBuilds[pcIndex].link"
+          class="btn-comprar-cyber py-3 px-8 w-[80%] text-center rounded-lg text-white bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg hover:shadow-pink-500/50">
           Comprar
         </a>
       </div>
@@ -107,32 +105,44 @@
 
 
   <!-- SECCIÓN 2: SLIDER DE PRODUCTOS/PAQUETES -->
-  <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-[#090b20]">
+  <section class="min-h-screen flex flex-col relative items-center justify-center py-16 bg-[#090b20]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent">
+      </div>
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-pink-400 to-transparent">
+      </div>
+    </div>
     <h2
-      class="text-4xl font-bold text-white mb-10 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      class="text-3xl md:text-4xl font-bold text-white mb-10 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Nuestros Paquetes
     </h2>
 
-    <input type="text" placeholder="Buscar productos..." class="mb-4 p-2 rounded bg-white"
-      [(ngModel)]="searchTerm" (ngModelChange)="filterProducts()" />
+    <input type="text" placeholder="Buscar productos..." class="mb-4 p-2 rounded bg-white" [(ngModel)]="searchTerm"
+      (ngModelChange)="filterProducts()" />
 
     <!-- Usando el nuevo componente ProductsSlider -->
     <div class="relative w-full max-w-7xl px-4">
-      <app-products-slider 
-        [products]="filteredCarruselProducts"
-        [showArrows]="true"
-        [showMobileIndicator]="true"
-        [wasFiltered]="wasFiltered"
-        (filterChange)="onCarouselReset()"
-        >
+      <app-products-slider [products]="filteredCarruselProducts" [showArrows]="true" [showMobileIndicator]="true"
+        [wasFiltered]="wasFiltered" (filterChange)="onCarouselReset()">
       </app-products-slider>
     </div>
   </section>
 
   <!-- SECCIÓN 3: CUSTOM CASE / GABINETES PERSONALIZADOS -->
-  <section class="py-16 bg-[#0a0d22]">
+  <section class="py-16 relative bg-[#0a0d22]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent">
+      </div>
+    </div>
     <h2
-      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Custom Case
       <span class="block text-xl text-gray-300 mt-2 font-medium">Gabinetes Personalizados</span>
     </h2>
@@ -142,46 +152,56 @@
       <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         <!-- Imagen destacada más grande -->
         <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-xl group cyber-card">
-          <img [src]="customCases[0].imageUrl" [alt]="customCases[0].title" 
-               class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-               (error)="handleImageError($event)" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+          <img [src]="customCases[0].imageUrl" [alt]="customCases[0].title"
+            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            (error)="handleImageError($event)" />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity">
+          </div>
           <div class="absolute bottom-0 left-0 p-6">
             <h3 class="text-2xl font-bold text-white mb-2">{{ customCases[0].title }}</h3>
             <p class="text-gray-300 text-sm line-clamp-2">{{ customCases[0].description }}</p>
             <div class="flex gap-2 mt-4">
               <ng-container *ngFor="let tag of customCases[0].tags">
-                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag }}</span>
+                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag
+                  }}</span>
               </ng-container>
             </div>
           </div>
-          <button (click)="openCustomCaseModal(customCases[0])" 
-                  class="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
+          <button (click)="openCustomCaseModal(customCases[0])"
+            class="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
             <i class="fas fa-search-plus"></i>
           </button>
-          <div class="absolute inset-0 border-2 border-transparent group-hover:border-purple-500/50 rounded-xl pointer-events-none transition-all duration-300"></div>
+          <div
+            class="absolute inset-0 border-2 border-transparent group-hover:border-purple-500/50 rounded-xl pointer-events-none transition-all duration-300">
+          </div>
         </div>
 
         <!-- Grid de imágenes más pequeñas -->
         <ng-container *ngFor="let customCase of customCases.slice(1)">
           <div class="relative overflow-hidden rounded-xl group h-64 cyber-card">
-            <img [src]="customCase.imageUrl" [alt]="customCase.title" 
-                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                 (error)="handleImageError($event)" />
-            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-80 transition-opacity"></div>
+            <img [src]="customCase.imageUrl" [alt]="customCase.title"
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              (error)="handleImageError($event)" />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-80 transition-opacity">
+            </div>
             <div class="absolute bottom-0 left-0 p-4">
               <h3 class="text-lg font-bold text-white mb-1">{{ customCase.title }}</h3>
               <div class="flex flex-wrap gap-1 mt-2">
                 <ng-container *ngFor="let tag of customCase.tags.slice(0, 2)">
-                  <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-0.5 rounded">{{ tag }}</span>
+                  <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-0.5 rounded">{{
+                    tag }}</span>
                 </ng-container>
               </div>
             </div>
-            <button (click)="openCustomCaseModal(customCase)" 
-                    class="absolute top-3 right-3 bg-black/50 p-1.5 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
+            <button (click)="openCustomCaseModal(customCase)"
+              class="absolute top-3 right-3 bg-black/50 p-1.5 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
               <i class="fas fa-search-plus"></i>
             </button>
-            <div class="absolute inset-0 border-2 border-transparent group-hover:border-purple-500/50 rounded-xl pointer-events-none transition-all duration-300"></div>
+            <div
+              class="absolute inset-0 border-2 border-transparent group-hover:border-purple-500/50 rounded-xl pointer-events-none transition-all duration-300">
+            </div>
           </div>
         </ng-container>
       </div>
@@ -195,56 +215,64 @@
       </div>
     </div>
   </section>
-    <!-- SECCIÓN 4: SLIDER DE PERIFÉRICOS -->
-  <section class="py-16 bg-[#0a0d22]">
-    <h2 class="text-4xl font-bold text-white text-center mb-8 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-red-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+  <!-- SECCIÓN 4: SLIDER DE PERIFÉRICOS -->
+  <section class="py-16 relative bg-[#0a0d22]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-red-500 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-red-400 to-transparent">
+      </div>
+    </div>
+    <h2
+      class="text-3xl md:text-4xl font-bold text-white text-center mb-8 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-red-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Periféricos Gaming
     </h2>
-    
+
     <!-- Usando el nuevo componente PeripheralsSlider -->
     <div class="max-w-7xl mx-auto px-4">
-      <app-peripherals-slider 
-        [items]="peripherals" 
-        [categories]="peripheralCategories"
-        [showFilters]="true"
-        [showArrows]="true"
-        [showMobileIndicator]="true">
+      <app-peripherals-slider [items]="peripherals" [categories]="peripheralCategories" [showFilters]="true"
+        [showArrows]="true" [showMobileIndicator]="true">
       </app-peripherals-slider>
     </div>
-    
+
     <!-- Botón CTA -->
     <div class="text-center mt-8">
-      <a routerLink="/productos/perifericos" 
-         class="inline-block bg-gradient-to-r from-red-600 to-pink-600 text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-red-500/30 transition-all">
+      <a routerLink="/productos/perifericos"
+        class="inline-block bg-gradient-to-r from-red-600 to-pink-600 text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-red-500/30 transition-all">
         Ver todos los periféricos
       </a>
     </div>
   </section>
 
   <!-- SECCIÓN 5: SLIDER DE BANNERS -->
-  <section class="py-16 bg-[#080a1e]">
+  <section class="py-16 relative bg-[#080a1e]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent">
+      </div>
+    </div>
     <div class="max-w-7xl mx-auto px-4">
       <!-- Usando el nuevo componente BannersSlider -->
       <div class="relative">
-        <app-banners-slider 
-          #bannersSlider
-          [banners]="banners"
-          [autoPlay]="true"
-          [autoPlayDelay]="5000"
-          [showArrows]="false"
-          [showIndicators]="true"
-          [enableSwipe]="true"
-          class="touch-pan-y">
+        <app-banners-slider #bannersSlider [banners]="banners" [autoPlay]="true" [autoPlayDelay]="5000"
+          [showArrows]="false" [showIndicators]="true" [enableSwipe]="true" class="touch-pan-y">
         </app-banners-slider>
-        
+
         <!-- Flechas de navegación - Solo visibles en desktop -->
-        <button 
+        <button
           class="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10"
           (click)="previousBanner()">
           <i class="fas fa-chevron-left"></i>
         </button>
-        
-        <button 
+
+        <button
           class="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10"
           (click)="nextBanner()">
           <i class="fas fa-chevron-right"></i>
@@ -254,69 +282,81 @@
   </section>
 
   <!-- SECCIÓN 6: COMUNIDAD -->
-  <section class="py-16 bg-[#0d1127]">
-    <h2 class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-violet-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+  <section class="py-16 relative bg-[#0d1127]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent">
+      </div>
+    </div>
+    <h2
+      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-violet-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Nuestra Comunidad
     </h2>
-    
+
     <div class="max-w-7xl mx-auto px-4">
       <!-- Descripción de la comunidad -->
       <div class="text-center mb-10">
         <p class="text-gray-300 max-w-3xl mx-auto">
-          Forma parte de nuestra comunidad de jugadores y entusiastas de PC. Comparte tu experiencia, aprende de otros y 
+          Forma parte de nuestra comunidad de jugadores y entusiastas de PC. Comparte tu experiencia, aprende de otros y
           mantente al día con las últimas tendencias en hardware y gaming.
         </p>
       </div>
-      
+
       <!-- Grid de influencers y miembros destacados -->
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
         <ng-container *ngFor="let influencer of influencers.slice(0, 8)">
-          <div class="bg-[#161a3c] border border-violet-500/20 rounded-xl p-4 transition-all duration-300 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/20 group">
+          <div
+            class="bg-[#161a3c] border border-violet-500/20 rounded-xl p-4 transition-all duration-300 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/20 group">
             <div class="relative overflow-hidden rounded-lg mb-3 aspect-square">
-              <img [src]="influencer.image" 
-                   [alt]="influencer.name" 
-                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                   (error)="handleImageError($event)" />
+              <img [src]="influencer.image" [alt]="influencer.name"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                (error)="handleImageError($event)" />
             </div>
-            <h3 class="text-white font-bold text-lg mb-1">{{ influencer.name }}</h3>
+            <h3 class="text-sm md:text-lg font-bold text-white mb-1">{{ influencer.name }}</h3>
             <div class="flex gap-2 mt-3">
-              <a [href]="influencer.social.twitch" target="_blank" class="text-violet-400 hover:text-violet-300 transition-colors">
+              <a [href]="influencer.social.twitch" target="_blank"
+                class="text-violet-400 hover:text-violet-300 transition-colors text-sm md:text-base">
                 <i class="fab fa-twitch"></i>
               </a>
-              <a [href]="influencer.social.instagram" target="_blank" class="text-violet-400 hover:text-violet-300 transition-colors">
+              <a [href]="influencer.social.instagram" target="_blank"
+                class="text-violet-400 hover:text-violet-300 transition-colors text-sm md:text-base">
                 <i class="fab fa-instagram"></i>
               </a>
             </div>
           </div>
         </ng-container>
       </div>
-      
+
       <!-- Botones CTA para redes sociales -->
       <div class="flex flex-wrap justify-center gap-4">
-        <a href="https://discord.gg/pcgamercdmx" target="_blank" 
-           class="bg-[#5865F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#4752c4] transition-colors flex items-center">
+        <a href="https://discord.gg/pcgamercdmx" target="_blank"
+          class="bg-[#5865F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#4752c4] transition-colors flex items-center">
           <i class="fab fa-discord mr-2 text-xl"></i>
           Únete a Discord
         </a>
         <a href="https://facebook.com/groups/pcgamercdmx" target="_blank"
-           class="bg-[#1877F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#0d65d9] transition-colors flex items-center">
+          class="bg-[#1877F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#0d65d9] transition-colors flex items-center">
           <i class="fab fa-facebook mr-2 text-xl"></i>
           Grupo de Facebook
         </a>
         <a href="https://instagram.com/pcgamercdmx" target="_blank"
-           class="bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] text-white py-3 px-6 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all flex items-center">
+          class="bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] text-white py-3 px-6 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all flex items-center">
           <i class="fab fa-instagram mr-2 text-xl"></i>
           Síguenos en Instagram
         </a>
       </div>
-      
+
       <!-- Próximos eventos/transmisiones (opcional) -->
       <div class="mt-16 bg-black/30 backdrop-blur-sm border border-violet-500/20 rounded-xl p-6 md:p-8">
         <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
           <i class="fas fa-calendar-alt text-violet-400 mr-3"></i>
           Próximos Eventos
         </h3>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="flex gap-4 items-start">
             <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
@@ -329,7 +369,7 @@
               <a href="#" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">Más información</a>
             </div>
           </div>
-          
+
           <div class="flex gap-4 items-start">
             <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
               <span class="block text-xl font-bold">10</span>
@@ -338,7 +378,8 @@
             <div>
               <h4 class="text-white font-bold">Stream de Ensamble en Vivo</h4>
               <p class="text-gray-300 text-sm">Aprende a ensamblar tu PC con expertos</p>
-              <a href="#" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">Agendar recordatorio</a>
+              <a href="#" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">Agendar
+                recordatorio</a>
             </div>
           </div>
         </div>
@@ -346,10 +387,20 @@
     </div>
   </section>
 
-  <!-- SECCIÓN 7: JUEGOS FAMOSOS (anteriormente sección 6) -->
-  <section class="min-h-screen flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d]">
+  <!-- SECCIÓN 7: JUEGOS FAMOSOS -->
+  <section
+    class="min-h-screen relative flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-teal-400 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-sky-400 to-transparent">
+      </div>
+    </div>
     <h2
-      class="text-4xl font-bold text-white mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      class="text-3xl md:text-4xl font-bold text-center text-white mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Juegos Recomendados
     </h2>
 
@@ -373,18 +424,24 @@
 
 
   <!-- SECCIÓN 8: PC PARA NECESIDADES ESPECÍFICAS -->
-  <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
+  <section class="py-16 relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-amber-400 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-yellow-300 to-transparent">
+      </div>
+    </div>
     <h2
-      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Equipos Especializados
     </h2>
 
     <!-- Usando el nuevo componente NeedsSlider -->
     <div class="relative max-w-7xl mx-auto px-4">
-      <app-needs-slider 
-        [needs]="pcNeeds"
-        [showArrows]="true"
-        [showIndicators]="true">
+      <app-needs-slider [needs]="pcNeeds" [showArrows]="true" [showIndicators]="true">
       </app-needs-slider>
     </div>
   </section>
@@ -393,9 +450,18 @@
   <app-brands-section></app-brands-section>
 
   <!-- SECCIÓN 10: SERVICIOS -->
-  <section class="py-16 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9]">
+  <section class="py-16 bg-gradient-to-br relative from-[#0f172a] via-[#1e293b] to-[#0ea5e9]">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-400 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-pink-500 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-red-500 to-transparent">
+      </div>
+    </div>
     <h2
-      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Servicios Técnicos
     </h2>
 
@@ -421,36 +487,36 @@
   </section>
 
   <!-- Modal para Custom Case -->
-  <div *ngIf="selectedCustomCase" 
-       class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div *ngIf="selectedCustomCase"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
     <div class="bg-[#161a3c] border border-purple-500/30 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
       <div class="p-6">
         <div class="flex justify-between items-start">
           <h3 class="text-2xl font-bold text-white">{{ selectedCustomCase.title }}</h3>
-          <button (click)="selectedCustomCase = null" 
-                  class="bg-black/30 hover:bg-black/60 rounded-full p-2 text-white transition-colors">
+          <button (click)="selectedCustomCase = null"
+            class="bg-black/30 hover:bg-black/60 rounded-full p-2 text-white transition-colors">
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="rounded-lg overflow-hidden">
-            <img [src]="selectedCustomCase.imageUrl" [alt]="selectedCustomCase.title" 
-                 class="w-full h-auto object-cover"
-                 (error)="handleImageError($event)" />
+            <img [src]="selectedCustomCase.imageUrl" [alt]="selectedCustomCase.title" class="w-full h-auto object-cover"
+              (error)="handleImageError($event)" />
           </div>
-          
+
           <div>
             <p class="text-gray-300 mb-4">{{ selectedCustomCase.description }}</p>
-            
+
             <div class="flex flex-wrap gap-2 mb-6">
               <ng-container *ngFor="let tag of selectedCustomCase.tags">
-                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag }}</span>
+                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag
+                  }}</span>
               </ng-container>
             </div>
-            
-            <a routerLink="/custom-cases" [queryParams]="{id: selectedCustomCase.id}" 
-               class="bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition inline-block">
+
+            <a routerLink="/custom-cases" [queryParams]="{id: selectedCustomCase.id}"
+              class="bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition inline-block">
               Solicitar uno similar
             </a>
           </div>
@@ -460,7 +526,17 @@
   </div>
 
   <!-- SECCIÓN 11: BLOG -->
-  <section class="py-16 bg-[#0a0d22]">
+  <section class="py-16 bg-[#0a0d22] relative overflow-hidden">
+    <!-- Líneas de circuito decorativas -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-sky-400 to-transparent">
+      </div>
+    </div>
     <h2
       class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Últimas del Blog
@@ -503,53 +579,67 @@
       <div class="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-blue-500 filter blur-3xl opacity-20"></div>
       <div class="absolute top-1/2 left-1/4 w-96 h-96 rounded-full bg-purple-500 filter blur-3xl opacity-10"></div>
     </div>
-    
+
     <!-- Líneas de circuito decorativas -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent"></div>
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent">
+      </div>
+      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent">
+      </div>
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent">
+      </div>
     </div>
-    
+
     <div class="max-w-7xl mx-auto px-4 relative z-10">
-      <h2 class="text-4xl font-bold text-white text-center mb-4 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-[#ec4899] before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      <h2
+        class="text-3xl md:text-4xl font-bold text-white text-center mb-4 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-[#ec4899] before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
         Cuéntanos tu Proyecto
       </h2>
-      
+
       <p class="text-center text-gray-300 mb-12 max-w-3xl mx-auto">
-        ¿Tienes alguna idea específica para tu PC? Cuéntanos los detalles y nuestro equipo de expertos te ayudará a hacerla realidad con los mejores componentes del mercado.
+        ¿Tienes alguna idea específica para tu PC? Cuéntanos los detalles y nuestro equipo de expertos te ayudará a
+        hacerla realidad con los mejores componentes del mercado.
       </p>
-      
+
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
         <!-- Columna izquierda: Formulario -->
-        <div class="lg:col-span-3 bg-[#161a3c]/80 backdrop-blur rounded-xl p-6 border border-white/10 shadow-xl shadow-[#ec4899]/5">
+        <div
+          class="lg:col-span-3 bg-[#161a3c]/80 backdrop-blur rounded-xl p-6 border border-white/10 shadow-xl shadow-[#ec4899]/5">
           <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
             <i class="fas fa-microchip text-[#ec4899] mr-3"></i>
             Personaliza tu Experiencia
           </h3>
-          
+
           <form class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-gray-300 mb-2 text-sm">Nombre</label>
-                <input type="text" class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition" placeholder="Tu nombre">
+                <input type="text"
+                  class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
+                  placeholder="Tu nombre">
               </div>
-              
+
               <div>
                 <label class="block text-gray-300 mb-2 text-sm">Correo Electrónico</label>
-                <input type="email" class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition" placeholder="ejemplo@correo.com">
+                <input type="email"
+                  class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
+                  placeholder="ejemplo@correo.com">
               </div>
             </div>
-            
+
             <div>
               <label class="block text-gray-300 mb-2 text-sm">Teléfono (WhatsApp)</label>
-              <input type="tel" class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition" placeholder="Tu número con WhatsApp">
+              <input type="tel"
+                class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
+                placeholder="Tu número con WhatsApp">
             </div>
-            
+
             <div>
               <label class="block text-gray-300 mb-2 text-sm">¿Para qué usarás tu PC principalmente?</label>
-              <select class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition">
+              <select
+                class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition">
                 <option value="">Selecciona una opción</option>
                 <option value="gaming">Gaming de alto rendimiento</option>
                 <option value="streaming">Streaming profesional</option>
@@ -560,10 +650,11 @@
                 <option value="multitask">Uso múltiple</option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-gray-300 mb-2 text-sm">Presupuesto aproximado</label>
-              <select class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition">
+              <select
+                class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition">
                 <option value="">Selecciona una opción</option>
                 <option value="15000">$15,000 - $20,000</option>
                 <option value="20000">$20,000 - $30,000</option>
@@ -572,33 +663,38 @@
                 <option value="60000">Más de $60,000</option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-gray-300 mb-2 text-sm">Cuéntanos los detalles de tu idea</label>
-              <textarea rows="5" class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition" placeholder="Describe tu idea, necesidades específicas, componentes que te interesan, etc."></textarea>
+              <textarea rows="5"
+                class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
+                placeholder="Describe tu idea, necesidades específicas, componentes que te interesan, etc."></textarea>
             </div>
-            
+
             <div>
-              <button type="submit" class="w-full py-3 px-6 bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#ec4899]/30 transition-all duration-300 relative overflow-hidden group">
+              <button type="submit"
+                class="w-full py-3 px-6 bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#ec4899]/30 transition-all duration-300 relative overflow-hidden group">
                 <span class="relative z-10 flex items-center justify-center">
                   Enviar Consulta
                   <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                 </span>
-                <span class="absolute inset-0 bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <span
+                  class="absolute inset-0 bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </button>
             </div>
           </form>
         </div>
-        
+
         <!-- Columna derecha: Información adicional y gráficos -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Bloque de beneficios -->
           <div class="bg-[#161a3c]/80 backdrop-blur rounded-xl p-6 border border-white/10 shadow-xl shadow-[#8b5cf6]/5">
             <h3 class="text-xl font-bold text-white mb-4">¿Por qué personalizar?</h3>
-            
+
             <ul class="space-y-4">
               <li class="flex items-start">
-                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
                   <i class="fas fa-check text-white text-xs"></i>
                 </div>
                 <div>
@@ -606,9 +702,10 @@
                   <p class="text-gray-300 text-sm">Optimizada específicamente para tus necesidades</p>
                 </div>
               </li>
-              
+
               <li class="flex items-start">
-                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
                   <i class="fas fa-check text-white text-xs"></i>
                 </div>
                 <div>
@@ -616,9 +713,10 @@
                   <p class="text-gray-300 text-sm">Sin gastar de más en lo que no necesitas</p>
                 </div>
               </li>
-              
+
               <li class="flex items-start">
-                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
                   <i class="fas fa-check text-white text-xs"></i>
                 </div>
                 <div>
@@ -628,22 +726,24 @@
               </li>
             </ul>
           </div>
-          
+
           <!-- Gráfico/Imagen decorativa -->
           <div class="relative h-64 rounded-xl overflow-hidden">
-            <img src="assets/img/custom/circuit-diagram.jpg" alt="Diagrama cyberpunk" class="w-full h-full object-cover brightness-75" (error)="handleImageError($event)">
+            <img src="assets/img/custom/circuit-diagram.jpg" alt="Diagrama cyberpunk"
+              class="w-full h-full object-cover brightness-75" (error)="handleImageError($event)">
             <div class="absolute inset-0 bg-gradient-to-t from-[#0d1127] to-transparent"></div>
             <div class="absolute bottom-0 left-0 p-4">
               <h3 class="text-xl font-bold text-white mb-1">Expertos en ensamble</h3>
               <p class="text-gray-300 text-sm">Más de 10 años de experiencia construyendo PCs de alto rendimiento</p>
             </div>
           </div>
-          
+
           <!-- Testimonios -->
           <div class="bg-[#161a3c]/80 backdrop-blur rounded-xl p-6 border border-white/10 shadow-xl shadow-[#8b5cf6]/5">
             <div class="flex items-center mb-4">
               <div class="flex-shrink-0">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
                   <i class="fas fa-quote-left text-white"></i>
                 </div>
               </div>
@@ -659,7 +759,8 @@
               </div>
             </div>
             <p class="text-gray-300 text-sm italic">
-              "Personalizaron mi PC para streaming y gaming. El rendimiento es increíble y el diseño quedó exactamente como lo pedí. 100% recomendados."
+              "Personalizaron mi PC para streaming y gaming. El rendimiento es increíble y el diseño quedó exactamente
+              como lo pedí. 100% recomendados."
             </p>
           </div>
         </div>

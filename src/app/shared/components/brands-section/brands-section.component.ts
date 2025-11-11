@@ -11,20 +11,29 @@ interface Brand {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="py-16 bg-[#090b20] relative overflow-hidden">
+    <section class="py-16 relative bg-[#090b20] relative overflow-hidden">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-500 to-transparent">
+      </div>
+      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent">
+      </div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-sky-400 to-transparent">
+      </div>
+    </div>
       <!-- Efecto de fondo cyberpunk -->
       <div class="absolute inset-0 bg-gradient-to-r from-[#090b20] via-[#1a1c3d] to-[#090b20] opacity-50"></div>
       <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+CiAgPHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPgogIDxwYXRoIGQgPSJNMzAgMzBMNjAgNjBIMHoiIGZpbGw9IiMxYTFjM2QiIG9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')] opacity-10"></div>
 
       <!-- Título con efecto glitch -->
-      <h2 class="text-4xl font-bold text-white text-center mb-16 relative glitch-text"
+        <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative glitch-text"
           data-text="Marcas Premium">
         Marcas Premium
-        <div class="absolute h-1 w-12 bg-cyan-500 -bottom-3 left-1/2 -translate-x-1/2
+        <div class="absolute h-1 w-12 bg-sky-500 -bottom-3 left-1/2 -translate-x-1/2
                     before:content-[''] before:absolute before:top-0 before:left-0 before:w-full before:h-full
-                    before:bg-pink-500 before:transform before:translate-x-[2px] before:opacity-70
+                    before:bg-indigo-400 before:transform before:translate-x-[2px] before:opacity-70
                     after:content-[''] after:absolute after:top-0 after:left-0 after:w-full after:h-full
-                    after:bg-cyan-400 after:transform after:-translate-x-[2px] after:opacity-70">
+                    after:bg-sky-400 after:transform after:-translate-x-[2px] after:opacity-70">
         </div>
       </h2>
 
@@ -37,8 +46,8 @@ interface Brand {
               <div *ngFor="let brand of brands"
                    class="w-32 h-32 flex-none flex items-center justify-center p-4 
                           bg-gradient-to-br from-[#161a3c]/80 to-[#1e2350]/80
-                          rounded-lg backdrop-blur-sm border border-cyan-500/10
-                          hover:border-cyan-400/30 hover:from-[#1e2350]/90 hover:to-[#2a2f6d]/90
+                          rounded-lg backdrop-blur-sm border border-sky-500/10
+                          hover:border-sky-400/30 hover:from-[#1e2350]/90 hover:to-[#2a2f6d]/90
                           transition-all duration-300 cursor-pointer group">
                 <img [src]="brand.logo"
                      [alt]="brand.name"
