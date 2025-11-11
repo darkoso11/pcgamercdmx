@@ -556,8 +556,11 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
       // Añade la rotación de imágenes del slider y PC
       this._intervalId = setInterval(() => {
-        this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
-        this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
+        this.ngZone.run(() => {
+          this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
+          this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
+          this.cdr.detectChanges();
+        });
       }, 4000);
 
       window.addEventListener('load', () => {
