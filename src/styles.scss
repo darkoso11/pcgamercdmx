@@ -1,7 +1,5 @@
-/* Estilos globales para la aplicación */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@import "tailwindcss";
 
 /* Media query personalizada para breakpoint en 1150px */
 @media (min-width: 1150px) {
