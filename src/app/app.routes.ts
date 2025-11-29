@@ -9,7 +9,9 @@ export const routes: Routes = [
   },
   {
     path: 'contacto',
-    loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent)
+    loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent),
+    title: 'Contacto | PC Gamer CDMX',
+    data: { description: 'Ponte en contacto con PC Gamer CDMX para consultas, soporte o información sobre nuestros productos y servicios.' }
   },
   
   // Rutas adicionales
