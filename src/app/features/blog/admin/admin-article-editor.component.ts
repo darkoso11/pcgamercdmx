@@ -5,12 +5,14 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
 import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
+import { AdminHeaderComponent } from './admin-header.component';
 
 @Component({
   selector: 'app-admin-article-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule, AdminHeaderComponent],
   template: `
+    <app-admin-header></app-admin-header>
     <div class="p-6 max-w-4xl mx-auto">
       <h1 class="text-2xl font-bold mb-6">{{ isNew ? 'Nuevo Artículo' : 'Editar Artículo' }}</h1>
       
