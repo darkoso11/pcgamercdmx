@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "1",
+    "title": "Artículo de ejemplo",
+    "slug": "sample-article",
+    "summary": "Resumen corto del artículo de ejemplo.",
+    "coverImage": { "url": "/assets/img/custom/sample-cover.jpg", "alt": "Cover" },
+    "sections": [
+      { "id": "s1", "title": "Introducción", "text": "<p>Este es un artículo de ejemplo. Usa este JSON para desarrollo local.</p>", "order": 0 }
+    ],
+    "categoryId": "cat1",
+    "tags": ["ejemplo","prueba"],
+    "published": true,
+    "publishedAt": "2025-01-01T00:00:00.000Z",
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  }
+]

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
+import { AuthGuard } from './features/blog/services/auth.guard';
 
 export const routes: Routes = [
   {
@@ -23,10 +24,6 @@ export const routes: Routes = [
     path: 'nosotros',
     loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent)
   },
- {
-    path: 'blog',
-    loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent)
-  },
   {
     path: 'galeria',
     loadComponent: () => import('./features/gallery/gallery.component').then(m => m.GalleryComponent)
@@ -44,32 +41,45 @@ export const routes: Routes = [
     loadComponent: () => import('./features/quotation/quotation.component').then(m => m.QuotationComponent)
   },
 
-  // Rutas con parámetros - usar renderMode: 'dynamic'
-/*   {
-    path: 'productos/:slug',
-    loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
-    title: 'Productos | PC Gamer CDMX',
-    // Importante: Especificar modo de renderizado dinámico para evitar el error
-    data: {
-      renderMode: 'dynamic' 
-    }
-  }, */
-/*   {
-    path: 'categorias/:tag',
-    loadComponent: () => import('./features/products/category.component').then(m => m.CategoryComponent),
-    data: {
-      renderMode: 'dynamic'
-    }
-  }, */
-  // Importante: Especificar modo de renderizado dinámico para evitar el error
-/*   {
+  // Blog routes
+  {
+    path: 'blog',
+    loadComponent: () => import('./features/blog/blog-list.component').then(m => m.BlogListComponent),
+    title: 'Blog | PC Gamer CDMX'
+  },
+  {
     path: 'blog/:slug',
-    loadComponent: () => import('./features/blog/blog.component').then(m => m.BlogComponent),
-    title: 'Blog | PC Gamer CDMX',
-    data: {
-      renderMode: 'dynamic'
-    }
-  }, */
+    loadComponent: () => import('./features/blog/article.component').then(m => m.ArticleComponent),
+    title: 'Artículo | PC Gamer CDMX',
+    data: { renderMode: 'dynamic' }
+  },
+
+  // Admin Blog routes
+  {
+    path: 'admin/blog',
+    loadComponent: () => import('./features/blog/admin/admin-article-list.component').then(m => m.AdminArticleListComponent),
+    title: 'Admin Blog | PC Gamer CDMX',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/blog/new',
+    loadComponent: () => import('./features/blog/admin/admin-article-editor.component').then(m => m.AdminArticleEditorComponent),
+    title: 'Nuevo Artículo | PC Gamer CDMX',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/blog/:id/edit',
+    loadComponent: () => import('./features/blog/admin/admin-article-editor.component').then(m => m.AdminArticleEditorComponent),
+    title: 'Editar Artículo | PC Gamer CDMX',
+    data: { renderMode: 'dynamic' }
+    ,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/blog/login',
+    loadComponent: () => import('./features/blog/admin/admin-login.component').then(m => m.AdminLoginComponent),
+    title: 'Admin Login | PC Gamer CDMX'
+  },
 
   // Ruta fallback
   {

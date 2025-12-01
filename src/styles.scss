@@ -1,5 +1,7 @@
 
 @import "tailwindcss";
+@import "quill/dist/quill.core.css";
+@import "quill/dist/quill.snow.css";
 
 /* Media query personalizada para breakpoint en 1150px */
 @media (min-width: 1150px) {
