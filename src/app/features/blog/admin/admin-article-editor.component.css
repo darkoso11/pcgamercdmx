@@ -1,0 +1,18 @@
+::ng-deep .ql-editor {
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #0b1220;
+  color: white;
+}
+
+::ng-deep .ql-toolbar {
+  background: #081229;
+  border-color: #06b6d4;
+}
+
+::ng-deep .ql-toolbar button:hover,
+::ng-deep .ql-toolbar button.ql-active,
+::ng-deep .ql-toolbar button:focus {
+  color: #06b6d4;
+}
