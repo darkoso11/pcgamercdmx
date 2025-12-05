@@ -26,7 +26,6 @@ type MinimalArticle = { title: string; slug: string; summary?: string; coverImag
               <option value="">Todas las etiquetas</option>
               <option *ngFor="let t of tags" [value]="t">{{ t }}</option>
             </select>
-            <a routerLink="/admin/blog" class="inline-block text-center mt-2 py-2 px-3 bg-pink-500 rounded text-white font-bold">Entrar al admin</a>
           </div>
         </div>
 
