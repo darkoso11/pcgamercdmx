@@ -12,6 +12,7 @@ interface Brand {
   imports: [CommonModule],
   template: `
     <section class="py-16 bg-[#090b20] relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-200 to-transparent"></div>
       <!-- Efecto de fondo cyberpunk -->
       <div class="absolute inset-0 bg-gradient-to-r from-[#0a0f1f] via-[#162032] to-[#0a0f1f] opacity-70"></div>
       <div class="absolute inset-0 bg-gradient-to-b from-cyan-900/10 via-purple-900/10 to-cyan-900/10 opacity-30"></div>

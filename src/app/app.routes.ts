@@ -68,6 +68,12 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'admin/blog/categories',
+    loadComponent: () => import('./features/blog/admin/admin-categories.component').then(m => m.AdminCategoriesComponent),
+    title: 'Categorías | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'admin/blog/:id/edit',
     loadComponent: () => import('./features/blog/admin/admin-article-editor.component').then(m => m.AdminArticleEditorComponent),
     title: 'Editar Artículo | PC Gamer CDMX',

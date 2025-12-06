@@ -29,4 +29,21 @@ export class BlogService {
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.base}/articles/${id}`);
   }
+
+  // Categories
+  getCategories(): Observable<any> {
+    return this.http.get(`${this.base}/categories`);
+  }
+
+  createCategory(payload: { name: string; description?: string }): Observable<any> {
+    return this.http.post(`${this.base}/categories`, payload);
+  }
+
+  updateCategory(id: string, payload: { name?: string; description?: string }): Observable<any> {
+    return this.http.put(`${this.base}/categories/${id}`, payload);
+  }
+
+  deleteCategory(id: string): Observable<any> {
+    return this.http.delete(`${this.base}/categories/${id}`);
+  }
 }
