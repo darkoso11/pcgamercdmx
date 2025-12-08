@@ -1,16 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-blog-article',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="bg-[#071029] min-h-screen py-12">
+      <!-- Espaciador para navbar superior -->
+      <div class="h-20"></div>
+      
       <div class="max-w-4xl mx-auto px-4">
-        <a routerLink="/blog" class="text-cyan-300 hover:underline mb-6 inline-block">← Volver al Blog</a>
+        <!-- Botón regresar mejorado -->
+        <div class="mb-8 flex items-center">
+          <a routerLink="/blog" class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-400/10 border border-cyan-400 rounded-lg text-cyan-300 hover:bg-cyan-400/20 hover:text-cyan-200 transition font-semibold">
+            <span>←</span>
+            <span>Volver al Blog</span>
+          </a>
+        </div>
 
         <div *ngIf="!article" class="p-6 bg-[#0b1220] rounded-xl text-gray-300">Cargando artículo...</div>
 

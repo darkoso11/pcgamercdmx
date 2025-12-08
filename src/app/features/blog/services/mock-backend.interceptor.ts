@@ -3,58 +3,80 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } fr
 import { Observable, of, throwError } from 'rxjs';
 import { Article } from '../models/types';
 
-// Mock in-memory store
-let mockArticles: Article[] = [
-  {
-    _id: '1',
-    title: 'Guía Completa de RTX 4090',
-    slug: 'guia-rtx-4090',
-    summary: 'Todo lo que necesitas saber sobre la GPU más potente del mercado.',
-    coverImage: { url: 'https://picsum.photos/800/400?random=1', alt: 'RTX 4090' },
-    sections: [
-      {
-        id: 's1',
-        title: 'Especificaciones',
-        text: '<p>La RTX 4090 es la tarjeta gráfica más potente de NVIDIA.</p>',
-        order: 0
-      }
-    ],
-    categoryId: 'cat1',
-    tags: ['GPU', 'NVIDIA', 'RTX'],
-    published: true,
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    _id: '2',
-    title: 'Procesadores de 14ª Generación Intel',
-    slug: 'procesadores-intel-14-gen',
-    summary: 'Análisis de los nuevos CPUs de Intel con arquitectura Raptor Lake Refresh.',
-    coverImage: { url: 'https://picsum.photos/800/400?random=2', alt: 'Intel i9-14900K' },
-    sections: [
-      {
-        id: 's1',
-        title: 'Rendimiento',
-        text: '<p>Los procesadores de 14ª gen ofrecen un rendimiento superior al anterior ciclo.</p>',
-        order: 0
-      }
-    ],
-    categoryId: 'cat2',
-    tags: ['Intel', 'CPU', 'Rendimiento'],
-    published: true,
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+// Mock in-memory store with localStorage persistence
+const ARTICLES_KEY = 'mock_blog_articles_v1';
+let mockArticles: Article[] = (() => {
+  try {
+    const raw = localStorage.getItem(ARTICLES_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    // ignore JSON parse/localStorage errors
   }
-];
+  const initial: Article[] = [
+    {
+      _id: '1',
+      title: 'Guía Completa de RTX 4090',
+      slug: 'guia-rtx-4090',
+      summary: 'Todo lo que necesitas saber sobre la GPU más potente del mercado.',
+      coverImage: { url: 'https://picsum.photos/800/400?random=1', alt: 'RTX 4090' },
+      sections: [
+        {
+          id: 's1',
+          title: 'Especificaciones',
+          text: '<p>La RTX 4090 es la tarjeta gráfica más potente de NVIDIA.</p>',
+          order: 0
+        }
+      ],
+      categoryId: 'cat1',
+      tags: ['GPU', 'NVIDIA', 'RTX'],
+      published: true,
+      publishedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      _id: '2',
+      title: 'Procesadores de 14ª Generación Intel',
+      slug: 'procesadores-intel-14-gen',
+      summary: 'Análisis de los nuevos CPUs de Intel con arquitectura Raptor Lake Refresh.',
+      coverImage: { url: 'https://picsum.photos/800/400?random=2', alt: 'Intel i9-14900K' },
+      sections: [
+        {
+          id: 's1',
+          title: 'Rendimiento',
+          text: '<p>Los procesadores de 14ª gen ofrecen un rendimiento superior al anterior ciclo.</p>',
+          order: 0
+        }
+      ],
+      categoryId: 'cat2',
+      tags: ['Intel', 'CPU', 'Rendimiento'],
+      published: true,
+      publishedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+  try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(initial)); } catch (e) {}
+  return initial;
+})();
 
 // Mock categories
-let mockCategories = [
-  { _id: 'cat1', name: 'Hardware', description: 'Noticias de hardware' },
-  { _id: 'cat2', name: 'Software', description: 'Noticias de software' },
-  { _id: 'cat3', name: 'Gaming', description: 'Gaming y esports' }
-];
+const CATEGORIES_KEY = 'mock_blog_categories_v1';
+let mockCategories: { _id: string; name: string; description?: string }[] = (() => {
+  try {
+    const raw = localStorage.getItem(CATEGORIES_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    // ignore JSON parse/localStorage errors
+  }
+  const initial = [
+    { _id: 'cat1', name: 'Hardware', description: 'Noticias de hardware' },
+    { _id: 'cat2', name: 'Software', description: 'Noticias de software' },
+    { _id: 'cat3', name: 'Gaming', description: 'Gaming y esports' }
+  ];
+  try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(initial)); } catch (e) {}
+  return initial;
+})();
 
 @Injectable()
 export class MockBackendInterceptor implements HttpInterceptor {
@@ -133,6 +155,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
         updatedAt: new Date().toISOString()
       };
       mockArticles.push(newArticle);
+      try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(mockArticles)); } catch (e) {}
       console.log('Mock: Article created', newArticle);
       return of(new HttpResponse({ status: 201, body: newArticle }));
     }
@@ -147,6 +170,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
           ...req.body,
           updatedAt: new Date().toISOString()
         };
+        try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(mockArticles)); } catch (e) {}
         console.log('Mock: Article updated', mockArticles[idx]);
         return of(new HttpResponse({ status: 200, body: mockArticles[idx] }));
       }
@@ -159,6 +183,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const idx = mockArticles.findIndex(a => a._id === id);
       if (idx >= 0) {
         const deleted = mockArticles.splice(idx, 1)[0];
+        try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(mockArticles)); } catch (e) {}
         console.log('Mock: Article deleted', deleted);
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }
@@ -186,6 +211,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const body = req.body || {};
       const newCat = { _id: String(Date.now()), name: body.name || 'Sin nombre', description: body.description || '' };
       mockCategories.push(newCat);
+      try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(mockCategories)); } catch (e) {}
       console.log('Mock: Category created', newCat);
       return of(new HttpResponse({ status: 201, body: newCat }));
     }
@@ -196,6 +222,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const idx = mockCategories.findIndex(c => c._id === id);
       if (idx >= 0) {
         mockCategories[idx] = { ...mockCategories[idx], ...(req.body || {}) };
+        try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(mockCategories)); } catch (e) {}
         console.log('Mock: Category updated', mockCategories[idx]);
         return of(new HttpResponse({ status: 200, body: mockCategories[idx] }));
       }
@@ -208,6 +235,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const idx = mockCategories.findIndex(c => c._id === id);
       if (idx >= 0) {
         const deleted = mockCategories.splice(idx, 1)[0];
+        try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(mockCategories)); } catch (e) {}
         console.log('Mock: Category deleted', deleted);
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }

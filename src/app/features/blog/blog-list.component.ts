@@ -10,7 +10,7 @@ type MinimalArticle = { title: string; slug: string; summary?: string; coverImag
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <section class="py-12 bg-[#071029]">
+    <section class="py-20 bg-[#071029]">
       <div class="max-w-7xl mx-auto px-4">
         <div class="mb-8 grid grid-cols-1 md:grid-cols-4 gap-6">
           <div class="md:col-span-3">

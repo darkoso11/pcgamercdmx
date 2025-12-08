@@ -56,6 +56,12 @@ export const routes: Routes = [
 
   // Admin Blog routes
   {
+    path: 'admin',
+    loadComponent: () => import('./features/blog/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+    title: 'Admin | PC Gamer CDMX',
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'admin/blog',
     loadComponent: () => import('./features/blog/admin/admin-article-list.component').then(m => m.AdminArticleListComponent),
     title: 'Admin Blog | PC Gamer CDMX',
