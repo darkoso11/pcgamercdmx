@@ -28,6 +28,7 @@ let mockArticles: Article[] = (() => {
         }
       ],
       categoryId: 'cat1',
+      subCategoryId: 'sub1',
       tags: ['GPU', 'NVIDIA', 'RTX'],
       published: true,
       publishedAt: new Date().toISOString(),
@@ -48,7 +49,8 @@ let mockArticles: Article[] = (() => {
           order: 0
         }
       ],
-      categoryId: 'cat2',
+      categoryId: 'cat1',
+      subCategoryId: 'sub2',
       tags: ['Intel', 'CPU', 'Rendimiento'],
       published: true,
       publishedAt: new Date().toISOString(),
@@ -70,11 +72,29 @@ let mockCategories: { _id: string; name: string; description?: string }[] = (() 
     // ignore JSON parse/localStorage errors
   }
   const initial = [
-    { _id: 'cat1', name: 'Hardware', description: 'Noticias de hardware' },
+    { _id: 'cat1', name: 'Tarjeta Gráfica', description: 'Tarjetas gráficas y GPUs' },
     { _id: 'cat2', name: 'Software', description: 'Noticias de software' },
     { _id: 'cat3', name: 'Gaming', description: 'Gaming y esports' }
   ];
   try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(initial)); } catch (e) {}
+  return initial;
+})();
+
+// Mock subcategories
+const SUBCATEGORIES_KEY = 'mock_blog_subcategories_v1';
+let mockSubCategories: { _id: string; name: string; categoryId: string; description?: string }[] = (() => {
+  try {
+    const raw = localStorage.getItem(SUBCATEGORIES_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    // ignore JSON parse/localStorage errors
+  }
+  const initial = [
+    { _id: 'sub1', name: 'Nvidia', categoryId: 'cat1', description: 'Productos y noticias de Nvidia' },
+    { _id: 'sub2', name: 'AMD', categoryId: 'cat1', description: 'Productos y noticias de AMD' },
+    { _id: 'sub3', name: 'OS', categoryId: 'cat2', description: 'Sistemas operativos' }
+  ];
+  try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(initial)); } catch (e) {}
   return initial;
 })();
 
@@ -117,6 +137,12 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const categoryId = params.get('categoryId');
       if (categoryId) {
         filtered = filtered.filter(a => a.categoryId === categoryId);
+      }
+
+      // Filter by subcategory
+      const subCategoryId = params.get('subCategoryId');
+      if (subCategoryId) {
+        filtered = filtered.filter(a => a.subCategoryId === subCategoryId);
       }
 
       // Pagination
@@ -240,6 +266,53 @@ export class MockBackendInterceptor implements HttpInterceptor {
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }
       return throwError(() => new Error('Category not found'));
+    }
+
+    // GET /api/blog/subcategories (with optional categoryId filter)
+    if (req.method === 'GET' && req.url.includes('/api/blog/subcategories')) {
+      const params = new URLSearchParams(req.url.split('?')[1] || '');
+      let filtered = [...mockSubCategories];
+      const categoryId = params.get('categoryId');
+      if (categoryId) {
+        filtered = filtered.filter(s => s.categoryId === categoryId);
+      }
+      return of(new HttpResponse({ status: 200, body: filtered }));
+    }
+
+    // POST /api/blog/subcategories (create subcategory)
+    if (req.method === 'POST' && req.url.includes('/api/blog/subcategories')) {
+      const body = req.body || {};
+      const newSub = { _id: String(Date.now()), name: body.name || 'Sin nombre', categoryId: body.categoryId, description: body.description || '' };
+      mockSubCategories.push(newSub);
+      try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(mockSubCategories)); } catch (e) {}
+      console.log('Mock: Subcategory created', newSub);
+      return of(new HttpResponse({ status: 201, body: newSub }));
+    }
+
+    // PUT /api/blog/subcategories/:id
+    if (req.method === 'PUT' && req.url.match(/\/api\/blog\/subcategories\/[^/]+$/)) {
+      const id = req.url.split('/').pop();
+      const idx = mockSubCategories.findIndex(s => s._id === id);
+      if (idx >= 0) {
+        mockSubCategories[idx] = { ...mockSubCategories[idx], ...(req.body || {}) };
+        try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(mockSubCategories)); } catch (e) {}
+        console.log('Mock: Subcategory updated', mockSubCategories[idx]);
+        return of(new HttpResponse({ status: 200, body: mockSubCategories[idx] }));
+      }
+      return throwError(() => new Error('Subcategory not found'));
+    }
+
+    // DELETE /api/blog/subcategories/:id
+    if (req.method === 'DELETE' && req.url.match(/\/api\/blog\/subcategories\/[^/]+$/)) {
+      const id = req.url.split('/').pop();
+      const idx = mockSubCategories.findIndex(s => s._id === id);
+      if (idx >= 0) {
+        const deleted = mockSubCategories.splice(idx, 1)[0];
+        try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(mockSubCategories)); } catch (e) {}
+        console.log('Mock: Subcategory deleted', deleted);
+        return of(new HttpResponse({ status: 200, body: { success: true } }));
+      }
+      return throwError(() => new Error('Subcategory not found'));
     }
 
     // Pass through any other requests

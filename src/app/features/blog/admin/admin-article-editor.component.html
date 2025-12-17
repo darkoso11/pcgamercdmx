@@ -45,18 +45,28 @@
         ></textarea>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Categoría *</label>
           <select 
             formControlName="categoryId" 
+            (change)="onCategoryChange()"
             class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white focus:border-cyan-400 transition"
             required
           >
             <option value="">-- Seleccionar --</option>
-            <option value="tech">Tecnología</option>
-            <option value="reviews">Reseñas</option>
-            <option value="tutorials">Tutoriales</option>
+            <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Subcategoría</label>
+          <select 
+            formControlName="subCategoryId" 
+            class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white focus:border-cyan-400 transition"
+          >
+            <option value="">-- Ninguna --</option>
+            <option *ngFor="let sub of filteredSubcategories" [value]="sub._id">{{ sub.name }}</option>
           </select>
         </div>
 

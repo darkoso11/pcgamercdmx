@@ -24,6 +24,10 @@ export class AdminArticleEditorComponent implements OnInit {
   errorMsg = '';
   successMsg = '';
 
+  categories: any[] = [];
+  subcategories: any[] = [];
+  filteredSubcategories: any[] = [];
+
   quillModules = {
     toolbar: [
       ['bold', 'italic', 'underline', 'strike'],
@@ -47,6 +51,7 @@ export class AdminArticleEditorComponent implements OnInit {
       slug: [''],
       summary: ['', [Validators.required, Validators.minLength(10)]],
       categoryId: ['', Validators.required],
+      subCategoryId: [''],
       tags: [''],
       coverImage: [''],
       published: [false],
@@ -66,6 +71,35 @@ export class AdminArticleEditorComponent implements OnInit {
     } else {
       this.addSection();
     }
+    this.loadCategories();
+    this.loadSubcategories();
+  }
+
+  loadCategories() {
+    this.blogService.getCategories().subscribe((res: any) => {
+      this.categories = Array.isArray(res) ? res : (res.data || res);
+    });
+  }
+
+  loadSubcategories() {
+    this.blogService.getSubCategories().subscribe((res: any) => {
+      this.subcategories = Array.isArray(res) ? res : (res.data || res);
+      this.updateFilteredSubcategories();
+    });
+  }
+
+  onCategoryChange() {
+    this.updateFilteredSubcategories();
+    // Reset subcategory if not valid for new category
+    const selectedSubId = this.form.value.subCategoryId;
+    if (selectedSubId && !this.filteredSubcategories.find(s => s._id === selectedSubId)) {
+      this.form.patchValue({ subCategoryId: '' });
+    }
+  }
+
+  updateFilteredSubcategories() {
+    const categoryId = this.form.value.categoryId;
+    this.filteredSubcategories = categoryId ? this.subcategories.filter(s => s.categoryId === categoryId) : [];
   }
 
   loadArticle(id: string) {

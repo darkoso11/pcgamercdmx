@@ -46,4 +46,23 @@ export class BlogService {
   deleteCategory(id: string): Observable<any> {
     return this.http.delete(`${this.base}/categories/${id}`);
   }
+
+  // Subcategories
+  getSubCategories(categoryId?: string): Observable<any> {
+    const params: any = {};
+    if (categoryId) params.categoryId = categoryId;
+    return this.http.get(`${this.base}/subcategories`, { params });
+  }
+
+  createSubCategory(payload: { name: string; categoryId: string; description?: string }): Observable<any> {
+    return this.http.post(`${this.base}/subcategories`, payload);
+  }
+
+  updateSubCategory(id: string, payload: { name?: string; description?: string }): Observable<any> {
+    return this.http.put(`${this.base}/subcategories/${id}`, payload);
+  }
+
+  deleteSubCategory(id: string): Observable<any> {
+    return this.http.delete(`${this.base}/subcategories/${id}`);
+  }
 }
