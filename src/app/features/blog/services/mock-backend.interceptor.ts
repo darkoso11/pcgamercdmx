@@ -3,6 +3,13 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse } fr
 import { Observable, of, throwError } from 'rxjs';
 import { Article } from '../models/types';
 
+// Declare global function for debugging
+declare global {
+  interface Window {
+    resetMockData: () => void;
+  }
+}
+
 // Mock in-memory store with localStorage persistence
 const ARTICLES_KEY = 'mock_blog_articles_v1';
 let mockArticles: Article[] = (() => {
@@ -62,15 +69,10 @@ let mockArticles: Article[] = (() => {
   return initial;
 })();
 
-// Mock categories
-const CATEGORIES_KEY = 'mock_blog_categories_v1';
+// Mock categories - Always use fresh data
+const CATEGORIES_KEY = 'mock_blog_categories_v2';
 let mockCategories: { _id: string; name: string; description?: string }[] = (() => {
-  try {
-    const raw = localStorage.getItem(CATEGORIES_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {
-    // ignore JSON parse/localStorage errors
-  }
+  // Always start with fresh data, ignore localStorage for now
   const initial = [
     { _id: 'cat1', name: 'Tarjeta Gráfica', description: 'Tarjetas gráficas y GPUs' },
     { _id: 'cat2', name: 'Software', description: 'Noticias de software' },
@@ -80,15 +82,10 @@ let mockCategories: { _id: string; name: string; description?: string }[] = (() 
   return initial;
 })();
 
-// Mock subcategories
-const SUBCATEGORIES_KEY = 'mock_blog_subcategories_v1';
+// Mock subcategories - Always use fresh data
+const SUBCATEGORIES_KEY = 'mock_blog_subcategories_v2';
 let mockSubCategories: { _id: string; name: string; categoryId: string; description?: string }[] = (() => {
-  try {
-    const raw = localStorage.getItem(SUBCATEGORIES_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {
-    // ignore JSON parse/localStorage errors
-  }
+  // Always start with fresh data, ignore localStorage for now
   const initial = [
     { _id: 'sub1', name: 'Nvidia', categoryId: 'cat1', description: 'Productos y noticias de Nvidia' },
     { _id: 'sub2', name: 'AMD', categoryId: 'cat1', description: 'Productos y noticias de AMD' },
@@ -100,6 +97,41 @@ let mockSubCategories: { _id: string; name: string; categoryId: string; descript
 
 @Injectable()
 export class MockBackendInterceptor implements HttpInterceptor {
+
+  constructor() {
+    // Make reset function globally available for debugging
+    if (typeof window !== 'undefined') {
+      window.resetMockData = MockBackendInterceptor.resetMockData;
+    }
+  }
+
+  // Debug function to reset mock data
+  static resetMockData() {
+    const CATEGORIES_KEY = 'mock_blog_categories_v2';
+    const SUBCATEGORIES_KEY = 'mock_blog_subcategories_v2';
+    const ARTICLES_KEY = 'mock_blog_articles_v1';
+
+    const initialCategories = [
+      { _id: 'cat1', name: 'Tarjeta Gráfica', description: 'Tarjetas gráficas y GPUs' },
+      { _id: 'cat2', name: 'Software', description: 'Noticias de software' },
+      { _id: 'cat3', name: 'Gaming', description: 'Gaming y esports' }
+    ];
+
+    const initialSubcategories = [
+      { _id: 'sub1', name: 'Nvidia', categoryId: 'cat1', description: 'Productos y noticias de Nvidia' },
+      { _id: 'sub2', name: 'AMD', categoryId: 'cat1', description: 'Productos y noticias de AMD' },
+      { _id: 'sub3', name: 'OS', categoryId: 'cat2', description: 'Sistemas operativos' }
+    ];
+
+    try {
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(initialCategories));
+      localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(initialSubcategories));
+      console.log('Mock data reset successfully');
+    } catch (e) {
+      console.error('Error resetting mock data:', e);
+    }
+  }
+
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Only intercept /api/blog routes
     if (!req.url.includes('/api/blog')) {
@@ -143,6 +175,52 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const subCategoryId = params.get('subCategoryId');
       if (subCategoryId) {
         filtered = filtered.filter(a => a.subCategoryId === subCategoryId);
+      }
+
+      // Filter by published status
+      const published = params.get('published');
+      if (published !== null) {
+        const isPublished = published === 'true';
+        filtered = filtered.filter(a => a.published === isPublished);
+      }
+
+      // Filter by date range
+      const dateFrom = params.get('dateFrom');
+      const dateTo = params.get('dateTo');
+      if (dateFrom || dateTo) {
+        filtered = filtered.filter(a => {
+          if (!a.createdAt) return false;
+          const articleDate = new Date(a.createdAt);
+          const fromDate = dateFrom ? new Date(dateFrom) : null;
+          const toDate = dateTo ? new Date(dateTo) : null;
+
+          if (fromDate && toDate) {
+            // Set toDate to end of day
+            toDate.setHours(23, 59, 59, 999);
+            return articleDate >= fromDate && articleDate <= toDate;
+          } else if (fromDate) {
+            return articleDate >= fromDate;
+          } else if (toDate) {
+            // Set toDate to end of day
+            toDate.setHours(23, 59, 59, 999);
+            return articleDate <= toDate;
+          }
+          return true;
+        });
+      }
+
+      // Filter by tags
+      const tags = params.get('tags');
+      if (tags) {
+        const tagList = tags.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+        if (tagList.length > 0) {
+          filtered = filtered.filter(a => {
+            if (!a.tags || !Array.isArray(a.tags)) return false;
+            return tagList.some(searchTag =>
+              a.tags!.some((articleTag: string) => articleTag.toLowerCase().includes(searchTag))
+            );
+          });
+        }
       }
 
       // Pagination
@@ -229,6 +307,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
 
     // GET /api/blog/categories
     if (req.method === 'GET' && req.url.includes('/api/blog/categories')) {
+      console.log('Mock: Returning categories:', mockCategories);
       return of(new HttpResponse({ status: 200, body: mockCategories }));
     }
 
