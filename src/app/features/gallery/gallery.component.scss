@@ -1,0 +1,55 @@
+/* Cyberpunk Gallery Styles */
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.glow-on-hover:hover {
+  box-shadow: 0 0 15px currentColor;
+}
+
+.btn.active {
+  background: currentColor !important;
+  color: black !important;
+  box-shadow: 0 0 15px currentColor;
+}
+
+/* Additional hover effects for cards */
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Modal animations */
+.modal {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gallery-container {
+    padding: 1rem;
+  }
+
+  .filters {
+    gap: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}

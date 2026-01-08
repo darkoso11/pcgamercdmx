@@ -1,0 +1,75 @@
+<div class="gallery-container min-h-screen bg-black text-white p-6">
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl md:text-6xl font-bold bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent mb-2 glow-text">
+      GALERÍA CYBER
+    </h1>
+    <p class="text-gray-400 text-lg">Explora nuestras creaciones y productos en un universo digital</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters flex flex-wrap justify-center gap-3 mb-8">
+    <button
+      class="btn px-6 py-2 rounded-full border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all duration-300 glow-on-hover"
+      [class.active]="activeCategory==='all'"
+      (click)="setCategory('all')">
+      Todas
+    </button>
+    <button
+      class="btn px-6 py-2 rounded-full border-2 border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-black transition-all duration-300 glow-on-hover"
+      *ngFor="let c of categories.slice(1)"
+      [class.active]="activeCategory===c"
+      (click)="setCategory(c)">
+      {{c | titlecase}}
+    </button>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+    <div
+      class="card bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-cyan-500/50 hover:scale-105 transition-all duration-300 cursor-pointer border border-gray-800 hover:border-cyan-400"
+      *ngFor="let img of filtered; trackBy: trackBySrc"
+      (click)="open(img)">
+      <div class="relative">
+        <img [src]="img.src" [alt]="img.title||'imagen'" loading="lazy" class="w-full h-48 object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+      </div>
+      <div class="p-4">
+        <h3 class="text-cyan-400 font-semibold text-sm mb-1">{{img.title}}</h3>
+        <p class="text-gray-400 text-xs">{{img.category | titlecase}}</p>
+        <div class="flex flex-wrap gap-1 mt-2" *ngIf="img.tags">
+          <span class="text-xs bg-purple-600/20 text-purple-400 px-2 py-1 rounded-full" *ngFor="let tag of img.tags">{{tag}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div
+    class="modal fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+    *ngIf="modalImage"
+    (click)="close()"
+    role="dialog"
+    aria-modal="true">
+    <div class="modal-content bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto relative" (click)="$event.stopPropagation()">
+      <button
+        class="close absolute top-4 right-4 text-white hover:text-cyan-400 text-2xl bg-black/50 rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+        (click)="close()">
+        ✕
+      </button>
+      <img [src]="modalImage.src" [alt]="modalImage.title||'imagen'" class="w-full h-auto rounded-t-lg" />
+      <div class="p-6">
+        <h3 class="text-2xl font-bold text-cyan-400 mb-2">{{modalImage.title}}</h3>
+        <p class="text-gray-300 mb-4">{{modalImage.category | titlecase}}</p>
+        <div class="flex flex-wrap gap-2 mb-4" *ngIf="modalImage.tags">
+          <span class="text-xs bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full" *ngFor="let tag of modalImage.tags">{{tag}}</span>
+        </div>
+        <div class="text-sm text-gray-500" *ngIf="modalImage.author || modalImage.date">
+          <span *ngIf="modalImage.author">Por {{modalImage.author}}</span>
+          <span *ngIf="modalImage.author && modalImage.date"> • </span>
+          <span *ngIf="modalImage.date">{{modalImage.date}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

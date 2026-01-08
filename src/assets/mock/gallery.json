@@ -1,0 +1,10 @@
+[
+  { "src": "/assets/img/custom/IMG-20250208-WA0056.jpg", "title": "Custom Build A", "category": "custom", "tags": ["rgb","mod"], "author": "Usuario1", "date": "2025-02-08" },
+  { "src": "/assets/img/custom/IMG-20250208-WA0060.jpg", "title": "Custom Build B", "category": "custom", "tags": ["showcase"], "author": "Usuario2", "date": "2025-02-08" },
+  { "src": "/assets/img/gabinetes/rog-hyperion-gr701.png", "title": "ROG Hyperion", "category": "gabinetes", "tags": ["product"], "author": "Brand", "date": "2024-11-01" },
+  { "src": "/assets/img/gabinetes/product-section-01.png", "title": "Gabinete - sección", "category": "gabinetes", "tags": ["catalog"], "author": "Site", "date": "2024-08-12" },
+  { "src": "/assets/img/marcas/AMD-Ryzen.png", "title": "AMD Ryzen", "category": "marcas", "tags": ["logo"], "author": "AMD", "date": "2024-01-01" },
+  { "src": "/assets/img/certificaciones/80plusgold.png", "title": "80 Plus Gold", "category": "certificaciones", "tags": ["badge"], "author": "Cert", "date": "2023-06-10" },
+  { "src": "/assets/img/custom/IMG-20250208-WA0078.jpg", "title": "Ensamble Final", "category": "ensambles", "tags": ["build","final"], "author": "Taller", "date": "2025-02-08" },
+  { "src": "/assets/img/custom/IMG-20250208-WA0070.jpg", "title": "Curiosidad - detalle", "category": "curiosidades", "tags": ["detalle"], "author": "Usuario3", "date": "2025-02-08" }
+]
