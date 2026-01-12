@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { ViewportScroller } from '@angular/common';
 import { GalleryService, ImageItem } from './gallery.service';
 
 @Component({
   selector: 'app-gallery',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule],
   templateUrl: './gallery.component.html',
   styleUrls: ['./gallery.component.scss']
 })
@@ -17,14 +18,24 @@ export class GalleryComponent implements OnInit {
   activeCategory = 'all';
   modalImage: ImageItem | null = null;
 
-  constructor(private gallery: GalleryService) {}
+  constructor(private gallery: GalleryService, private route: ActivatedRoute, private viewportScroller: ViewportScroller) {}
 
   ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      this.activeCategory = params['category'] || 'all';
+      if (this.images.length > 0) {
+        this.applyFilter();
+      }
+    });
+
     this.gallery.getImages().subscribe(data => {
       this.images = data;
       this.categories = ['all', ...Array.from(new Set(data.map(i => i.category)))];
       this.applyFilter();
     });
+
+    // Scroll to top when component loads
+    this.viewportScroller.scrollToPosition([0, 0]);
   }
 
   setCategory(cat: string) {

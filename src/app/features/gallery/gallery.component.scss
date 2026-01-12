@@ -14,34 +14,87 @@
   box-shadow: 0 0 15px currentColor;
 }
 
-/* Additional hover effects for cards */
-.card:hover {
-  transform: translateY(-5px);
+/* Gallery Container */
+.gallery-container {
+  padding-top: 5rem; /* Espacio para el menú fijo */
 }
 
-/* Modal animations */
-.modal {
-  animation: fadeIn 0.3s ease-out;
+/* Masonry Grid - using CSS columns for better compatibility */
+.masonry-grid {
+  column-count: 4;
+  column-gap: 1rem;
 }
 
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  display: block;
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+/* Responsive columns */
+@media (max-width: 1024px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 768px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+/* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.modal-content {
-  animation: slideIn 0.3s ease-out;
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
 }
 
-@keyframes slideIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* Responsive adjustments */
+.animate-modal-in {
+  animation: modalIn 0.3s ease-out;
+}
+
+/* Loader */
+.loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Hover effects */
+.masonry-item:hover {
+  transform: translateY(-5px);
+  z-index: 10;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .gallery-container {
-    padding: 1rem;
+    padding: 5rem 1rem 1rem; /* Padding top para menú, sides para mobile */
   }
 
   .filters {
@@ -51,5 +104,10 @@
   .btn {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
+  }
+
+  .masonry-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
   }
 }

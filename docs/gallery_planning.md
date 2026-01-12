@@ -45,21 +45,26 @@ Ejemplo:
 
 ## Diseño Cyberpunk aplicado
 - Tema oscuro con gradientes neón (cian, púrpura, rosa).
-- Header con título glow.
+- Header con título glow y animación pulse.
 - Filtros como botones redondos con hover glow.
-- Grid responsivo con cards hover (scale, glow, overlay).
+- **Masonry grid**: Layout tipo Pinterest con alturas variables, usando CSS Grid (con fallback a flex).
+- Items con hover effects (scale, glow, overlay), animaciones fade-in staggered.
 - Modal con backdrop blur, animaciones de entrada.
-- Tags mostrados en cards y modal.
+- Loader spinner mientras carga el JSON.
+- Mensaje si no hay imágenes en categoría.
+- Tags mostrados en overlay bottom de cada item.
 - Responsive para móviles.
 
 ## Funcionalidades actuales
-- Carga de `gallery.json`.
-- Filtros por categoría.
+- Carga de `gallery.json` con manejo de errores.
+- Filtros por categoría (muestra todas por defecto).
 - Modal lightbox con detalles.
 - Lazy loading.
 - TrackBy para optimización.
+- Estado de carga.
 
 ## Próximas mejoras
 - Búsqueda por título/tags.
 - Paginación si >50 imágenes.
 - Upload desde admin (actualizar JSON dinámicamente).
+- Soporte para videos o más tipos de media.
