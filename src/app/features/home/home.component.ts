@@ -49,19 +49,19 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     {
       id: 1,
       src: 'https://picsum.photos/id/11/200/100',
-      link: '/productos/1',
+      link: '/productos/paquetes',
       alt: 'Slider 1',
     },
     {
       id: 2,
       src: 'https://picsum.photos/id/12/200/100',
-      link: '/productos/2',
+      link: '/productos/paquetes',
       alt: 'Slider 2',
     },
     {
       id: 3,
       src: 'https://picsum.photos/id/13/200/100',
-      link: '/productos/3',
+      link: '/productos/paquetes',
       alt: 'Slider 3',
     },
   ];
@@ -69,8 +69,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Imagen de PC usando Lorem Picsum
   pcBuilds = [
-    { img: 'assets/img/gabinetes/BR-938686_1.png', link: '/productos/1' },
-    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/productos/2' },
+    { img: 'assets/img/gabinetes/BR-938686_1.png', link: '/productos/paquetes' },
+    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/productos/paquetes' },
   ];
   pcIndex = 0;
 

@@ -18,7 +18,13 @@ export const routes: Routes = [
   // Rutas adicionales
   {
     path: 'productos',
-    loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent)
+    loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
+    children: [
+      { path: 'paquetes', loadComponent: () => import('./features/products/packages/packages').then(m => m.Packages) },
+      { path: 'perifericos', loadComponent: () => import('./features/products/peripherals/peripherals').then(m => m.Peripherals) },
+      { path: 'componentes', loadComponent: () => import('./features/products/components/components').then(m => m.Components) },
+      { path: '', loadComponent: () => import('./features/products/products-overview/products-overview').then(m => m.ProductsOverview) }
+    ]
   },
   {
     path: 'nosotros',

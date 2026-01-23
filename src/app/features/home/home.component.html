@@ -119,14 +119,22 @@
       Nuestros Paquetes
     </h2>
 
-    <input type="text" placeholder="Buscar productos..." class="mb-4 p-2 rounded bg-white" [(ngModel)]="searchTerm"
-      (ngModelChange)="filterProducts()" />
+<!--     <input type="text" placeholder="Buscar productos..." class="mb-4 p-2 rounded bg-white" [(ngModel)]="searchTerm"
+      (ngModelChange)="filterProducts()" /> -->
 
     <!-- Usando el nuevo componente ProductsSlider -->
     <div class="relative w-full max-w-7xl px-4">
       <app-products-slider [products]="filteredCarruselProducts" [showArrows]="true" [showMobileIndicator]="true"
         [wasFiltered]="wasFiltered" (filterChange)="onCarouselReset()">
       </app-products-slider>
+    </div>
+
+    <!-- Botón CTA -->
+    <div class="text-center mt-12">
+      <a routerLink="/productos/paquetes"
+        class="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-3 px-8 rounded-lg font-bold hover:from-pink-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-pink-500/30">
+        <i class="fas fa-cogs mr-2"></i>Ver todos los paquetes
+      </a>
     </div>
   </section>
 
