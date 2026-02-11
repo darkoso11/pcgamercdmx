@@ -23,6 +23,7 @@ export const routes: Routes = [
       { path: 'paquetes', loadComponent: () => import('./features/products/packages/packages').then(m => m.Packages) },
       { path: 'perifericos', loadComponent: () => import('./features/products/peripherals/peripherals').then(m => m.Peripherals) },
       { path: 'componentes', loadComponent: () => import('./features/products/components/components').then(m => m.Components) },
+      { path: ':slug', loadComponent: () => import('./features/products/product-detail.component').then(m => m.ProductDetailComponent) },
       { path: '', loadComponent: () => import('./features/products/products-overview/products-overview').then(m => m.ProductsOverview) }
     ]
   },

@@ -20,6 +20,26 @@ Productos complementarios al mundo del PC gaming:
 - **Accesorios**: Cables, refrigeración, iluminación RGB, etc.
 - **Componentes por Separado**: Mismos que arriba, pero enfocados en venta individual
 
+## Modelo de Negocio: Catálogo de Productos
+
+**IMPORTANTE**: Este es un **CATÁLOGO DE PRODUCTOS**, NO un carrito de compras en línea.
+
+### Flujo de Compra
+- Los usuarios **EXPLORAN** los productos en el catálogo
+- Pueden ver **DETALLES COMPLETOS** de cada producto
+- Para **COMPRAR**, deben:
+  - **Contactar al equipo de ventas** vía WhatsApp
+  - **Solicitar un presupuesto** personalizado
+  - **Hablar con un asesor** de ventas
+  - **Visitar la tienda física** en CDMX
+
+### CTAs Apropiados en Páginas de Producto
+- ✅ "Solicitar Presupuesto" → Formulario de contacto
+- ✅ "Contactar Asesor" → WhatsApp/Teléfono
+- ✅ "Ver en Detalle" → Página individual del producto
+- ❌ "Agregar al Carrito"
+- ❌ "Comprar Ahora"
+
 ## Análisis de Secciones en Home
 
 ### SECCIÓN 2: SLIDER DE PRODUCTOS/PAQUETES
@@ -27,7 +47,8 @@ Productos complementarios al mundo del PC gaming:
 - **Contenido**: Slider horizontal con paquetes de componentes
 - **Funcionalidad**: Búsqueda integrada (`searchTerm`), filtrado dinámico
 - **Componente**: `app-products-slider`
-- **Enlace**: Actualmente usa `routerLink` genérico
+- **Botón principal**: "Ver detalles" → `/productos/:slug` (Página de detalles del producto)
+- **Botón CTA**: "Ver todos los paquetes" → `/productos/paquetes`
 
 ### SECCIÓN 4: SLIDER DE PERIFÉRICOS
 - **Ubicación**: Después de Custom Case
@@ -35,6 +56,37 @@ Productos complementarios al mundo del PC gaming:
 - **Funcionalidad**: Categorías y filtros
 - **Componente**: `app-peripherals-slider`
 - **Enlace**: `routerLink="/productos/perifericos"`
+
+## Página de Detalles del Producto
+
+### Ruta
+- **Path**: `/productos/:slug`
+- **Componente**: `product-detail.component.ts` (ya existe)
+- **Dinámica**: Mostrar un producto específico con toda la información
+
+### Contenido de la Página
+1. **Galería de imágenes** del producto
+2. **Información técnica**:
+   - Procesador/GPU
+   - RAM
+   - Almacenamiento
+   - Fuente de poder
+   - etc.
+3. **Especificaciones detalladas**
+4. **Precio** (referencia, puede variar según configuración)
+5. **Logos de marcas** utilizadas
+6. **Certificaciones** (80+ Gold, etc.)
+
+### CTAs en Página de Detalles
+1. **"Solicitar Presupuesto"** (prominent) → Formulario de contacto con producto preseleccionado
+2. **"Contactar por WhatsApp"** → Link a conversación directa
+3. **"Hablar con un Asesor"** → Modal de contacto
+4. **"Ver Productos Similares"** → Carrusel con productos relacionados
+
+### Navegación
+- Breadcrumb: Inicio > Productos > [Categoría] > [Producto]
+- Botón "Volver" a la categoría anterior
+- Links relacionados a otros productos
 
 ## Decisión Arquitectural: Una Página vs. Múltiples Páginas
 
@@ -88,14 +140,39 @@ Productos complementarios al mundo del PC gaming:
    - `/productos/paquetes` → Foco en paquetes y ensamblajes
    - `/productos/perifericos` → Foco en periféricos
    - `/productos/componentes` → Componentes individuales
+   - `/productos/:slug` → **DETALLE INDIVIDUAL** del producto (nueva)
 3. **Componente principal**: `products.component.ts`
-4. **Sub-componentes**: `packages.component.ts`, `peripherals.component.ts`, etc.
+4. **Sub-componentes**: 
+   - `products-overview.component.ts` (ya creado)
+   - `packages.component.ts` (ya creado)
+   - `peripherals.component.ts` (ya creado)
+   - `components.component.ts` (ya creado)
+   - `product-detail.component.ts` (ACTUALIZAR para usar datos dinámicos)
 
 ### Fase 2: Página Principal de Productos
 1. **Layout**: Grid responsive con secciones por categoría
 2. **Filtros globales**: Barra de búsqueda y filtros transversales
 3. **Sliders integrados**: Reutilizar `app-products-slider` y `app-peripherals-slider`
 4. **Navegación interna**: Botones/tabs para cambiar entre categorías
+
+### Fase 2.5: Página de Detalles Individual del Producto (NUEVA)
+1. **ActivatedRoute**: Capturar el slug de la URL (`/productos/:slug`)
+2. **ProductsService**: Obtener datos del producto específico basado en slug
+3. **Layout de Detalles**:
+   - **Lado izquierdo**: Galería de imágenes principales
+   - **Lado derecho**: 
+     - Nombre del producto
+     - Especificaciones técnicas (tabla o lista)
+     - Logos de marcas utilizadas
+     - Certificaciones de potencia
+     - Precio (referencia)
+4. **CTAs principales**:
+   - "Solicitar Presupuesto" → `routerLink="/contacto"` con product data
+   - "Contactar por WhatsApp" → Link a WhatsApp API
+   - "Hablar con un Asesor" → Modal o contacto
+5. **Productos relacionados**: Carrusel con otros productos similares
+6. **Breadcrumb**: Navegación jerárquica
+7. **Meta tags dinámicos**: Para SEO (título, descripción, imagen)
 
 ### Fase 3: Optimización SEO
 1. **Meta tags dinámicos** por categoría
@@ -127,11 +204,14 @@ const routes: Routes = [
       { path: '', component: ProductsOverviewComponent },
       { path: 'paquetes', component: PackagesComponent },
       { path: 'perifericos', component: PeripheralsComponent },
-      { path: 'componentes', component: ComponentsComponent }
+      { path: 'componentes', component: ComponentsComponent },
+      { path: ':slug', component: ProductDetailComponent } // Página individual del producto
     ]
   }
 ];
 ```
+
+**Orden importante**: La ruta `:slug` debe ser la ÚLTIMA para evitar conflictos de routing.
 
 ### Estado y Gestión de Datos
 - **Servicio de productos**: `products.service.ts` para API calls
@@ -145,11 +225,35 @@ const routes: Routes = [
 
 ## Próximos Pasos Inmediatos
 
-1. **Revisar estructura actual** de componentes de productos
-2. **Crear wireframes** de la página principal de productos
-3. **Definir API endpoints** para productos (si no existen)
-4. **Implementar rutas básicas** y navegación
-5. **Actualizar home.component.html** con nuevos routerLinks
+**COMPLETADO**:
+- ✅ Revisar estructura actual de componentes de productos
+- ✅ Implementar rutas básicas y navegación
+- ✅ Crear componentes básicos (ProductsOverview, Packages, Peripherals, Components)
+- ✅ Actualizar home.component.html con nuevos routerLinks
+- ✅ Verificar que "Ver detalles" en slider desvíe a `/productos/:slug`
+- ✅ Agregar ruta dinámica `:slug` en app.routes.ts
+
+**PENDIENTE**:
+1. **Implementar ProductDetailComponent**:
+   - Capturar slug de ruta con ActivatedRoute
+   - Obtener datos del producto del servicio
+   - Mostrar galería de imágenes
+   - Mostrar especificaciones técnicas
+   - Implementar CTAs (Presupuesto, WhatsApp, Asesor)
+   - Agregar productos relacionados
+   - Agregar breadcrumb
+
+2. **Crear ProductsService** para gestión de datos
+
+3. **Diseñar ProductsOverviewComponent** con:
+   - Búsqueda de productos
+   - Filtros por categoría
+   - Grid de productos
+   - Paginación
+
+4. **Actualizar componentes de categoría** (Packages, Peripherals, Components)
+
+5. **Implementar meta tags dinámicos** en ProductDetailComponent para SEO
 
 ## Métricas de Éxito
 
@@ -171,9 +275,3 @@ const routes: Routes = [
 **Fecha de implementación estimada**: 2-3 semanas
 </parameter>
 </xai:function_call># Plan de Trabajo: Sección de Productos - PC Gamer CDMX
-
-## Fecha de Creación
-14 de enero de 2026
-
-## Objetivo General
-Desarrollar una sección de productos completa y optimizada que permita mostrar, filtrar y navegar entre los diferentes tipos de productos ofrecidos por PC Gamer CDMX, priorizando la experiencia del usuario (UX/UI) y el posicionamiento en motores de búsqueda (SEO).
