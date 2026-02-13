@@ -69,7 +69,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Imagen de PCs para el slider inferior derecho
   pcBuilds = [
-    { img: 'assets/img/gabinetes/BR-938686_1.png', link: '/productos/paquetes' },
     { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/productos/paquetes' },
     { img: 'assets/img/gabinetes/product-section-01.png', link: '/productos/paquetes' },
     { img: 'assets/img/gabinetes/rog-hyperion-gr701.png', link: '/productos/paquetes' },

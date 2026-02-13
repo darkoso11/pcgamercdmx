@@ -223,6 +223,325 @@ const routes: Routes = [
 - **Grid adaptable**: Cambiar layout según dispositivo
 - **Touch gestures**: Para sliders en móviles
 
+## Panel Administrativo de Productos
+
+**CRÍTICO**: Este es un componente fundamental para el negocio. Permite gestionar:
+- Crear, editar, eliminar productos
+- Crear y editar paquetes de ensamblaje (bundles)
+- Agregar ofertas/descuentos
+- Gestionar stock
+- Subir imágenes y especificaciones
+- Publicar/despublicar productos
+
+### Estructura del Admin de Productos
+
+#### Rutas de Admin
+```
+/admin/products                    // Dashboard principal (estadísticas)
+/admin/products/list               // Listado completo con búsqueda/filtros
+/admin/products/new                // Crear nuevo producto
+/admin/products/:id/edit           // Editar producto existente
+/admin/products/packages           // Gestionar paquetes de ensamblaje
+/admin/products/packages/new       // Crear nuevo paquete
+/admin/products/packages/:id/edit  // Editar paquete
+/admin/products/offers             // Gestionar ofertas y descuentos
+/admin/products/categories         // Gestionar categorías
+```
+
+#### Componentes Críticos
+
+1. **admin-products-dashboard.component.ts**
+   - Total de productos activos / publicados
+   - Total de paquetes
+   - Total de ofertas activas
+   - Alertas de bajo stock
+   - Últimos 10 productos creados
+   - Botones rápidos para crear producto/paquete/oferta
+
+2. **admin-product-list.component.ts**
+   - Tabla con listado de productos
+   - Búsqueda por título/slug
+   - Filtros: categoría, rango de precio, stock
+   - Acciones: Ver preview, Editar, Duplicar, Eliminar
+   - Paginación (10, 25, 50 por página)
+   - Indicadores visuales (publicado ✓, borrador, bajo stock)
+
+3. **admin-product-editor.component.ts** (CREATE/EDIT)
+   - Sección 1 - Información básica:
+     - Título (max 200 caracteres)
+     - Slug (auto-generado, editable)
+     - Categoría (dropdown)
+     - Descripción larga (editor WYSIWYG)
+   - Sección 2 - Especificaciones Técnicas:
+     - Procesador
+     - Placa base
+     - RAM (ej: 16GB DDR4)
+     - Almacenamiento (ej: 1TB SSD NVMe)
+     - Tarjeta Gráfica
+     - Fuente de poder
+     - Caja
+     - Sistema de refrigeración
+   - Sección 3 - Precios y Stock:
+     - Precio base
+     - Precio con descuento (opcional)
+     - Stock disponible
+     - Alerta de bajo stock (ej: 5 unidades)
+   - Sección 4 - Imágenes:
+     - Galería múltiple (arrastrar y soltar)
+     - Establecer imagen principal
+     - Crop/redimensionar
+   - Sección 5 - Certificaciones:
+     - URL imagen certificación (ej: 80+ Gold)
+     - Watts (ej: 750W)
+     - Logos de marcas
+   - Sección 6 - SEO:
+     - Meta title (max 60 chars)
+     - Meta description (max 155 chars)
+     - Keywords (tags separados por coma)
+   - Sección 7 - Estado:
+     - Guardar como borrador / Publicar now
+     - Fecha publicación (schedule post)
+
+4. **admin-package-editor.component.ts** (CREATE/EDIT)
+   - Información básica: Nombre, descripción, categoría
+   - Especificaciones del paquete: Proc, RAM, GPU, Alm, etc.
+   - **Selector de componentes**: 
+     - Buscar productos individuales por título
+     - Agregar al paquete (drag & drop o click)
+     - Ver lista de componentes seleccionados
+     - Auto-calcular precio total (suma de productos)
+   - Aplicar descuento: Si/No, porcentaje o cantidad fija
+   - Imagen representativa
+   - Stock
+   - Publicar/Guardar
+
+5. **admin-offers-manager.component.ts**
+   - Tabla con ofertas activas/inactivas
+   - Columnas: Nombre, Tipo, Descuento, Válida desde-hasta, Estado
+   - **Crear Nueva Oferta**:
+     - Nombre (ej: "Black Friday 2024")
+     - Descripción
+     - Tipo: 
+       * Porcentaje (ejem: 20%)
+       * Cantidad fija (ejem: $500)
+       * Bundle (Compra X lleva Y)
+       * Por categoría (todos los periféricos -10%)
+     - Seleccionar productos/paquetes/categorías afectadas
+     - Fecha inicio y fecha fin
+     - Activa/Inactiva
+   - Botones: Editar, Duplicar, Eliminar, Activar/Desactivar
+
+6. **admin-categories-manager.component.ts**
+   - CRUD de categorías
+   - Nombre, slug, descripción
+   - Categoría padre (opcional, para anidar)
+   - Reordenar con drag & drop
+   - Indicador: cuántos productos usan esta categoría
+
+7. **admin-products-header.component.ts**
+   - Logo/título "Admin - Productos"
+   - Navegación: Dashboard, Productos, Paquetes, Ofertas, Categorías
+   - Botón "Volver a admin" o "Volver a inicio"
+   - Logout
+
+#### Servicios Necesarios
+
+**products-admin.service.ts** con métodos:
+
+**PRODUCTOS:**
+- `getAllProducts(filters?, page?, limit?): Observable<Product[]>`
+- `getProductById(id): Observable<Product>`
+- `createProduct(product): Observable<Product>`
+- `updateProduct(id, product): Observable<Product>`
+- `deleteProduct(id): Observable<void>`
+- `duplicateProduct(id): Observable<Product>`
+- `searchProducts(term, category?): Observable<Product[]>`
+- `getProductsByCategory(category): Observable<Product[]>`
+
+**PAQUETES:**
+- `getAllPackages(): Observable<Package[]>`
+- `getPackageById(id): Observable<Package>`
+- `createPackage(package): Observable<Package>`
+- `updatePackage(id, package): Observable<Package>`
+- `deletePackage(id): Observable<void>`
+
+**OFERTAS:**
+- `getAllOffers(includeInactive?): Observable<Offer[]>`
+- `createOffer(offer): Observable<Offer>`
+- `updateOffer(id, offer): Observable<Offer>`
+- `deleteOffer(id): Observable<void>`
+- `activateOffer(id): Observable<void>`
+- `deactivateOffer(id): Observable<void>`
+- `getActiveOffers(): Observable<Offer[]>`
+
+**CATEGORÍAS:**
+- `getAllCategories(): Observable<Category[]>`
+- `createCategory(category): Observable<Category>`
+- `updateCategory(id, category): Observable<Category>`
+- `deleteCategory(id): Observable<void>`
+- `reorderCategories(newOrder[]): Observable<void>`
+
+**IMÁGENES:**
+- `uploadProductImage(file: File): Observable<string>`
+- `deleteProductImage(imageUrl: string): Observable<void>`
+- `optimizeImage(file: File, width, height): Observable<Blob>`
+
+#### Modelos de Datos
+
+```typescript
+interface Product {
+  _id?: string;
+  title: string;
+  slug: string;
+  description: string;
+  category: 'paquetes' | 'perifericos' | 'componentes';
+  price: number;
+  discountedPrice?: number;
+  processor?: string;
+  motherboard?: string;
+  ram?: string;
+  storage?: string;
+  graphicsCard?: string;
+  powerSupply?: string;
+  caseModel?: string;
+  cooling?: string;
+  image: string;
+  images: string[];
+  powerCertificate?: string;
+  watts?: number;
+  brandLogos: Array<{ src: string; alt: string }>;
+  stock: number;
+  lowStockAlert: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string[];
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Package {
+  _id?: string;
+  title: string;
+  slug: string;
+  description: string;
+  image: string;
+  price: number;
+  discountedPrice?: number;
+  specifications: {
+    processor: string;
+    motherboard: string;
+    ram: string;
+    storage: string;
+    graphicsCard: string;
+    powerSupply: string;
+    caseModel: string;
+    cooling: string;
+  };
+  includedProducts: string[]; // Product._id array
+  stock: number;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Offer {
+  _id?: string;
+  title: string;
+  description: string;
+  type: 'percentage' | 'fixed' | 'bundle' | 'category';
+  discountValue: number;
+  applicableTo: {
+    products?: string[];      // Product IDs
+    packages?: string[];      // Package IDs
+    categories?: string[];    // Category names
+  };
+  startDate: Date;
+  endDate: Date;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Category {
+  _id?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+  parentCategory?: string;
+  order: number;
+}
+```
+
+#### Validaciones Críticas
+
+- **Slug único**: No puede haber dos productos con mismo slug
+- **Precio válido**: > 0
+- **Stock no negativo**: >= 0
+- **Imagen requerida**: Al menos 1
+- **Título**: 5-200 caracteres
+- **Descripción**: Máximo 5000 caracteres
+- **Meta title**: Máximo 60 caracteres
+- **Meta description**: Máximo 155 caracteres
+- **Paquete requiere componentes**: Al menos 1 componente incluido
+- **Oferta requiere targets**: Al menos 1 producto/paquete/categoría
+
+#### Flujo de Trabajo Admin
+
+1. **Admin accede a `/admin/products`**
+   - Ve dashboard con estadísticas principales
+   - Acceso rápido a crear producto/paquete/oferta
+
+2. **Para crear un producto nuevo**:
+   - Click en "Crear Producto"
+   - Rellenar formulario con todos los datos
+   - Subir imágenes
+   - Establecer SEO meta tags
+   - Guardar como borrador
+   - Ver preview en `/productos/:slug`
+   - Publicar cuando esté listo
+
+3. **Para crear un paquete**:
+   - Click en "Crear Paquete"
+   - Ingresar nombre y descripción
+   - Ingresar especificaciones técnicas
+   - **Seleccionar componentes individuales** del catálogo
+   - Sistema auto-calcula precio total (suma de productos)
+   - Opcionalmente aplicar descuento porcentual
+   - Guardar y publicar
+
+4. **Para agregar una oferta**:
+   - Click en "Crear Oferta"
+   - Elegir tipo (%, cantidad fija, bundle, categoría)
+   - Seleccionar productos/paquetes/categorías afectadas
+   - Establecer fechas de inicio y fin
+   - Activar/desactivar según sea necesario
+
+5. **Gestión de stock**:
+   - Dashboard muestra productos con bajo stock (en rojo)
+   - Admin puede actualizar stock rápidamente
+   - Sistema calcula alertas automáticamente
+
+#### Integración Frontend-Backend
+
+- **ProductsService** (público) obtiene productos del backend para `/productos`
+- **ProductsAdminService** (admin) tiene permisos especiales para CRUD
+- **Autenticación**: Mismo sistema que blog admin (token JWT)
+- **Autorización**: Solo admins pueden acceder a `/admin/products`
+- **Validación en cliente**: Prevent bad data before sending
+- **Validación en servidor**: Enforce business rules
+
+#### Consideraciones de UX/UI
+
+- **Formularios responsive**: Funcionan bien en mobile y desktop
+- **Confirmaciones**: Pedir confirmación antes de eliminar
+- **Feedback visual**: Toast notifications para acciones exitosas/errores
+- **Auto-save**: Guardar borradores automáticamente cada 30 segundos
+- **Validación en tiempo real**: Mostrar errores mientras se escribe
+- **Atajos teclado**: Ctrl+S para guardar, Escape para cancelar
+- **Historial de cambios**: Mostrar quién cambió qué y cuándo
+
 ## Próximos Pasos Inmediatos
 
 **COMPLETADO**:
@@ -232,28 +551,34 @@ const routes: Routes = [
 - ✅ Actualizar home.component.html con nuevos routerLinks
 - ✅ Verificar que "Ver detalles" en slider desvíe a `/productos/:slug`
 - ✅ Agregar ruta dinámica `:slug` en app.routes.ts
+- ✅ Implementar ProductDetailComponent (HTML + CSS completo)
+- ✅ Crear ProductsService con mock data
 
-**PENDIENTE**:
-1. **Implementar ProductDetailComponent**:
-   - Capturar slug de ruta con ActivatedRoute
-   - Obtener datos del producto del servicio
-   - Mostrar galería de imágenes
-   - Mostrar especificaciones técnicas
-   - Implementar CTAs (Presupuesto, WhatsApp, Asesor)
-   - Agregar productos relacionados
-   - Agregar breadcrumb
+**FASE 1 - FRONTEND PÚBLICO (PRIORIDAD ALTA)**:
+1. ProductsOverviewComponent (búsqueda, filtros, grid)
+2. Componentes de categoría (templates)
+3. Meta tags dinámicos para SEO en ProductDetailComponent
 
-2. **Crear ProductsService** para gestión de datos
+**FASE 2 - ADMIN DE PRODUCTOS (PRIORIDAD CRÍTICA)**:
+1. **products-admin.service.ts** - Base para todo lo demás
+2. **admin-products-dashboard.component.ts** - Punto de entrada admin
+3. **admin-product-list.component.ts** - Ver/buscar todos los productos
+4. **admin-product-editor.component.ts** - Crear/editar productos individuales
+5. **admin-package-editor.component.ts** - Crear/editar paquetes de ensamblaje
+6. **admin-offers-manager.component.ts** - Gestionar ofertas y descuentos
+7. **admin-categories-manager.component.ts** - Gestionar categorías
+8. **admin-products-header.component.ts** - Navegación del admin
+9. **Proteger rutas admin** con AuthGuard
 
-3. **Diseñar ProductsOverviewComponent** con:
-   - Búsqueda de productos
-   - Filtros por categoría
-   - Grid de productos
-   - Paginación
-
-4. **Actualizar componentes de categoría** (Packages, Peripherals, Components)
-
-5. **Implementar meta tags dinámicos** en ProductDetailComponent para SEO
+**Orden recomendado de implementación**:
+1. products-admin.service.ts (depende de ella todo lo demás)
+2. admin-products-dashboard.component.ts (punto entrada)
+3. admin-product-list.component.ts (ver productos)
+4. admin-product-editor.component.ts (create/update)
+5. admin-package-editor.component.ts (crear paquetes)
+6. admin-offers-manager.component.ts (gestionar ofertas)
+7. admin-categories-manager.component.ts (gestionar categorías)
+8. Actualizar rutas en app.routes.ts
 
 ## Métricas de Éxito
 

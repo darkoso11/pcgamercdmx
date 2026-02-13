@@ -100,6 +100,64 @@ export const routes: Routes = [
     title: 'Admin Login | PC Gamer CDMX'
   },
 
+  // Admin Products routes
+  {
+    path: 'admin/products',
+    loadComponent: () => import('./features/products/admin/admin-products-dashboard.component').then(m => m.AdminProductsDashboardComponent),
+    title: 'Admin Productos | PC Gamer CDMX',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/list',
+    loadComponent: () => import('./features/products/admin/admin-product-list.component').then(m => m.AdminProductListComponent),
+    title: 'Productos | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/new',
+    loadComponent: () => import('./features/products/admin/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
+    title: 'Nuevo Producto | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/:id/edit',
+    loadComponent: () => import('./features/products/admin/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
+    title: 'Editar Producto | Admin',
+    data: { renderMode: 'dynamic' },
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/packages',
+    loadComponent: () => import('./features/products/admin/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
+    title: 'Paquetes | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/packages/new',
+    loadComponent: () => import('./features/products/admin/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
+    title: 'Nuevo Paquete | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/packages/:id/edit',
+    loadComponent: () => import('./features/products/admin/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
+    title: 'Editar Paquete | Admin',
+    data: { renderMode: 'dynamic' },
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/offers',
+    loadComponent: () => import('./features/products/admin/admin-offers-manager.component').then(m => m.AdminOffersManagerComponent),
+    title: 'Ofertas | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/categories',
+    loadComponent: () => import('./features/products/admin/admin-categories-manager.component').then(m => m.AdminCategoriesManagerComponent),
+    title: 'Categorías | Admin',
+    canActivate: [AuthGuard]
+  },
+
   // Ruta fallback
   {
     path: '**',
