@@ -78,14 +78,24 @@ export interface Offer {
   updatedAt: Date;
 }
 
+export interface Subcategory {
+  _id?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+  productCount?: number;
+}
+
 export interface Category {
   _id?: string;
   name: string;
   slug: string;
   description?: string;
   icon?: string;
-  parentCategory?: string;
   order: number;
+  subcategories: Subcategory[];
+  productCount?: number;
 }
 
 export interface AdminDashboardStats {
@@ -137,9 +147,67 @@ export class ProductsAdminService {
   private mockPackages: Package[] = [];
   private mockOffers: Offer[] = [];
   private mockCategories: Category[] = [
-    { _id: '1', name: 'Paquetes', slug: 'paquetes', order: 1 },
-    { _id: '2', name: 'Periféricos', slug: 'perifericos', order: 2 },
-    { _id: '3', name: 'Componentes', slug: 'componentes', order: 3 }
+    {
+      _id: '1',
+      name: 'Gabinetes',
+      slug: 'gabinetes',
+      description: 'Casos y gabinetes para PC',
+      icon: 'fa-box',
+      order: 1,
+      subcategories: [
+        { _id: '1-1', name: 'Gaming', slug: 'gabinetes-gaming', icon: 'fa-gamepad', productCount: 0 },
+        { _id: '1-2', name: 'Workstation', slug: 'gabinetes-workstation', icon: 'fa-cpu', productCount: 0 },
+        { _id: '1-3', name: 'Compactos', slug: 'gabinetes-compactos', icon: 'fa-box-alt', productCount: 0 }
+      ],
+      productCount: 0
+    },
+    {
+      _id: '2',
+      name: 'Periféricos',
+      slug: 'perifericos',
+      description: 'Accesorios y periféricos para PC',
+      icon: 'fa-mouse',
+      order: 2,
+      subcategories: [
+        { _id: '2-1', name: 'Teclados', slug: 'perifericos-teclados', icon: 'fa-keyboard', productCount: 0 },
+        { _id: '2-2', name: 'Ratones', slug: 'perifericos-ratones', icon: 'fa-mouse', productCount: 0 },
+        { _id: '2-3', name: 'Audífonos', slug: 'perifericos-audifonos', icon: 'fa-headphones', productCount: 0 },
+        { _id: '2-4', name: 'Monitores', slug: 'perifericos-monitores', icon: 'fa-tv', productCount: 0 }
+      ],
+      productCount: 0
+    },
+    {
+      _id: '3',
+      name: 'Componentes',
+      slug: 'componentes',
+      description: 'Componentes internos para PC',
+      icon: 'fa-microchip',
+      order: 3,
+      subcategories: [
+        { _id: '3-1', name: 'Procesadores', slug: 'componentes-procesadores', icon: 'fa-cpu', productCount: 0 },
+        { _id: '3-2', name: 'Tarjetas Gráficas', slug: 'componentes-graficas', icon: 'fa-video', productCount: 0 },
+        { _id: '3-3', name: 'Memoria RAM', slug: 'componentes-ram', icon: 'fa-microchip', productCount: 0 },
+        { _id: '3-4', name: 'Almacenamiento', slug: 'componentes-almacenamiento', icon: 'fa-hdd', productCount: 0 },
+        { _id: '3-5', name: 'Fuentes de Poder', slug: 'componentes-psu', icon: 'fa-plug', productCount: 0 }
+      ],
+      productCount: 0
+    },
+    {
+      _id: '4',
+      name: 'Ensambles',
+      slug: 'ensambles',
+      description: 'PCs armadas personalizadas',
+      icon: 'fa-cube',
+      order: 4,
+      subcategories: [
+        { _id: '4-1', name: 'Gaming 1080p', slug: 'ensambles-gaming-1080p', icon: 'fa-gamepad', productCount: 0 },
+        { _id: '4-2', name: 'Gaming 2K', slug: 'ensambles-gaming-2k', icon: 'fa-gamepad', productCount: 0 },
+        { _id: '4-3', name: 'Gaming 4K', slug: 'ensambles-gaming-4k', icon: 'fa-gamepad', productCount: 0 },
+        { _id: '4-4', name: 'Workstation', slug: 'ensambles-workstation', icon: 'fa-cpu', productCount: 0 },
+        { _id: '4-5', name: 'Streaming', slug: 'ensambles-streaming', icon: 'fa-stream', productCount: 0 }
+      ],
+      productCount: 0
+    }
   ];
 
   constructor(private http: HttpClient) {}
@@ -385,13 +453,6 @@ export class ProductsAdminService {
   // ============ CATEGORÍAS ============
 
   /**
-   * Obtener todas las categorías
-   */
-  getAllCategories(): Observable<Category[]> {
-    return of(this.mockCategories).pipe(delay(300));
-  }
-
-  /**
    * Crear una nueva categoría
    */
   createCategory(category: Omit<Category, '_id'>): Observable<Category> {
@@ -434,6 +495,68 @@ export class ProductsAdminService {
   reorderCategories(newOrder: Category[]): Observable<void> {
     this.mockCategories = newOrder;
     return of(undefined).pipe(delay(300));
+  }
+
+  /**
+   * Agregar subcategoría a una categoría
+   */
+  addSubcategory(categoryId: string, subcategory: Omit<Subcategory, '_id'>): Observable<Subcategory> {
+    const category = this.mockCategories.find(c => c._id === categoryId);
+    if (category) {
+      const newSubcategory: Subcategory = {
+        ...subcategory,
+        _id: `${categoryId}-${Date.now()}`,
+        productCount: 0
+      };
+      category.subcategories.push(newSubcategory);
+      return of(newSubcategory).pipe(delay(300));
+    }
+    throw new Error('Categoría no encontrada');
+  }
+
+  /**
+   * Actualizar una subcategoría
+   */
+  updateSubcategory(categoryId: string, subcategoryId: string, subcategory: Partial<Subcategory>): Observable<Subcategory | undefined> {
+    const category = this.mockCategories.find(c => c._id === categoryId);
+    if (category) {
+      const index = category.subcategories.findIndex(s => s._id === subcategoryId);
+      if (index !== -1) {
+        const updated = { ...category.subcategories[index], ...subcategory };
+        category.subcategories[index] = updated;
+        return of(updated).pipe(delay(300));
+      }
+    }
+    return of(undefined).pipe(delay(300));
+  }
+
+  /**
+   * Eliminar una subcategoría
+   */
+  deleteSubcategory(categoryId: string, subcategoryId: string): Observable<boolean> {
+    const category = this.mockCategories.find(c => c._id === categoryId);
+    if (category) {
+      const index = category.subcategories.findIndex(s => s._id === subcategoryId);
+      if (index !== -1) {
+        category.subcategories.splice(index, 1);
+        return of(true).pipe(delay(300));
+      }
+    }
+    return of(false).pipe(delay(300));
+  }
+
+  /**
+   * Obtener todas las categorías con subcategorías
+   */
+  getAllCategories(): Observable<Category[]> {
+    return of(this.mockCategories).pipe(delay(300));
+  }
+
+  /**
+   * Obtener una categoría con sus subcategorías
+   */
+  getCategoryById(id: string): Observable<Category | undefined> {
+    return of(this.mockCategories.find(c => c._id === id)).pipe(delay(300));
   }
 
   // ============ IMÁGENES ============

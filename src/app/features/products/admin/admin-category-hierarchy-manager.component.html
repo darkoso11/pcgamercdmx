@@ -1,0 +1,314 @@
+<div class="min-h-screen bg-[#071029] text-white">
+  <!-- Header -->
+  <app-admin-header></app-admin-header>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Título -->
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold text-cyan-400 mb-2">Jerarquía de Categorías</h1>
+      <p class="text-gray-400">Gestiona categorías principales y subcategorías para organizar los productos</p>
+    </div>
+
+    <!-- Sección: Crear Nueva Categoría -->
+    <div class="bg-[#0b1220] border border-cyan-400/30 rounded-lg p-6 mb-8">
+      <h2 class="text-2xl font-bold text-cyan-400 mb-6">
+        <i class="fas fa-plus mr-3"></i>Nueva Categoría Principal
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-2">Nombre *</label>
+          <input
+            [(ngModel)]="newCategoryName"
+            type="text"
+            placeholder="Ej: Gabinetes"
+            class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-2">Descripción</label>
+          <input
+            [(ngModel)]="newCategoryDescription"
+            type="text"
+            placeholder="Descripción breve"
+            class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-2">Icono</label>
+          <input
+            [(ngModel)]="newCategoryIcon"
+            type="text"
+            placeholder="Ej: fa-box"
+            class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+          />
+          <p class="text-xs text-gray-400 mt-1" *ngIf="newCategoryIcon">
+            <i [class]="'fas ' + newCategoryIcon"></i> Previsualización
+          </p>
+        </div>
+
+        <div class="flex items-end">
+          <button
+            (click)="agregarCategoria()"
+            [disabled]="!newCategoryName.trim()"
+            class="w-full px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-cyan-900 disabled:opacity-50 rounded font-semibold transition"
+          >
+            <i class="fas fa-plus mr-2"></i>Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Categorías -->
+    <div class="space-y-4">
+      <div
+        *ngFor="let categoria of categorias"
+        class="bg-[#0b1220] border border-white/10 rounded-lg overflow-hidden"
+      >
+        <!-- Encabezado de Categoría -->
+        <div class="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 flex-1">
+              <!-- Toggler -->
+              <button
+                (click)="alternarExpansion(categoria._id!)"
+                class="text-cyan-400 hover:text-cyan-300 transition"
+              >
+                <i
+                  [class]="
+                    expandedCategories.has(categoria._id!)
+                      ? 'fas fa-chevron-down'
+                      : 'fas fa-chevron-right'
+                  "
+                ></i>
+              </button>
+
+              <!-- Contenido de Categoría -->
+              <div class="flex-1">
+                <div *ngIf="editingCategoryId === categoria._id" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <input
+                    [(ngModel)]="editingCategoryData.name"
+                    type="text"
+                    class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                  />
+                  <input
+                    [(ngModel)]="editingCategoryData.description"
+                    type="text"
+                    placeholder="Descripción"
+                    class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                  />
+                  <input
+                    [(ngModel)]="editingCategoryData.icon"
+                    type="text"
+                    placeholder="Icono"
+                    class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                  />
+                </div>
+
+                <div *ngIf="editingCategoryId !== categoria._id" class="flex items-center gap-3">
+                  <i [class]="'fas ' + (categoria.icon || 'fa-folder') + ' text-cyan-400 text-xl'"></i>
+                  <div>
+                    <h3 class="text-lg font-bold text-white">{{ categoria.name }}</h3>
+                    <p class="text-sm text-gray-400">{{ categoria.description }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info de Subcategorías -->
+              <div class="text-right">
+                <p class="text-cyan-400 font-semibold">{{ categoria.subcategories.length }} subcategorías</p>
+                <p class="text-sm text-gray-400">{{ categoria.productCount || 0 }} productos</p>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex gap-2 ml-4">
+              <ng-container *ngIf="editingCategoryId === categoria._id">
+                <button
+                  (click)="guardarEdicionCategoria()"
+                  class="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm font-semibold transition"
+                >
+                  <i class="fas fa-check mr-1"></i>Guardar
+                </button>
+                <button
+                  (click)="cancelarEdicionCategoria()"
+                  class="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition"
+                >
+                  <i class="fas fa-times mr-1"></i>Cancelar
+                </button>
+              </ng-container>
+
+              <ng-container *ngIf="editingCategoryId !== categoria._id">
+                <button
+                  (click)="iniciarEdicionCategoria(categoria)"
+                  class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm font-semibold transition"
+                >
+                  <i class="fas fa-edit mr-1"></i>Editar
+                </button>
+                <button
+                  (click)="eliminarCategoria(categoria)"
+                  class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm font-semibold transition"
+                >
+                  <i class="fas fa-trash mr-1"></i>Eliminar
+                </button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Subcategorías (Expandible) -->
+        <div *ngIf="expandedCategories.has(categoria._id!)" class="border-t border-white/10">
+          <!-- Encabezado de Subcategorías -->
+          <div class="bg-[#071029] px-6 py-3 border-b border-white/10">
+            <h4 class="text-sm font-semibold text-gray-300">
+              <i class="fas fa-list mr-2"></i>Subcategorías
+            </h4>
+          </div>
+
+          <!-- Formulario para Nueva Subcategoría -->
+          <div
+            *ngIf="showNewSubcategoryForm[categoria._id!]"
+            class="bg-[#0b1220] px-6 py-4 border-b border-white/10"
+          >
+            <h5 class="text-sm font-bold text-cyan-400 mb-4">Agregar Nueva Subcategoría</h5>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <input
+                [(ngModel)]="newSubcategoryData[categoria._id!].name"
+                type="text"
+                placeholder="Nombre"
+                class="px-3 py-2 bg-[#071029] border border-white/20 rounded text-white text-sm placeholder-gray-500"
+              />
+              <input
+                [(ngModel)]="newSubcategoryData[categoria._id!].description"
+                type="text"
+                placeholder="Descripción"
+                class="px-3 py-2 bg-[#071029] border border-white/20 rounded text-white text-sm placeholder-gray-500"
+              />
+              <input
+                [(ngModel)]="newSubcategoryData[categoria._id!].icon"
+                type="text"
+                placeholder="Icono (fa-...)"
+                class="px-3 py-2 bg-[#071029] border border-white/20 rounded text-white text-sm placeholder-gray-500"
+              />
+              <div class="flex gap-2">
+                <button
+                  (click)="agregarSubcategoria(categoria._id!)"
+                  class="flex-1 px-3 py-2 bg-cyan-600 hover:bg-cyan-700 rounded text-sm font-semibold transition"
+                >
+                  <i class="fas fa-plus mr-1"></i>Agregar
+                </button>
+                <button
+                  (click)="mostrarFormularioNuevaSubcategoria(categoria._id!)"
+                  class="px-3 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón para Mostrar Formulario (si no está abierto) -->
+          <div *ngIf="!showNewSubcategoryForm[categoria._id!]" class="bg-[#0b1220] px-6 py-3 border-b border-white/10">
+            <button
+              (click)="mostrarFormularioNuevaSubcategoria(categoria._id!)"
+              class="text-sm text-cyan-400 hover:text-cyan-300 transition font-semibold"
+            >
+              <i class="fas fa-plus mr-2"></i>Nueva Subcategoría
+            </button>
+          </div>
+
+          <!-- Lista de Subcategorías -->
+          <div class="divide-y divide-white/10">
+            <div
+              *ngFor="let subcategoria of categoria.subcategories"
+              class="px-6 py-4 bg-[#0b1220] hover:bg-[#0d1428] transition"
+            >
+              <!-- Edición de Subcategoría -->
+              <div
+                *ngIf="estaEditandoSubcategoria(categoria._id!, subcategoria._id!)"
+                class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3"
+              >
+                <input
+                  [(ngModel)]="editingSubcategoryData[categoria._id! + '-' + subcategoria._id!].name"
+                  type="text"
+                  class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                />
+                <input
+                  [(ngModel)]="editingSubcategoryData[categoria._id! + '-' + subcategoria._id!].description"
+                  type="text"
+                  placeholder="Descripción"
+                  class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                />
+                <input
+                  [(ngModel)]="editingSubcategoryData[categoria._id! + '-' + subcategoria._id!].icon"
+                  type="text"
+                  placeholder="Icono"
+                  class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                />
+                <div class="flex gap-2">
+                  <button
+                    (click)="guardarEdicionSubcategoria(categoria._id!, subcategoria._id!)"
+                    class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 rounded text-sm font-semibold transition"
+                  >
+                    <i class="fas fa-check mr-1"></i>Guardar
+                  </button>
+                  <button
+                    (click)="cancelarEdicionSubcategoria(categoria._id!, subcategoria._id!)"
+                    class="px-3 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Vista Normal de Subcategoría -->
+              <div *ngIf="!estaEditandoSubcategoria(categoria._id!, subcategoria._id!)" class="flex items-center justify-between">
+                <div class="flex items-center gap-3 flex-1">
+                  <div class="w-8 h-8 rounded bg-blue-600/20 flex items-center justify-center">
+                    <i [class]="'fas ' + (subcategoria.icon || 'fa-folder') + ' text-blue-400 text-sm'"></i>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-white">{{ subcategoria.name }}</p>
+                    <p class="text-xs text-gray-400">{{ subcategoria.description }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                  <span class="text-sm text-gray-400">{{ subcategoria.productCount || 0 }} productos</span>
+                  <div class="flex gap-2">
+                    <button
+                      (click)="iniciarEdicionSubcategoria(categoria._id!, subcategoria)"
+                      class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs font-semibold transition"
+                    >
+                      <i class="fas fa-edit mr-1"></i>Editar
+                    </button>
+                    <button
+                      (click)="eliminarSubcategoria(categoria._id!, subcategoria)"
+                      class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-xs font-semibold transition"
+                    >
+                      <i class="fas fa-trash mr-1"></i>Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mensaje si no hay subcategorías -->
+            <div *ngIf="categoria.subcategories.length === 0" class="px-6 py-8 text-center text-gray-400">
+              <i class="fas fa-inbox text-4xl mb-3 block opacity-30"></i>
+              <p>No hay subcategorías aún</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje si no hay categorías -->
+      <div *ngIf="categorias.length === 0" class="bg-[#0b1220] border border-white/10 rounded-lg p-12 text-center">
+        <i class="fas fa-inbox text-6xl text-gray-500 mb-4 block opacity-30"></i>
+        <p class="text-gray-400 text-lg">No hay categorías aún. Crea la primera categoría arriba.</p>
+      </div>
+    </div>
+  </div>
+</div>

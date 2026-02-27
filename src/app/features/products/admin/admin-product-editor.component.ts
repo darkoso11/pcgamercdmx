@@ -5,7 +5,15 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../blog/admin/admin-header.component';
-import { ProductsAdminService, Product } from './products-admin.service';
+import { ProductsAdminService, Product, Category, Subcategory } from './products-admin.service';
+
+// Tipos de producto disponibles
+export interface ProductType {
+  id: string;
+  name: string;
+  icon: string;
+  specs: string[];
+}
 
 @Component({
   selector: 'app-admin-product-editor',
@@ -23,6 +31,58 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   galleryImages: string[] = [];
   newGalleryImage = '';
 
+  // Categorías y subcategorías
+  categorias: Category[] = [];
+  subcategorias: Subcategory[] = [];
+  selectedCategoryId: string | null = null;
+
+  // Tipos de productos
+  productTypes: ProductType[] = [
+    {
+      id: 'componente',
+      name: 'Componente',
+      icon: 'fa-microchip',
+      specs: ['marca', 'modelo', 'especificaciones']
+    },
+    {
+      id: 'periferico',
+      name: 'Periférico',
+      icon: 'fa-mouse',
+      specs: ['marca', 'tipo', 'conexion']
+    },
+    {
+      id: 'gabinete',
+      name: 'Gabinete',
+      icon: 'fa-box',
+      specs: ['marca', 'tamaño', 'material', 'puertos']
+    },
+    {
+      id: 'otro',
+      name: 'Otro',
+      icon: 'fa-cube',
+      specs: ['marca', 'especificacion-personalizada']
+    }
+  ];
+
+  // Marcas comunes
+  marcas: string[] = [
+    'Intel',
+    'AMD',
+    'NVIDIA',
+    'ASUS',
+    'MSI',
+    'Gigabyte',
+    'Corsair',
+    'Kingston',
+    'Samsung',
+    'Seagate',
+    'WD',
+    'Logitech',
+    'Razer',
+    'SteelSeries',
+    'Otro'
+  ];
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -36,40 +96,48 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
   initializeForm(): void {
     this.form = this.fb.group({
-      // Sección 1: Información Básica
+      // Sección 1: Tipo y Marca
+      productType: ['', Validators.required],
+      brand: ['', Validators.required],
+
+      // Sección 2: Categoría y Subcategoría
+      categoryId: ['', Validators.required],
+      subcategoryId: ['', Validators.required],
+
+      // Sección 3: Información Básica
       title: ['', [Validators.required, Validators.minLength(3)]],
       slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-      category: ['', Validators.required],
-      brand: [''],
       description: ['', [Validators.required, Validators.minLength(10)]],
 
-      // Sección 2: Especificaciones
-      processor: [''],
-      graphicsCard: [''],
-      ram: [''],
-      storage: [''],
+      // Sección 4: Especificaciones Dinámicas
+      modelo: [''],
+      tipo: [''],
+      conexion: [''],
+      tamaño: [''],
+      material: [''],
+      puertos: [''],
+      especificacionPersonalizada: [''],
 
-      // Sección 3: Precios
+      // Sección 5: Precios
       price: [0, [Validators.required, Validators.min(0)]],
       discountPrice: [0],
       discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       currency: ['MXN'],
 
-      // Sección 4: Stock
+      // Sección 6: Stock
       stock: [0, [Validators.required, Validators.min(0)]],
       lowStockAlert: [5, Validators.min(0)],
       sku: [''],
-      supplier: [''],
 
-      // Sección 5: Medios
+      // Sección 7: Medios
       image: ['', Validators.required],
       gallery: [[]],
 
-      // Sección 6: SEO
+      // Sección 8: SEO
       metaDescription: [''],
       keywords: [''],
 
-      // Sección 7: Publicación
+      // Sección 9: Publicación
       published: [false],
       featured: [false],
       internalNotes: ['']
@@ -77,16 +145,44 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.cargarCategorias();
+    
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
         this.productId = params['id'];
-        this.loadProduct(params['id']);
+        this.cargarProducto(params['id']);
       }
+    });
+
+    // Escuchar cambios en categoría para actualizar subcategorías
+    this.form.get('categoryId')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((categoryId) => {
+      this.actualizarSubcategorias(categoryId);
+      this.form.get('subcategoryId')?.reset();
     });
   }
 
-  loadProduct(id: string): void {
+  cargarCategorias(): void {
+    this.productsAdminService
+      .getAllCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categorias) => {
+          this.categorias = categorias;
+        },
+        error: (err) => {
+          console.error('Error cargando categorías:', err);
+        }
+      });
+  }
+
+  actualizarSubcategorias(categoryId: string): void {
+    const categoria = this.categorias.find(c => c._id === categoryId);
+    this.subcategorias = categoria?.subcategories || [];
+    this.selectedCategoryId = categoryId;
+  }
+
+  cargarProducto(id: string): void {
     this.loading = true;
     this.productsAdminService
       .getProductById(id)
@@ -96,15 +192,20 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
           if (product) {
             this.galleryImages = product.gallery || [];
             this.form.patchValue({
+              productType: product.productType || '',
+              brand: product.brand || '',
+              categoryId: product.categoryId || '',
+              subcategoryId: product.subcategoryId || '',
               title: product.title,
               slug: product.slug,
-              category: product.category,
-              brand: product.brand || '',
               description: product.description,
-              processor: product.processor || '',
-              graphicsCard: product.graphicsCard || '',
-              ram: product.ram || '',
-              storage: product.storage || '',
+              modelo: product.modelo || '',
+              tipo: product.tipo || '',
+              conexion: product.conexion || '',
+              tamaño: product.tamaño || '',
+              material: product.material || '',
+              puertos: product.puertos || '',
+              especificacionPersonalizada: product.especificacionPersonalizada || '',
               price: product.price,
               discountPrice: product.discountPrice || 0,
               discountPercent: product.discountPercent || 0,
@@ -112,15 +213,19 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
               stock: product.stock,
               lowStockAlert: product.lowStockAlert || 5,
               sku: product.sku || '',
-              supplier: product.supplier || '',
               image: product.image,
               gallery: product.gallery || [],
               metaDescription: product.metaDescription || '',
-              keywords: product.keywords || '',
+              keywords: product.keywords ? product.keywords.join(', ') : '',
               published: product.published || false,
               featured: product.featured || false,
               internalNotes: product.internalNotes || ''
             });
+
+            // Cargar categoría y actualizar subcategorías
+            if (product.categoryId) {
+              this.actualizarSubcategorias(product.categoryId);
+            }
           }
           this.loading = false;
         },
@@ -155,7 +260,11 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const productData = { ...this.form.value, gallery: this.galleryImages };
+    const productData = {
+      ...this.form.value,
+      gallery: this.galleryImages,
+      keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
+    };
 
     const operation = this.isEditMode
       ? this.productsAdminService.updateProduct(this.productId!, productData)
@@ -189,7 +298,12 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const productData = { ...this.form.value, published: false, gallery: this.galleryImages };
+    const productData = {
+      ...this.form.value,
+      published: false,
+      gallery: this.galleryImages,
+      keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
+    };
 
     const operation = this.isEditMode
       ? this.productsAdminService.updateProduct(this.productId!, productData)
@@ -211,21 +325,29 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  getControl(controlName: string) {
-    return this.form.get(controlName);
-  }
-
   addGalleryImage(): void {
     if (this.newGalleryImage.trim()) {
-      this.galleryImages.push(this.newGalleryImage.trim());
-      this.form.patchValue({ gallery: this.galleryImages });
+      this.galleryImages.push(this.newGalleryImage);
       this.newGalleryImage = '';
     }
   }
 
   removeGalleryImage(index: number): void {
     this.galleryImages.splice(index, 1);
-    this.form.patchValue({ gallery: this.galleryImages });
+  }
+
+  getSelectedProductType(): ProductType | undefined {
+    const typeId = this.form.get('productType')?.value;
+    return this.productTypes.find(t => t.id === typeId);
+  }
+
+  shouldShowSpec(specId: string): boolean {
+    const selectedType = this.getSelectedProductType();
+    return selectedType?.specs.includes(specId) || false;
+  }
+
+  getControl(controlName: string) {
+    return this.form.get(controlName);
   }
 
   onImageError(event: Event): void {

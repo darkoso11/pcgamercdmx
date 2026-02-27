@@ -7,140 +7,282 @@
         <i class="fas mr-2" [ngClass]="isEditMode ? 'fa-edit' : 'fa-plus'"></i>
         {{ isEditMode ? 'Editar Producto' : 'Crear Nuevo Producto' }}
       </h1>
+      <p class="text-gray-400 text-sm mt-2">Completa el formulario: Tipo → Marca → Categoría → Especificaciones</p>
+    </div>
+
+    <!-- Mensajes -->
+    <div *ngIf="successMessage" class="bg-green-500/20 border border-green-500 text-green-400 px-6 py-4 rounded-lg mb-8">
+      <i class="fas fa-check-circle mr-2"></i>{{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="bg-red-500/20 border border-red-500 text-red-400 px-6 py-4 rounded-lg mb-8">
+      <i class="fas fa-exclamation-circle mr-2"></i>{{ errorMessage }}
     </div>
 
     <!-- Formulario -->
     <form [formGroup]="form" (ngSubmit)="saveProduct()" class="space-y-8">
-      <!-- Sección 1: Información Básica -->
+
+      <!-- PASO 1: TIPO DE PRODUCTO -->
+      <div class="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 border border-cyan-400/30 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <span class="flex items-center justify-center w-8 h-8 bg-cyan-600 rounded-full text-sm font-bold">1</span>
+          <i class="fas fa-cube text-cyan-400"></i>
+          Tipo de Producto
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div *ngFor="let type of productTypes">
+            <label 
+              class="flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition"
+              [ngClass]="form.get('productType')?.value === type.id 
+                ? 'border-cyan-400 bg-cyan-400/10' 
+                : 'border-white/20 hover:border-cyan-400/50 bg-[#0b1220]'"
+            >
+              <input
+                type="radio"
+                [value]="type.id"
+                formControlName="productType"
+                class="w-4 h-4 accent-cyan-400"
+              />
+              <div class="flex-1">
+                <i [class]="'fas ' + type.icon + ' text-cyan-400 mr-2'"></i>
+                <span class="font-semibold">{{ type.name }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <span *ngIf="getControl('productType')?.invalid && getControl('productType')?.touched" class="text-red-400 text-sm mt-4 block">
+          <i class="fas fa-exclamation-circle mr-2"></i>Selecciona un tipo de producto
+        </span>
+      </div>
+
+      <!-- PASO 2: MARCA -->
+      <div class="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <span class="flex items-center justify-center w-8 h-8 bg-purple-600 rounded-full text-sm font-bold">2</span>
+          <i class="fas fa-tag text-purple-400"></i>
+          Marca
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <select
+            formControlName="brand"
+            class="md:col-span-2 px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-purple-400 focus:outline-none transition"
+          >
+            <option value="">-- Selecciona una marca --</option>
+            <option *ngFor="let marca of marcas" [value]="marca">{{ marca }}</option>
+          </select>
+          
+          <div *ngIf="form.get('brand')?.value" class="flex items-center gap-2 px-4 py-2 bg-purple-600/20 border border-purple-400/30 rounded">
+            <i class="fas fa-check-circle text-purple-400"></i>
+            <span class="font-semibold">{{ form.get('brand')?.value }}</span>
+          </div>
+        </div>
+
+        <span *ngIf="getControl('brand')?.invalid && getControl('brand')?.touched" class="text-red-400 text-sm mt-4 block">
+          <i class="fas fa-exclamation-circle mr-2"></i>Marca requerida
+        </span>
+      </div>
+
+      <!-- PASO 3: CATEGORÍA Y SUBCATEGORÍA -->
+      <div class="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-400/30 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <span class="flex items-center justify-center w-8 h-8 bg-green-600 rounded-full text-sm font-bold">3</span>
+          <i class="fas fa-sitemap text-green-400"></i>
+          Categoría y Subcategoría
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Categoría Principal -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-3">Categoría Principal *</label>
+            <select
+              formControlName="categoryId"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-green-400 focus:outline-none transition"
+            >
+              <option value="">-- Selecciona una categoría --</option>
+              <option *ngFor="let categoria of categorias" [value]="categoria._id">
+                <i [class]="'fas ' + (categoria.icon || 'fa-folder')"></i> {{ categoria.name }}
+              </option>
+            </select>
+            <span *ngIf="getControl('categoryId')?.invalid && getControl('categoryId')?.touched" class="text-red-400 text-xs mt-1 block">
+              Categoría requerida
+            </span>
+          </div>
+
+          <!-- Subcategoría -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-300 mb-3">Subcategoría *</label>
+            <select
+              formControlName="subcategoryId"
+              [disabled]="!selectedCategoryId"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-green-400 focus:outline-none transition disabled:opacity-50"
+            >
+              <option value="">-- Selecciona una subcategoría --</option>
+              <option *ngFor="let subcategoria of subcategorias" [value]="subcategoria._id">
+                {{ subcategoria.name }}
+              </option>
+            </select>
+            <span *ngIf="getControl('subcategoryId')?.invalid && getControl('subcategoryId')?.touched" class="text-red-400 text-xs mt-1 block">
+              Subcategoría requerida
+            </span>
+            <p *ngIf="!selectedCategoryId" class="text-yellow-400 text-xs mt-1">
+              <i class="fas fa-info-circle mr-1"></i>Selecciona una categoría primero
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4: INFORMACIÓN BÁSICA -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-          <i class="fas fa-info-circle text-cyan-400"></i>
+          <span class="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full text-sm font-bold">4</span>
+          <i class="fas fa-info-circle text-blue-400"></i>
           Información Básica
         </h2>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Título -->
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">Título *</label>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Título *</label>
             <input
               type="text"
               formControlName="title"
-              placeholder="Ej: PC Gaming RTX 4090"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+              placeholder="Ej: RTX 4090 OC Edition"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-blue-400 focus:outline-none transition"
               (input)="generateSlug()"
             />
-            <span *ngIf="getControl('title')?.invalid && getControl('title')?.touched" class="text-red-400 text-xs mt-1 block">
-              El título es requerido
-            </span>
           </div>
 
           <!-- Slug -->
           <div>
-            <label class="block text-sm text-gray-400 mb-2">Slug *</label>
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Slug *</label>
             <input
               type="text"
               formControlName="slug"
-              placeholder="pc-gaming-rtx-4090"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
-            />
-            <span *ngIf="getControl('slug')?.invalid && getControl('slug')?.touched" class="text-red-400 text-xs mt-1 block">
-              El slug es requerido
-            </span>
-          </div>
-
-          <!-- Categoría -->
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">Categoría *</label>
-            <select
-              formControlName="category"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
-            >
-              <option value="">Selecciona una categoría</option>
-              <option value="Gabinetes">Gabinetes</option>
-              <option value="Periféricos">Periféricos</option>
-              <option value="Componentes">Componentes</option>
-            </select>
-            <span *ngIf="getControl('category')?.invalid && getControl('category')?.touched" class="text-red-400 text-xs mt-1 block">
-              La categoría es requerida
-            </span>
-          </div>
-
-          <!-- Marca -->
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">Marca</label>
-            <input
-              type="text"
-              formControlName="brand"
-              placeholder="Ej: ASUS, MSI, Corsair"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+              placeholder="rtx-4090-oc-edition"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-blue-400 focus:outline-none transition"
             />
           </div>
-        </div>
 
-        <!-- Descripción -->
-        <div class="mt-6">
-          <label class="block text-sm text-gray-400 mb-2">Descripción *</label>
-          <textarea
-            formControlName="description"
-            placeholder="Descripción detallada del producto..."
-            rows="4"
-            class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
-          ></textarea>
-          <span *ngIf="getControl('description')?.invalid && getControl('description')?.touched" class="text-red-400 text-xs mt-1 block">
-            La descripción es requerida
-          </span>
+          <!-- Descripción -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Descripción *</label>
+            <textarea
+              formControlName="description"
+              placeholder="Descripción detallada del producto"
+              rows="4"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-blue-400 focus:outline-none transition resize-none"
+            ></textarea>
+          </div>
         </div>
       </div>
 
-      <!-- Sección 2: Especificaciones Técnicas -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+      <!-- PASO 5: ESPECIFICACIONES TÉCNICAS DINÁMICAS -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6" *ngIf="getSelectedProductType()">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-          <i class="fas fa-microchip text-pink-400"></i>
+          <span class="flex items-center justify-center w-8 h-8 bg-orange-600 rounded-full text-sm font-bold">5</span>
+          <i class="fas fa-sliders-h text-orange-400"></i>
           Especificaciones Técnicas
+          <span class="text-sm font-normal text-gray-400 ml-2">({{ getSelectedProductType()?.name }})</span>
         </h2>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">Procesador</label>
+          <!-- Modelo -->
+          <div *ngIf="shouldShowSpec('modelo')">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Modelo</label>
             <input
               type="text"
-              formControlName="processor"
-              placeholder="Ej: Intel Core i9-13900K"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+              formControlName="modelo"
+              placeholder="Ej: RTX 4090"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-yellow-400 focus:outline-none transition"
             />
           </div>
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">Tarjeta Gráfica</label>
+
+          <!-- Tipo -->
+          <div *ngIf="shouldShowSpec('tipo')">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Tipo</label>
             <input
               type="text"
-              formControlName="graphicsCard"
-              placeholder="Ej: NVIDIA RTX 4090"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+              formControlName="tipo"
+              placeholder="Ej: Gaming, Mecánico"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-yellow-400 focus:outline-none transition"
             />
           </div>
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">Memoria RAM</label>
+
+          <!-- Conexión -->
+          <div *ngIf="shouldShowSpec('conexion')">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Conexión</label>
+            <select
+              formControlName="conexion"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-yellow-400 focus:outline-none transition"
+            >
+              <option value="">-- Selecciona --</option>
+              <option value="USB">USB</option>
+              <option value="USB-C">USB-C</option>
+              <option value="3.5mm">3.5mm</option>
+              <option value="Inalámbrica 2.4GHz">Inalámbrica 2.4GHz</option>
+              <option value="Bluetooth">Bluetooth</option>
+              <option value="DisplayPort">DisplayPort</option>
+              <option value="HDMI">HDMI</option>
+            </select>
+          </div>
+
+          <!-- Tamaño -->
+          <div *ngIf="shouldShowSpec('tamaño')">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Tamaño</label>
+            <select
+              formControlName="tamaño"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-yellow-400 focus:outline-none transition"
+            >
+              <option value="">-- Selecciona --</option>
+              <option value="Mini-ITX">Mini-ITX</option>
+              <option value="Micro-ATX">Micro-ATX</option>
+              <option value="ATX">ATX</option>
+              <option value="E-ATX">E-ATX</option>
+            </select>
+          </div>
+
+          <!-- Material -->
+          <div *ngIf="shouldShowSpec('material')">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Material</label>
             <input
               type="text"
-              formControlName="ram"
-              placeholder="Ej: 64GB DDR5"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+              formControlName="material"
+              placeholder="Ej: Acero, Aluminio"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-yellow-400 focus:outline-none transition"
             />
           </div>
-          <div>
-            <label class="block text-sm text-gray-400 mb-2">Almacenamiento</label>
+
+          <!-- Puertos -->
+          <div *ngIf="shouldShowSpec('puertos')">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Puertos</label>
             <input
               type="text"
-              formControlName="storage"
-              placeholder="Ej: 2TB NVMe SSD"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+              formControlName="puertos"
+              placeholder="Ej: USB 3.0, USB-C, Audio"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-yellow-400 focus:outline-none transition"
             />
+          </div>
+
+          <!-- Especificación Personalizada -->
+          <div *ngIf="shouldShowSpec('especificacion-personalizada')" class="md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-300 mb-2">Especificación Personalizada</label>
+            <textarea
+              formControlName="especificacionPersonalizada"
+              placeholder="Agrega specifications adicionales"
+              rows="3"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-yellow-400 focus:outline-none transition resize-none"
+            ></textarea>
           </div>
         </div>
       </div>
 
-      <!-- Sección 3: Precios y Promociones -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+      <!-- PASO 6: PRECIOS Y PROMOCIONES -->
+      <div class="bg-gradient-to-r from-red-600/20 to-pink-600/20 border border-red-400/30 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-          <i class="fas fa-dollar-sign text-green-400"></i>
+          <span class="flex items-center justify-center w-8 h-8 bg-red-600 rounded-full text-sm font-bold">6</span>
+          <i class="fas fa-dollar-sign text-red-400"></i>
           Precios y Promociones
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -192,9 +334,10 @@
         </div>
       </div>
 
-      <!-- Sección 4: Stock e Inventario -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+      <!-- PASO 7: STOCK E INVENTARIO -->
+      <div class="bg-gradient-to-r from-yellow-600/20 to-amber-600/20 border border-yellow-400/30 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <span class="flex items-center justify-center w-8 h-8 bg-yellow-600 rounded-full text-sm font-bold">7</span>
           <i class="fas fa-box-open text-yellow-400"></i>
           Stock e Inventario
         </h2>
@@ -244,10 +387,11 @@
         </div>
       </div>
 
-      <!-- Sección 5: Medios (Imágenes) -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+      <!-- PASO 8: MEDIOS (IMÁGENES) -->
+      <div class="bg-gradient-to-r from-violet-600/20 to-purple-600/20 border border-violet-400/30 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-          <i class="fas fa-images text-purple-400"></i>
+          <span class="flex items-center justify-center w-8 h-8 bg-violet-600 rounded-full text-sm font-bold">8</span>
+          <i class="fas fa-images text-violet-400"></i>
           Medios (Imágenes)
         </h2>
 
@@ -354,13 +498,20 @@
         </div>
       </div>
 
-      <!-- Sección 6: SEO -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+      <!-- PASO 9: SEO Y PUBLICACIÓN -->
+      <div class="bg-gradient-to-r from-indigo-600/20 to-blue-600/20 border border-indigo-400/30 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-          <i class="fas fa-search text-orange-400"></i>
-          SEO
+          <span class="flex items-center justify-center w-8 h-8 bg-indigo-600 rounded-full text-sm font-bold">9</span>
+          <i class="fas fa-cog text-indigo-400"></i>
+          SEO y Publicación
         </h2>
+
         <div class="grid grid-cols-1 gap-6">
+          <!-- SEO Section -->
+          <div class="pb-6 border-b border-white/10">
+            <h3 class="text-lg font-semibold text-indigo-400 mb-4">
+              <i class="fas fa-search mr-2"></i>Configuración SEO
+            </h3>
           <div>
             <label class="block text-sm text-gray-400 mb-2">Meta Descripción</label>
             <textarea
@@ -381,70 +532,69 @@
               class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
             />
           </div>
-        </div>
-      </div>
+          </div>
 
-      <!-- Sección 7: Publicación -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-          <i class="fas fa-globe text-blue-400"></i>
-          Publicación
-        </h2>
-        <div class="space-y-4">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" formControlName="published" class="w-4 h-4" />
-            <span class="text-gray-300">Publicar este producto</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" formControlName="featured" class="w-4 h-4" />
-            <span class="text-gray-300">Destacar en la página principal</span>
-          </label>
+          <!-- Publication Section -->
           <div>
-            <label class="block text-sm text-gray-400 mb-2">Nota Interna</label>
-            <textarea
-              formControlName="internalNotes"
-              placeholder="Notas solo visibles para administradores"
-              rows="3"
-              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
-            ></textarea>
+            <h3 class="text-lg font-semibold text-indigo-400 mb-4">
+              <i class="fas fa-globe mr-2"></i>Publicación y Visibilidad
+            </h3>
+            <div class="space-y-4">
+              <label class="flex items-center gap-3 cursor-pointer p-3 bg-indigo-600/10 border border-indigo-400/20 rounded">
+                <input type="checkbox" formControlName="published" class="w-4 h-4 accent-indigo-400" />
+                <span class="text-gray-300">Publicar este producto en la tienda</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer p-3 bg-yellow-600/10 border border-yellow-400/20 rounded">
+                <input type="checkbox" formControlName="featured" class="w-4 h-4 accent-yellow-400" />
+                <span class="text-gray-300">Destacar en la página principal</span>
+              </label>
+              <div>
+                <label class="block text-sm font-semibold text-gray-300 mb-2">Notas Internas</label>
+                <textarea
+                  formControlName="internalNotes"
+                  placeholder="Notas solo visibles para administradores..."
+                  rows="3"
+                  class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-indigo-400 focus:outline-none transition resize-none"
+                ></textarea>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Botones de Acción -->
-      <div class="flex justify-between gap-4">
-        <a routerLink="/admin/products" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded font-semibold transition">
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="flex justify-between items-center gap-4 pt-6 border-t border-white/10">
+        <a routerLink="/admin/products" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition flex items-center gap-2">
+          <i class="fas fa-arrow-left"></i>
           Cancelar
         </a>
+
         <div class="flex gap-4">
           <button
             type="button"
             (click)="saveDraft()"
-            class="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 rounded font-semibold transition"
+            [disabled]="loading"
+            class="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-800 disabled:opacity-50 text-white font-semibold rounded-lg transition flex items-center gap-2"
           >
-            <i class="fas fa-save mr-2"></i>Guardar como Borrador
+            <i class="fas fa-save"></i>
+            Guardar Borrador
           </button>
+
           <button
             type="submit"
             [disabled]="form.invalid || loading"
-            class="px-6 py-3 bg-pink-600 hover:bg-pink-700 disabled:bg-pink-900 disabled:opacity-50 rounded font-semibold transition"
+            class="px-8 py-3 bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 disabled:from-pink-900 disabled:to-red-900 disabled:opacity-50 text-white font-bold rounded-lg transition flex items-center gap-2"
           >
-            <span *ngIf="loading">
-              <i class="fas fa-spinner fa-spin mr-2"></i>Publicando...
-            </span>
             <span *ngIf="!loading">
-              <i class="fas fa-rocket mr-2"></i>Publicar Producto
+              <i class="fas fa-rocket"></i>
+              Publicar Producto
+            </span>
+            <span *ngIf="loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              Publicando...
             </span>
           </button>
         </div>
-      </div>
-
-      <!-- Mensaje de Éxito/Error -->
-      <div *ngIf="successMessage" class="p-4 bg-green-500/30 border border-green-400 rounded text-green-300">
-        <i class="fas fa-check-circle mr-2"></i>{{ successMessage }}
-      </div>
-      <div *ngIf="errorMessage" class="p-4 bg-red-500/30 border border-red-400 rounded text-red-300">
-        <i class="fas fa-exclamation-circle mr-2"></i>{{ errorMessage }}
       </div>
     </form>
   </div>

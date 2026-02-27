@@ -153,8 +153,27 @@ export const routes: Routes = [
   },
   {
     path: 'admin/products/categories',
-    loadComponent: () => import('./features/products/admin/admin-categories-manager.component').then(m => m.AdminCategoriesManagerComponent),
+    loadComponent: () => import('./features/products/admin/admin-category-hierarchy-manager.component').then(m => m.AdminCategoryHierarchyManagerComponent),
     title: 'Categorías | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/assemblies',
+    loadComponent: () => import('./features/products/admin/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    title: 'Ensambles | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/assemblies/new',
+    loadComponent: () => import('./features/products/admin/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    title: 'Nuevo Ensamble | Admin',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/products/assemblies/:id/edit',
+    loadComponent: () => import('./features/products/admin/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    title: 'Editar Ensamble | Admin',
+    data: { renderMode: 'dynamic' },
     canActivate: [AuthGuard]
   },
 

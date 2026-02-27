@@ -19,34 +19,41 @@
 
   <div class="max-w-7xl mx-auto px-6 py-8">
     <!-- Botones de Acción Rápida -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       <button
         (click)="goToSection('new-product')"
-        class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full"
+        class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
       >
         <i class="fas fa-plus mr-2"></i>
         Crear Producto
       </button>
       <button
         (click)="goToSection('products')"
-        class="bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full"
+        class="bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
       >
         <i class="fas fa-list mr-2"></i>
         Ver Productos
       </button>
       <button
+        (click)="goToSection('assemblies')"
+        class="bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
+      >
+        <i class="fas fa-cube mr-2"></i>
+        Ensambles
+      </button>
+      <button
         (click)="goToSection('packages')"
-        class="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full"
+        class="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
       >
         <i class="fas fa-box-open mr-2"></i>
         Paquetes
       </button>
       <button
-        (click)="goToSection('offers')"
-        class="bg-gradient-to-br from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full"
+        (click)="goToSection('categories')"
+        class="bg-gradient-to-br from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
       >
-        <i class="fas fa-tag mr-2"></i>
-        Ofertas
+        <i class="fas fa-sitemap mr-2"></i>
+        Categorías
       </button>
     </div>
 

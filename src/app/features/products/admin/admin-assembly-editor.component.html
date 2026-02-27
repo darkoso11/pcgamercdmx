@@ -1,0 +1,316 @@
+<app-admin-header></app-admin-header>
+<div class="min-h-screen bg-[#071029] text-white">
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Encabezado -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-cyan-400">
+        <i class="fas mr-2" [ngClass]="isEditMode ? 'fa-cube' : 'fa-plus'"></i>
+        {{ isEditMode ? 'Editar Ensamble' : 'Crear Nuevo Ensamble de Computadora' }}
+      </h1>
+    </div>
+
+    <!-- Formulario -->
+    <form [formGroup]="form" (ngSubmit)="saveAssembly()" class="space-y-8">
+      <!-- Sección 1: Información Básica -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-info-circle text-cyan-400"></i>
+          Información Básica
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Nombre del Ensamble *</label>
+            <input
+              type="text"
+              formControlName="title"
+              placeholder="Ej: PC Gaming RTX 4090 Ultimate"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+              (input)="generateSlug()"
+            />
+            <span *ngIf="getControl('title')?.invalid && getControl('title')?.touched" class="text-red-400 text-xs mt-1 block">
+              El nombre es requerido
+            </span>
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Slug *</label>
+            <input
+              type="text"
+              formControlName="slug"
+              placeholder="pc-gaming-rtx-4090-ultimate"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <label class="block text-sm text-gray-400 mb-2">Descripción *</label>
+          <textarea
+            formControlName="description"
+            placeholder="Descripción detallada del ensamble..."
+            rows="4"
+            class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Sección 2: Especificaciones Técnicas Completas -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-microchip text-pink-400"></i>
+          Especificaciones Técnicas
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Procesador -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Procesador *</label>
+            <input
+              type="text"
+              formControlName="processor"
+              placeholder="Ej: Intel Core i9-13900KS"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Tarjeta Madre -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Tarjeta Madre *</label>
+            <input
+              type="text"
+              formControlName="motherboard"
+              placeholder="Ej: ASUS ROG Maximus Z790"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Tarjeta Gráfica -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Tarjeta Gráfica *</label>
+            <input
+              type="text"
+              formControlName="graphicsCard"
+              placeholder="Ej: NVIDIA RTX 4090 24GB"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Memoria RAM -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Memoria RAM *</label>
+            <input
+              type="text"
+              formControlName="ram"
+              placeholder="Ej: 64GB DDR5 6000MHz"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Almacenamiento NVMe -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Almacenamiento NVMe *</label>
+            <input
+              type="text"
+              formControlName="nvmeSsd"
+              placeholder="Ej: 2TB Samsung 990 Pro"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Fuente de Poder -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Fuente de Poder *</label>
+            <input
+              type="text"
+              formControlName="powerSupply"
+              placeholder="Ej: EVGA SuperNOVA 1000W Platinum"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Enfriamiento -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Sistema de Enfriamiento *</label>
+            <input
+              type="text"
+              formControlName="cooling"
+              placeholder="Ej: Corsair H150i Elite Capellix"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Gabinete -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Gabinete *</label>
+            <input
+              type="text"
+              formControlName="case"
+              placeholder="Ej: Corsair Crystal 570X RGB"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <!-- Sistema Operativo -->
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Sistema Operativo</label>
+            <input
+              type="text"
+              formControlName="operatingSystem"
+              placeholder="Ej: Windows 11 Pro"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 3: Precios -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-dollar-sign text-green-400"></i>
+          Precios
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Precio Base *</label>
+            <input
+              type="number"
+              formControlName="price"
+              placeholder="0.00"
+              step="0.01"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Precio con Descuento</label>
+            <input
+              type="number"
+              formControlName="discountPrice"
+              placeholder="0.00"
+              step="0.01"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Descuento (%)</label>
+            <input
+              type="number"
+              formControlName="discountPercent"
+              placeholder="0"
+              step="0.1"
+              min="0"
+              max="100"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 4: Stock -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-box-open text-yellow-400"></i>
+          Stock
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Cantidad en Stock *</label>
+            <input
+              type="number"
+              formControlName="stock"
+              placeholder="0"
+              min="0"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">SKU</label>
+            <input
+              type="text"
+              formControlName="sku"
+              placeholder="Código único"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 5: Imágenes -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-image text-purple-400"></i>
+          Imagen Principal
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">URL de Imagen *</label>
+            <input
+              type="text"
+              formControlName="image"
+              placeholder="URL de la imagen"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div *ngIf="form.get('image')?.value" class="flex items-center justify-center">
+            <div class="text-center">
+              <p class="text-sm text-gray-400 mb-2">Vista Previa:</p>
+              <img [src]="form.get('image')?.value" alt="Preview" class="h-40 w-40 object-cover rounded border border-white/10" (error)="onImageError($event)" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 6: Publicación -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+          <i class="fas fa-globe text-blue-400"></i>
+          Publicación
+        </h2>
+        <div class="space-y-4">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="published" class="w-4 h-4" />
+            <span class="text-gray-300">Publicar este ensamble</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" formControlName="featured" class="w-4 h-4" />
+            <span class="text-gray-300">Destacar en la página principal</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex justify-between gap-4">
+        <a routerLink="/admin/products" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded font-semibold transition">
+          Cancelar
+        </a>
+        <div class="flex gap-4">
+          <button
+            type="button"
+            (click)="saveDraft()"
+            class="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 rounded font-semibold transition"
+          >
+            <i class="fas fa-save mr-2"></i>Guardar como Borrador
+          </button>
+          <button
+            type="submit"
+            [disabled]="form.invalid || loading"
+            class="px-6 py-3 bg-pink-600 hover:bg-pink-700 disabled:bg-pink-900 disabled:opacity-50 rounded font-semibold transition"
+          >
+            <span *ngIf="loading">
+              <i class="fas fa-spinner fa-spin mr-2"></i>Publicando...
+            </span>
+            <span *ngIf="!loading">
+              <i class="fas fa-rocket mr-2"></i>Publicar Ensamble
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensaje de Éxito/Error -->
+      <div *ngIf="successMessage" class="p-4 bg-green-500/30 border border-green-400 rounded text-green-300">
+        <i class="fas fa-check-circle mr-2"></i>{{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage" class="p-4 bg-red-500/30 border border-red-400 rounded text-red-300">
+        <i class="fas fa-exclamation-circle mr-2"></i>{{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>

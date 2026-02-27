@@ -58,6 +58,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
     const routes: { [key: string]: string } = {
       'new-product': '/admin/products/new',
       'products': '/admin/products/list',
+      'assemblies': '/admin/products/assemblies/new',
       'packages': '/admin/products/packages',
       'offers': '/admin/products/offers',
       'categories': '/admin/products/categories'
