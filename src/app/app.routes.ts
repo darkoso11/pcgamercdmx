@@ -103,75 +103,75 @@ export const routes: Routes = [
   // Admin Products routes
   {
     path: 'admin/products',
-    loadComponent: () => import('./features/products/admin/admin-products-dashboard.component').then(m => m.AdminProductsDashboardComponent),
+    loadComponent: () => import('./features/products/admin/dashboard/admin-products-dashboard/admin-products-dashboard.component').then(m => m.AdminProductsDashboardComponent),
     title: 'Admin Productos | PC Gamer CDMX',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/list',
-    loadComponent: () => import('./features/products/admin/admin-product-list.component').then(m => m.AdminProductListComponent),
+    loadComponent: () => import('./features/products/admin/products/admin-product-list/admin-product-list.component').then(m => m.AdminProductListComponent),
     title: 'Productos | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/new',
-    loadComponent: () => import('./features/products/admin/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
+    loadComponent: () => import('./features/products/admin/products/admin-product-editor/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
     title: 'Nuevo Producto | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/:id/edit',
-    loadComponent: () => import('./features/products/admin/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
+    loadComponent: () => import('./features/products/admin/products/admin-product-editor/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
     title: 'Editar Producto | Admin',
     data: { renderMode: 'dynamic' },
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/packages',
-    loadComponent: () => import('./features/products/admin/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
+    loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
     title: 'Paquetes | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/packages/new',
-    loadComponent: () => import('./features/products/admin/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
+    loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
     title: 'Nuevo Paquete | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/packages/:id/edit',
-    loadComponent: () => import('./features/products/admin/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
+    loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
     title: 'Editar Paquete | Admin',
     data: { renderMode: 'dynamic' },
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/offers',
-    loadComponent: () => import('./features/products/admin/admin-offers-manager.component').then(m => m.AdminOffersManagerComponent),
+    loadComponent: () => import('./features/products/admin/offers/admin-offers-manager/admin-offers-manager.component').then(m => m.AdminOffersManagerComponent),
     title: 'Ofertas | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/categories',
-    loadComponent: () => import('./features/products/admin/admin-category-hierarchy-manager.component').then(m => m.AdminCategoryHierarchyManagerComponent),
+    loadComponent: () => import('./features/products/admin/categories/admin-category-hierarchy-manager/admin-category-hierarchy-manager.component').then(m => m.AdminCategoryHierarchyManagerComponent),
     title: 'Categorías | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/assemblies',
-    loadComponent: () => import('./features/products/admin/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
     title: 'Ensambles | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/assemblies/new',
-    loadComponent: () => import('./features/products/admin/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
     title: 'Nuevo Ensamble | Admin',
     canActivate: [AuthGuard]
   },
   {
     path: 'admin/products/assemblies/:id/edit',
-    loadComponent: () => import('./features/products/admin/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
     title: 'Editar Ensamble | Admin',
     data: { renderMode: 'dynamic' },
     canActivate: [AuthGuard]

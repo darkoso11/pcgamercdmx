@@ -4,8 +4,8 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AdminHeaderComponent } from '../../blog/admin/admin-header.component';
-import { ProductsAdminService, Category, Subcategory } from './products-admin.service';
+import { AdminHeaderComponent } from '../../../../blog/admin/admin-header.component';
+import { ProductsAdminService, Category, Subcategory } from '../../shared/products-admin.service';
 
 @Component({
   selector: 'app-admin-category-hierarchy-manager',

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { ProductsAdminService, AdminDashboardStats, Product } from './products-admin.service';
+import { ProductsAdminService, AdminDashboardStats, Product } from '../../shared/products-admin.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({

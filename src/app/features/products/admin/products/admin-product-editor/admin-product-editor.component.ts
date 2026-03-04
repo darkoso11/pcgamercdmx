@@ -4,8 +4,8 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AdminHeaderComponent } from '../../blog/admin/admin-header.component';
-import { ProductsAdminService, Product, Category, Subcategory } from './products-admin.service';
+import { AdminHeaderComponent } from '../../../../blog/admin/admin-header.component';
+import { ProductsAdminService, Product, Category, Subcategory } from '../../shared/products-admin.service';
 
 // Tipos de producto disponibles
 export interface ProductType {
