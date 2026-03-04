@@ -167,10 +167,10 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       .getAllCategories()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (categorias) => {
+        next: (categorias: Category[]) => {
           this.categorias = categorias;
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Error cargando categorías:', err);
         }
       });
@@ -188,7 +188,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       .getProductById(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (product: any) => {
+        next: (product: Product) => {
           if (product) {
             this.galleryImages = product.gallery || [];
             this.form.patchValue({

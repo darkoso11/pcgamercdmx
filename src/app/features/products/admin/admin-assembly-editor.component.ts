@@ -5,7 +5,7 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../blog/admin/admin-header.component';
-import { ProductsAdminService } from './products-admin.service';
+import { ProductsAdminService, Product } from './products-admin.service';
 
 @Component({
   selector: 'app-admin-assembly-editor',
@@ -89,15 +89,15 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       .getProductById(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (assembly: any) => {
+        next: (assembly: Product) => {
           if (assembly) {
             this.galleryImages = assembly.gallery || [];
             this.form.patchValue({
               title: assembly.title,
               slug: assembly.slug,
               description: assembly.description,
-              category: assembly.category || 'Ensambles de Computadoras',
-              processor: assembly.processor || '',
+              category: assembly.categoryId || 'Ensambles de Computadoras',
+              processor: assembly.modelo || '',
               motherboard: assembly.motherboard || '',
               graphicsCard: assembly.graphicsCard || '',
               ram: assembly.ram || '',
