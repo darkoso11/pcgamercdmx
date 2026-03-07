@@ -5,7 +5,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
 import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
-import { AdminHeaderComponent } from './admin-header.component';
+import { AdminHeaderComponent } from '../../admin/admin-header.component';
 
 @Component({
   selector: 'app-admin-article-editor',

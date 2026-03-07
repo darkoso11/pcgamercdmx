@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AdminHeaderComponent } from '../../../../blog/admin/admin-header.component';
+import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { ProductsAdminService, Category, Subcategory } from '../../shared/products-admin.service';
 
 @Component({

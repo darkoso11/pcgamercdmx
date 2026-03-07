@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BlogService } from '../services/blog.service';
-import { AdminHeaderComponent } from './admin-header.component';
+import { AdminHeaderComponent } from '../../admin/admin-header.component';
 
 @Component({
   selector: 'app-admin-categories',

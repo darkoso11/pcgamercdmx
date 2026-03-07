@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
-import { AuthGuard } from './features/blog/services/auth.guard';
+import { AuthGuard } from './features/admin/services/auth.guard';
 
 export const routes: Routes = [
   {
@@ -64,7 +64,7 @@ export const routes: Routes = [
   // Admin Blog routes
   {
     path: 'admin',
-    loadComponent: () => import('./features/blog/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+    loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent),
     title: 'Admin | PC Gamer CDMX',
     canActivate: [AuthGuard]
   },
@@ -96,7 +96,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/blog/login',
-    loadComponent: () => import('./features/blog/admin/admin-login.component').then(m => m.AdminLoginComponent),
+    loadComponent: () => import('./features/admin/admin-login.component').then(m => m.AdminLoginComponent),
     title: 'Admin Login | PC Gamer CDMX'
   },
 

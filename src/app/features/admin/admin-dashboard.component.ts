@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AdminHeaderComponent } from './admin-header.component';
-import { BlogService } from '../services/blog.service';
+import { BlogService } from '../blog/services/blog.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -114,7 +114,10 @@ export class AdminDashboardComponent implements OnInit {
   totalCategories = 0;
   publishedCount = 0;
   draftCount = 0;
-  recentArticles: any[] = [];  currentModule: 'blog' | 'products' = 'blog';
+  recentArticles: any[] = [];
+
+  currentModule: 'blog' | 'products' = 'blog';
+
   constructor(private blog: BlogService) {}
 
   ngOnInit() {
