@@ -1,8 +1,16 @@
-import tailwind from '@tailwindcss/vite'
-
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./src/**/*.{html,ts}"
-  ]
+    "./src/**/*.{html,ts}",
+  ],
+  theme: {
+    extend: {
+      screens: {
+        'ultra': '810px',
+      }
+    }
+  },
+  corePlugins: {
+    preflight: true,
+  }
 }

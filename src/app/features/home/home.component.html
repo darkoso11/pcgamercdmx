@@ -9,32 +9,32 @@
     </div>
 
     <!-- Menú lateral izquierdo - posicionado absolutamente respecto al hero section -->
-    <div class="absolute bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start">
-      <ul class="flex flex-col min-w-[180px]">
+    <div class="absolute bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start ultra:bottom-24 ultra:left-6">
+      <ul class="flex flex-col min-w-[180px] ultra:min-w-[140px] ultra:text-sm">
         <li>
           <a routerLink="/sorteos"
-            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
             style="--hover-bg: #ec4899; --hover-text: #fff">
             Play
           </a>
         </li>
         <li>
           <a routerLink="/galeria"
-            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
             style="--hover-bg: #22d3ee; --hover-text: #222">
             Galería
           </a>
         </li>
         <li>
           <a routerLink="/nosotros"
-            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200"
+            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
             style="--hover-bg: #a78bfa; --hover-text: #222">
             Nosotros
           </a>
         </li>
         <li>
           <a routerLink="/blog"
-            class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200"
+            class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
             style="--hover-bg: #fde047; --hover-text: #222">
             Blog
           </a>
@@ -61,15 +61,15 @@
 
         <!-- Texto typing cyberpunk - texto más pequeño en móvil -->
         <h1
-          class="text-2xl md:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
+          class="text-2xl md:text-4xl ultra:text-3xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
           <span>{{ typingText }}</span>
         </h1>
       </div>
 
       <!-- Imagen ensamble PC alineada a la derecha para desktop -->
-      <div class="hidden md:block absolute right-12 bottom-32">
+      <div class="hidden md:block absolute right-12 bottom-32 ultra:right-6 ultra:bottom-24">
         <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
-          class="w-72 h-88 2xl:w-80 2xl:h-96 object-cover rounded-2xl" />
+          class="w-72 h-88 2xl:w-80 2xl:h-96 ultra:w-56 ultra:h-72 object-cover rounded-2xl" />
       </div>
 
       <!-- Para móviles, ajustada para ser más grande y con padding superior -->
@@ -97,7 +97,7 @@
       </div>
       <div class="flex-1 flex">
         <div class="w-full flex justify-end">
-          <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber mr-4 md:mr-32 lg:mr-40 xl:mr-17">Comprar</a>
+          <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber mr-4 md:mr-32 lg:mr-40 xl:mr-17 ultra:mr-8 ultra:py-2 ultra:px-4 ultra:text-sm">Comprar</a>
         </div>
       </div>
     </div>
