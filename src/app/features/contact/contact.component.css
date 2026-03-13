@@ -175,11 +175,11 @@
   text-transform: uppercase;
 }
 
-.quick-btn:hover {
+/* .quick-btn:hover {
   background: var(--primary-color);
   box-shadow: 0 0 20px var(--primary-color), 0 0 30px rgba(236, 72, 153, 0.5);
   transform: translateY(-3px);
-}
+} */
 
 .quick-btn i {
   font-size: 1.2rem;
@@ -219,7 +219,8 @@
 }
 
 .method-card {
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(139, 92, 246, 0.1));
+  /* este es el background */
+  background: rgba(15, 23, 42, 0.5);
   border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 30px;
@@ -242,19 +243,19 @@
   transition: opacity 0.3s;
 }
 
-.method-card:hover {
+/* .method-card:hover {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2));
   border-color: var(--primary-color);
   box-shadow: 0 0 20px var(--primary-color), 0 0 40px rgba(236, 72, 153, 0.3);
   transform: translateY(-5px);
 }
-
+ */
 .card-icon {
   font-size: 3rem;
   color: var(--primary-color);
   margin-bottom: 20px;
   transition: all 0.3s;
-  text-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+  /* text-shadow: 0 0 15px rgba(236, 72, 153, 0.6); */
 }
 
 .method-card:hover .card-icon {
@@ -682,7 +683,7 @@
 
 .location-card,
 .hours-card {
-  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(139, 92, 246, 0.1));
+  background: rgba(15, 23, 42, 0.5);
   border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 30px;
@@ -726,10 +727,10 @@
   text-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
 }
 
-.location-item:hover {
+/* .location-item:hover {
   background: rgba(236, 72, 153, 0.1);
 }
-
+ */
 .location-label {
   font-family: var(--font-orbitron);
   color: var(--cyan-color);
