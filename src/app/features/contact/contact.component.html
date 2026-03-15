@@ -1,29 +1,3 @@
-<!-- ==================== HERO SECTION ==================== -->
-<section class="hero-contact">
- <div class="hero-content">
-        <h1 class="hero-title glitch" data-text="CONECTA CON NOSOTROS">
-            CONECTA CON NOSOTROS
-        </h1>
-    </div>
-    <div class="container">
-        <h2 class="section-title">Métodos de Contacto Directo</h2>
-
-        <div class="methods-grid">
-            <div *ngFor="let method of contactMethods" class="method-card">
-                <div class="card-icon">
-                    <i [class]="method.icon"></i>
-                </div>
-                <h3 class="card-title">{{ method.title }}</h3>
-                <p class="card-value">{{ method.value }}</p>
-                <a [href]="method.action" class="method-link">
-                    <span>Contactar ahora</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- ==================== DIRECT CONTACT METHODS ==================== -->
 <section id="metodos" class="contact-methods-section">
     <div class="hero-content">
