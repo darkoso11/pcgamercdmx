@@ -25,57 +25,11 @@
 }
 
 /* ==================== HERO SECTION ==================== */
-/* .hero-contact {
-  position: relative;
-  min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(10, 15, 26, 0.9));
-  border-bottom: 2px solid var(--border-color);
-  overflow: hidden;
-  padding: 60px 20px;
-} */
-
-/* .grid-background {
-  position: absolute;
-  inset: 0;
-  opacity: 0.1;
-  pointer-events: none;
-}
- */
-/* .grid-line {
-  position: absolute;
-  background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
-  opacity: 0;
-  animation: gridPulse 3s ease-in-out infinite;
-} */
-
-/* .grid-line:nth-child(1) {
-  height: 1px;
-  width: 100%;
-  top: 25%;
-  animation-delay: 0s;
-} */
-
-/* .grid-line:nth-child(2) {
-  height: 1px;
-  width: 100%;
-  top: 75%;
-  animation-delay: 1s;
-} */
-
-/* @keyframes gridPulse {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 0.3; }
-} */
-
 .hero-content {
   position: relative;
   z-index: 10;
   text-align: center;
   color: white;
-  max-width: 800px;
 }
 
 .hero-title {
@@ -140,7 +94,7 @@
 .hero-subtitle {
   font-size: 1.3rem;
   margin: 0 0 40px 0;
-  color: var(--cyan-color);
+  color: var(--secondary-color);
   text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
   letter-spacing: 1px;
 }
@@ -159,7 +113,6 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  /* background: rgba(236, 72, 153, 0.15); */
   border: 2px solid var(--primary-color);
   border-radius: 8px;
   color: white;
@@ -170,7 +123,7 @@
   letter-spacing: 1px;
   transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+  /* box-shadow: 0 0 10px rgba(236, 72, 153, 0.2); */
   text-transform: uppercase;
 }
 
@@ -257,12 +210,6 @@
   text-shadow: 0 0 15px rgba(72, 102, 236, 0.6);
 }
 
-.method-card:hover .card-icon {
-  color: var(--cyan-color);
-  text-shadow: 0 0 20px var(--cyan-color);
-  transform: scale(1.2) rotate(-5deg);
-}
-
 .card-title {
   font-family: var(--font-orbitron);
   color: white;
@@ -284,7 +231,7 @@
   gap: 8px;
   margin-top: 20px;
   padding: 10px 20px;
-  background: rgba(236, 72, 153, 0.15);
+  background: rgba(34, 211, 238, 0.1);
   border: 1px solid var(--primary-color);
   border-radius: 6px;
   color: white;
@@ -363,7 +310,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(236, 72, 153, 0.2);
+  background: rgba(34, 211, 238, 0.1);
   border: 2px solid var(--border-color);
   font-family: var(--font-orbitron);
   color: white;
@@ -622,11 +569,10 @@
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color), var(--tertiary-color));
   color: white;
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 0 25px rgba(236, 72, 153, 0.8);
+  box-shadow: 0 0 20px var(--primary-color), 0 0 30px rgba(72, 102, 236, 0.3);
   transform: translateY(-2px);
 }
 
