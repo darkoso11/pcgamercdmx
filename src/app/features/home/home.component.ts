@@ -488,7 +488,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Para el efecto typing - usando un enfoque con Observable para mejor fiabilidad
   typingText = '';
-  fullText = 'El futuro es hoy, oíste viejo!\nBienvenido a Pc Gamer CDMX.';
+  fullText = 'El futuro es hoy, oíste viejo!?\nBienvenido a Pc Gamer CDMX.';
   private typingSubscription?: Subscription;
 
   // Datos para el slider de banners promocionales
