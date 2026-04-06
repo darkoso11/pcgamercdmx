@@ -44,7 +44,7 @@ import { BrandsSectionComponent } from '../../shared/components/brands-section/b
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
-  // Slider superior derecho
+  // Slider superior derecho - -
   sliderImages = [
     {
       id: 1,

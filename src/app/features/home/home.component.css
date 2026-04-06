@@ -216,6 +216,13 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+@media (max-width: 1280px) {
+  .class-comprar-cyber {
+    padding: 0.5em 2em;
+    font-size: 16px;
+  }
+  
+}
 
 @media (max-width: 1150px) {
   .fixed.bottom-32.left-12 {
