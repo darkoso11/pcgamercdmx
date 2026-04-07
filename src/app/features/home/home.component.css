@@ -216,6 +216,21 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.neon-border {
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.3); /* cyan glow */
+}
+
+.gradient-border {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(14, 165, 233, 0.2) 25%,
+    rgba(14, 165, 233, 0.5) 50%,
+    rgba(14, 165, 233, 0.2) 75%,
+    transparent 100%
+  );
+}
+
 @media (max-width: 1280px) {
   .class-comprar-cyber {
     padding: 0.5em 2em;
@@ -238,17 +253,4 @@
     transform: translateX(-50%);
   }
   
-}
-.neon-border {
-  box-shadow: 0 0 10px rgba(14, 165, 233, 0.3); /* cyan glow */
-}
-
-.gradient-border {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(14, 165, 233, 0.2) 25%,
-    rgba(14, 165, 233, 0.5) 50%,
-    rgba(14, 165, 233, 0.2) 75%,
-    transparent 100%
-  );
 }
