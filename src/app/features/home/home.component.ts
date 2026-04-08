@@ -74,7 +74,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     { img: 'assets/img/gabinetes/product-section-01.png', link: '/productos/paquetes' },
     { img: 'assets/img/gabinetes/rog-hyperion-gr701.png', link: '/productos/paquetes' },
   ];
-  pcIndex = 0;
+  pcIndex = 2;
 
   // Datos para las nuevas secciones
   popularGames = [
