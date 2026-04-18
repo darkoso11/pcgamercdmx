@@ -4,11 +4,11 @@
 :host {
   --primary-color: #2563eb;
   --secondary-color: #0ea5e9;
-  --tertiary-color: #8b5cf6;
+  --tertiary-color: #1e40af;
   --cyan-color: #22d3ee;
   --success-color: #10b981;
-  --dark-bg: #0f172a;
-  --darker-bg: #0a0f1a;
+  --dark-bg: #a0b3e0;
+  --darker-bg: #91a4ce;
   --border-color: rgba(37, 99, 235, 0.2);
   --neon-glow: 0 0 8px rgba(37, 99, 235, 0.6);
   --font-orbitron: 'Orbitron', 'Audiowide', 'Roboto', sans-serif;
@@ -112,7 +112,7 @@
 /* ==================== CONTACT METHODS SECTION ==================== */
 .contact-methods-section {
   padding: 80px 20px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(10, 15, 26, 0.9));
+  background: linear-gradient(135deg, rgba(100, 120, 180, 0.8), rgba(85, 105, 160, 0.9));
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -139,7 +139,7 @@
 
 .method-card {
   /* este es el background */
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(97, 135, 223, 0.5);
   border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 30px;
@@ -163,7 +163,7 @@
 }
 
 .method-card:hover {
-  background: linear-gradient(135deg, rgba(72, 102, 236, 0.6), rgba(139, 92, 246, 0.2));
+  background: linear-gradient(135deg, rgba(72, 102, 236, 0.6), rgba(37, 99, 235, 0.2));
   border-color: var(--primary-color);
   box-shadow: 0 0 20px var(--primary-color), 0 0 40px rgba(72, 102, 236, 0.3);
   transform: translateY(-5px);
@@ -218,7 +218,7 @@
 /* ==================== FORM SECTION ==================== */
 .form-section {
   padding: 80px 20px;
-  background: linear-gradient(135deg, rgba(10, 15, 26, 0.8), rgba(15, 23, 42, 0.6));
+  background: linear-gradient(135deg, rgba(85, 105, 160, 0.8), rgba(100, 120, 180, 0.6));
   border-top: 2px solid var(--border-color);
   border-bottom: 2px solid var(--border-color);
 }
@@ -383,7 +383,7 @@
 .form-input textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
   background: rgba(15, 23, 42, 0.95);
 }
 
@@ -394,7 +394,7 @@
 .form-input select {
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ec4899' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232563eb' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
@@ -440,7 +440,7 @@
 }
 
 .radio-option:hover {
-  background: rgba(236, 72, 153, 0.1);
+  background: rgba(37, 99, 235, 0.1);
   border-color: var(--primary-color);
 }
 
@@ -453,11 +453,11 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
-  background: rgba(236, 72, 153, 0.05);
+  background: rgba(37, 99, 235, 0.05);
 }
 
 .file-upload:hover {
-  background: rgba(236, 72, 153, 0.1);
+  background: rgba(37, 99, 235, 0.1);
   border-color: var(--cyan-color);
 }
 
@@ -544,7 +544,7 @@
 }
 
 .btn-secondary {
-  background: rgba(139, 92, 246, 0.2);
+  background: rgba(37, 99, 235, 0.2);
   color: white;
   border: 2px solid var(--tertiary-color);
 }
@@ -584,7 +584,7 @@
 /* ==================== LOCATION & HOURS SECTION ==================== */
 .location-hours-section {
   padding: 80px 20px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.5), rgba(10, 15, 26, 0.8));
+  background: linear-gradient(180deg, rgba(100, 120, 180, 0.5), rgba(85, 105, 160, 0.8));
 }
 
 .location-hours-grid {
@@ -665,7 +665,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(236, 72, 153, 0.2);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 .hour-item:last-child {
@@ -705,14 +705,14 @@
 /* ==================== MAP SECTION ==================== */
 .map-section {
   padding: 80px 20px;
-  background: linear-gradient(135deg, rgba(10, 15, 26, 0.8), rgba(15, 23, 42, 0.6));
+  background: linear-gradient(135deg, rgba(85, 105, 160, 0.8), rgba(100, 120, 180, 0.6));
   border-top: 2px solid var(--border-color);
 }
 
 .map-container {
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.2);
   border: 2px solid var(--border-color);
 }
 
@@ -723,7 +723,7 @@
 /* ==================== SOCIAL SECTION ==================== */
 .social-section {
   padding: 80px 20px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.5), rgba(10, 15, 26, 0.8));
+  background: linear-gradient(180deg, rgba(100, 120, 180, 0.5), rgba(85, 105, 160, 0.8));
   text-align: center;
   border-top: 2px solid var(--border-color);
   border-bottom: 2px solid var(--border-color);
@@ -750,11 +750,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: rgba(236, 72, 153, 0.15);
+  background: rgba(37, 99, 235, 0.15);
   border: 2px solid var(--border-color);
   color: white;
   transition: all 0.3s;
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.2);
   font-size: 1.5rem;
   text-decoration: none;
 }
@@ -769,7 +769,7 @@
 /* ==================== FAQ SECTION ==================== */
 .faq-section {
   padding: 80px 20px;
-  background: linear-gradient(135deg, rgba(10, 15, 26, 0.8), rgba(15, 23, 42, 0.6));
+  background: linear-gradient(135deg, rgba(85, 105, 160, 0.8), rgba(100, 120, 180, 0.6));
 }
 
 .faq-container {
@@ -787,13 +787,13 @@
 
 .faq-item.expanded {
   border-color: var(--primary-color);
-  box-shadow: 0 0 15px rgba(236, 72, 153, 0.2);
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
 }
 
 .faq-button {
   width: 100%;
   padding: 20px;
-  background: rgba(236, 72, 153, 0.1);
+  background: rgba(37, 99, 235, 0.1);
   border: none;
   color: white;
   cursor: pointer;
@@ -808,11 +808,11 @@
 }
 
 .faq-button:hover {
-  background: rgba(236, 72, 153, 0.15);
+  background: rgba(37, 99, 235, 0.15);
 }
 
 .faq-item.expanded .faq-button {
-  background: rgba(236, 72, 153, 0.2);
+  background: rgba(37, 99, 235, 0.2);
 }
 
 .faq-question {
@@ -832,7 +832,7 @@
 
 .faq-answer {
   padding: 20px;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(100, 120, 180, 0.6);
   border-top: 2px solid var(--border-color);
   animation: slideDown 0.3s ease;
 }
@@ -856,7 +856,7 @@
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 20% 50%, rgba(34, 211, 238, 0.2), transparent),
-              radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.2), transparent);
+              radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.2), transparent);
   pointer-events: none;
 }
 

@@ -29,7 +29,9 @@ export const routes: Routes = [
   },
   {
     path: 'nosotros',
-    loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent)
+    loadComponent: () => import('./features/about/about.component').then(m => m.AboutComponent),
+    title: 'Nosotros | PC Gamer CDMX',
+    data: { description: 'Conoce la historia, trayectoria, equipo y colaboraciones detrás de PC Gamer CDMX.' }
   },
   {
     path: 'galeria',

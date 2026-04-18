@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  template: `<div class="text-white text-3xl p-8">Sobre nosotros próximamente...</div>`,
+  imports: [RouterModule],
+  templateUrl: './about.component.html',
   styleUrls: ['./about.component.css']
 })
 export class AboutComponent {}
