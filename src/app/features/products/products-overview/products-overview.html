@@ -1,1 +1,147 @@
-<p>products-overview works!</p>
+<div class="space-y-12 text-white">
+  <section class="grid gap-6 lg:grid-cols-3">
+    <article
+      *ngFor="let item of phaseCards"
+      class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm"
+    >
+      <h2 class="text-xl font-semibold">{{ item.title }}</h2>
+      <p class="mt-4 text-sm leading-6 text-slate-300">{{ item.description }}</p>
+      <a
+        [routerLink]="item.link"
+        class="mt-6 inline-flex rounded-lg border border-cyan-400/30 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:bg-cyan-400/10"
+      >
+        {{ item.action }}
+      </a>
+    </article>
+  </section>
+
+  <section class="space-y-5">
+    <div class="flex items-end justify-between gap-4">
+      <div>
+        <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Fase 1</p>
+        <h2 class="mt-2 text-2xl font-semibold">Ensambles destacados</h2>
+      </div>
+      <a routerLink="/productos/paquetes" class="text-sm text-cyan-300 hover:text-cyan-200">
+        Ver catalogo completo
+      </a>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-3">
+      <article
+        *ngFor="let card of featuredAssemblies"
+        class="rounded-2xl border border-white/10 bg-[#0f1733] p-5 shadow-lg shadow-black/20"
+      >
+        <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-cyan-300">
+          <span *ngFor="let badge of card.badges">{{ badge }}</span>
+        </div>
+        <div class="mt-5 flex h-48 items-center justify-center rounded-xl bg-[#090d22] p-4">
+          <img [src]="card.image" [alt]="card.title" class="max-h-full max-w-full object-contain" />
+        </div>
+        <h3 class="mt-5 text-xl font-semibold">{{ card.title }}</h3>
+        <p class="mt-3 text-sm leading-6 text-slate-300">{{ card.description }}</p>
+        <div class="mt-5 grid gap-3">
+          <div
+            *ngFor="let spec of card.specHighlights"
+            class="flex items-center justify-between border-b border-white/10 pb-2 text-sm"
+          >
+            <span class="text-slate-400">{{ spec.label }}</span>
+            <span class="text-right text-white">{{ spec.value }}</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center justify-between gap-4">
+          <p class="text-xl font-semibold text-pink-300">${{ card.price | number }}</p>
+          <a
+            [routerLink]="['/productos', card.slug]"
+            class="rounded-lg bg-gradient-to-r from-pink-600 to-fuchsia-500 px-4 py-2 text-sm font-semibold"
+          >
+            {{ card.ctaLabel }}
+          </a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="grid gap-8 xl:grid-cols-2">
+    <div class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Fase 2</p>
+          <h2 class="mt-2 text-2xl font-semibold">Componentes listos para escalar</h2>
+        </div>
+        <a routerLink="/productos/componentes" class="text-sm text-cyan-300 hover:text-cyan-200">
+          Ver componentes
+        </a>
+      </div>
+
+      <div class="grid gap-4">
+        <article
+          *ngFor="let card of featuredComponents"
+          class="rounded-2xl border border-white/10 bg-white/5 p-5"
+        >
+          <div class="flex gap-4">
+            <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[#090d22] p-3">
+              <img [src]="card.image" [alt]="card.title" class="max-h-full max-w-full object-contain" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em] text-cyan-300">
+                <span *ngFor="let badge of card.badges">{{ badge }}</span>
+              </div>
+              <h3 class="mt-2 text-lg font-semibold">{{ card.title }}</h3>
+              <p class="mt-2 text-sm leading-6 text-slate-300">{{ card.description }}</p>
+              <div class="mt-3 flex flex-wrap gap-3 text-sm text-slate-400">
+                <span *ngFor="let spec of card.specHighlights">{{ spec.label }}: {{ spec.value }}</span>
+              </div>
+              <div class="mt-4 flex items-center justify-between gap-4">
+                <span class="text-lg font-semibold text-pink-300">${{ card.price | number }}</span>
+                <a [routerLink]="['/productos', card.slug]" class="text-sm font-semibold text-cyan-300">
+                  Ver detalle
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Fase 2</p>
+          <h2 class="mt-2 text-2xl font-semibold">Perifericos con foco comercial</h2>
+        </div>
+        <a routerLink="/productos/perifericos" class="text-sm text-cyan-300 hover:text-cyan-200">
+          Ver perifericos
+        </a>
+      </div>
+
+      <div class="grid gap-4">
+        <article
+          *ngFor="let card of featuredPeripherals"
+          class="rounded-2xl border border-white/10 bg-white/5 p-5"
+        >
+          <div class="flex gap-4">
+            <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[#090d22] p-3">
+              <img [src]="card.image" [alt]="card.title" class="max-h-full max-w-full object-contain" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em] text-cyan-300">
+                <span *ngFor="let badge of card.badges">{{ badge }}</span>
+              </div>
+              <h3 class="mt-2 text-lg font-semibold">{{ card.title }}</h3>
+              <p class="mt-2 text-sm leading-6 text-slate-300">{{ card.description }}</p>
+              <div class="mt-3 flex flex-wrap gap-3 text-sm text-slate-400">
+                <span *ngFor="let spec of card.specHighlights">{{ spec.label }}: {{ spec.value }}</span>
+              </div>
+              <div class="mt-4 flex items-center justify-between gap-4">
+                <span class="text-lg font-semibold text-pink-300">${{ card.price | number }}</span>
+                <a [routerLink]="['/productos', card.slug]" class="text-sm font-semibold text-cyan-300">
+                  Ver detalle
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</div>

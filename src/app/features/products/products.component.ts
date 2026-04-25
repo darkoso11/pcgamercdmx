@@ -1,64 +1,54 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, RouterModule, ],
-  templateUrl: './products.component.html'
+  imports: [CommonModule, RouterModule],
+  templateUrl: './products.component.html',
+  styleUrl: './products.component.css',
 })
 export class ProductsComponent {
-  // ...otras propiedades...
+  readonly segments = [
+    {
+      label: 'Vista general',
+      link: '/productos',
+      exact: true,
+      description: 'Resumen del catalogo, destacados y rutas rapidas.',
+    },
+    {
+      label: 'Ensambles',
+      link: '/productos/paquetes',
+      exact: false,
+      description: 'PCs armadas listas para gaming, streaming y edicion.',
+    },
+    {
+      label: 'Componentes',
+      link: '/productos/componentes',
+      exact: false,
+      description: 'Hardware suelto para upgrades y builds a medida.',
+    },
+    {
+      label: 'Perifericos',
+      link: '/productos/perifericos',
+      exact: false,
+      description: 'Teclados, mouse, monitores y audio gaming.',
+    },
+  ];
 
-  // Elimina el array carruselProducts de aquí, ya que debe estar en home.component.ts
-  // Puedes recibirlo por Input, servicio, o importarlo si lo necesitas.
-  // Deja solo la lógica del slider y métodos auxiliares.
-  currentPage = 0;
-  productsPerPage = 3;
-
-  visibleProducts() {
-    // Aquí deberías obtener los productos desde un servicio o Input
-    // return this.carruselProducts.slice(...);
-    return []; // Temporalmente vacío
-  }
-
-  pageCount() {
-    // return Array(Math.ceil(this.carruselProducts.length / this.productsPerPage));
-    return [];
-  }
-
-  prevProduct() {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-    }
-  }
-  nextProduct() {
-    if (this.currentPage < this.pageCount().length - 1) {
-      this.currentPage++;
-    }
-  }
-  goToPage(i: number) {
-    this.currentPage = i;
-  }
-
-  getProcessorIMG(processor: string): string {
-    if (processor.toLowerCase().includes('intel')) {
-      return 'assets/img/marcas/intel_tag.svg';
-    }
-    if (processor.toLowerCase().includes('ryzen') || processor.toLowerCase().includes('amd')) {
-      return 'assets/img/marcas/ryzen_tag.svg';
-    }
-    return 'assets/img/marcas/nvidia_tag.svg';
-  }
-
-  getCaseIMG(caseName: string): string {
-    if (caseName.toLowerCase().includes('3500x')) {
-      return 'assets/img/gabinetes/3500X_LINK_BLK_01.webp';
-    }
-    if (caseName.toLowerCase().includes('balam rush tank')) {
-      return 'assets/img/gabinetes/HBJNKHG+NM.png';
-    }
-    return 'assets/img/gabinetes/default.png';
-  }
+  readonly highlights = [
+    {
+      value: 'Fase 1',
+      label: 'Ensambles como eje principal del catalogo',
+    },
+    {
+      value: 'Fase 2',
+      label: 'Componentes y perifericos sobre la misma base',
+    },
+    {
+      value: 'SEO ready',
+      label: 'Rutas limpias y categorias preparadas para indexacion',
+    },
+  ];
 }

@@ -1,602 +1,735 @@
-# Plan de Trabajo: Sección de Productos - PC Gamer CDMX
-
-## Fecha de Creación
-14 de enero de 2026
-
-## Objetivo General
-Desarrollar una sección de productos completa y optimizada que permita mostrar, filtrar y navegar entre los diferentes tipos de productos ofrecidos por PC Gamer CDMX, priorizando la experiencia del usuario (UX/UI) y el posicionamiento en motores de búsqueda (SEO).
-
-## Tipos de Productos
-
-### 1. Productos Clave (Ensamblaje y Paquetes)
-Estos son los productos principales de la página web:
-- **Ensamblajes de PC**: PCs completas ensambladas por el equipo técnico
-- **Paquetes de Componentes**: Kits de componentes para ensamblaje DIY
-- **Componentes Individuales**: Partes específicas (CPU, GPU, RAM, etc.) vendidas por separado
-
-### 2. Periféricos y Accesorios
-Productos complementarios al mundo del PC gaming:
-- **Periféricos**: Teclados, ratones, monitores, auriculares, etc.
-- **Accesorios**: Cables, refrigeración, iluminación RGB, etc.
-- **Componentes por Separado**: Mismos que arriba, pero enfocados en venta individual
-
-## Modelo de Negocio: Catálogo de Productos
-
-**IMPORTANTE**: Este es un **CATÁLOGO DE PRODUCTOS**, NO un carrito de compras en línea.
-
-### Flujo de Compra
-- Los usuarios **EXPLORAN** los productos en el catálogo
-- Pueden ver **DETALLES COMPLETOS** de cada producto
-- Para **COMPRAR**, deben:
-  - **Contactar al equipo de ventas** vía WhatsApp
-  - **Solicitar un presupuesto** personalizado
-  - **Hablar con un asesor** de ventas
-  - **Visitar la tienda física** en CDMX
-
-### CTAs Apropiados en Páginas de Producto
-- ✅ "Solicitar Presupuesto" → Formulario de contacto
-- ✅ "Contactar Asesor" → WhatsApp/Teléfono
-- ✅ "Ver en Detalle" → Página individual del producto
-- ❌ "Agregar al Carrito"
-- ❌ "Comprar Ahora"
-
-## Análisis de Secciones en Home
-
-### SECCIÓN 2: SLIDER DE PRODUCTOS/PAQUETES
-- **Ubicación**: Después del hero section
-- **Contenido**: Slider horizontal con paquetes de componentes
-- **Funcionalidad**: Búsqueda integrada (`searchTerm`), filtrado dinámico
-- **Componente**: `app-products-slider`
-- **Botón principal**: "Ver detalles" → `/productos/:slug` (Página de detalles del producto)
-- **Botón CTA**: "Ver todos los paquetes" → `/productos/paquetes`
-
-### SECCIÓN 4: SLIDER DE PERIFÉRICOS
-- **Ubicación**: Después de Custom Case
-- **Contenido**: Slider de periféricos gaming
-- **Funcionalidad**: Categorías y filtros
-- **Componente**: `app-peripherals-slider`
-- **Enlace**: `routerLink="/productos/perifericos"`
-
-## Página de Detalles del Producto
-
-### Ruta
-- **Path**: `/productos/:slug`
-- **Componente**: `product-detail.component.ts` (ya existe)
-- **Dinámica**: Mostrar un producto específico con toda la información
-
-### Contenido de la Página
-1. **Galería de imágenes** del producto
-2. **Información técnica**:
-   - Procesador/GPU
-   - RAM
-   - Almacenamiento
-   - Fuente de poder
-   - etc.
-3. **Especificaciones detalladas**
-4. **Precio** (referencia, puede variar según configuración)
-5. **Logos de marcas** utilizadas
-6. **Certificaciones** (80+ Gold, etc.)
-
-### CTAs en Página de Detalles
-1. **"Solicitar Presupuesto"** (prominent) → Formulario de contacto con producto preseleccionado
-2. **"Contactar por WhatsApp"** → Link a conversación directa
-3. **"Hablar con un Asesor"** → Modal de contacto
-4. **"Ver Productos Similares"** → Carrusel con productos relacionados
-
-### Navegación
-- Breadcrumb: Inicio > Productos > [Categoría] > [Producto]
-- Botón "Volver" a la categoría anterior
-- Links relacionados a otros productos
-
-## Decisión Arquitectural: Una Página vs. Múltiples Páginas
-
-### Pregunta Clave
-¿Deberíamos tener una sola página de productos con categorías (usando `routerLink` para navegar entre ellas) o páginas separadas para cada tipo de producto por cuestiones de SEO y UX/UI?
-
-### Análisis Comparativo
-
-#### Opción 1: Una Página Principal con Categorías
-**Ventajas:**
-- **UX/UI Mejorada**: Navegación fluida con filtros y búsqueda en una sola vista
-- **SEO Optimizado**: Una URL principal fuerte (/productos) con meta tags y contenido rico
-- **Mantenimiento**: Menos componentes y rutas a mantener
-- **Performance**: Carga inicial más eficiente con lazy loading de categorías
-
-**Desventajas:**
-- **SEO por Categoría**: Menos específico si no se optimizan URLs con query params
-- **Navegación**: Puede sentirse abrumador si hay muchos productos
-
-#### Opción 2: Páginas Separadas por Categoría
-**Ventajas:**
-- **SEO Específico**: Cada categoría tiene su propia URL (/productos/paquetes, /productos/perifericos)
-- **UX Clara**: Navegación más intuitiva para usuarios que buscan algo específico
-- **Contenido Enfocado**: Mejor organización de contenido por página
-
-**Desventajas:**
-- **UX Fragmentada**: Navegación entre categorías requiere recarga de página
-- **Mantenimiento**: Más componentes y rutas a gestionar
-- **SEO Diluido**: Autoridad de enlace distribuida entre múltiples URLs
-
-### Decisión Recomendada: Arquitectura Híbrida
-
-**Implementar una página principal de productos (/productos) con:**
-- **Categorías principales** como secciones dentro de la página
-- **URLs específicas** para categorías usando rutas anidadas (/productos/paquetes, /productos/perifericos)
-- **Filtros y búsqueda** integrados en la página principal
-- **Componentes separados** para cada tipo de slider (ya existentes)
-
-**Justificación:**
-- **SEO**: URLs específicas permiten indexación por categoría sin diluir autoridad
-- **UX/UI**: Una página principal con navegación interna es más fluida
-- **Escalabilidad**: Fácil agregar nuevas categorías sin crear nuevas páginas
-- **Performance**: Lazy loading de componentes por categoría
-
-## Plan de Implementación
-
-### Fase 1: Estructura de Rutas y Componentes
-1. **Crear módulo de productos** (`products.module.ts`)
-2. **Definir rutas anidadas**:
-   - `/productos` → Página principal con todas las categorías
-   - `/productos/paquetes` → Foco en paquetes y ensamblajes
-   - `/productos/perifericos` → Foco en periféricos
-   - `/productos/componentes` → Componentes individuales
-   - `/productos/:slug` → **DETALLE INDIVIDUAL** del producto (nueva)
-3. **Componente principal**: `products.component.ts`
-4. **Sub-componentes**: 
-   - `products-overview.component.ts` (ya creado)
-   - `packages.component.ts` (ya creado)
-   - `peripherals.component.ts` (ya creado)
-   - `components.component.ts` (ya creado)
-   - `product-detail.component.ts` (ACTUALIZAR para usar datos dinámicos)
-
-### Fase 2: Página Principal de Productos
-1. **Layout**: Grid responsive con secciones por categoría
-2. **Filtros globales**: Barra de búsqueda y filtros transversales
-3. **Sliders integrados**: Reutilizar `app-products-slider` y `app-peripherals-slider`
-4. **Navegación interna**: Botones/tabs para cambiar entre categorías
-
-### Fase 2.5: Página de Detalles Individual del Producto (NUEVA)
-1. **ActivatedRoute**: Capturar el slug de la URL (`/productos/:slug`)
-2. **ProductsService**: Obtener datos del producto específico basado en slug
-3. **Layout de Detalles**:
-   - **Lado izquierdo**: Galería de imágenes principales
-   - **Lado derecho**: 
-     - Nombre del producto
-     - Especificaciones técnicas (tabla o lista)
-     - Logos de marcas utilizadas
-     - Certificaciones de potencia
-     - Precio (referencia)
-4. **CTAs principales**:
-   - "Solicitar Presupuesto" → `routerLink="/contacto"` con product data
-   - "Contactar por WhatsApp" → Link a WhatsApp API
-   - "Hablar con un Asesor" → Modal o contacto
-5. **Productos relacionados**: Carrusel con otros productos similares
-6. **Breadcrumb**: Navegación jerárquica
-7. **Meta tags dinámicos**: Para SEO (título, descripción, imagen)
-
-### Fase 3: Optimización SEO
-1. **Meta tags dinámicos** por categoría
-2. **Structured data** para productos (JSON-LD)
-3. **URLs amigables** con slugs descriptivos
-4. **Sitemap** actualizado con nuevas rutas
-
-### Fase 4: Optimización UX/UI
-1. **Loading states** para transiciones entre categorías
-2. **Infinite scroll** o paginación para listas largas
-3. **Filtros avanzados**: Precio, marca, especificaciones técnicas
-4. **Vista de comparación** de productos
-
-### Fase 5: Integración con Home
-1. **Actualizar routerLinks** en home.component.html:
-   - Sección 2: `routerLink="/productos/paquetes"`
-   - Sección 4: `routerLink="/productos/perifericos"`
-2. **Mantener funcionalidad** de sliders en home (no redirigir completamente)
-
-## Consideraciones Técnicas
-
-### Angular Routing
-```typescript
-const routes: Routes = [
-  {
-    path: 'productos',
-    component: ProductsComponent,
-    children: [
-      { path: '', component: ProductsOverviewComponent },
-      { path: 'paquetes', component: PackagesComponent },
-      { path: 'perifericos', component: PeripheralsComponent },
-      { path: 'componentes', component: ComponentsComponent },
-      { path: ':slug', component: ProductDetailComponent } // Página individual del producto
-    ]
-  }
-];
-```
-
-**Orden importante**: La ruta `:slug` debe ser la ÚLTIMA para evitar conflictos de routing.
-
-### Estado y Gestión de Datos
-- **Servicio de productos**: `products.service.ts` para API calls
-- **State management**: NgRx o servicios simples para filtros y búsqueda
-- **Cache**: Implementar caching para mejorar performance
-
-### Responsive Design
-- **Mobile-first**: Priorizar experiencia móvil
-- **Grid adaptable**: Cambiar layout según dispositivo
-- **Touch gestures**: Para sliders en móviles
-
-## Panel Administrativo de Productos
-
-**CRÍTICO**: Este es un componente fundamental para el negocio. Permite gestionar:
-- Crear, editar, eliminar productos
-- Crear y editar paquetes de ensamblaje (bundles)
-- Agregar ofertas/descuentos
-- Gestionar stock
-- Subir imágenes y especificaciones
-- Publicar/despublicar productos
-
-### Estructura del Admin de Productos
-
-#### Rutas de Admin
-```
-/admin/products                    // Dashboard principal (estadísticas)
-/admin/products/list               // Listado completo con búsqueda/filtros
-/admin/products/new                // Crear nuevo producto
-/admin/products/:id/edit           // Editar producto existente
-/admin/products/packages           // Gestionar paquetes de ensamblaje
-/admin/products/packages/new       // Crear nuevo paquete
-/admin/products/packages/:id/edit  // Editar paquete
-/admin/products/offers             // Gestionar ofertas y descuentos
-/admin/products/categories         // Gestionar categorías
-```
-
-#### Componentes Críticos
-
-1. **admin-products-dashboard.component.ts**
-   - Total de productos activos / publicados
-   - Total de paquetes
-   - Total de ofertas activas
-   - Alertas de bajo stock
-   - Últimos 10 productos creados
-   - Botones rápidos para crear producto/paquete/oferta
-
-2. **admin-product-list.component.ts**
-   - Tabla con listado de productos
-   - Búsqueda por título/slug
-   - Filtros: categoría, rango de precio, stock
-   - Acciones: Ver preview, Editar, Duplicar, Eliminar
-   - Paginación (10, 25, 50 por página)
-   - Indicadores visuales (publicado ✓, borrador, bajo stock)
-
-3. **admin-product-editor.component.ts** (CREATE/EDIT)
-   - Sección 1 - Información básica:
-     - Título (max 200 caracteres)
-     - Slug (auto-generado, editable)
-     - Categoría (dropdown)
-     - Descripción larga (editor WYSIWYG)
-   - Sección 2 - Especificaciones Técnicas:
-     - Procesador
-     - Placa base
-     - RAM (ej: 16GB DDR4)
-     - Almacenamiento (ej: 1TB SSD NVMe)
-     - Tarjeta Gráfica
-     - Fuente de poder
-     - Caja
-     - Sistema de refrigeración
-   - Sección 3 - Precios y Stock:
-     - Precio base
-     - Precio con descuento (opcional)
-     - Stock disponible
-     - Alerta de bajo stock (ej: 5 unidades)
-   - Sección 4 - Imágenes:
-     - Galería múltiple (arrastrar y soltar)
-     - Establecer imagen principal
-     - Crop/redimensionar
-   - Sección 5 - Certificaciones:
-     - URL imagen certificación (ej: 80+ Gold)
-     - Watts (ej: 750W)
-     - Logos de marcas
-   - Sección 6 - SEO:
-     - Meta title (max 60 chars)
-     - Meta description (max 155 chars)
-     - Keywords (tags separados por coma)
-   - Sección 7 - Estado:
-     - Guardar como borrador / Publicar now
-     - Fecha publicación (schedule post)
-
-4. **admin-package-editor.component.ts** (CREATE/EDIT)
-   - Información básica: Nombre, descripción, categoría
-   - Especificaciones del paquete: Proc, RAM, GPU, Alm, etc.
-   - **Selector de componentes**: 
-     - Buscar productos individuales por título
-     - Agregar al paquete (drag & drop o click)
-     - Ver lista de componentes seleccionados
-     - Auto-calcular precio total (suma de productos)
-   - Aplicar descuento: Si/No, porcentaje o cantidad fija
-   - Imagen representativa
-   - Stock
-   - Publicar/Guardar
-
-5. **admin-offers-manager.component.ts**
-   - Tabla con ofertas activas/inactivas
-   - Columnas: Nombre, Tipo, Descuento, Válida desde-hasta, Estado
-   - **Crear Nueva Oferta**:
-     - Nombre (ej: "Black Friday 2024")
-     - Descripción
-     - Tipo: 
-       * Porcentaje (ejem: 20%)
-       * Cantidad fija (ejem: $500)
-       * Bundle (Compra X lleva Y)
-       * Por categoría (todos los periféricos -10%)
-     - Seleccionar productos/paquetes/categorías afectadas
-     - Fecha inicio y fecha fin
-     - Activa/Inactiva
-   - Botones: Editar, Duplicar, Eliminar, Activar/Desactivar
-
-6. **admin-categories-manager.component.ts**
-   - CRUD de categorías
-   - Nombre, slug, descripción
-   - Categoría padre (opcional, para anidar)
-   - Reordenar con drag & drop
-   - Indicador: cuántos productos usan esta categoría
-
-7. **admin-products-header.component.ts**
-   - Logo/título "Admin - Productos"
-   - Navegación: Dashboard, Productos, Paquetes, Ofertas, Categorías
-   - Botón "Volver a admin" o "Volver a inicio"
-   - Logout
-
-#### Servicios Necesarios
-
-**products-admin.service.ts** con métodos:
-
-**PRODUCTOS:**
-- `getAllProducts(filters?, page?, limit?): Observable<Product[]>`
-- `getProductById(id): Observable<Product>`
-- `createProduct(product): Observable<Product>`
-- `updateProduct(id, product): Observable<Product>`
-- `deleteProduct(id): Observable<void>`
-- `duplicateProduct(id): Observable<Product>`
-- `searchProducts(term, category?): Observable<Product[]>`
-- `getProductsByCategory(category): Observable<Product[]>`
-
-**PAQUETES:**
-- `getAllPackages(): Observable<Package[]>`
-- `getPackageById(id): Observable<Package>`
-- `createPackage(package): Observable<Package>`
-- `updatePackage(id, package): Observable<Package>`
-- `deletePackage(id): Observable<void>`
-
-**OFERTAS:**
-- `getAllOffers(includeInactive?): Observable<Offer[]>`
-- `createOffer(offer): Observable<Offer>`
-- `updateOffer(id, offer): Observable<Offer>`
-- `deleteOffer(id): Observable<void>`
-- `activateOffer(id): Observable<void>`
-- `deactivateOffer(id): Observable<void>`
-- `getActiveOffers(): Observable<Offer[]>`
-
-**CATEGORÍAS:**
-- `getAllCategories(): Observable<Category[]>`
-- `createCategory(category): Observable<Category>`
-- `updateCategory(id, category): Observable<Category>`
-- `deleteCategory(id): Observable<void>`
-- `reorderCategories(newOrder[]): Observable<void>`
-
-**IMÁGENES:**
-- `uploadProductImage(file: File): Observable<string>`
-- `deleteProductImage(imageUrl: string): Observable<void>`
-- `optimizeImage(file: File, width, height): Observable<Blob>`
-
-#### Modelos de Datos
-
-```typescript
-interface Product {
-  _id?: string;
-  title: string;
-  slug: string;
-  description: string;
-  category: 'paquetes' | 'perifericos' | 'componentes';
-  price: number;
-  discountedPrice?: number;
-  processor?: string;
-  motherboard?: string;
-  ram?: string;
-  storage?: string;
-  graphicsCard?: string;
-  powerSupply?: string;
-  caseModel?: string;
-  cooling?: string;
-  image: string;
-  images: string[];
-  powerCertificate?: string;
-  watts?: number;
-  brandLogos: Array<{ src: string; alt: string }>;
-  stock: number;
-  lowStockAlert: number;
-  metaTitle?: string;
-  metaDescription?: string;
-  keywords?: string[];
-  published: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface Package {
-  _id?: string;
-  title: string;
-  slug: string;
-  description: string;
-  image: string;
-  price: number;
-  discountedPrice?: number;
-  specifications: {
-    processor: string;
-    motherboard: string;
-    ram: string;
-    storage: string;
-    graphicsCard: string;
-    powerSupply: string;
-    caseModel: string;
-    cooling: string;
-  };
-  includedProducts: string[]; // Product._id array
-  stock: number;
-  published: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface Offer {
-  _id?: string;
-  title: string;
-  description: string;
-  type: 'percentage' | 'fixed' | 'bundle' | 'category';
-  discountValue: number;
-  applicableTo: {
-    products?: string[];      // Product IDs
-    packages?: string[];      // Package IDs
-    categories?: string[];    // Category names
-  };
-  startDate: Date;
-  endDate: Date;
-  active: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface Category {
-  _id?: string;
-  name: string;
-  slug: string;
-  description?: string;
-  icon?: string;
-  parentCategory?: string;
-  order: number;
-}
-```
-
-#### Validaciones Críticas
-
-- **Slug único**: No puede haber dos productos con mismo slug
-- **Precio válido**: > 0
-- **Stock no negativo**: >= 0
-- **Imagen requerida**: Al menos 1
-- **Título**: 5-200 caracteres
-- **Descripción**: Máximo 5000 caracteres
-- **Meta title**: Máximo 60 caracteres
-- **Meta description**: Máximo 155 caracteres
-- **Paquete requiere componentes**: Al menos 1 componente incluido
-- **Oferta requiere targets**: Al menos 1 producto/paquete/categoría
-
-#### Flujo de Trabajo Admin
-
-1. **Admin accede a `/admin/products`**
-   - Ve dashboard con estadísticas principales
-   - Acceso rápido a crear producto/paquete/oferta
-
-2. **Para crear un producto nuevo**:
-   - Click en "Crear Producto"
-   - Rellenar formulario con todos los datos
-   - Subir imágenes
-   - Establecer SEO meta tags
-   - Guardar como borrador
-   - Ver preview en `/productos/:slug`
-   - Publicar cuando esté listo
-
-3. **Para crear un paquete**:
-   - Click en "Crear Paquete"
-   - Ingresar nombre y descripción
-   - Ingresar especificaciones técnicas
-   - **Seleccionar componentes individuales** del catálogo
-   - Sistema auto-calcula precio total (suma de productos)
-   - Opcionalmente aplicar descuento porcentual
-   - Guardar y publicar
-
-4. **Para agregar una oferta**:
-   - Click en "Crear Oferta"
-   - Elegir tipo (%, cantidad fija, bundle, categoría)
-   - Seleccionar productos/paquetes/categorías afectadas
-   - Establecer fechas de inicio y fin
-   - Activar/desactivar según sea necesario
-
-5. **Gestión de stock**:
-   - Dashboard muestra productos con bajo stock (en rojo)
-   - Admin puede actualizar stock rápidamente
-   - Sistema calcula alertas automáticamente
-
-#### Integración Frontend-Backend
-
-- **ProductsService** (público) obtiene productos del backend para `/productos`
-- **ProductsAdminService** (admin) tiene permisos especiales para CRUD
-- **Autenticación**: Mismo sistema que blog admin (token JWT)
-- **Autorización**: Solo admins pueden acceder a `/admin/products`
-- **Validación en cliente**: Prevent bad data before sending
-- **Validación en servidor**: Enforce business rules
-
-#### Consideraciones de UX/UI
-
-- **Formularios responsive**: Funcionan bien en mobile y desktop
-- **Confirmaciones**: Pedir confirmación antes de eliminar
-- **Feedback visual**: Toast notifications para acciones exitosas/errores
-- **Auto-save**: Guardar borradores automáticamente cada 30 segundos
-- **Validación en tiempo real**: Mostrar errores mientras se escribe
-- **Atajos teclado**: Ctrl+S para guardar, Escape para cancelar
-- **Historial de cambios**: Mostrar quién cambió qué y cuándo
-
-## Próximos Pasos Inmediatos
-
-**COMPLETADO**:
-- ✅ Revisar estructura actual de componentes de productos
-- ✅ Implementar rutas básicas y navegación
-- ✅ Crear componentes básicos (ProductsOverview, Packages, Peripherals, Components)
-- ✅ Actualizar home.component.html con nuevos routerLinks
-- ✅ Verificar que "Ver detalles" en slider desvíe a `/productos/:slug`
-- ✅ Agregar ruta dinámica `:slug` en app.routes.ts
-- ✅ Implementar ProductDetailComponent (HTML + CSS completo)
-- ✅ Crear ProductsService con mock data
-
-**FASE 1 - FRONTEND PÚBLICO (PRIORIDAD ALTA)**:
-1. ProductsOverviewComponent (búsqueda, filtros, grid)
-2. Componentes de categoría (templates)
-3. Meta tags dinámicos para SEO en ProductDetailComponent
-
-**FASE 2 - ADMIN DE PRODUCTOS (PRIORIDAD CRÍTICA)**:
-1. **products-admin.service.ts** - Base para todo lo demás
-2. **admin-products-dashboard.component.ts** - Punto de entrada admin
-3. **admin-product-list.component.ts** - Ver/buscar todos los productos
-4. **admin-product-editor.component.ts** - Crear/editar productos individuales
-5. **admin-package-editor.component.ts** - Crear/editar paquetes de ensamblaje
-6. **admin-offers-manager.component.ts** - Gestionar ofertas y descuentos
-7. **admin-categories-manager.component.ts** - Gestionar categorías
-8. **admin-products-header.component.ts** - Navegación del admin
-9. **Proteger rutas admin** con AuthGuard
-
-**Orden recomendado de implementación**:
-1. products-admin.service.ts (depende de ella todo lo demás)
-2. admin-products-dashboard.component.ts (punto entrada)
-3. admin-product-list.component.ts (ver productos)
-4. admin-product-editor.component.ts (create/update)
-5. admin-package-editor.component.ts (crear paquetes)
-6. admin-offers-manager.component.ts (gestionar ofertas)
-7. admin-categories-manager.component.ts (gestionar categorías)
-8. Actualizar rutas en app.routes.ts
-
-## Métricas de Éxito
-
-- **SEO**: Mejora en rankings para keywords de productos
-- **UX**: Reducción en bounce rate en sección de productos
-- **Conversión**: Aumento en consultas y ventas desde la web
-- **Performance**: Tiempo de carga < 3s para página de productos
-
-## Riesgos y Mitigaciones
-
-- **Riesgo**: Complejidad de una sola página → **Mitigación**: Usar lazy loading y componentes modulares
-- **Riesgo**: SEO diluido → **Mitigación**: URLs específicas y meta tags por categoría
-- **Riesgo**: Mantenimiento → **Mitigación**: Arquitectura modular y documentación clara
+# Product Planning - PC Gamer CDMX
+
+## Metadata
+- Fecha de creacion: 2026-01-14
+- Ultima actualizacion: 2026-04-25
+- Estado: propuesta estructurada lista para implementacion
+- Alcance: pagina publica de productos + base para backend/admin
+
+## Objetivo
+Diseñar la pagina de productos de PC Gamer CDMX como un catalogo escalable, modular y preparado para evolucionar desde mocks locales hacia una integracion real con Node.js + MongoDB.
+
+La solucion se divide en dos fases:
+
+### Fase 1: Ensambles de PC
+- Mostrar PCs armadas como productos principales del negocio.
+- Cada ensamble debe incluir:
+  - componentes incluidos
+  - especificaciones tecnicas claras
+  - enfoque de uso
+  - CTA de cotizacion/contacto
+- La estructura debe permitir reutilizar componentes individuales como referencias, no texto aislado.
+
+### Fase 2: Productos individuales y perifericos
+- Integrar componentes sueltos y perifericos en el mismo ecosistema.
+- Incorporar filtros, categorias, SEO por tipo de producto y relacion con ensambles.
+- Aprovechar la misma base de datos, servicio y UI reusable.
 
 ---
 
-**Responsable**: Equipo de Desarrollo Frontend  
-**Revisión**: Pendiente de aprobación del equipo  
-**Fecha de implementación estimada**: 2-3 semanas
-</parameter>
-</xai:function_call># Plan de Trabajo: Sección de Productos - PC Gamer CDMX
+## 1. Estado actual del proyecto
+
+## 1.1 Lo que ya existe y conviene reutilizar
+- Rutas publicas ya definidas en [app.routes.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/app.routes.ts:1):
+  - `/productos`
+  - `/productos/paquetes`
+  - `/productos/perifericos`
+  - `/productos/componentes`
+  - `/productos/:slug`
+- Base de modelos compartidos en `src/app/shared/models/`:
+  - [product.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/product.model.ts:1)
+  - [assembled-pc.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/assembled-pc.model.ts:1)
+  - [component.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/component.model.ts:1)
+  - [peripheral.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/peripheral.model.ts:1)
+  - [accessory.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/accessory.model.ts:1)
+- Servicio publico de productos ya iniciado en [products.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/services/products.service.ts:1).
+- Detalle de producto funcional en [product-detail.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/product-detail.component.ts:1).
+- Home ya enlaza a paquetes y perifericos desde [home.component.html](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/home/home.component.html:1).
+- Existe base administrativa para productos en [products-admin.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/admin/products-admin.service.ts:1) y componentes admin relacionados.
+
+## 1.2 Lo que hoy esta incompleto
+- [products.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/products.component.ts:1) sigue como contenedor incompleto, con logica heredada de slider y sin integracion real.
+- `products.component.html` esta vacio.
+- `products-overview`, `packages`, `components` y `peripherals` existen, pero estan practicamente vacios.
+- `ProductsService` ya crecio en modelos, pero la UI publica aun consume compatibilidad legacy.
+- La pagina de detalle usa el tipo `Product` legacy en vez de un `ProductViewModel` o una union tipada.
+- El admin maneja un modelo distinto al de `shared/models`, lo que abre una deuda clara de sincronizacion.
+
+---
+
+## 2. Inconsistencias y riesgos detectados
+
+## 2.1 Brechas entre documento y codigo real
+- El documento anterior mezclaba:
+  - hallazgos reales
+  - decisiones ya tomadas
+  - features futuras
+  - tareas supuestamente completadas
+- Eso vuelve dificil saber que ya existe y que sigue siendo propuesta.
+
+## 2.2 Duplicidad de modelos
+- Hay un modelo moderno en `shared/models`.
+- Hay un modelo legacy `Product` embebido dentro de `ProductsService`.
+- Hay otro modelo admin dentro de `ProductsAdminService`.
+
+Impacto:
+- misma entidad con nombres distintos
+- campos repetidos o divergentes
+- mapeos innecesarios
+- mayor riesgo al conectar backend real
+
+## 2.3 Backward compatibility mal resuelta
+- `ProductsService` conserva metodos legacy utiles para transicion.
+- Pero hoy hay un error de diseño importante:
+  - existe `searchProducts(query: string, limit?: number): Observable<SearchResult>`
+  - y tambien `searchProducts(term: string): Observable<Product[]>`
+- TypeScript no permite dos implementaciones reales con el mismo nombre en una clase.
+- El archivo requiere correccion antes de consolidar la capa de datos.
+
+## 2.4 Modelos ricos, UI pobre
+- Los modelos ya soportan:
+  - tipos de producto
+  - variantes
+  - descuentos
+  - compatibilidad
+  - ratings
+  - provider sync
+- Pero las vistas actuales no capitalizan nada de eso.
+
+## 2.5 Rutas correctas, arquitectura visual incompleta
+- La estrategia de rutas es buena.
+- Falta construir un `ProductsComponent` que funcione como shell real:
+  - header contextual
+  - tabs o segmentacion de catalogo
+  - filtros compartidos
+  - router outlet
+  - SEO contextual por categoria
+
+## 2.6 SEO aun parcial
+- Existe SEO basico en detalle.
+- Faltan:
+  - metadata por categoria
+  - JSON-LD
+  - breadcrumbs estructurados
+  - contenido indexable por tipo
+  - canonical tags
+  - estrategia de slugs por categoria/subcategoria
+
+---
+
+## 3. Decision estructural recomendada
+
+## 3.1 Arquitectura publica
+Se recomienda mantener una arquitectura hibrida:
+
+- `/productos`
+  - landing catalogo con resumen, navegacion y destacados
+- `/productos/paquetes`
+  - foco editorial y comercial en ensambles
+- `/productos/componentes`
+  - catalogo filtrable de componentes
+- `/productos/perifericos`
+  - catalogo filtrable de perifericos
+- `/productos/:slug`
+  - detalle individual
+
+Esta estructura ya esta alineada con el routing actual, por lo que no requiere crear nuevas rutas base.
+
+## 3.2 Decisiones clave
+- Reutilizar los modelos de `shared/models` como fuente oficial de contratos.
+- Mantener una sola capa de datos publica (`ProductsService`) y una capa admin (`ProductsAdminService`) con DTOs alineados.
+- Migrar la UI de productos desde el `Product` legacy a un modelo unificado de vista.
+- Evitar hardcodear filtros, categorias y especificaciones en templates.
+
+---
+
+## 4. Arquitectura Angular propuesta
+
+## 4.1 Shell de productos
+
+### `ProductsComponent`
+Responsabilidades:
+- actuar como contenedor principal de la seccion
+- leer la ruta activa
+- exponer metadata de categoria
+- renderizar navegacion entre segmentos
+- hospedar filtros globales cuando aplique
+- contener el `router-outlet`
+
+No debe:
+- duplicar sliders del home
+- contener arrays mock locales
+- resolver detalle de producto
+- mezclar logica de categoria con detalle
+
+## 4.2 Organizacion recomendada de componentes
+
+### Nivel de pagina
+- `ProductsComponent`
+- `ProductsOverviewComponent`
+- `PackagesComponent`
+- `ComponentsComponent`
+- `PeripheralsComponent`
+- `ProductDetailComponent`
+
+### Componentes reutilizables internos del feature
+- `ProductsShellHeaderComponent`
+- `ProductsSegmentNavComponent`
+- `ProductsFilterBarComponent`
+- `ProductsSortControlComponent`
+- `ProductsGridComponent`
+- `ProductCardComponent`
+- `ProductBadgeListComponent`
+- `ProductPriceBlockComponent`
+- `ProductSpecHighlightsComponent`
+- `EmptyProductsStateComponent`
+- `ProductBreadcrumbComponent`
+- `RelatedProductsComponent`
+- `ProductSeoBlockComponent`
+
+### Componentes especificos de Fase 1
+- `AssembledPcCardComponent`
+- `AssembledPcSpecsTableComponent`
+- `AssembledPcComponentsListComponent`
+- `AssembledPcUseCaseChipComponent`
+- `AssembledPcPerformancePanelComponent`
+
+### Componentes especificos de Fase 2
+- `ComponentCardComponent`
+- `PeripheralCardComponent`
+- `DynamicSpecsTableComponent`
+- `CategorySidebarComponent`
+- `FilterFacetGroupComponent`
+
+Nota:
+- No es necesario crear todos desde el primer sprint.
+- La prioridad es construir primero componentes reutilizables de grid, card, filtros y detalle.
+
+## 4.3 Reutilizacion sin crear estructura innecesaria
+Con la restriccion actual, se recomienda reutilizar la carpeta `src/app/features/products/` ya existente y evolucionar:
+
+- `products.component.*` como shell
+- `products-overview/` como entrada editorial
+- `packages/` como fase 1
+- `components/` como parte de fase 2
+- `peripherals/` como parte de fase 2
+- `product-detail.component.*` como detalle universal
+- `services/products.service.ts` como capa publica
+
+---
+
+## 5. Modelo de datos recomendado
+
+## 5.1 Fuente de verdad
+La base correcta ya esta iniciada en `shared/models`. La recomendacion es consolidar sobre esa capa y dejar de expandir interfaces paralelas.
+
+## 5.2 Estructura transversal
+
+### `BaseProduct`
+Debe cubrir solo lo comun:
+- identificacion: `_id`, `slug`, `sku`
+- clasificacion: `category`, `subcategory`, `status`
+- media: `image`, `images`, `thumbnail`
+- pricing: `price`, `discountedPrice`, `discount`
+- contenido: `title`, `description`, `fullDescription`
+- SEO: `metaTitle`, `metaDescription`, `keywords`
+- inventario: `stock`, `lowStockThreshold`
+- visibilidad: `featured`, `published`, `position`
+- auditoria: `createdAt`, `updatedAt`
+
+## 5.3 Fase 1: Ensambles de PC
+
+### Contrato recomendado
+Usar `AssembledPC` como tipo principal de catalogo de ensambles.
+
+Campos indispensables para render:
+- `title`
+- `slug`
+- `image`
+- `price`
+- `description`
+- `useCase`
+- `performanceTier`
+- `specifications`
+- `certifications`
+- `brandLogos`
+- `highlights`
+- `customizable`
+
+### Ajuste recomendado al modelo
+Actualmente `specifications` usa un objeto fijo. Eso es bueno para la UI comercial, pero para el backend conviene separar:
+
+```ts
+interface AssemblyComponentSlot {
+  slot:
+    | 'processor'
+    | 'motherboard'
+    | 'ram'
+    | 'storage'
+    | 'graphicsCard'
+    | 'powerSupply'
+    | 'case'
+    | 'cooling'
+    | 'additional';
+  componentId?: string;
+  label: string;
+  quantity?: number;
+  summary: string;
+  optional?: boolean;
+}
+```
+
+Recomendacion:
+- en frontend se puede seguir usando la forma actual
+- para API y MongoDB conviene persistir tambien una lista normalizada de slots
+- asi se facilita edicion admin, comparacion, stock y pricing por componente
+
+## 5.4 Fase 2: Componentes y perifericos
+
+### Componentes
+Usar `ComponentProduct` para CPU, GPU, RAM, almacenamiento, motherboard, PSU, cooling y case.
+
+### Perifericos
+Usar `PeripheralProduct` para teclado, mouse, monitor, headset y mousepad.
+
+### Accesorios
+Mantener `AccessoryProduct` reservado para una tercera etapa o una extension de fase 2.
+
+## 5.5 View model recomendado para la UI publica
+La UI no deberia depender del tipo legacy `Product`. Conviene usar un view model transversal:
+
+```ts
+type CatalogProduct = AssembledPC | ComponentProduct | PeripheralProduct | AccessoryProduct;
+
+interface ProductCardViewModel {
+  id?: string;
+  slug: string;
+  title: string;
+  image: string;
+  price: number;
+  discountedPrice?: number;
+  category: ProductCategory;
+  subcategory: string;
+  description: string;
+  badges: string[];
+  specHighlights: Array<{ label: string; value: string }>;
+  ctaLabel: string;
+}
+```
+
+Ventajas:
+- una sola card reutilizable
+- mapeo claro desde cualquier tipo
+- desacople entre backend y template
+
+---
+
+## 6. Estrategia de datos para backend futuro
+
+## 6.1 Colecciones recomendadas en MongoDB
+
+### `products`
+Guardar todos los productos en una sola coleccion usando discriminacion por `category` y `subcategory`.
+
+Ventajas:
+- catalogo unificado
+- busqueda global
+- filtros consistentes
+- facil SEO y related products
+
+Campos base:
+- `_id`
+- `slug`
+- `sku`
+- `category`
+- `subcategory`
+- `status`
+- `title`
+- `description`
+- `fullDescription`
+- `price`
+- `discountedPrice`
+- `currency`
+- `stock`
+- `featured`
+- `published`
+- `images`
+- `seo`
+- `createdAt`
+- `updatedAt`
+
+Campos tipados por categoria:
+- `assembledData`
+- `componentData`
+- `peripheralData`
+- `accessoryData`
+
+### `categories`
+Separar categorias navegables y SEO:
+- nombre
+- slug
+- tipo padre
+- descripcion
+- orden
+- icono
+- metadata SEO
+
+### `offers`
+Promociones y reglas de descuento.
+
+### `brands`
+Opcional, pero recomendable para normalizar logos y filtros.
+
+## 6.2 DTOs recomendados
+
+### Respuesta de listado
+```ts
+interface ProductListResponse {
+  items: CatalogProduct[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+  filters: {
+    availableBrands: string[];
+    availableCategories: string[];
+    availableSubcategories: string[];
+    priceRange: { min: number; max: number };
+  };
+}
+```
+
+### Query params base
+```ts
+interface ProductQueryParams {
+  category?: string;
+  subcategory?: string;
+  brand?: string[];
+  useCase?: string[];
+  performanceTier?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+  sort?: 'featured' | 'price-asc' | 'price-desc' | 'newest';
+  page?: number;
+  limit?: number;
+}
+```
+
+## 6.3 Regla importante para MongoDB
+`slug` debe ser unico y con indice.
+
+Tambien se recomiendan indices para:
+- `category`
+- `subcategory`
+- `published`
+- `featured`
+- `price`
+- `keywords`
+- `title`
+
+---
+
+## 7. Fase 1: propuesta funcional para ensambles
+
+## 7.1 Objetivo UX
+La pagina de ensambles debe comunicar valor comercial rapido. El usuario debe entender en pocos segundos:
+- para que sirve cada equipo
+- que hardware incluye
+- en que rango esta
+- si puede personalizarlo
+- como pedir cotizacion o asesoria
+
+## 7.2 Estructura visual recomendada
+
+### Vista de listado `/productos/paquetes`
+- header con intro corta de la categoria
+- filtros compactos:
+  - presupuesto
+  - uso principal
+  - tier de rendimiento
+  - marca CPU
+  - marca GPU
+- grid de tarjetas
+
+### Tarjeta de ensamble
+Debe mostrar:
+- imagen principal
+- nombre del ensamble
+- etiqueta de uso: gaming, streaming, edicion
+- tier: entry, mid, high, ultra
+- 4 a 6 highlights tecnicos
+- precio o rango desde
+- CTA a detalle
+- CTA secundario a cotizacion
+
+### Detalle de ensamble
+Debe incluir:
+- galeria o hero visual
+- resumen comercial
+- tabla de componentes
+- bloque de uso recomendado
+- bloque de rendimiento estimado
+- certificacion de fuente
+- marcas incluidas
+- perifericos recomendados
+- CTA fijo en desktop y sticky en mobile
+
+## 7.3 Campos UI minimos por ensamble
+- `title`
+- `description`
+- `useCase`
+- `performanceTier`
+- `specifications.processor`
+- `specifications.graphicsCard`
+- `specifications.ram`
+- `specifications.storage`
+- `certifications.certificate`
+- `certifications.wattage`
+- `highlights`
+
+## 7.4 Regla de negocio recomendada
+Un ensamble no debe guardar solo strings sueltos. Debe poder referenciar productos individuales para permitir:
+- recalculo de precio
+- disponibilidad real
+- recomendaciones compatibles
+- armado desde admin
+
+---
+
+## 8. Fase 2: propuesta funcional para componentes y perifericos
+
+## 8.1 Objetivo UX
+Permitir exploracion mas profunda sin romper la claridad comercial del sitio.
+
+## 8.2 Segmentacion recomendada
+
+### `/productos/componentes`
+Subsegmentos:
+- CPU
+- GPU
+- RAM
+- almacenamiento
+- motherboard
+- PSU
+- cooling
+- gabinetes
+
+### `/productos/perifericos`
+Subsegmentos:
+- teclados
+- mouse
+- monitores
+- headsets
+- mousepads
+
+## 8.3 Filtros recomendados
+
+### Filtros transversales
+- precio
+- marca
+- disponibilidad
+- destacados
+- orden
+
+### Filtros por componentes
+- socket
+- tipo de memoria
+- capacidad
+- wattage
+- form factor
+
+### Filtros por perifericos
+- tipo de conexion
+- tamano
+- refresh rate
+- layout
+- RGB
+- wireless
+
+## 8.4 SEO por fase 2
+
+### URLs deseables
+- `/productos/componentes`
+- `/productos/componentes?tipo=gpu`
+- `/productos/perifericos`
+- `/productos/perifericos?tipo=monitor`
+
+Si despues se requiere mas profundidad SEO, evolucionar a:
+- `/productos/componentes/gpu`
+- `/productos/perifericos/monitores`
+
+Recomendacion actual:
+- no abrir mas rutas hasta que exista contenido real suficiente
+- usar metadata dinamica por query param o segmento
+
+---
+
+## 9. Estrategia SEO recomendada
+
+## 9.1 Nivel catalogo
+- `title` y `meta description` por vista de categoria
+- texto introductorio indexable arriba del grid
+- seccion FAQ opcional por categoria
+- breadcrumbs visibles y estructurados
+
+## 9.2 Nivel detalle
+- `metaTitle`
+- `metaDescription`
+- `og:title`
+- `og:description`
+- `og:image`
+- `canonical`
+- JSON-LD `Product`
+
+## 9.3 Campos SEO recomendados por producto
+```ts
+interface ProductSeoMeta {
+  metaTitle: string;
+  metaDescription: string;
+  canonicalSlug?: string;
+  keywords?: string[];
+  schemaType?: 'Product';
+}
+```
+
+## 9.4 Contenido minimo por categoria
+- H1 claro
+- descripcion breve de la categoria
+- bloques internos enlazados a subsegmentos
+- enlaces a productos destacados
+- copy real, no texto generico
+
+---
+
+## 10. UX/UI recomendada
+
+## 10.1 Principios generales
+- mantener consistencia con el tono visual actual del home
+- no convertir productos en una landing decorativa
+- priorizar escaneo rapido
+- hacer visible la diferencia entre ensambles y productos individuales
+
+## 10.2 Mejoras concretas para Fase 1
+- chips visibles de uso principal
+- highlights tecnicos resumidos
+- comparacion ligera entre 2 o 3 ensambles
+- CTA doble:
+  - ver detalle
+  - cotizar por WhatsApp/contacto
+- modulos de confianza:
+  - armado profesional
+  - garantia
+  - soporte
+
+## 10.3 Mejoras concretas para Fase 2
+- filtros laterales en desktop y drawer en mobile
+- orden persistente en query params
+- badges utiles:
+  - nuevo
+  - destacado
+  - en promocion
+  - bajo stock
+- tarjetas con highlights especificos por tipo, no texto plano generico
+
+## 10.4 Mobile
+- filtros colapsables
+- CTA sticky en detalle
+- especificaciones en acordeon
+- imagen principal con swipe si hay galeria
+
+---
+
+## 11. Escalabilidad tecnica
+
+## 11.1 En frontend
+- mantener modelos en `shared/models`
+- crear adapters o mappers a `ViewModel`
+- mover filtros a query params
+- desacoplar cards del tipo de producto mediante entradas normalizadas
+
+## 11.2 En servicios
+`ProductsService` debe evolucionar a tres capas internas:
+
+1. `fetch`
+   - llamadas HTTP
+2. `map`
+   - adaptacion backend -> modelos/view models
+3. `state`
+   - filtros, cache, resultados
+
+## 11.3 En admin
+El admin debe reutilizar los mismos contratos base y no inventar otro `Product` paralelo.
+
+Recomendacion:
+- reemplazar progresivamente la interfaz local de `ProductsAdminService`
+- compartir DTOs base con `shared/models` o `shared/dto`
+
+---
+
+## 12. Propuesta de implementacion por etapas
+
+## Etapa 1: Consolidacion de contratos
+- definir `CatalogProduct` como union tipada
+- eliminar o encapsular el `Product` legacy
+- corregir `ProductsService`
+- alinear `ProductsAdminService` con `shared/models`
+
+## Etapa 2: Shell publica de productos
+- completar `products.component.ts`
+- construir `products.component.html`
+- agregar header, nav de segmentos y `router-outlet`
+
+## Etapa 3: Fase 1 operativa
+- completar `packages`
+- renderizar grid real de ensambles
+- actualizar `product-detail` para soportar `AssembledPC`
+- agregar CTA de cotizacion y related products
+
+## Etapa 4: Fase 2 operativa
+- completar `components`
+- completar `peripherals`
+- implementar filtros y orden compartidos
+- soportar detalle para tipos distintos
+
+## Etapa 5: SEO y backend readiness
+- metadata dinamica por vista
+- JSON-LD
+- query params estables
+- normalizacion de payloads para Node.js + MongoDB
+
+---
+
+## 13. Recomendaciones puntuales sobre archivos actuales
+
+## Mantener y evolucionar
+- [docs/products_planning.md](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/docs/products_planning.md:1)
+- [app.routes.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/app.routes.ts:1)
+- [products.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/services/products.service.ts:1)
+- [product-detail.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/product-detail.component.ts:1)
+- toda la carpeta `src/app/shared/models/`
+
+## Refactor prioritario
+- [products.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/products.component.ts:1)
+- `products.component.html`
+- [products-overview.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/products-overview/products-overview.ts:1)
+- [packages.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/packages/packages.ts:1)
+- [components.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/components/components.ts:1)
+- [peripherals.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/peripherals/peripherals.ts:1)
+- [products-admin.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/admin/products-admin.service.ts:1)
+
+---
+
+## 14. Conclusion ejecutiva
+El proyecto ya cuenta con una base arquitectonica mejor de lo que aparenta: rutas correctas, modelos compartidos ricos y un detalle de producto util. El problema no es falta de direccion, sino desalineacion entre documento, modelos, servicio y vistas.
+
+La estrategia correcta es:
+- consolidar contratos
+- usar `ProductsComponent` como shell real
+- implementar primero Fase 1 con ensambles como producto principal
+- escalar despues a componentes y perifericos sobre la misma base
+- preparar desde ahora slugs, categorias, filtros y payloads pensando en MongoDB
+
+Esta ruta evita rehacer trabajo, reduce hardcodeo y deja la seccion de productos lista para crecer sin romper el proyecto.

@@ -98,6 +98,12 @@
   left: 100%;
 }
 
+.pc-ensamble-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
 .menu-secundario {
   position: relative;
   background: transparent;

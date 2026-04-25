@@ -67,14 +67,18 @@
       </div>
 
       <!-- Imagen ensamble PC alineada a la derecha para desktop -->
-      <div class="hidden md:block absolute right-12 bottom-32 ultra:right-6 ultra:bottom-24">
+      <div
+        class="hidden md:flex absolute right-8 lg:right-12 bottom-28 lg:bottom-32 ultra:right-6 ultra:bottom-24 w-[28vw] min-w-[240px] max-w-[420px] h-[48vh] max-h-[520px] items-end justify-center">
         <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
-          class="w-50 xl:w-80 xl:h-96 object-cover" />
+          class="pc-ensamble-img w-full h-full object-contain object-bottom" />
       </div>
 
       <!-- Para móviles, ajustada para ser más grande y con padding superior -->
-      <div class="flex flex-col items-center w-full md:hidden mt-2 mb-5">
-        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble" class="w-[90%] h-96 object-cover" />
+      <div class="flex flex-col items-center w-full md:hidden mt-2 mb-5 px-4">
+        <div class="w-full max-w-[420px] h-[42vh] min-h-[280px] max-h-[420px] flex items-end justify-center">
+          <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
+            class="pc-ensamble-img w-full h-full object-contain object-bottom" />
+        </div>
       </div>
 
       <!-- Botón comprar móvil - simplificado -->
