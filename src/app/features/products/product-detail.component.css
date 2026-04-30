@@ -1,5 +1,6 @@
 :host {
   display: block;
+  overflow-x: hidden;
 }
 
 /* Animations */
@@ -7,21 +8,26 @@
   from {
     opacity: 0;
     transform: translateY(20px);
-  }
+  overflow: hidden; /* Retaining existing line for context */
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+.gallery-main img {
+  display: block;
+}
 
 @keyframes fadeIn {
   from {
     opacity: 0;
+  flex-wrap: wrap;
   }
   to {
     opacity: 1;
   }
 }
+  overflow-wrap: anywhere;
 
 @keyframes pulse-glow {
   0%, 100% {
@@ -29,6 +35,13 @@
   }
   50% {
     box-shadow: 0 0 30px rgba(236, 72, 153, 0.8);
+.spec-label,
+.spec-value,
+.section-header,
+.breadcrumb span,
+.breadcrumb a {
+  overflow-wrap: anywhere;
+}
   }
 }
 
@@ -39,6 +52,20 @@
   border-radius: 0.5rem;
   transition: all 0.3s ease;
 }
+
+  .breadcrumb {
+    margin-bottom: 1.25rem;
+    row-gap: 0.25rem;
+  }
+
+  .info-box {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .info-box img {
+    align-self: flex-start;
+  }
 
 .cyber-card:hover {
   border-color: rgba(236, 72, 153, 0.5);

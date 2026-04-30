@@ -1,248 +1,597 @@
 # Product Planning - PC Gamer CDMX
 
 ## Metadata
-- Fecha de creacion: 2026-01-14
-- Ultima actualizacion: 2026-04-25
-- Estado: propuesta estructurada lista para implementacion
-- Alcance: pagina publica de productos + base para backend/admin
+- Fecha de creación: 2026-01-14
+- Última actualización: 2026-04-29
+- Estado: replanteado para siguiente etapa de diseño y ejecución
+- Alcance: separación entre experiencia de ensambles y catálogo de productos
 
-## Objetivo
-Diseñar la pagina de productos de PC Gamer CDMX como un catalogo escalable, modular y preparado para evolucionar desde mocks locales hacia una integracion real con Node.js + MongoDB.
+## 1. Cambio de dirección
 
-La solucion se divide en dos fases:
+Este documento reemplaza la idea anterior de comunicar el catálogo por “fases” dentro de la experiencia visual.
 
-### Fase 1: Ensambles de PC
-- Mostrar PCs armadas como productos principales del negocio.
-- Cada ensamble debe incluir:
-  - componentes incluidos
-  - especificaciones tecnicas claras
-  - enfoque de uso
-  - CTA de cotizacion/contacto
-- La estructura debe permitir reutilizar componentes individuales como referencias, no texto aislado.
+Decisión tomada:
+- “Fase 1” y “Fase 2” se mantienen solo como roadmap interno.
+- La UI pública no debe presentar tarjetas, bloques o narrativa centrada en fases.
+- La experiencia comercial principal debe enfocarse en ensambles.
+- Componentes y periféricos deben vivir en una página separada de productos.
 
-### Fase 2: Productos individuales y perifericos
-- Integrar componentes sueltos y perifericos en el mismo ecosistema.
-- Incorporar filtros, categorias, SEO por tipo de producto y relacion con ensambles.
-- Aprovechar la misma base de datos, servicio y UI reusable.
+En otras palabras:
+- la página de ensambles vende soluciones completas
+- la página de productos organiza inventario navegable
+- el roadmap no se vuelve diseño
 
 ---
 
-## 1. Estado actual del proyecto
+## 2. Objetivo revisado
 
-## 1.1 Lo que ya existe y conviene reutilizar
-- Rutas publicas ya definidas en [app.routes.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/app.routes.ts:1):
-  - `/productos`
-  - `/productos/paquetes`
-  - `/productos/perifericos`
-  - `/productos/componentes`
-  - `/productos/:slug`
-- Base de modelos compartidos en `src/app/shared/models/`:
-  - [product.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/product.model.ts:1)
-  - [assembled-pc.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/assembled-pc.model.ts:1)
-  - [component.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/component.model.ts:1)
-  - [peripheral.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/peripheral.model.ts:1)
-  - [accessory.model.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/shared/models/accessory.model.ts:1)
-- Servicio publico de productos ya iniciado en [products.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/services/products.service.ts:1).
-- Detalle de producto funcional en [product-detail.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/product-detail.component.ts:1).
-- Home ya enlaza a paquetes y perifericos desde [home.component.html](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/home/home.component.html:1).
-- Existe base administrativa para productos en [products-admin.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/admin/products-admin.service.ts:1) y componentes admin relacionados.
+Diseñar dos superficies públicas distintas, con el mismo lenguaje cyberpunk/contextual del sitio, pero con objetivos diferentes:
 
-## 1.2 Lo que hoy esta incompleto
-- [products.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/products.component.ts:1) sigue como contenedor incompleto, con logica heredada de slider y sin integracion real.
-- `products.component.html` esta vacio.
-- `products-overview`, `packages`, `components` y `peripherals` existen, pero estan practicamente vacios.
-- `ProductsService` ya crecio en modelos, pero la UI publica aun consume compatibilidad legacy.
-- La pagina de detalle usa el tipo `Product` legacy en vez de un `ProductViewModel` o una union tipada.
-- El admin maneja un modelo distinto al de `shared/models`, lo que abre una deuda clara de sincronizacion.
+### Página 1: Ensambles
+Superficie principal para mostrar PCs armadas como producto comercial fuerte.
+
+Debe priorizar:
+- claridad del tipo de ensamble
+- caso de uso
+- especificaciones entendibles
+- confianza comercial
+- CTA directo a cotización o contacto
+
+### Página 2: Productos
+Superficie separada para explorar componentes y periféricos.
+
+Debe priorizar:
+- navegación por categoría
+- filtros
+- lectura rápida de fichas
+- SEO por tipo de producto
+- escalabilidad hacia backend real
 
 ---
 
-## 2. Inconsistencias y riesgos detectados
+## 3. Principio rector de UX/UI
 
-## 2.1 Brechas entre documento y codigo real
-- El documento anterior mezclaba:
-  - hallazgos reales
-  - decisiones ya tomadas
-  - features futuras
-  - tareas supuestamente completadas
-- Eso vuelve dificil saber que ya existe y que sigue siendo propuesta.
+La estética debe seguir siendo cyberpunk, tecnológica y contextual, alineada con el home actual, pero con una diferencia importante:
 
-## 2.2 Duplicidad de modelos
-- Hay un modelo moderno en `shared/models`.
-- Hay un modelo legacy `Product` embebido dentro de `ProductsService`.
-- Hay otro modelo admin dentro de `ProductsAdminService`.
+- el diseño no debe explicar el roadmap del proyecto
+- el diseño debe explicar la oferta comercial al usuario
 
-Impacto:
-- misma entidad con nombres distintos
-- campos repetidos o divergentes
-- mapeos innecesarios
-- mayor riesgo al conectar backend real
+Eso implica evitar:
+- bloques tipo “Fase 1 / Fase 2 / SEO Ready” como parte del contenido principal
+- tarjetas que parezcan roadmap de implementación
+- copy que suene a planificación interna
 
-## 2.3 Backward compatibility mal resuelta
-- `ProductsService` conserva metodos legacy utiles para transicion.
-- Pero hoy hay un error de diseño importante:
-  - existe `searchProducts(query: string, limit?: number): Observable<SearchResult>`
-  - y tambien `searchProducts(term: string): Observable<Product[]>`
-- TypeScript no permite dos implementaciones reales con el mismo nombre en una clase.
-- El archivo requiere correccion antes de consolidar la capa de datos.
-
-## 2.4 Modelos ricos, UI pobre
-- Los modelos ya soportan:
-  - tipos de producto
-  - variantes
-  - descuentos
-  - compatibilidad
-  - ratings
-  - provider sync
-- Pero las vistas actuales no capitalizan nada de eso.
-
-## 2.5 Rutas correctas, arquitectura visual incompleta
-- La estrategia de rutas es buena.
-- Falta construir un `ProductsComponent` que funcione como shell real:
-  - header contextual
-  - tabs o segmentacion de catalogo
-  - filtros compartidos
-  - router outlet
-  - SEO contextual por categoria
-
-## 2.6 SEO aun parcial
-- Existe SEO basico en detalle.
-- Faltan:
-  - metadata por categoria
-  - JSON-LD
-  - breadcrumbs estructurados
-  - contenido indexable por tipo
-  - canonical tags
-  - estrategia de slugs por categoria/subcategoria
+Y priorizar:
+- hero con intención comercial
+- bloques de valor por tipo de cliente o uso
+- categorías reales del negocio
+- contenido escaneable
+- CTAs claros
 
 ---
 
-## 3. Decision estructural recomendada
+## 4. Arquitectura pública recomendada
 
-## 3.1 Arquitectura publica
-Se recomienda mantener una arquitectura hibrida:
+## 4.1 Superficies públicas
 
+Se recomienda separar la experiencia en dos rutas conceptuales:
+
+### `/ensambles`
+Página comercial dedicada a PCs armadas.
+
+### `/productos`
+Página catálogo para componentes y periféricos.
+
+## 4.2 Compatibilidad con la estructura actual
+
+Hoy ya existe esta base en routing:
 - `/productos`
-  - landing catalogo con resumen, navegacion y destacados
 - `/productos/paquetes`
-  - foco editorial y comercial en ensambles
 - `/productos/componentes`
-  - catalogo filtrable de componentes
 - `/productos/perifericos`
-  - catalogo filtrable de perifericos
 - `/productos/:slug`
-  - detalle individual
 
-Esta estructura ya esta alineada con el routing actual, por lo que no requiere crear nuevas rutas base.
+Para no romper de inmediato la arquitectura actual, la planeación recomienda:
 
-## 3.2 Decisiones clave
-- Reutilizar los modelos de `shared/models` como fuente oficial de contratos.
-- Mantener una sola capa de datos publica (`ProductsService`) y una capa admin (`ProductsAdminService`) con DTOs alineados.
-- Migrar la UI de productos desde el `Product` legacy a un modelo unificado de vista.
-- Evitar hardcodear filtros, categorias y especificaciones en templates.
+### Etapa de transición
+- reutilizar la carpeta actual de `features/products`
+- usar `packages` como base funcional de ensambles
+- convertir la experiencia pública en una página separada de ensambles
+- mantener `/productos/paquetes` como alias o redirect transicional hacia `/ensambles`
+
+### Dirección objetivo
+- exponer `/ensambles` como destino principal de negocio
+- dejar `/productos` para el catálogo navegable
+- tratar `/productos/paquetes` como compatibilidad temporal, no como destino conceptual final
+
+Esto permite separar la UX sin obligar a rehacer todo de golpe.
+
+## 4.3 Mapa de rutas recomendado
+
+La recomendación ya no debe quedarse en nivel conceptual. La siguiente estructura puede implementarse sobre el feature actual sin rehacer toda la carpeta:
+
+### Público
+- `/ensambles`
+  - entrada comercial principal
+  - reutiliza la base de `features/products/packages`
+  - debe cargar un shell propio orientado a venta, no el shell de catálogo general
+- `/ensambles/:slug`
+  - detalle de ensamble
+  - puede reutilizar parte de `product-detail.component` si se adapta al tipo `AssembledPC`
+- `/productos`
+  - landing de catálogo general enfocada en navegación a componentes y periféricos
+- `/productos/componentes`
+  - catálogo filtrable de componentes
+- `/productos/perifericos`
+  - catálogo filtrable de periféricos
+- `/productos/:slug`
+  - detalle de producto individual no ensamble
+- `/productos/paquetes`
+  - alias o redirect temporal hacia `/ensambles`
+
+### Regla de ownership por ruta
+- `ensambles` vende soluciones completas
+- `productos` organiza inventario individual
+- `product-detail` no debe seguir siendo el detalle universal por defecto si eso obliga a mezclar lenguaje comercial de ensambles con ficha técnica de producto
+
+## 4.4 Mapa de componentes recomendado
+
+Sin romper el árbol actual, la recomendación es esta:
+
+### Reutilizar
+- `src/app/features/products/packages/`
+  - base transicional para listado principal de ensambles
+- `src/app/features/products/product-detail.component.*`
+  - base transicional para detalle, solo si se separa view model por tipo
+- `src/app/features/products/components/`
+  - página de catálogo para componentes
+- `src/app/features/products/peripherals/`
+  - página de catálogo para periféricos
+
+### Crear o renombrar cuando se implemente
+- `src/app/features/assemblies/assemblies.component.*`
+  - shell principal de `/ensambles`
+- `src/app/features/assemblies/assembly-detail.component.*`
+  - detalle específico de ensambles si el detalle actual se vuelve demasiado genérico
+
+### Decisión pragmática
+No hace falta crear la carpeta `assemblies` antes de validar el layout. Pero la planeación ya debe asumir que el destino estable no vive conceptualmente dentro de `productos/paquetes`.
+
+## 4.5 Orden de implementación de rutas
+
+### Paso 1
+- crear `/ensambles`
+- conectar esa ruta con la base actual de `packages`
+
+### Paso 2
+- convertir `/productos/paquetes` en redirect o alias limpio
+
+### Paso 3
+- limpiar `/productos` para que sea solo hub de catálogo o entrada directa a componentes/periféricos
+
+### Paso 4
+- decidir si el detalle de ensamble vive en `/ensambles/:slug` con componente propio o con una adaptación fuerte del detalle actual
+
+## 4.6 Plan técnico de implementación
+
+Este bloque traduce la arquitectura recomendada a cambios concretos sobre el repositorio actual.
+
+### `src/app/app.routes.ts`
+- agregar la ruta pública `/ensambles`
+- agregar la ruta pública `/ensambles/:slug`
+- convertir `/productos/paquetes` en redirect a `/ensambles`
+- mantener `/productos/:slug` solo para catálogo individual
+
+### `src/app/features/assemblies/assemblies.component.*`
+- crear un shell ligero para la página principal de ensambles
+- concentrar hero, propuesta de valor y módulos de confianza
+- delegar el grid y filtros a la base actual de `packages`
+
+### `src/app/features/products/packages/*`
+- conservar la lógica de listado y filtros
+- eliminar lenguaje de roadmap o “Fase 1”
+- actualizar CTAs para que enlacen a `/ensambles/:slug`
+
+### `src/app/features/products/products.component.*`
+- dejar de tratar ensambles como segmento principal del catálogo
+- remover highlights con “Fase 1 / Fase 2 / SEO Ready`
+- convertir la página en hub limpio hacia componentes y periféricos, con CTA secundario a ensambles
+
+### `src/app/features/products/product-detail.component.*`
+- permitir navegación correcta cuando el producto es un ensamble
+- evitar breadcrumbs inconsistentes que sigan apuntando a `/productos/paquetes`
+- mantener compatibilidad con componentes y periféricos sin duplicar detalle todavía
+
+### `src/app/features/products/services/products.service.ts`
+- centralizar links por categoría
+- hacer que `ProductCategory.ASSEMBLED` apunte a `/ensambles`
+- dejar una función utilitaria para construir links a detalle por tipo
 
 ---
 
-## 4. Arquitectura Angular propuesta
+## 5. Qué debe comunicar cada página
 
-## 4.1 Shell de productos
+## 5.1 Página de ensambles
 
-### `ProductsComponent`
-Responsabilidades:
-- actuar como contenedor principal de la seccion
-- leer la ruta activa
-- exponer metadata de categoria
-- renderizar navegacion entre segmentos
-- hospedar filtros globales cuando aplique
-- contener el `router-outlet`
+La página de ensambles no debe sentirse como “una sección del catálogo general”.
+Debe sentirse como una vitrina comercial enfocada en soluciones completas.
 
-No debe:
-- duplicar sliders del home
-- contener arrays mock locales
-- resolver detalle de producto
-- mezclar logica de categoria con detalle
+### Mensaje principal
+- qué tipo de PC puede comprar el usuario
+- para qué le sirve
+- qué rendimiento puede esperar
+- qué incluye
+- cómo pedirla o cotizarla
 
-## 4.2 Organizacion recomendada de componentes
+### Contenido correcto para esta página
+- hero editorial/comercial
+- categorías por uso o perfil
+- grid de ensambles destacados
+- highlights técnicos resumidos
+- bloques de confianza
+- comparación ligera entre opciones
+- CTA a detalle y cotización
 
-### Nivel de pagina
-- `ProductsComponent`
-- `ProductsOverviewComponent`
-- `PackagesComponent`
-- `ComponentsComponent`
-- `PeripheralsComponent`
-- `ProductDetailComponent`
+### Contenido que no debe dominar esta página
+- filtros complejos de inventario
+- navegación de componentes individuales
+- discurso de roadmap
+- copy tipo “primero esto, después aquello”
 
-### Componentes reutilizables internos del feature
-- `ProductsShellHeaderComponent`
-- `ProductsSegmentNavComponent`
-- `ProductsFilterBarComponent`
-- `ProductsSortControlComponent`
-- `ProductsGridComponent`
-- `ProductCardComponent`
-- `ProductBadgeListComponent`
-- `ProductPriceBlockComponent`
-- `ProductSpecHighlightsComponent`
-- `EmptyProductsStateComponent`
-- `ProductBreadcrumbComponent`
-- `RelatedProductsComponent`
-- `ProductSeoBlockComponent`
+## 5.2 Página de productos
 
-### Componentes especificos de Fase 1
-- `AssembledPcCardComponent`
-- `AssembledPcSpecsTableComponent`
-- `AssembledPcComponentsListComponent`
-- `AssembledPcUseCaseChipComponent`
-- `AssembledPcPerformancePanelComponent`
+La página de productos sí debe sentirse como catálogo.
 
-### Componentes especificos de Fase 2
-- `ComponentCardComponent`
-- `PeripheralCardComponent`
-- `DynamicSpecsTableComponent`
-- `CategorySidebarComponent`
-- `FilterFacetGroupComponent`
+### Mensaje principal
+- aquí puedes explorar hardware y periféricos por categoría
+- aquí importa encontrar, filtrar y comparar
 
-Nota:
-- No es necesario crear todos desde el primer sprint.
-- La prioridad es construir primero componentes reutilizables de grid, card, filtros y detalle.
+### Contenido correcto para esta página
+- navegación por componentes y periféricos
+- filtros y orden
+- grid de productos
+- metadata y texto SEO por categoría
+- breadcrumbs y rutas limpias
 
-## 4.3 Reutilizacion sin crear estructura innecesaria
-Con la restriccion actual, se recomienda reutilizar la carpeta `src/app/features/products/` ya existente y evolucionar:
-
-- `products.component.*` como shell
-- `products-overview/` como entrada editorial
-- `packages/` como fase 1
-- `components/` como parte de fase 2
-- `peripherals/` como parte de fase 2
-- `product-detail.component.*` como detalle universal
-- `services/products.service.ts` como capa publica
+### Contenido que no debe dominar esta página
+- narrativa hero excesiva
+- protagonismo de ensambles
+- bloques visuales de roadmap
 
 ---
 
-## 5. Modelo de datos recomendado
+## 6. UX de la página de ensambles
 
-## 5.1 Fuente de verdad
-La base correcta ya esta iniciada en `shared/models`. La recomendacion es consolidar sobre esa capa y dejar de expandir interfaces paralelas.
+## 6.1 Objetivo UX
 
-## 5.2 Estructura transversal
+En pocos segundos el usuario debe entender:
+- qué ensamble le conviene
+- para qué uso está pensado
+- qué tan potente es
+- qué componentes clave incluye
+- cómo iniciar contacto
 
-### `BaseProduct`
-Debe cubrir solo lo comun:
-- identificacion: `_id`, `slug`, `sku`
-- clasificacion: `category`, `subcategory`, `status`
-- media: `image`, `images`, `thumbnail`
-- pricing: `price`, `discountedPrice`, `discount`
-- contenido: `title`, `description`, `fullDescription`
-- SEO: `metaTitle`, `metaDescription`, `keywords`
-- inventario: `stock`, `lowStockThreshold`
-- visibilidad: `featured`, `published`, `position`
-- auditoria: `createdAt`, `updatedAt`
+## 6.2 Estructura visual recomendada
 
-## 5.3 Fase 1: Ensambles de PC
+### 1. Hero principal
+Debe abrir con una propuesta clara y aspiracional.
 
-### Contrato recomendado
-Usar `AssembledPC` como tipo principal de catalogo de ensambles.
+Contenido recomendado:
+- headline fuerte
+- subtítulo corto orientado a valor
+- CTA principal a ver ensambles
+- CTA secundario a cotizar por WhatsApp o contacto
+- fondo o composición visual con estética cyberpunk sobria
 
-Campos indispensables para render:
+### 2. Segmentación por intención de compra
+No por fases. Sí por contexto de uso.
+
+Ejemplos:
+- Gaming competitivo
+- Streaming y creación
+- Workstation ligera
+- Setup equilibrado calidad/precio
+
+### 3. Grid de ensambles
+Cada tarjeta debe mostrar:
+- imagen principal
+- nombre del ensamble
+- categoría o perfil de uso
+- tier de rendimiento
+- 4 a 6 highlights técnicos
+- precio o precio desde
+- CTA a detalle
+- CTA secundario a cotización
+
+### 4. Bloque de confianza
+Módulos breves para reforzar conversión:
+- armado profesional
+- garantía
+- soporte
+- componentes seleccionados
+
+### 5. Comparación ligera
+Ideal para comparar 2 o 3 ensambles sin entrar al detalle profundo.
+
+### 6. FAQ y cierre comercial
+Para responder dudas frecuentes y rematar con CTA final.
+
+## 6.3 Detalle de ensamble
+
+El detalle debe incluir:
+- hero o galería
+- resumen comercial
+- tabla o lista de componentes
+- uso recomendado
+- nivel de rendimiento esperado
+- opciones de personalización si aplican
+- periféricos sugeridos
+- CTA fijo en desktop y sticky en mobile
+
+## 6.4 Guía de estilo visual
+
+Mantener:
+- tonos oscuros con acentos neón
+- sensación tecnológica y premium
+- bloques con profundidad visual
+- microcopys breves y directos
+
+Evitar:
+- convertir la página en panel administrativo
+- exceso de cajas informativas iguales entre sí
+- secciones que parezcan dashboard interno
+
+## 6.5 Brief visual de ensambles
+
+Este brief visual sirve como guía de diseño antes de tocar componentes reales.
+
+### Personalidad
+- cyberpunk sobrio
+- técnico pero comercial
+- premium sin verse recargado
+- más showroom de hardware que dashboard futurista
+
+### Sensación buscada
+- precisión
+- potencia
+- confianza
+- personalización controlada
+
+### Composición general
+- hero amplio con una pieza visual dominante del ensamble
+- bloques horizontales con buen aire entre secciones
+- ritmo visual de oscuro profundo + acentos neón + superficies translúcidas o satinadas
+- contenido con jerarquía clara: primero valor, luego especificaciones, después confianza y CTA
+
+### Dirección de color
+- base: azul petróleo, negro grafito, carbón frío
+- acentos: cyan eléctrico y magenta medido
+- apoyo: blanco frío y grises azulados
+
+### Regla importante de color
+El acento neón debe remarcar interacciones, chips, bordes y llamados clave. No debe bañar toda la interfaz ni convertirla en una composición saturada.
+
+### Tipografía y tono
+- titulares con presencia y corte tecnológico
+- subtítulos compactos
+- cuerpo legible y limpio
+- microcopy directo, sin lenguaje corporativo inflado
+
+### Lenguaje de componentes
+- cards de ensambles más anchas y editoriales que las cards de catálogo
+- chips de uso y tier claramente visibles
+- bloques de especificaciones resumidos, no tablas agresivas desde el primer scroll
+- CTAs sólidos, con más peso visual en cotización que en exploración secundaria
+
+### Hero
+Debe sentirse como vitrina principal de una línea de ensambles.
+
+Debe incluir:
+- headline con promesa clara
+- un subheadline corto
+- dos CTAs máximos
+- una visual dominante del ensamble
+- indicadores o etiquetas de contexto, no métricas decorativas
+
+### Grid de ensambles
+Debe sentirse premium y fácil de escanear.
+
+Cada card debe priorizar:
+- nombre
+- perfil de uso
+- highlights clave
+- precio desde
+- CTA principal
+
+No debe parecer:
+- card genérica de ecommerce barato
+- tarjeta de roadmap
+- ficha técnica comprimida en exceso
+
+### Bloques de confianza
+Visualmente deben ser limpios y cortos.
+
+Ejemplos:
+- armado profesional
+- garantía real
+- selección de componentes
+- soporte y asesoría
+
+### Mobile
+- hero más corto y más claro
+- CTAs visibles sin depender de hover
+- cards apiladas con highlights mínimos realmente útiles
+- sticky CTA en detalle
+
+### Antipatrones a evitar
+- demasiados marcos brillantes al mismo tiempo
+- secciones con cajas idénticas una debajo de otra
+- exceso de texto aspiracional sin datos concretos
+- estética gamer genérica con ruido visual innecesario
+
+## 6.6 Wireframe textual de `/ensambles`
+
+Este wireframe no define diseño visual final. Define estructura y jerarquía de contenido para implementar la primera versión.
+
+### Desktop
+
+#### Sección 1. Hero
+- eyebrow: `PC Gamer CDMX Builds`
+- headline: propuesta comercial clara sobre ensambles listos para gaming, streaming y trabajo creativo
+- supporting copy: 2 o 3 líneas máximas
+- CTA principal: `Explorar ensambles`
+- CTA secundario: `Cotizar mi setup`
+- lateral o bloque secundario: 3 razones de confianza
+- visual dominante: render o foto principal de un ensamble
+
+#### Sección 2. Beneficios rápidos
+- 3 o 4 cards cortas
+- temas sugeridos:
+  - armado profesional
+  - compatibilidad validada
+  - soporte y asesoría
+  - configuración personalizable
+
+#### Sección 3. Filtros y grid
+- barra de búsqueda
+- select de uso principal
+- select de tier
+- grid de ensambles
+
+#### Sección 4. Comparación ligera o bloque de elección
+- módulo comparativo corto entre perfiles de compra
+- objetivo: ayudar a elegir sin volver la página una tabla técnica masiva
+
+#### Sección 5. CTA de cierre
+- copy corto
+- botón de cotización
+- acceso a contacto o WhatsApp
+
+### Mobile
+
+#### Orden recomendado
+1. headline
+2. CTAs
+3. visual principal
+4. beneficios rápidos
+5. filtros
+6. cards
+7. cierre comercial
+
+#### Reglas mobile
+- hero más corto que en desktop
+- beneficios en scroll vertical
+- filtros visibles sin saturar el primer viewport
+- CTAs de alto contraste
+- evitar más de dos bloques visuales complejos antes del grid
+
+---
+
+## 7. UX de la página de productos
+
+## 7.1 Objetivo UX
+
+Permitir que el usuario encuentre hardware y periféricos rápido, sin contaminar la experiencia comercial de ensambles.
+
+## 7.2 Estructura recomendada
+
+### Navegación principal
+- componentes
+- periféricos
+
+### Componentes
+Subsegmentos sugeridos:
+- CPU
+- GPU
+- RAM
+- almacenamiento
+- motherboard
+- PSU
+- cooling
+- gabinetes
+
+### Periféricos
+Subsegmentos sugeridos:
+- teclados
+- mouse
+- monitores
+- headsets
+- mousepads
+
+## 7.3 Filtros recomendados
+
+### Filtros transversales
+- precio
+- marca
+- disponibilidad
+- destacados
+- orden
+
+### Filtros por componentes
+- socket
+- tipo de memoria
+- capacidad
+- wattage
+- form factor
+
+### Filtros por periféricos
+- tipo de conexión
+- tamaño
+- refresh rate
+- layout
+- RGB
+- wireless
+
+## 7.4 SEO en productos
+
+La página de productos debe ser la superficie principal para crecimiento SEO por categoría.
+
+URLs deseables:
+- `/productos`
+- `/productos/componentes`
+- `/productos/perifericos`
+
+Evolución posterior posible:
+- `/productos/componentes/gpu`
+- `/productos/perifericos/monitores`
+
+---
+
+## 8. Estado actual del proyecto y cómo aprovecharlo
+
+## 8.1 Lo que ya existe y conviene reutilizar
+- Rutas públicas ya definidas en la arquitectura Angular.
+- Base de modelos compartidos en `src/app/shared/models/`.
+- Servicio público de productos ya iniciado en `src/app/features/products/services/products.service.ts`.
+- Detalle de producto funcional en `src/app/features/products/product-detail.component.ts`.
+- Base administrativa para productos, paquetes y ensambles.
+
+## 8.2 Lo que hoy está incompleto
+- `products.component.ts` sigue como shell incompleto.
+- `products.component.html` sigue sin resolver la UX real.
+- `products-overview`, `packages`, `components` y `peripherals` siguen muy verdes.
+- la UI pública todavía no refleja la separación correcta entre ensambles y catálogo.
+
+## 8.3 Lectura correcta del problema actual
+
+El problema principal ya no es “cómo meter todo en una sola página de productos”.
+
+El problema correcto es:
+- cómo construir una página de ensambles con enfoque comercial
+- cómo dejar aparte una página de productos orientada a exploración
+- cómo reutilizar la arquitectura existente sin mezclar ambos objetivos
+
+---
+
+## 9. Modelo de contenido recomendado
+
+## 9.1 Fuente de verdad
+
+Se mantiene la recomendación de usar `shared/models` como base de contratos y no seguir expandiendo modelos paralelos.
+
+## 9.2 Ensambles como entidad principal de la página comercial
+
+Para la UI pública de ensambles, los campos mínimos siguen siendo:
 - `title`
 - `slug`
 - `image`
@@ -256,47 +605,14 @@ Campos indispensables para render:
 - `highlights`
 - `customizable`
 
-### Ajuste recomendado al modelo
-Actualmente `specifications` usa un objeto fijo. Eso es bueno para la UI comercial, pero para el backend conviene separar:
+## 9.3 Productos como catálogo separado
 
-```ts
-interface AssemblyComponentSlot {
-  slot:
-    | 'processor'
-    | 'motherboard'
-    | 'ram'
-    | 'storage'
-    | 'graphicsCard'
-    | 'powerSupply'
-    | 'case'
-    | 'cooling'
-    | 'additional';
-  componentId?: string;
-  label: string;
-  quantity?: number;
-  summary: string;
-  optional?: boolean;
-}
-```
+Para la página de productos, mantener la división entre:
+- `ComponentProduct`
+- `PeripheralProduct`
+- `AccessoryProduct` como reserva futura si realmente se necesita
 
-Recomendacion:
-- en frontend se puede seguir usando la forma actual
-- para API y MongoDB conviene persistir tambien una lista normalizada de slots
-- asi se facilita edicion admin, comparacion, stock y pricing por componente
-
-## 5.4 Fase 2: Componentes y perifericos
-
-### Componentes
-Usar `ComponentProduct` para CPU, GPU, RAM, almacenamiento, motherboard, PSU, cooling y case.
-
-### Perifericos
-Usar `PeripheralProduct` para teclado, mouse, monitor, headset y mousepad.
-
-### Accesorios
-Mantener `AccessoryProduct` reservado para una tercera etapa o una extension de fase 2.
-
-## 5.5 View model recomendado para la UI publica
-La UI no deberia depender del tipo legacy `Product`. Conviene usar un view model transversal:
+## 9.4 View model sugerido para cards públicas
 
 ```ts
 type CatalogProduct = AssembledPC | ComponentProduct | PeripheralProduct | AccessoryProduct;
@@ -317,419 +633,99 @@ interface ProductCardViewModel {
 }
 ```
 
-Ventajas:
-- una sola card reutilizable
-- mapeo claro desde cualquier tipo
-- desacople entre backend y template
+Esto sigue siendo útil, pero con una regla nueva:
+- el card de ensamble puede compartir base técnica
+- la narrativa visual de ensambles no debe verse igual a la tarjeta utilitaria del catálogo general
 
 ---
 
-## 6. Estrategia de datos para backend futuro
+## 10. SEO recomendado
 
-## 6.1 Colecciones recomendadas en MongoDB
+## 10.1 Ensambles
 
-### `products`
-Guardar todos los productos en una sola coleccion usando discriminacion por `category` y `subcategory`.
+La página de ensambles debe posicionarse más por intención comercial que por taxonomía profunda.
 
-Ventajas:
-- catalogo unificado
-- busqueda global
-- filtros consistentes
-- facil SEO y related products
-
-Campos base:
-- `_id`
-- `slug`
-- `sku`
-- `category`
-- `subcategory`
-- `status`
-- `title`
-- `description`
-- `fullDescription`
-- `price`
-- `discountedPrice`
-- `currency`
-- `stock`
-- `featured`
-- `published`
-- `images`
-- `seo`
-- `createdAt`
-- `updatedAt`
-
-Campos tipados por categoria:
-- `assembledData`
-- `componentData`
-- `peripheralData`
-- `accessoryData`
-
-### `categories`
-Separar categorias navegables y SEO:
-- nombre
-- slug
-- tipo padre
-- descripcion
-- orden
-- icono
-- metadata SEO
-
-### `offers`
-Promociones y reglas de descuento.
-
-### `brands`
-Opcional, pero recomendable para normalizar logos y filtros.
-
-## 6.2 DTOs recomendados
-
-### Respuesta de listado
-```ts
-interface ProductListResponse {
-  items: CatalogProduct[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  };
-  filters: {
-    availableBrands: string[];
-    availableCategories: string[];
-    availableSubcategories: string[];
-    priceRange: { min: number; max: number };
-  };
-}
-```
-
-### Query params base
-```ts
-interface ProductQueryParams {
-  category?: string;
-  subcategory?: string;
-  brand?: string[];
-  useCase?: string[];
-  performanceTier?: string[];
-  minPrice?: number;
-  maxPrice?: number;
-  search?: string;
-  sort?: 'featured' | 'price-asc' | 'price-desc' | 'newest';
-  page?: number;
-  limit?: number;
-}
-```
-
-## 6.3 Regla importante para MongoDB
-`slug` debe ser unico y con indice.
-
-Tambien se recomiendan indices para:
-- `category`
-- `subcategory`
-- `published`
-- `featured`
-- `price`
-- `keywords`
-- `title`
-
----
-
-## 7. Fase 1: propuesta funcional para ensambles
-
-## 7.1 Objetivo UX
-La pagina de ensambles debe comunicar valor comercial rapido. El usuario debe entender en pocos segundos:
-- para que sirve cada equipo
-- que hardware incluye
-- en que rango esta
-- si puede personalizarlo
-- como pedir cotizacion o asesoria
-
-## 7.2 Estructura visual recomendada
-
-### Vista de listado `/productos/paquetes`
-- header con intro corta de la categoria
-- filtros compactos:
-  - presupuesto
-  - uso principal
-  - tier de rendimiento
-  - marca CPU
-  - marca GPU
-- grid de tarjetas
-
-### Tarjeta de ensamble
-Debe mostrar:
-- imagen principal
-- nombre del ensamble
-- etiqueta de uso: gaming, streaming, edicion
-- tier: entry, mid, high, ultra
-- 4 a 6 highlights tecnicos
-- precio o rango desde
-- CTA a detalle
-- CTA secundario a cotizacion
-
-### Detalle de ensamble
-Debe incluir:
-- galeria o hero visual
-- resumen comercial
-- tabla de componentes
-- bloque de uso recomendado
-- bloque de rendimiento estimado
-- certificacion de fuente
-- marcas incluidas
-- perifericos recomendados
-- CTA fijo en desktop y sticky en mobile
-
-## 7.3 Campos UI minimos por ensamble
-- `title`
-- `description`
-- `useCase`
-- `performanceTier`
-- `specifications.processor`
-- `specifications.graphicsCard`
-- `specifications.ram`
-- `specifications.storage`
-- `certifications.certificate`
-- `certifications.wattage`
-- `highlights`
-
-## 7.4 Regla de negocio recomendada
-Un ensamble no debe guardar solo strings sueltos. Debe poder referenciar productos individuales para permitir:
-- recalculo de precio
-- disponibilidad real
-- recomendaciones compatibles
-- armado desde admin
-
----
-
-## 8. Fase 2: propuesta funcional para componentes y perifericos
-
-## 8.1 Objetivo UX
-Permitir exploracion mas profunda sin romper la claridad comercial del sitio.
-
-## 8.2 Segmentacion recomendada
-
-### `/productos/componentes`
-Subsegmentos:
-- CPU
-- GPU
-- RAM
-- almacenamiento
-- motherboard
-- PSU
-- cooling
-- gabinetes
-
-### `/productos/perifericos`
-Subsegmentos:
-- teclados
-- mouse
-- monitores
-- headsets
-- mousepads
-
-## 8.3 Filtros recomendados
-
-### Filtros transversales
-- precio
-- marca
-- disponibilidad
-- destacados
-- orden
-
-### Filtros por componentes
-- socket
-- tipo de memoria
-- capacidad
-- wattage
-- form factor
-
-### Filtros por perifericos
-- tipo de conexion
-- tamano
-- refresh rate
-- layout
-- RGB
-- wireless
-
-## 8.4 SEO por fase 2
-
-### URLs deseables
-- `/productos/componentes`
-- `/productos/componentes?tipo=gpu`
-- `/productos/perifericos`
-- `/productos/perifericos?tipo=monitor`
-
-Si despues se requiere mas profundidad SEO, evolucionar a:
-- `/productos/componentes/gpu`
-- `/productos/perifericos/monitores`
-
-Recomendacion actual:
-- no abrir mas rutas hasta que exista contenido real suficiente
-- usar metadata dinamica por query param o segmento
-
----
-
-## 9. Estrategia SEO recomendada
-
-## 9.1 Nivel catalogo
-- `title` y `meta description` por vista de categoria
-- texto introductorio indexable arriba del grid
-- seccion FAQ opcional por categoria
-- breadcrumbs visibles y estructurados
-
-## 9.2 Nivel detalle
-- `metaTitle`
-- `metaDescription`
-- `og:title`
-- `og:description`
-- `og:image`
-- `canonical`
-- JSON-LD `Product`
-
-## 9.3 Campos SEO recomendados por producto
-```ts
-interface ProductSeoMeta {
-  metaTitle: string;
-  metaDescription: string;
-  canonicalSlug?: string;
-  keywords?: string[];
-  schemaType?: 'Product';
-}
-```
-
-## 9.4 Contenido minimo por categoria
+Necesita:
 - H1 claro
-- descripcion breve de la categoria
-- bloques internos enlazados a subsegmentos
-- enlaces a productos destacados
-- copy real, no texto generico
+- copy introductorio real
+- metadata propia
+- enlaces internos a detalles de ensamble
+- schema `Product` en detalles
+
+## 10.2 Productos
+
+La página de productos debe cargar el peso SEO de categorías y navegación indexable.
+
+Necesita:
+- metadata por categoría
+- breadcrumbs
+- canonical tags
+- contenido introductorio por categoría
+- posibilidad de evolucionar a slugs por subcategoría
 
 ---
 
-## 10. UX/UI recomendada
+## 11. Propuesta de implementación por etapas
 
-## 10.1 Principios generales
-- mantener consistencia con el tono visual actual del home
-- no convertir productos en una landing decorativa
-- priorizar escaneo rapido
-- hacer visible la diferencia entre ensambles y productos individuales
+Las etapas siguientes son internas. No deben convertirse en contenido visible de la UI.
 
-## 10.2 Mejoras concretas para Fase 1
-- chips visibles de uso principal
-- highlights tecnicos resumidos
-- comparacion ligera entre 2 o 3 ensambles
-- CTA doble:
-  - ver detalle
-  - cotizar por WhatsApp/contacto
-- modulos de confianza:
-  - armado profesional
-  - garantia
-  - soporte
+## Etapa A: Separación conceptual
+- redefinir `products_planning.md` alrededor de dos superficies públicas
+- fijar que ensambles no comparte narrativa visual con roadmap
+- tratar `/ensambles` como destino comercial principal
 
-## 10.3 Mejoras concretas para Fase 2
-- filtros laterales en desktop y drawer en mobile
-- orden persistente en query params
-- badges utiles:
-  - nuevo
-  - destacado
-  - en promocion
-  - bajo stock
-- tarjetas con highlights especificos por tipo, no texto plano generico
+## Etapa B: Shell y rutas
+- crear la ruta pública `/ensambles` como entrada principal de la experiencia comercial
+- reutilizar `packages` como base del feature
+- dejar `/productos/paquetes` como alias o redirect transicional
+- dejar `/productos` dedicado a componentes y periféricos
 
-## 10.4 Mobile
-- filtros colapsables
-- CTA sticky en detalle
-- especificaciones en acordeon
-- imagen principal con swipe si hay galeria
-
----
-
-## 11. Escalabilidad tecnica
-
-## 11.1 En frontend
-- mantener modelos en `shared/models`
-- crear adapters o mappers a `ViewModel`
-- mover filtros a query params
-- desacoplar cards del tipo de producto mediante entradas normalizadas
-
-## 11.2 En servicios
-`ProductsService` debe evolucionar a tres capas internas:
-
-1. `fetch`
-   - llamadas HTTP
-2. `map`
-   - adaptacion backend -> modelos/view models
-3. `state`
-   - filtros, cache, resultados
-
-## 11.3 En admin
-El admin debe reutilizar los mismos contratos base y no inventar otro `Product` paralelo.
-
-Recomendacion:
-- reemplazar progresivamente la interfaz local de `ProductsAdminService`
-- compartir DTOs base con `shared/models` o `shared/dto`
-
----
-
-## 12. Propuesta de implementacion por etapas
-
-## Etapa 1: Consolidacion de contratos
-- definir `CatalogProduct` como union tipada
-- eliminar o encapsular el `Product` legacy
-- corregir `ProductsService`
-- alinear `ProductsAdminService` con `shared/models`
-
-## Etapa 2: Shell publica de productos
-- completar `products.component.ts`
-- construir `products.component.html`
-- agregar header, nav de segmentos y `router-outlet`
-
-## Etapa 3: Fase 1 operativa
-- completar `packages`
+## Etapa C: Página de ensambles
+- construir el shell visual comercial
 - renderizar grid real de ensambles
-- actualizar `product-detail` para soportar `AssembledPC`
-- agregar CTA de cotizacion y related products
+- reforzar CTAs de cotización
+- adaptar el detalle para venta y comparación
 
-## Etapa 4: Fase 2 operativa
-- completar `components`
-- completar `peripherals`
-- implementar filtros y orden compartidos
-- soportar detalle para tipos distintos
+## Etapa D: Página de productos
+- construir navegación de catálogo
+- implementar filtros y orden
+- separar componentes de periféricos con claridad
+- dejar SEO preparado por categoría
 
-## Etapa 5: SEO y backend readiness
-- metadata dinamica por vista
-- JSON-LD
-- query params estables
-- normalizacion de payloads para Node.js + MongoDB
-
----
-
-## 13. Recomendaciones puntuales sobre archivos actuales
-
-## Mantener y evolucionar
-- [docs/products_planning.md](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/docs/products_planning.md:1)
-- [app.routes.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/app.routes.ts:1)
-- [products.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/services/products.service.ts:1)
-- [product-detail.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/product-detail.component.ts:1)
-- toda la carpeta `src/app/shared/models/`
-
-## Refactor prioritario
-- [products.component.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/products.component.ts:1)
-- `products.component.html`
-- [products-overview.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/products-overview/products-overview.ts:1)
-- [packages.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/packages/packages.ts:1)
-- [components.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/components/components.ts:1)
-- [peripherals.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/peripherals/peripherals.ts:1)
-- [products-admin.service.ts](/c:/Users/Oswaldo/Documents/GitHub/pcgamercdmx/src/app/features/products/admin/products-admin.service.ts:1)
-
----
-
-## 14. Conclusion ejecutiva
-El proyecto ya cuenta con una base arquitectonica mejor de lo que aparenta: rutas correctas, modelos compartidos ricos y un detalle de producto util. El problema no es falta de direccion, sino desalineacion entre documento, modelos, servicio y vistas.
-
-La estrategia correcta es:
+## Etapa E: Backend readiness
 - consolidar contratos
-- usar `ProductsComponent` como shell real
-- implementar primero Fase 1 con ensambles como producto principal
-- escalar despues a componentes y perifericos sobre la misma base
-- preparar desde ahora slugs, categorias, filtros y payloads pensando en MongoDB
+- alinear servicios públicos y admin
+- preparar payloads para Node.js + MongoDB
+- estabilizar slugs, índices y query params
 
-Esta ruta evita rehacer trabajo, reduce hardcodeo y deja la seccion de productos lista para crecer sin romper el proyecto.
+---
+
+## 12. Decisiones prácticas para el siguiente paso
+
+## 12.1 Lo que sí debe hacerse
+- diseñar y construir primero la experiencia de ensambles
+- tratar productos como una página separada, no como extensión visual del mismo layout
+- mantener consistencia estética con el home
+- usar el roadmap solo como guía interna de implementación
+
+## 12.2 Lo que no debe repetirse
+- usar tarjetas con “Fase 1 / Fase 2” como recurso central de diseño
+- mezclar ensambles, componentes y periféricos en la misma narrativa principal
+- hacer que la página de ensambles se comporte como catálogo técnico completo
+
+---
+
+## 13. Conclusión ejecutiva
+
+La dirección correcta ya no es una sola página de productos explicada por etapas.
+
+La dirección correcta es:
+- una página de ensambles con enfoque comercial y visual contextual
+- una página de productos separada para componentes y periféricos
+- una arquitectura que reutilice lo que ya existe sin mezclar objetivos
+
+El lenguaje visual cyberpunk se conserva.
+Lo que cambia es la lógica de producto y de navegación:
+- ensambles vende soluciones
+- productos organiza inventario
+- las fases quedan fuera del diseño público

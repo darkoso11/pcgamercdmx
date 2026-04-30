@@ -65,8 +65,8 @@
 <!-- Menú móvil desplegable -->
 <div
   [ngClass]="{
-    'translate-x-0': mobileMenuOpen,
-    '-translate-x-full': !mobileMenuOpen
+    'translate-x-0 opacity-100 pointer-events-auto': mobileMenuOpen,
+    'hidden -translate-x-full opacity-0 pointer-events-none': !mobileMenuOpen
   }"
   class="fixed top-0 left-0 w-full h-full z-40 bg-gradient-to-br from-[#0f172a] to-[#0ea5e9] transform transition-transform duration-300 ease-in-out md:hidden"
 >

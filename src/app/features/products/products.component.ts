@@ -15,13 +15,7 @@ export class ProductsComponent {
       label: 'Vista general',
       link: '/productos',
       exact: true,
-      description: 'Resumen del catalogo, destacados y rutas rapidas.',
-    },
-    {
-      label: 'Ensambles',
-      link: '/productos/paquetes',
-      exact: false,
-      description: 'PCs armadas listas para gaming, streaming y edicion.',
+      description: 'Entrada al catalogo y rutas rapidas por tipo de producto.',
     },
     {
       label: 'Componentes',
@@ -39,16 +33,16 @@ export class ProductsComponent {
 
   readonly highlights = [
     {
-      value: 'Fase 1',
-      label: 'Ensambles como eje principal del catalogo',
+      value: 'Catalogo',
+      label: 'Navegacion limpia para explorar hardware y perifericos.',
     },
     {
-      value: 'Fase 2',
-      label: 'Componentes y perifericos sobre la misma base',
+      value: 'Compatibilidad',
+      label: 'Base preparada para crecer con filtros, SEO y detalle por categoria.',
     },
     {
-      value: 'SEO ready',
-      label: 'Rutas limpias y categorias preparadas para indexacion',
+      value: 'Asesoria',
+      label: 'Los ensambles viven en su propia superficie comercial y el catalogo se mantiene enfocado.',
     },
   ];
 }

@@ -1,7 +1,7 @@
 <div class="space-y-12 text-white">
   <section class="grid gap-6 lg:grid-cols-3">
     <article
-      *ngFor="let item of phaseCards"
+      *ngFor="let item of entryCards"
       class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm"
     >
       <h2 class="text-xl font-semibold">{{ item.title }}</h2>
@@ -18,10 +18,10 @@
   <section class="space-y-5">
     <div class="flex items-end justify-between gap-4">
       <div>
-        <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Fase 1</p>
+        <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Ensambles</p>
         <h2 class="mt-2 text-2xl font-semibold">Ensambles destacados</h2>
       </div>
-      <a routerLink="/productos/paquetes" class="text-sm text-cyan-300 hover:text-cyan-200">
+      <a routerLink="/ensambles" class="text-sm text-cyan-300 hover:text-cyan-200">
         Ver catalogo completo
       </a>
     </div>
@@ -51,7 +51,7 @@
         <div class="mt-6 flex items-center justify-between gap-4">
           <p class="text-xl font-semibold text-pink-300">${{ card.price | number }}</p>
           <a
-            [routerLink]="['/productos', card.slug]"
+            [routerLink]="['/ensambles', card.slug]"
             class="rounded-lg bg-gradient-to-r from-pink-600 to-fuchsia-500 px-4 py-2 text-sm font-semibold"
           >
             {{ card.ctaLabel }}
@@ -65,8 +65,8 @@
     <div class="space-y-5">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Fase 2</p>
-          <h2 class="mt-2 text-2xl font-semibold">Componentes listos para escalar</h2>
+          <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Componentes</p>
+          <h2 class="mt-2 text-2xl font-semibold">Componentes listos para explorar</h2>
         </div>
         <a routerLink="/productos/componentes" class="text-sm text-cyan-300 hover:text-cyan-200">
           Ver componentes
@@ -106,7 +106,7 @@
     <div class="space-y-5">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Fase 2</p>
+          <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Perifericos</p>
           <h2 class="mt-2 text-2xl font-semibold">Perifericos con foco comercial</h2>
         </div>
         <a routerLink="/productos/perifericos" class="text-sm text-cyan-300 hover:text-cyan-200">

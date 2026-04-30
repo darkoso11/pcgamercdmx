@@ -12,10 +12,10 @@
       No encontramos el producto solicitado dentro del catalogo actual. Puede haber cambiado de slug o no estar publicado.
     </p>
     <a
-      routerLink="/productos"
+      [routerLink]="notFoundRootLink"
       class="mt-8 rounded-lg bg-gradient-to-r from-pink-600 to-fuchsia-500 px-6 py-3 font-semibold text-white"
     >
-      Volver al catalogo
+      {{ notFoundRootLabel }}
     </a>
   </div>
 
@@ -24,9 +24,11 @@
       <nav class="breadcrumb">
         <a routerLink="/">Inicio</a>
         <span>/</span>
-        <a routerLink="/productos">Productos</a>
-        <span>/</span>
-        <a [routerLink]="detail.segmentLink">{{ detail.segmentLabel }}</a>
+        <a [routerLink]="detail.rootLink">{{ detail.rootLabel }}</a>
+        <ng-container *ngIf="detail.segmentLink !== detail.rootLink">
+          <span>/</span>
+          <a [routerLink]="detail.segmentLink">{{ detail.segmentLabel }}</a>
+        </ng-container>
         <span>/</span>
         <span class="text-white">{{ detail.title }}</span>
       </nav>

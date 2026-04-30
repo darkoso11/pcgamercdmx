@@ -49,19 +49,19 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     {
       id: 1,
       src: 'https://picsum.photos/id/11/200/100',
-      link: '/productos/paquetes',
+      link: '/ensambles',
       alt: 'Slider 1',
     },
     {
       id: 2,
       src: 'https://picsum.photos/id/12/200/100',
-      link: '/productos/paquetes',
+      link: '/ensambles',
       alt: 'Slider 2',
     },
     {
       id: 3,
       src: 'https://picsum.photos/id/13/200/100',
-      link: '/productos/paquetes',
+      link: '/ensambles',
       alt: 'Slider 3',
     },
   ];
@@ -69,10 +69,10 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Imagen de PCs para el slider inferior derecho
   pcBuilds = [
-    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/productos/paquetes' },
-    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/productos/paquetes' },
-    { img: 'assets/img/gabinetes/product-section-01.png', link: '/productos/paquetes' },
-    { img: 'assets/img/gabinetes/rog-hyperion-gr701.png', link: '/productos/paquetes' },
+    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/ensambles' },
+    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/ensambles' },
+    { img: 'assets/img/gabinetes/product-section-01.png', link: '/ensambles' },
+    { img: 'assets/img/gabinetes/rog-hyperion-gr701.png', link: '/ensambles' },
   ];
   pcIndex = 2;
 

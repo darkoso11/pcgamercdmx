@@ -201,7 +201,7 @@ export class ProductsService {
   getSegmentLink(category: ProductCategory): string {
     switch (category) {
       case ProductCategory.ASSEMBLED:
-        return '/productos/paquetes';
+        return '/ensambles';
       case ProductCategory.COMPONENT:
         return '/productos/componentes';
       case ProductCategory.PERIPHERAL:
@@ -209,6 +209,12 @@ export class ProductsService {
       case ProductCategory.ACCESSORY:
         return '/productos';
     }
+  }
+
+  getDetailLink(category: ProductCategory, slug: string): string[] {
+    return category === ProductCategory.ASSEMBLED
+      ? ['/ensambles', slug]
+      : ['/productos', slug];
   }
 
   toSpecHighlights(

@@ -12,6 +12,8 @@ import {
 import { ProductCategory } from '../../shared/models';
 
 interface DetailViewModel {
+  rootLabel: string;
+  rootLink: string;
   title: string;
   description: string;
   image: string;
@@ -45,6 +47,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   relatedProducts: ProductCardViewModel[] = [];
   loading = true;
   notFound = false;
+  notFoundRootLink = '/productos';
+  notFoundRootLabel = 'Volver al catalogo';
 
   private readonly destroy$ = new Subject<void>();
 
@@ -65,6 +69,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   loadProduct(slug: string): void {
     this.loading = true;
     this.notFound = false;
+    this.syncNotFoundFallback();
 
     this.productsService
       .getCatalogProductBySlug(slug)
@@ -99,7 +104,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   goToProduct(slug: string): void {
-    this.router.navigate(['/productos', slug]);
+    if (!this.product) {
+      return;
+    }
+
+    this.router.navigate(this.productsService.getDetailLink(this.product.category, slug));
   }
 
   requestQuote(): void {
@@ -137,6 +146,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const infoChips = this.buildInfoChips(product);
 
     return {
+      rootLabel:
+        product.category === ProductCategory.ASSEMBLED ? 'Ensambles' : 'Productos',
+      rootLink:
+        product.category === ProductCategory.ASSEMBLED ? '/ensambles' : '/productos',
       title: product.title,
       description: product.fullDescription ?? product.description,
       image: product.image,
@@ -278,6 +291,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       product.metaDescription ??
       product.description ??
       `Consulta ${product.title} dentro del catalogo de PC Gamer CDMX.`;
+    const detailUrl =
+      product.category === ProductCategory.ASSEMBLED
+        ? `https://pcgamercdmx.com/ensambles/${product.slug}`
+        : `https://pcgamercdmx.com/productos/${product.slug}`;
 
     this.title.setTitle(title);
 
@@ -289,10 +306,15 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:image', content: product.image });
-    this.meta.updateTag({
-      property: 'og:url',
-      content: `https://pcgamercdmx.com/productos/${product.slug}`,
-    });
+    this.meta.updateTag({ property: 'og:url', content: detailUrl });
+  }
+
+  private syncNotFoundFallback(): void {
+    const isAssemblyRoute = this.router.url.startsWith('/ensambles');
+    this.notFoundRootLink = isAssemblyRoute ? '/ensambles' : '/productos';
+    this.notFoundRootLabel = isAssemblyRoute
+      ? 'Volver a ensambles'
+      : 'Volver al catalogo';
   }
 
   ngOnDestroy(): void {

@@ -9,6 +9,23 @@ export const routes: Routes = [
     title: 'Inicio | PC Gamer CDMX',
   },
   {
+    path: 'ensambles',
+    loadComponent: () => import('./features/assemblies/assemblies.component').then(m => m.AssembliesComponent),
+    title: 'Ensambles | PC Gamer CDMX',
+    data: { description: 'Explora ensambles de PC listos para gaming, streaming y trabajo creativo en PC Gamer CDMX.' }
+  },
+  {
+    path: 'ensambles/:slug',
+    loadComponent: () => import('./features/products/product-detail.component').then(m => m.ProductDetailComponent),
+    title: 'Detalle de Ensamble | PC Gamer CDMX',
+    data: { renderMode: 'dynamic' }
+  },
+  {
+    path: 'productos/paquetes',
+    redirectTo: 'ensambles',
+    pathMatch: 'full'
+  },
+  {
     path: 'contacto',
     loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent),
     title: 'Contacto | PC Gamer CDMX',
@@ -20,7 +37,6 @@ export const routes: Routes = [
     path: 'productos',
     loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
     children: [
-      { path: 'paquetes', loadComponent: () => import('./features/products/packages/packages').then(m => m.Packages) },
       { path: 'perifericos', loadComponent: () => import('./features/products/peripherals/peripherals').then(m => m.Peripherals) },
       { path: 'componentes', loadComponent: () => import('./features/products/components/components').then(m => m.Components) },
       { path: ':slug', loadComponent: () => import('./features/products/product-detail.component').then(m => m.ProductDetailComponent) },

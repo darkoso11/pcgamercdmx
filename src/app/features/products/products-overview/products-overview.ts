@@ -21,25 +21,25 @@ export class ProductsOverview implements OnInit {
   featuredComponents: ProductCardViewModel[] = [];
   featuredPeripherals: ProductCardViewModel[] = [];
 
-  readonly phaseCards = [
+  readonly entryCards = [
     {
-      title: 'Fase 1: Ensambles de PC',
+      title: 'Ensambles de PC',
       description:
-        'Catalogo comercial de PCs armadas con componentes claros, enfoque de uso y CTA directo a cotizacion.',
-      link: '/productos/paquetes',
+        'Superficie comercial dedicada a PCs armadas con componentes claros, enfoque de uso y CTA directo a cotizacion.',
+      link: '/ensambles',
       action: 'Ver ensambles',
     },
     {
-      title: 'Fase 2: Componentes',
+      title: 'Componentes',
       description:
-        'Hardware suelto listo para filtrado por categoria, marca y compatibilidad futura.',
+        'Hardware suelto organizado para busqueda, comparacion y crecimiento posterior con filtros mas profundos.',
       link: '/productos/componentes',
       action: 'Ver componentes',
     },
     {
-      title: 'Fase 2: Perifericos',
+      title: 'Perifericos',
       description:
-        'Teclados, mouse, monitores y audio sobre la misma estructura de catalogo y SEO.',
+        'Teclados, mouse, monitores y audio sobre una misma estructura de catalogo y detalle individual.',
       link: '/productos/perifericos',
       action: 'Ver perifericos',
     },
