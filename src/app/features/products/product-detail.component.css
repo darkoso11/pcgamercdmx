@@ -8,12 +8,13 @@
   from {
     opacity: 0;
     transform: translateY(20px);
-  overflow: hidden; /* Retaining existing line for context */
+  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 .gallery-main img {
   display: block;
 }
@@ -21,13 +22,11 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-  flex-wrap: wrap;
   }
   to {
     opacity: 1;
   }
 }
-  overflow-wrap: anywhere;
 
 @keyframes pulse-glow {
   0%, 100% {
@@ -35,14 +34,15 @@
   }
   50% {
     box-shadow: 0 0 30px rgba(236, 72, 153, 0.8);
+  }
+}
+
 .spec-label,
 .spec-value,
 .section-header,
 .breadcrumb span,
 .breadcrumb a {
   overflow-wrap: anywhere;
-}
-  }
 }
 
 /* Utility Classes */

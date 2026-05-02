@@ -1,6 +1,66 @@
 @import "tailwindcss";
 
-html, body { height: 100%; background: #020617; }
+:root {
+  --pc-bg-base: #020617;
+  --pc-bg-page: #070b1a;
+  --pc-surface-panel: #0e1430;
+  --pc-surface-card: #101734;
+  --pc-surface-field: #090d22;
+  --pc-surface-muted: rgba(13, 19, 48, 0.7);
+  --pc-border-subtle: rgba(255, 255, 255, 0.1);
+  --pc-border-cyan: rgba(103, 232, 249, 0.4);
+  --pc-border-pink: rgba(249, 168, 212, 0.4);
+  --pc-text-muted: #cbd5e1;
+  --pc-text-subtle: #94a3b8;
+  --pc-accent-cyan: #67e8f9;
+  --pc-accent-pink: #f9a8d4;
+  --pc-accent-cyan-soft: rgba(34, 211, 238, 0.1);
+  --pc-accent-pink-soft: rgba(244, 114, 182, 0.15);
+  --pc-hero-bg:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.18), transparent 30%),
+    radial-gradient(circle at top right, rgba(236, 72, 153, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(7, 11, 26, 0.92) 0%, rgba(11, 16, 37, 0.98) 100%);
+  --pc-card-image-fade: linear-gradient(90deg, var(--pc-surface-card), rgba(16, 23, 52, 0.9), rgba(16, 23, 52, 0.35));
+  --pc-hero-visual-bg:
+    radial-gradient(circle at 65% 30%, rgba(34, 211, 238, 0.18), transparent 34%),
+    radial-gradient(circle at 35% 75%, rgba(236, 72, 153, 0.14), transparent 34%);
+  --pc-glass-strong: rgba(7, 11, 26, 0.7);
+  --pc-cta-gradient: linear-gradient(90deg, #db2777, #d946ef);
+}
+
+html, body { height: 100%; background: var(--pc-bg-base); }
+
+@layer utilities {
+  .pc-bg-page { background-color: var(--pc-bg-page); }
+  .pc-hero-bg { background-image: var(--pc-hero-bg); }
+  .pc-panel { background-color: var(--pc-surface-panel); }
+  .pc-card { background-color: var(--pc-surface-card); }
+  .pc-field { background-color: var(--pc-surface-field); }
+  .pc-muted-surface { background-color: var(--pc-surface-muted); }
+  .pc-border { border-color: var(--pc-border-subtle); }
+  .pc-text-muted { color: var(--pc-text-muted); }
+  .pc-text-subtle { color: var(--pc-text-subtle); }
+  .pc-text-cyan { color: var(--pc-accent-cyan); }
+  .pc-text-pink { color: var(--pc-accent-pink); }
+  .pc-cyan-soft { background-color: var(--pc-accent-cyan-soft); }
+  .pc-pink-soft { background-color: var(--pc-accent-pink-soft); }
+  .pc-card-image-fade { background-image: var(--pc-card-image-fade); }
+  .pc-hero-visual-bg { background-image: var(--pc-hero-visual-bg); }
+  .pc-glass-strong { background-color: var(--pc-glass-strong); }
+  .pc-cta { background-image: var(--pc-cta-gradient); }
+  .pc-focus-cyan {
+    outline: none;
+  }
+  .pc-focus-cyan:focus-visible {
+    box-shadow: 0 0 0 2px var(--pc-bg-page), 0 0 0 4px var(--pc-accent-cyan);
+  }
+  .pc-focus-pink {
+    outline: none;
+  }
+  .pc-focus-pink:focus-visible {
+    box-shadow: 0 0 0 2px var(--pc-bg-page), 0 0 0 4px var(--pc-accent-pink);
+  }
+}
 
 .neon-title {
   text-shadow:

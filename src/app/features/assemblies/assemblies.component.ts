@@ -13,22 +13,24 @@ import { Packages } from '../products/packages/packages';
 export class AssembliesComponent {
   readonly trustPoints = [
     {
-      title: 'Armado profesional',
-      description: 'Equipos pensados para venderse como solución completa, con selección de componentes coherente y lista para cotizar.',
+      title: 'Diagnóstico de uso',
+      description: 'Partimos de tus juegos, programas y presupuesto para recomendar una configuración con sentido.',
     },
     {
-      title: 'Compatibilidad validada',
-      description: 'Cada build comunica hardware clave, tier de rendimiento y margen de personalización sin volverse una ficha saturada.',
+      title: 'Componentes compatibles',
+      description: 'Procesador, GPU, fuente, gabinete y enfriamiento se revisan como sistema, no como piezas aisladas.',
     },
     {
-      title: 'Asesoría real',
-      description: 'La experiencia prioriza conversión a contacto, cotización y ajuste del setup según el uso real del cliente.',
+      title: 'Cotización ajustable',
+      description: 'Puedes partir de una build recomendada y ajustar marca, estética o rendimiento antes de comprar.',
     },
   ];
 
   readonly valueCards = [
     'Gaming competitivo con configuraciones claras y escalables.',
-    'Builds para streaming, edición y cargas mixtas sin lenguaje técnico innecesario.',
-    'Base visual premium con CTA directo a contacto y WhatsApp.',
+    'Streaming, edición y cargas mixtas sin lenguaje técnico innecesario.',
+    'Opciones por AMD, Intel y NVIDIA para comparar más rápido.',
   ];
+
+  readonly heroHighlights = ['Gaming', 'Streaming', 'Diseño 3D', 'Workstation'];
 }

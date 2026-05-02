@@ -1,64 +1,177 @@
 <div class="space-y-8 text-white">
-  <section class="grid gap-4 rounded-2xl border border-white/10 bg-[#0e1430] p-5 lg:grid-cols-[1.2fr_1fr_1fr]">
+  <section class="space-y-5">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="pc-text-cyan text-xs uppercase tracking-[0.24em]">Elige tu tipo de PC</p>
+        <h2 class="mt-2 text-2xl font-semibold text-white">Ensambles por objetivo</h2>
+      </div>
+      <p class="pc-text-muted max-w-xl text-sm leading-6">
+        Empieza por el uso principal y después ajusta marca, búsqueda o nivel de rendimiento.
+      </p>
+    </div>
+
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <button
+        *ngFor="let type of pcTypeCards"
+        type="button"
+        (click)="selectPcType(type.value)"
+        class="pc-focus-cyan group relative min-h-52 overflow-hidden rounded-2xl border p-5 text-left transition duration-300"
+        [ngClass]="
+          selectedPcType === type.value
+            ? 'border-cyan-300/70 pc-cyan-soft shadow-lg shadow-cyan-950/40'
+            : 'pc-border pc-card hover:border-cyan-300/40 hover:bg-white/5'
+        "
+        [attr.aria-pressed]="selectedPcType === type.value"
+      >
+        <img
+          [src]="pcTypeImages[type.value]"
+          [alt]="type.title"
+          width="208"
+          height="160"
+          loading="lazy"
+          decoding="async"
+          class="absolute bottom-0 right-0 h-36 w-44 object-contain object-bottom opacity-80 transition duration-300 group-hover:scale-105 group-hover:opacity-100 sm:h-40 sm:w-52"
+        />
+        <div class="pc-card-image-fade absolute inset-0"></div>
+        <div
+          class="absolute inset-0 transition"
+          [ngClass]="selectedPcType === type.value ? 'bg-cyan-400/10' : 'bg-transparent'"
+        ></div>
+
+        <div class="relative z-10 flex items-start justify-between gap-4">
+          <span class="pc-text-cyan text-[11px] font-semibold uppercase tracking-[0.22em]">
+            {{ type.eyebrow }}
+          </span>
+          <span
+            class="rounded-full border px-2.5 py-1 text-xs font-semibold"
+            [ngClass]="
+              selectedPcType === type.value
+                ? 'border-cyan-300/50 bg-cyan-300/15 text-cyan-100'
+                : 'pc-border bg-white/5 pc-text-muted'
+            "
+          >
+            {{ pcTypeCounts[type.value] }}
+          </span>
+        </div>
+        <div class="relative z-10 max-w-[72%]">
+          <h3 class="mt-5 text-xl font-semibold text-white">{{ type.title }}</h3>
+          <p class="pc-text-muted mt-3 text-sm leading-6">{{ type.description }}</p>
+          <p class="pc-text-subtle mt-5 text-xs uppercase tracking-[0.18em]">{{ type.specs }}</p>
+        </div>
+      </button>
+    </div>
+
+    <div class="pc-panel flex flex-col gap-3 rounded-2xl border pc-border p-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="pc-text-subtle text-xs uppercase tracking-[0.22em]">Plataforma</p>
+        <p class="pc-text-muted mt-1 text-sm">Combina la categoría con AMD, Intel o NVIDIA.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button
+          *ngFor="let platform of platformFilters"
+          type="button"
+          (click)="selectPlatform(platform.value)"
+          class="pc-focus-pink rounded-xl border px-4 py-3 text-left transition"
+          [ngClass]="
+            selectedPlatform === platform.value
+              ? 'border-pink-300/70 bg-pink-400/15 text-white'
+              : 'pc-border pc-field pc-text-muted hover:border-pink-300/40'
+          "
+          [attr.aria-pressed]="selectedPlatform === platform.value"
+          [title]="platform.description"
+        >
+          <span class="block text-sm font-semibold">{{ platform.label }}</span>
+          <span class="pc-text-subtle mt-1 block text-xs">{{ platformCounts[platform.value] }} ensambles</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="pc-panel space-y-4 rounded-2xl border pc-border p-5">
+    <div class="flex flex-col gap-3 border-b pc-border pb-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="pc-text-subtle text-xs uppercase tracking-[0.22em]">Refinar búsqueda</p>
+        <p class="pc-text-muted mt-1 text-sm">{{ activeFilterSummary }}</p>
+      </div>
+      <button
+        type="button"
+        (click)="clearFilters()"
+        [disabled]="!hasActiveFilters"
+        class="pc-focus-cyan rounded-xl border pc-border px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-45"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-[1.2fr_1fr_1fr]">
     <label class="space-y-2">
-      <span class="block text-xs uppercase tracking-[0.22em] text-slate-400">Buscar ensamble</span>
+      <span class="pc-text-subtle block text-xs uppercase tracking-[0.22em]">Buscar ensamble</span>
       <input
         [(ngModel)]="searchTerm"
         type="text"
         placeholder="RTX 4070, streaming, 64GB..."
-        class="w-full rounded-xl border border-white/10 bg-[#090d22] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50"
+        class="pc-field pc-focus-cyan w-full rounded-xl border pc-border px-4 py-3 text-sm text-white transition placeholder:text-slate-500 focus:border-cyan-400/50"
       />
     </label>
 
     <label class="space-y-2">
-      <span class="block text-xs uppercase tracking-[0.22em] text-slate-400">Uso principal</span>
+      <span class="pc-text-subtle block text-xs uppercase tracking-[0.22em]">Uso principal</span>
       <select
         [(ngModel)]="selectedUseCase"
-        class="w-full rounded-xl border border-white/10 bg-[#090d22] px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
+        class="pc-field pc-focus-cyan w-full rounded-xl border pc-border px-4 py-3 text-sm text-white focus:border-cyan-400/50"
       >
         <option *ngFor="let option of useCaseOptions" [value]="option.value">{{ option.label }}</option>
       </select>
     </label>
 
     <label class="space-y-2">
-      <span class="block text-xs uppercase tracking-[0.22em] text-slate-400">Tier de rendimiento</span>
+      <span class="pc-text-subtle block text-xs uppercase tracking-[0.22em]">Tier de rendimiento</span>
       <select
         [(ngModel)]="selectedTier"
-        class="w-full rounded-xl border border-white/10 bg-[#090d22] px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
+        class="pc-field pc-focus-cyan w-full rounded-xl border pc-border px-4 py-3 text-sm text-white focus:border-cyan-400/50"
       >
         <option *ngFor="let option of tierOptions" [value]="option.value">{{ option.label }}</option>
       </select>
     </label>
+    </div>
   </section>
 
   <section *ngIf="filteredProducts.length; else emptyState" class="grid gap-6 xl:grid-cols-2">
     <article
       *ngFor="let item of filteredProducts"
-      class="rounded-2xl border border-white/10 bg-[#101734] p-6 shadow-lg shadow-black/20"
+      class="pc-card rounded-2xl border pc-border p-6 shadow-lg shadow-black/20"
     >
-      <div class="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em] text-cyan-300">
+      <div class="pc-text-cyan flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em]">
         <span *ngFor="let badge of item.card.badges" class="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1">
           {{ badge }}
         </span>
       </div>
 
       <div class="mt-5 grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-        <div class="flex items-center justify-center rounded-2xl bg-[#090d22] p-4">
-          <img [src]="item.card.image" [alt]="item.card.title" class="max-h-72 max-w-full object-contain" />
+        <div class="pc-field flex items-center justify-center rounded-2xl p-4">
+          <img
+            [src]="item.card.image"
+            [alt]="item.card.title"
+            width="360"
+            height="288"
+            loading="lazy"
+            decoding="async"
+            class="max-h-72 max-w-full object-contain"
+          />
         </div>
 
         <div class="space-y-4">
           <div>
             <h3 class="text-2xl font-semibold">{{ item.card.title }}</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-300">{{ item.card.description }}</p>
+            <p class="pc-text-muted mt-2 text-sm leading-6">{{ item.card.description }}</p>
           </div>
 
           <div class="grid gap-3 text-sm">
             <div
               *ngFor="let spec of item.card.specHighlights"
-              class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+              class="flex items-center justify-between rounded-xl border pc-border bg-white/5 px-4 py-3"
             >
-              <span class="text-slate-400">{{ spec.label }}</span>
+              <span class="pc-text-subtle">{{ spec.label }}</span>
               <span class="text-right text-white">{{ spec.value }}</span>
             </div>
           </div>
@@ -69,28 +182,28 @@
 
           <div class="flex items-center justify-between gap-4">
             <div>
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Precio referencial</p>
-              <p class="mt-1 text-2xl font-semibold text-pink-300">${{ item.card.price | number }}</p>
+              <p class="pc-text-subtle text-xs uppercase tracking-[0.2em]">Precio referencial</p>
+              <p class="pc-text-pink mt-1 text-2xl font-semibold">${{ item.card.price | number }}</p>
             </div>
             <a
               [routerLink]="['/ensambles', item.card.slug]"
-              class="rounded-xl bg-gradient-to-r from-pink-600 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white"
+              class="pc-cta pc-focus-pink rounded-xl px-5 py-3 text-sm font-semibold text-white"
             >
               Ver detalle
             </a>
           </div>
 
-          <div class="flex flex-wrap gap-3 text-sm text-slate-300">
+          <div class="pc-text-muted flex flex-wrap gap-3 text-sm">
             <a
               [routerLink]="['/contacto']"
               [queryParams]="{ product: item.card.slug }"
-              class="rounded-lg border border-white/10 px-4 py-2 transition hover:border-cyan-400/40 hover:bg-cyan-400/10"
+              class="pc-focus-cyan rounded-lg border pc-border px-4 py-2 transition hover:border-cyan-400/40 hover:bg-cyan-400/10"
             >
-              Solicitar cotizacion
+              Solicitar cotización
             </a>
             <a
               [routerLink]="['/ensambles', item.card.slug]"
-              class="rounded-lg border border-white/10 px-4 py-2 transition hover:border-pink-400/40 hover:bg-pink-400/10"
+              class="pc-focus-pink rounded-lg border pc-border px-4 py-2 transition hover:border-pink-400/40 hover:bg-pink-400/10"
             >
               Comparar especificaciones
             </a>
@@ -101,11 +214,35 @@
   </section>
 
   <ng-template #emptyState>
-    <section class="rounded-2xl border border-dashed border-white/10 bg-white/5 p-10 text-center">
-      <h3 class="text-xl font-semibold">No encontramos ensambles con esos filtros</h3>
-      <p class="mt-3 text-sm text-slate-300">
-        Ajusta la busqueda, el uso principal o el tier para volver a ver resultados.
-      </p>
+    <section class="rounded-2xl border border-dashed pc-border bg-white/5 p-6 text-left md:p-10">
+      <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div>
+          <p class="pc-text-cyan text-xs font-semibold uppercase tracking-[0.22em]">Sin coincidencias</p>
+          <h3 class="mt-3 text-2xl font-semibold">No encontramos ensambles con esos filtros</h3>
+          <p class="pc-text-muted mt-3 max-w-xl text-sm leading-6">
+            Prueba una combinación popular o limpia los filtros para volver al catálogo completo.
+          </p>
+          <button
+            type="button"
+            (click)="clearFilters()"
+            class="pc-focus-cyan mt-6 rounded-xl border border-cyan-300/40 px-5 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-400/10"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <button
+            *ngFor="let suggestion of emptyStateSuggestions"
+            type="button"
+            (click)="applyFilterSuggestion(suggestion)"
+            class="pc-card pc-focus-cyan rounded-xl border pc-border p-4 text-left transition hover:border-cyan-300/40 hover:bg-white/5"
+          >
+            <span class="block text-sm font-semibold text-white">{{ suggestion.label }}</span>
+            <span class="pc-text-muted mt-2 block text-xs leading-5">{{ suggestion.description }}</span>
+          </button>
+        </div>
+      </div>
     </section>
   </ng-template>
 </div>
