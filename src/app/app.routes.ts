@@ -1,11 +1,10 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './features/home/home.component';
 import { AuthGuard } from './features/admin/services/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    component: HomeComponent,
+    loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
     title: 'Inicio | PC Gamer CDMX',
   },
   {
@@ -36,6 +35,7 @@ export const routes: Routes = [
   {
     path: 'productos',
     loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
+    title: 'Productos | PC Gamer CDMX',
     children: [
       { path: 'perifericos', loadComponent: () => import('./features/products/peripherals/peripherals').then(m => m.Peripherals) },
       { path: 'componentes', loadComponent: () => import('./features/products/components/components').then(m => m.Components) },
@@ -63,7 +63,20 @@ export const routes: Routes = [
   },
   {
     path: 'cotiza-tu-pc',
-    loadComponent: () => import('./features/quotation/quotation.component').then(m => m.QuotationComponent)
+    loadComponent: () => import('./features/quotation/quotation.component').then(m => m.QuotationComponent),
+    title: 'Cotiza tu PC | PC Gamer CDMX'
+  },
+  {
+    path: 'politica-privacidad',
+    loadComponent: () => import('./features/legal/legal-page.component').then(m => m.LegalPageComponent),
+    title: 'Política de Privacidad | PC Gamer CDMX',
+    data: { page: 'privacidad' }
+  },
+  {
+    path: 'terminos',
+    loadComponent: () => import('./features/legal/legal-page.component').then(m => m.LegalPageComponent),
+    title: 'Términos y Condiciones | PC Gamer CDMX',
+    data: { page: 'terminos' }
   },
 
   // Blog routes

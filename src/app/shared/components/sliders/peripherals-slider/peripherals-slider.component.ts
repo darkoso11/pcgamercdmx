@@ -93,7 +93,7 @@ export class PeripheralsSliderComponent implements OnInit, AfterViewInit {
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     if (img) {
-      img.src = 'https://picsum.photos/id/204/400/400';
+      img.src = 'assets/img/gabinetes/BR-938686_1.png';
       img.onerror = null;
     }
   }

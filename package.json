@@ -37,6 +37,7 @@
     "@angular-devkit/build-angular": "^20.0.3",
     "@angular/cli": "^20.0.3",
     "@angular/compiler-cli": "^20.0.3",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.1.14",
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",

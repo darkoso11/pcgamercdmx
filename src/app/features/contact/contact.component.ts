@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
 
 @Component({
   selector: 'app-contact',
@@ -14,34 +15,35 @@ export class ContactComponent implements OnInit {
   formStep: number = 1;
   submitted: boolean = false;
   successMessage: string = '';
+  readonly business = BUSINESS_INFO;
   
   // Métodos de contacto
   contactMethods = [
     {
       id: 1,
       title: 'Teléfono',
-      value: '+52 (555) 123-4567',
+      value: BUSINESS_INFO.phoneDisplay,
       icon: 'fas fa-phone',
-      action: 'tel:+525551234567'
+      action: BUSINESS_INFO.phoneHref
     },
     {
       id: 2,
       title: 'WhatsApp',
-      value: '+52 (555) 123-4567',
+      value: BUSINESS_INFO.phoneDisplay,
       icon: 'fab fa-whatsapp',
-      action: 'https://wa.me/525551234567'
+      action: BUSINESS_INFO.whatsappUrl
     },
     {
       id: 3,
       title: 'Correo',
-      value: 'contacto@pcgamer.com',
+      value: BUSINESS_INFO.email,
       icon: 'fas fa-envelope',
-      action: 'mailto:contacto@pcgamer.com'
+      action: `mailto:${BUSINESS_INFO.email}`
     },
     {
       id: 4,
       title: 'Ubicación',
-      value: 'Calle Principal 123, CDMX',
+      value: BUSINESS_INFO.addressShort,
       icon: 'fas fa-map-marker-alt',
       action: '#ubicacion'
     }
@@ -64,18 +66,14 @@ export class ContactComponent implements OnInit {
   ];
 
   // Horarios
-  businessHours = [
-    { day: 'Lunes - Viernes', hours: '09:00 - 19:00' },
-    { day: 'Sábado', hours: '10:00 - 18:00' },
-    { day: 'Domingo', hours: 'Cerrado' }
-  ];
+  businessHours = [...BUSINESS_INFO.businessHours];
 
   // Redes sociales
   socialNetworks = [
-    { icon: 'fab fa-facebook-f', url: 'https://facebook.com/pcgamercdmx', name: 'Facebook', color: '#3b5998' },
-    { icon: 'fab fa-instagram', url: 'https://instagram.com/pcgamercdmx', name: 'Instagram', color: '#e1306c' },
-    { icon: 'fab fa-tiktok', url: 'https://tiktok.com/@pcgamercdmx', name: 'TikTok', color: '#000000' },
-    { icon: 'fab fa-youtube', url: 'https://youtube.com/@pcgamercdmx', name: 'YouTube', color: '#ff0000' }
+    { icon: 'fab fa-facebook-f', url: BUSINESS_INFO.social.facebook, name: 'Facebook', color: '#3b5998' },
+    { icon: 'fab fa-instagram', url: BUSINESS_INFO.social.instagram, name: 'Instagram', color: '#e1306c' },
+    { icon: 'fab fa-tiktok', url: BUSINESS_INFO.social.tiktok, name: 'TikTok', color: '#000000' },
+    { icon: 'fab fa-youtube', url: BUSINESS_INFO.social.youtube, name: 'YouTube', color: '#ff0000' }
   ];
 
   // FAQ
@@ -162,20 +160,37 @@ export class ContactComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.contactForm.valid) {
-      this.submitted = true;
-      this.successMessage = '¡Solicitud enviada correctamente! Nos contactaremos pronto.';
-      
-      // Simular envío de formulario
-      setTimeout(() => {
-        this.contactForm.reset();
-        this.formStep = 1;
-        this.submitted = false;
-        this.successMessage = '';
-      }, 3000);
-
-      console.log('Datos del formulario:', this.contactForm.value);
+    if (this.contactForm.invalid) {
+      this.contactForm.markAllAsTouched();
+      return;
     }
+
+    const value = this.contactForm.getRawValue();
+    const message = [
+      'Hola PC Gamer CDMX, quiero hacer una solicitud desde el sitio.',
+      `Nombre: ${value.name}`,
+      `Correo: ${value.email}`,
+      `Telefono: ${value.phone}`,
+      `Tipo: ${value.requestType}`,
+      `Modalidad: ${value.serviceModality}`,
+      value.city ? `Ciudad: ${value.city}` : '',
+      value.budgetRange ? `Presupuesto: ${value.budgetRange}` : '',
+      `Mensaje: ${value.message}`,
+    ].filter(Boolean).join('\n');
+
+    this.submitted = true;
+    this.successMessage = 'Abrimos WhatsApp con tu solicitud lista para enviar.';
+
+    if (typeof window !== 'undefined') {
+      window.open(buildWhatsAppUrl(message), '_blank');
+    }
+
+    setTimeout(() => {
+      this.contactForm.reset();
+      this.formStep = 1;
+      this.submitted = false;
+      this.successMessage = '';
+    }, 3000);
   }
 
   scrollToSection(sectionId: string): void {

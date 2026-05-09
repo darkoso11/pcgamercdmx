@@ -12,7 +12,7 @@ import {
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
@@ -24,6 +24,7 @@ import { NeedsSliderComponent } from '../../shared/components/sliders/needs-slid
 import { PeripheralsSliderComponent } from '../../shared/components/sliders/peripherals-slider/peripherals-slider.component';
 import { BannersSliderComponent } from '../../shared/components/sliders/banners-slider/banners-slider.component';
 import { BrandsSectionComponent } from '../../shared/components/brands-section/brands-section.component';
+import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
 
 @Component({
   selector: 'app-home',
@@ -44,23 +45,26 @@ import { BrandsSectionComponent } from '../../shared/components/brands-section/b
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly business = BUSINESS_INFO;
+  projectRequestSent = false;
+
   // Slider superior derecho - -
   sliderImages = [
     {
       id: 1,
-      src: 'https://picsum.photos/id/11/200/100',
+      src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
       link: '/ensambles',
       alt: 'Slider 1',
     },
     {
       id: 2,
-      src: 'https://picsum.photos/id/12/200/100',
+      src: 'assets/img/gabinetes/HBJNKHGNM.png',
       link: '/ensambles',
       alt: 'Slider 2',
     },
     {
       id: 3,
-      src: 'https://picsum.photos/id/13/200/100',
+      src: 'assets/img/gabinetes/product-section-01.png',
       link: '/ensambles',
       alt: 'Slider 3',
     },
@@ -196,31 +200,31 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 'streaming',
       title: 'Streaming Profesional',
       description: 'PC para transmisiones en vivo de alta calidad.',
-      bgImage: 'https://picsum.photos/id/201/500/500',
+      bgImage: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
     },
     {
       id: 'gaming',
       title: 'Gaming Competitivo',
       description: 'Máximo rendimiento para e-sports y torneos.',
-      bgImage: 'https://picsum.photos/id/202/500/500',
+      bgImage: 'assets/img/gabinetes/HBJNKHGNM.png',
     },
     {
       id: 'content',
       title: 'Creación de Contenido',
       description: 'Edición de video y renderizado optimizado.',
-      bgImage: 'https://picsum.photos/id/203/500/500',
+      bgImage: 'assets/img/gabinetes/product-section-01.png',
     },
     {
       id: 'design',
       title: 'Diseño 3D',
       description: 'Modelado y renderizado profesional.',
-      bgImage: 'https://picsum.photos/id/204/500/500',
+      bgImage: 'assets/img/gabinetes/rog-hyperion-gr701.png',
     },
     {
       id: 'ai',
       title: 'Inteligencia Artificial',
       description: 'Entrenamiento de modelos y deep learning.',
-      bgImage: 'https://picsum.photos/id/205/500/500',
+      bgImage: 'assets/img/gabinetes/BR-938686_2.png',
     },
   ];
 
@@ -499,8 +503,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       title: 'Ensambles Personalizados',
       description:
         'Construimos la PC de tus sueños con los mejores componentes y la máxima calidad.',
-      imageUrl: 'assets/img/banners/custom-builds.jpg',
-      link: '/ensambles-personalizados',
+      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
+      link: '/cotiza-tu-pc',
       ctaText: 'Personaliza tu PC',
       badgeText: 'POPULAR',
     },
@@ -509,8 +513,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       title: 'Ofertas Especiales',
       description:
         'Aprovecha nuestras promociones exclusivas con descuentos de hasta 30% en productos seleccionados.',
-      imageUrl: 'assets/img/banners/special-offers.jpg',
-      link: '/ofertas',
+      imageUrl: 'assets/img/gabinetes/product-section-01.png',
+      link: '/productos',
       ctaText: 'Ver Ofertas',
       badgeText: 'OFERTA',
     },
@@ -519,7 +523,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       title: 'Sorteos Mensuales',
       description:
         'Participa en nuestros sorteos mensuales y gana componentes premium para tu setup.',
-      imageUrl: 'assets/img/banners/giveaways.jpg',
+      imageUrl: 'assets/img/gabinetes/rog-hyperion-gr701.png',
       link: '/sorteos',
       ctaText: 'Participar Ahora',
       badgeText: 'SORTEO',
@@ -617,12 +621,42 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     return false;
   }
 
+  submitProjectRequest(form: NgForm): void {
+    if (form.invalid) {
+      form.control.markAllAsTouched();
+      return;
+    }
+
+    const value = form.value;
+    const message = [
+      'Hola PC Gamer CDMX, quiero cotizar una PC personalizada.',
+      `Nombre: ${value.name}`,
+      `Correo: ${value.email}`,
+      `WhatsApp: ${value.phone}`,
+      `Uso principal: ${value.mainUse}`,
+      `Presupuesto: ${value.budget}`,
+      `Detalles: ${value.details}`,
+    ].filter(Boolean).join('\n');
+
+    this.projectRequestSent = true;
+
+    if (typeof window !== 'undefined') {
+      window.open(buildWhatsAppUrl(message), '_blank');
+    }
+
+    form.resetForm();
+
+    setTimeout(() => {
+      this.projectRequestSent = false;
+    }, 3500);
+  }
+
   // Mejorar manejo de errores en imágenes
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     if (img) {
       console.warn(`Failed to load image: ${img.src}`);
-      img.src = 'https://picsum.photos/id/204/400/400'; // Ruta a una imagen predeterminada
+      img.src = 'assets/img/gabinetes/BR-938686_1.png';
       img.onerror = null; // Evita bucles infinitos
     }
   }
@@ -846,7 +880,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 7,
       name: 'SteelSeries Arctis 7',
       category: 'headset',
-      image: 'assets/img/marcas/Logitechpngg.png',
+      image: 'assets/img/marcas/Logitech.png',
       price: 2799,
       originalPrice: 3199,
       discount: 12,

@@ -191,25 +191,26 @@
     <!-- Redes sociales + Botón comprar -->
     <div class="p-4 border-t border-white/30">
       <div class="flex justify-center gap-6 py-4">
-        <a href="https://tiktok.com" target="_blank" class="social-btn-cyber"
+        <a [href]="business.social.tiktok" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"
           ><i class="fab fa-tiktok"></i
         ></a>
-        <a href="https://facebook.com" target="_blank" class="social-btn-cyber"
+        <a [href]="business.social.facebook" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"
           ><i class="fab fa-facebook-f"></i
         ></a>
-        <a href="https://instagram.com" target="_blank" class="social-btn-cyber"
+        <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"
           ><i class="fab fa-instagram"></i
         ></a>
         <a
-          href="https://wa.me/5215555555555"
+          [href]="business.whatsappUrl"
           target="_blank"
+          rel="noopener noreferrer"
           class="social-btn-cyber"
           ><i class="fab fa-whatsapp"></i
         ></a>
       </div>
       <div class="mt-4">
         <a
-          routerLink="/productos/destacado"
+          routerLink="/ensambles"
           class="btn-comprar-cyber block text-center w-full"
           (click)="toggleMobileMenu()"
           >Comprar</a>

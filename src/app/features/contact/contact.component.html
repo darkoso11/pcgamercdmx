@@ -46,7 +46,7 @@
             </div>
         </div>
 
-        <form [formGroup]="contactForm" class="contact-form">
+        <form [formGroup]="contactForm" class="contact-form" (ngSubmit)="onSubmit()">
 
             <!-- STEP 1: Personal Information -->
             <div *ngIf="formStep === 1" class="form-step">
@@ -178,7 +178,7 @@
                     Siguiente <i class="fas fa-arrow-right"></i>
                 </button>
 
-                <button type="submit" class="btn btn-submit" (click)="onSubmit()" [disabled]="!contactForm.valid"
+                <button type="submit" class="btn btn-submit" [disabled]="!contactForm.valid"
                     *ngIf="formStep === 3">
                     <i class="fas fa-paper-plane"></i> Enviar Solicitud
                 </button>
@@ -200,14 +200,14 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
                             <p class="location-label">Dirección</p>
-                            <p class="location-value">Calle Principal 123, Piso 5<br>Benito Juárez, CDMX 06500</p>
+                            <p class="location-value">{{ business.addressLong }}</p>
                         </div>
                     </div>
                     <div class="location-item">
                         <i class="fas fa-phone"></i>
                         <div>
                             <p class="location-label">Teléfono Principal</p>
-                            <p class="location-value">+52 (55) 1234-5678</p>
+                            <p class="location-value">{{ business.phoneDisplay }}</p>
                         </div>
                     </div>
                     <a href="#mapa" class="location-btn">
@@ -296,7 +296,7 @@
             </p>
 
             <div class="cta-buttons">
-                <a href="https://wa.me/525551234567" target="_blank" class="btn btn-whatsapp">
+                <a [href]="business.whatsappUrl" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">
                     <i class="fab fa-whatsapp"></i> Escribir a WhatsApp
                 </a>
                 <a href="#formulario" class="btn btn-primary">

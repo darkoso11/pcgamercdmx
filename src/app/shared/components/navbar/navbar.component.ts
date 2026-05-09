@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { BUSINESS_INFO } from '../../config/business-info';
 
 @Component({
   selector: 'app-navbar',
@@ -12,6 +13,7 @@ import { Subscription } from 'rxjs';
 export class NavbarComponent implements OnInit, OnDestroy {
   mobileMenuOpen = false;
   showNavbar = true;
+  readonly business = BUSINESS_INFO;
   private sub?: Subscription;
 
   constructor(private router: Router) {}

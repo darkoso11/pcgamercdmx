@@ -170,11 +170,17 @@ export class ProductsSliderComponent implements AfterViewInit, OnChanges {
     return this.currentIndex < this.maxVisibleIndex && this.products.length > this.cardsPerView;
   }
 
+  getProductLink(product: any): string[] {
+    return product?.category === 'paquete' || product?.category === 'ensamble'
+      ? ['/ensambles', product.slug]
+      : ['/productos', product.slug];
+  }
+
   // Para manejar errores de carga de imagen
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     if (img) {
-      img.src = 'https://picsum.photos/id/204/400/400'; // Ruta a imagen predeterminada
+      img.src = 'assets/img/gabinetes/BR-938686_1.png';
       img.onerror = null; // Evita bucles infinitos
     }
   }

@@ -10,6 +10,7 @@ import {
   ProductsService,
 } from './services/products.service';
 import { ProductCategory } from '../../shared/models';
+import { buildWhatsAppUrl } from '../../shared/config/business-info';
 
 interface DetailViewModel {
   rootLabel: string;
@@ -122,10 +123,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const message = encodeURIComponent(
+    const message =
       `Hola, me interesa el producto ${this.product?.title}. Quiero una cotizacion personalizada.`
-    );
-    window.open(`https://wa.me/5215555555555?text=${message}`, '_blank');
+    window.open(buildWhatsAppUrl(message), '_blank');
   }
 
   handleImageError(event: Event): void {

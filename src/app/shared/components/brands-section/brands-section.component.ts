@@ -166,7 +166,7 @@ export class BrandsSectionComponent implements OnInit {
     const img = event.target as HTMLImageElement;
     if (img) {
       console.warn(`Failed to load image: ${img.src}`);
-      img.src = 'https://picsum.photos/id/204/400/400';
+      img.src = 'assets/img/gabinetes/BR-938686_1.png';
       img.onerror = null;
     }
   }

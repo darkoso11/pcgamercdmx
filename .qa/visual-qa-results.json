@@ -1,0 +1,314 @@
+[
+  {
+    "page": "/",
+    "viewport": "mobile",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Inicio | PC Gamer CDMX",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflowNodes": [
+      {
+        "tag": "div",
+        "className": "min-w-[95vw] sm:min-w-[300px] md:min-w-[350px] flex-shrink-0 snap-center bg-[#161a3c] border border-white/20 rounded-xl ",
+        "text": "Oferta 650WCPU PRE ARMADO 2 $15,999 INTEL CORE i5-12400FASUS PRIME B660M-A32 GB ",
+        "right": 761
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded z-20",
+        "text": "Oferta",
+        "right": 748
+      },
+      {
+        "tag": "div",
+        "className": "relative w-full h-60 mb-4 bg-[#0a0d22] rounded-lg overflow-hidden",
+        "text": "650W",
+        "right": 736
+      },
+      {
+        "tag": "img",
+        "className": "w-full h-full object-contain",
+        "text": "",
+        "right": 736
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-2 left-2 flex flex-col gap-2 z-10",
+        "text": "",
+        "right": 533
+      },
+      {
+        "tag": "img",
+        "className": "h-6 w-auto",
+        "text": "",
+        "right": 533
+      },
+      {
+        "tag": "img",
+        "className": "h-6 w-auto",
+        "text": "",
+        "right": 533
+      },
+      {
+        "tag": "img",
+        "className": "h-6 w-auto",
+        "text": "",
+        "right": 533
+      }
+    ],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/contacto",
+    "viewport": "mobile",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Contacto | PC Gamer CDMX",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/productos",
+    "viewport": "mobile",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Productos | PC Gamer CDMX",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/ensambles",
+    "viewport": "mobile",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Ensambles | PC Gamer CDMX",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/cotiza-tu-pc",
+    "viewport": "mobile",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Cotiza tu PC | PC Gamer CDMX",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/",
+    "viewport": "tablet",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Inicio | PC Gamer CDMX",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflowNodes": [
+      {
+        "tag": "div",
+        "className": "flex gap-8 md:transition-transform md:duration-300",
+        "text": "Oferta 650WCPU PRE ARMADO 1 $11,999 AMD RYZEN 7 5700ASUS ROG STRIX B550-F16 GB D",
+        "right": 1894
+      },
+      {
+        "tag": "div",
+        "className": "min-w-[95vw] sm:min-w-[300px] md:min-w-[350px] flex-shrink-0 snap-center bg-[#161a3c] border border-white/20 rounded-xl ",
+        "text": "Oferta 650WCPU PRE ARMADO 3 $21,999 AMD RYZEN 9 5900XASUS ROG STRIX X570-E32 GB ",
+        "right": 1130
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded z-20",
+        "text": "Oferta",
+        "right": 1117
+      },
+      {
+        "tag": "div",
+        "className": "relative w-full h-60 mb-4 bg-[#0a0d22] rounded-lg overflow-hidden",
+        "text": "650W",
+        "right": 1105
+      },
+      {
+        "tag": "img",
+        "className": "w-full h-full object-contain",
+        "text": "",
+        "right": 1105
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-2 left-2 flex flex-col gap-2 z-10",
+        "text": "",
+        "right": 909
+      },
+      {
+        "tag": "img",
+        "className": "h-6 w-auto",
+        "text": "",
+        "right": 909
+      },
+      {
+        "tag": "img",
+        "className": "h-6 w-auto",
+        "text": "",
+        "right": 909
+      }
+    ],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/contacto",
+    "viewport": "tablet",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Contacto | PC Gamer CDMX",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/productos",
+    "viewport": "tablet",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Productos | PC Gamer CDMX",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/ensambles",
+    "viewport": "tablet",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Ensambles | PC Gamer CDMX",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/cotiza-tu-pc",
+    "viewport": "tablet",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Cotiza tu PC | PC Gamer CDMX",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/",
+    "viewport": "desktop",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Inicio | PC Gamer CDMX",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "overflowNodes": [
+      {
+        "tag": "div",
+        "className": "flex gap-8 md:transition-transform md:duration-300",
+        "text": "Oferta 650WCPU PRE ARMADO 1 $11,999 AMD RYZEN 7 5700ASUS ROG STRIX B550-F16 GB D",
+        "right": 1894
+      },
+      {
+        "tag": "div",
+        "className": "min-w-[95vw] sm:min-w-[300px] md:min-w-[350px] flex-shrink-0 snap-center bg-[#161a3c] border border-white/20 rounded-xl ",
+        "text": "Oferta 650WCPU PRE ARMADO 4 $29,999 INTEL CORE i9-12900KASUS ROG MAXIMUS Z690 HE",
+        "right": 1512
+      },
+      {
+        "tag": "span",
+        "className": "absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded z-20",
+        "text": "Oferta",
+        "right": 1499
+      },
+      {
+        "tag": "div",
+        "className": "relative w-full h-60 mb-4 bg-[#0a0d22] rounded-lg overflow-hidden",
+        "text": "650W",
+        "right": 1487
+      },
+      {
+        "tag": "img",
+        "className": "w-full h-full object-contain",
+        "text": "",
+        "right": 1487
+      },
+      {
+        "tag": "div",
+        "className": "absolute top-2 left-2 flex flex-col gap-2 z-10",
+        "text": "",
+        "right": 1291
+      },
+      {
+        "tag": "img",
+        "className": "h-6 w-auto",
+        "text": "",
+        "right": 1291
+      },
+      {
+        "tag": "img",
+        "className": "h-6 w-auto",
+        "text": "",
+        "right": 1291
+      }
+    ],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/contacto",
+    "viewport": "desktop",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Contacto | PC Gamer CDMX",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/productos",
+    "viewport": "desktop",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Productos | PC Gamer CDMX",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/ensambles",
+    "viewport": "desktop",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Ensambles | PC Gamer CDMX",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  },
+  {
+    "page": "/cotiza-tu-pc",
+    "viewport": "desktop",
+    "ok": true,
+    "consoleErrors": [],
+    "title": "Cotiza tu PC | PC Gamer CDMX",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "overflowNodes": [],
+    "imagesWithoutAlt": 0
+  }
+]
