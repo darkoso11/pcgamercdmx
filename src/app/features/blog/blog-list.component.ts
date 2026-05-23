@@ -2,8 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
+import { DirectusApiService } from '../../core/services/directus-api.service';
 
 type MinimalArticle = { title: string; slug: string; summary?: string; coverImage?: { url: string; alt?: string }; publishedAt?: string; tags?: string[] };
+type DirectusBlogPost = {
+  title: string;
+  slug: string;
+  summary?: string;
+  cover_image?: { url?: string; alt?: string };
+  published_at?: string;
+  tags?: string[];
+};
 
 @Component({
   selector: 'app-blog-list',
@@ -67,7 +77,13 @@ export class BlogListComponent implements OnInit {
   page = 0;
   pageSize = 6;
 
+  constructor(private readonly directus: DirectusApiService) {}
+
   async ngOnInit() {
+    if (await this.loadFromDirectus()) {
+      return;
+    }
+
     try {
       const res = await fetch('/assets/mock/blog-sample.json');
       if (!res.ok) return;
@@ -90,6 +106,46 @@ export class BlogListComponent implements OnInit {
       this.applyFilter();
     } catch (e) {
       // ignore
+    }
+  }
+
+  private async loadFromDirectus(): Promise<boolean> {
+    if (!this.directus.isEnabled('blog')) {
+      return false;
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.directus.readItems<DirectusBlogPost>('pc_blog_posts', {
+          'filter[published][_eq]': true,
+          fields: 'title,slug,summary,cover_image,tags,published_at',
+          sort: '-published_at',
+          limit: 50,
+        })
+      );
+
+      this.all = response.data.map((item) => ({
+        title: item.title,
+        slug: item.slug,
+        summary: item.summary,
+        coverImage: item.cover_image?.url
+          ? { url: item.cover_image.url, alt: item.cover_image.alt }
+          : undefined,
+        publishedAt: item.published_at,
+        tags: item.tags || [],
+      }));
+
+      if (!this.all.length) {
+        return false;
+      }
+
+      const tagSet = new Set<string>();
+      this.all.forEach(a => (a.tags || []).forEach(t => tagSet.add(t)));
+      this.tags = Array.from(tagSet).sort();
+      this.applyFilter();
+      return true;
+    } catch {
+      return false;
     }
   }
 

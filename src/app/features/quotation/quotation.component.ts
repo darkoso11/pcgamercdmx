@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { QuoteRequestService } from '../../core/services/quote-request.service';
 import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
 
 @Component({
@@ -103,6 +104,7 @@ import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-in
 })
 export class QuotationComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly quoteRequests = inject(QuoteRequestService);
   readonly business = BUSINESS_INFO;
   sent = false;
 
@@ -130,6 +132,16 @@ export class QuotationComponent {
     ].join('\n');
 
     this.sent = true;
+
+    this.quoteRequests.submit({
+      name: value.name ?? '',
+      phone: value.phone ?? '',
+      requestType: 'cotizacion',
+      serviceModality: value.useCase,
+      budget: value.budget,
+      message: value.details ?? '',
+      dataConsent: true,
+    }).subscribe();
 
     if (typeof window !== 'undefined') {
       window.open(buildWhatsAppUrl(message), '_blank');
