@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
+import { QuoteRequestService } from '../../core/services/quote-request.service';
 
 @Component({
   selector: 'app-contact',
@@ -102,7 +103,10 @@ export class ContactComponent implements OnInit {
 
   expandedFaqIndex: number | null = null;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private quoteRequests: QuoteRequestService
+  ) {
     this.contactForm = this.fb.group({
       // Step 1
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -180,6 +184,17 @@ export class ContactComponent implements OnInit {
 
     this.submitted = true;
     this.successMessage = 'Abrimos WhatsApp con tu solicitud lista para enviar.';
+
+    this.quoteRequests.submit({
+      name: value.name,
+      email: value.email,
+      phone: value.phone,
+      requestType: value.requestType,
+      serviceModality: value.serviceModality,
+      budget: value.budgetRange,
+      message: value.message,
+      dataConsent: value.dataConsent,
+    }).subscribe();
 
     if (typeof window !== 'undefined') {
       window.open(buildWhatsAppUrl(message), '_blank');

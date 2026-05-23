@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { firstValueFrom } from 'rxjs';
+import { DirectusApiService } from '../../core/services/directus-api.service';
 
 @Component({
   selector: 'app-blog-article',
@@ -44,10 +46,18 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 export class ArticleComponent implements OnInit {
   article: any = null;
   articleHtml: SafeHtml = '' as SafeHtml;
-  constructor(private route: ActivatedRoute, private sanitizer: DomSanitizer) {}
+  constructor(
+    private route: ActivatedRoute,
+    private sanitizer: DomSanitizer,
+    private directus: DirectusApiService
+  ) {}
 
   async ngOnInit() {
     const slug = this.route.snapshot.params['slug'];
+    if (await this.loadFromDirectus(slug)) {
+      return;
+    }
+
     // Try backend first; fallback to mock
     try {
       const res = await fetch(`/api/blog/articles/${slug}`);
@@ -70,5 +80,41 @@ export class ArticleComponent implements OnInit {
         this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
       }
     } catch (e) {}
+  }
+
+  private async loadFromDirectus(slug: string): Promise<boolean> {
+    if (!this.directus.isEnabled('blog')) {
+      return false;
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.directus.readItems<any>('pc_blog_posts', {
+          'filter[slug][_eq]': slug,
+          'filter[published][_eq]': true,
+          fields: 'title,slug,summary,cover_image,sections,tags,published_at',
+          limit: 1,
+        })
+      );
+      const item = response.data[0];
+      if (!item) {
+        return false;
+      }
+
+      this.article = {
+        title: item.title,
+        slug: item.slug,
+        summary: item.summary,
+        coverImage: item.cover_image,
+        sections: item.sections || [],
+        tags: item.tags || [],
+        publishedAt: item.published_at,
+      };
+      const raw = (this.article.sections || []).map((s: any) => s.text || '').join('\n');
+      this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
