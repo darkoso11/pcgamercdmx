@@ -9,6 +9,8 @@ coverage
 .coverage
 .idea
 .vscode
+.qa
+.tmp-*.png
 *.swp
 *.swo
 *~

@@ -1,37 +1,19 @@
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy source code
 COPY . .
+RUN npm run build:prod
 
-# Build the application
-RUN npm run build:ssr
+FROM nginx:1.27-alpine
 
-# Production stage
-FROM node:18-alpine
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /app/dist/pcgamercdmx/browser /usr/share/nginx/html
 
-# Set working directory
-WORKDIR /app
+EXPOSE 80
 
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production
-
-# Copy built application from build stage
-COPY --from=build /app/dist ./dist
-
-# Expose port 4000 (default for Angular SSR)
-EXPOSE 4000
-
-# Start the server
-CMD ["node", "dist/pcgamercdmx/server/server.mjs"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -qO- http://127.0.0.1/healthz || exit 1

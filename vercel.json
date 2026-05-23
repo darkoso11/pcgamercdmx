@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build:ssr",
+  "buildCommand": "npm run build:prod",
   "installCommand": "npm install",
   "framework": "angular",
   "outputDirectory": "dist/pcgamercdmx/browser",
