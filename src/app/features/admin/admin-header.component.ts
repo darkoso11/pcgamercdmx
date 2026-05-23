@@ -21,6 +21,9 @@ import { AuthService } from './services/auth.service';
           <a routerLink="/" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
             Ir a Sitio <i class="fas fa-external-link-alt ml-1"></i>
           </a>
+          <button (click)="onLogout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-semibold transition">
+            Cerrar sesión
+          </button>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BlogService } from '../services/blog.service';
@@ -144,7 +144,10 @@ export class AdminCategoriesComponent implements OnInit {
   editSubNameVal = '';
   editSubDescVal = '';
 
-  constructor(private blog: BlogService) {}
+  constructor(
+    private blog: BlogService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.load();
@@ -154,16 +157,20 @@ export class AdminCategoriesComponent implements OnInit {
   load() {
     this.blog.getCategories().subscribe((res: any) => {
       this.categories = Array.isArray(res) ? res : (res.data || res);
+      this.cdr.detectChanges();
     }, () => {
       this.categories = [];
+      this.cdr.detectChanges();
     });
   }
 
   loadSubs() {
     this.blog.getSubCategories().subscribe((res: any) => {
       this.subcategories = Array.isArray(res) ? res : (res.data || res);
+      this.cdr.detectChanges();
     }, () => {
       this.subcategories = [];
+      this.cdr.detectChanges();
     });
   }
 

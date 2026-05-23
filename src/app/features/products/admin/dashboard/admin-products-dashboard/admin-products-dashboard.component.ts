@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ProductsAdminService, AdminDashboardStats, Product } from '../../shared/products-admin.service';
@@ -18,7 +18,8 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private productsAdminService: ProductsAdminService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -40,6 +41,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(stats => {
         this.stats = stats;
+        this.cdr.detectChanges();
       });
 
     // Obtener productos recientes
@@ -48,6 +50,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(products => {
         this.recentProducts = products;
+        this.cdr.detectChanges();
       });
   }
 

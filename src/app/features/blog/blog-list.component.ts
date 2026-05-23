@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -77,7 +77,10 @@ export class BlogListComponent implements OnInit {
   page = 0;
   pageSize = 6;
 
-  constructor(private readonly directus: DirectusApiService) {}
+  constructor(
+    private readonly directus: DirectusApiService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   async ngOnInit() {
     if (await this.loadFromDirectus()) {
@@ -104,6 +107,7 @@ export class BlogListComponent implements OnInit {
       this.tags = Array.from(tagSet).sort();
 
       this.applyFilter();
+      this.cdr.detectChanges();
     } catch (e) {
       // ignore
     }
@@ -143,6 +147,7 @@ export class BlogListComponent implements OnInit {
       this.all.forEach(a => (a.tags || []).forEach(t => tagSet.add(t)));
       this.tags = Array.from(tagSet).sort();
       this.applyFilter();
+      this.cdr.detectChanges();
       return true;
     } catch {
       return false;

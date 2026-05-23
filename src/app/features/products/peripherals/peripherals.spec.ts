@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 
 import { Peripherals } from './peripherals';
+import { ProductsService } from '../services/products.service';
 
 describe('Peripherals', () => {
   let component: Peripherals;
@@ -10,7 +12,16 @@ describe('Peripherals', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Peripherals],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ProductsService,
+          useValue: {
+            getPeripherals: () => of([]),
+            toProductCardViewModel: () => ({}),
+          },
+        },
+      ],
     })
     .compileComponents();
 

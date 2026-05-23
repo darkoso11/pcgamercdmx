@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { DirectusApiService } from '../../../core/services/directus-api.service';
+import {
+  DirectusProductRecord,
+  mapDirectusProductToCatalogProduct,
+} from '../../../core/services/directus-content.mapper';
 import {
   AccessoryProduct,
   AssembledPC,
@@ -63,70 +69,106 @@ export class ProductsService {
   private readonly peripherals = this.buildPeripherals();
   private readonly accessories: AccessoryProduct[] = [];
 
+  constructor(private readonly directus: DirectusApiService) {}
+
   getAssembledPCs(filters?: FilterCriteria): Observable<AssembledPC[]> {
-    return of(this.applyFilters(this.assembledPCs, filters));
+    return this.getCatalogProducts({
+      ...filters,
+      categories: [ProductCategory.ASSEMBLED],
+    }).pipe(
+      map((products) =>
+        products.filter(
+          (product): product is AssembledPC =>
+            product.category === ProductCategory.ASSEMBLED
+        )
+      )
+    );
   }
 
   getComponentsByType(
     type?: ComponentType,
     filters?: FilterCriteria
   ): Observable<ComponentProduct[]> {
-    const products = type
-      ? this.components.filter((product) => product.componentType === type)
-      : this.components;
-    return of(this.applyFilters(products, filters));
+    return this.getCatalogProducts({
+      ...filters,
+      categories: [ProductCategory.COMPONENT],
+    }).pipe(
+      map((products) =>
+        products
+          .filter(
+            (product): product is ComponentProduct =>
+              product.category === ProductCategory.COMPONENT
+          )
+          .filter((product) => !type || product.componentType === type)
+      )
+    );
   }
 
   getPeripherals(
     type?: PeripheralType,
     filters?: FilterCriteria
   ): Observable<PeripheralProduct[]> {
-    const products = type
-      ? this.peripherals.filter((product) => product.peripheralType === type)
-      : this.peripherals;
-    return of(this.applyFilters(products, filters));
+    return this.getCatalogProducts({
+      ...filters,
+      categories: [ProductCategory.PERIPHERAL],
+    }).pipe(
+      map((products) =>
+        products
+          .filter(
+            (product): product is PeripheralProduct =>
+              product.category === ProductCategory.PERIPHERAL
+          )
+          .filter((product) => !type || product.peripheralType === type)
+      )
+    );
   }
 
   getCatalogProducts(filters?: FilterCriteria): Observable<CatalogProduct[]> {
-    return of(this.applyFilters(this.getAllCatalogProducts(), filters));
+    return this.loadCatalogProducts().pipe(
+      map((products) => this.applyFilters(products, filters))
+    );
   }
 
   getFeaturedCatalogProducts(limit = 6): Observable<CatalogProduct[]> {
-    const featured = this.getAllCatalogProducts()
-      .filter((product) => product.featured)
-      .sort((a, b) => (a.position ?? 999) - (b.position ?? 999))
-      .slice(0, limit);
-
-    return of(featured);
+    return this.loadCatalogProducts().pipe(
+      map((products) =>
+        products
+          .filter((product) => product.featured)
+          .sort((a, b) => (a.position ?? 999) - (b.position ?? 999))
+          .slice(0, limit)
+      )
+    );
   }
 
   getCatalogProductBySlug(slug: string): Observable<CatalogProduct | null> {
-    const product =
-      this.getAllCatalogProducts().find((item) => item.slug === slug) ?? null;
-    return of(product);
+    return this.loadCatalogProducts().pipe(
+      map((products) => products.find((item) => item.slug === slug) ?? null)
+    );
   }
 
   getRelatedCatalogProducts(
     slug: string,
     limit = 4
   ): Observable<CatalogProduct[]> {
-    const current = this.getAllCatalogProducts().find((item) => item.slug === slug);
-    if (!current) {
-      return of([]);
-    }
-
-    const related = this.getAllCatalogProducts()
-      .filter((item) => item.slug !== slug && item.category === current.category)
-      .sort((a, b) => {
-        const featuredWeight = Number(b.featured) - Number(a.featured);
-        if (featuredWeight !== 0) {
-          return featuredWeight;
+    return this.loadCatalogProducts().pipe(
+      map((products) => {
+        const current = products.find((item) => item.slug === slug);
+        if (!current) {
+          return [];
         }
-        return a.title.localeCompare(b.title);
-      })
-      .slice(0, limit);
 
-    return of(related);
+        return products
+          .filter((item) => item.slug !== slug && item.category === current.category)
+          .sort((a, b) => {
+            const featuredWeight = Number(b.featured) - Number(a.featured);
+            if (featuredWeight !== 0) {
+              return featuredWeight;
+            }
+            return a.title.localeCompare(b.title);
+          })
+          .slice(0, limit);
+      })
+    );
   }
 
   searchCatalog(query: string, limit = 20): Observable<SearchResult> {
@@ -157,12 +199,34 @@ export class ProductsService {
         return text.includes(normalized);
       });
 
-    return of({
-      assembled: filterByQuery(this.assembledPCs).slice(0, limit),
-      components: filterByQuery(this.components).slice(0, limit),
-      peripherals: filterByQuery(this.peripherals).slice(0, limit),
-      accessories: filterByQuery(this.accessories).slice(0, limit),
-    });
+    return this.loadCatalogProducts().pipe(
+      map((products) => ({
+        assembled: filterByQuery(
+          products.filter(
+            (product): product is AssembledPC =>
+              product.category === ProductCategory.ASSEMBLED
+          )
+        ).slice(0, limit),
+        components: filterByQuery(
+          products.filter(
+            (product): product is ComponentProduct =>
+              product.category === ProductCategory.COMPONENT
+          )
+        ).slice(0, limit),
+        peripherals: filterByQuery(
+          products.filter(
+            (product): product is PeripheralProduct =>
+              product.category === ProductCategory.PERIPHERAL
+          )
+        ).slice(0, limit),
+        accessories: filterByQuery(
+          products.filter(
+            (product): product is AccessoryProduct =>
+              product.category === ProductCategory.ACCESSORY
+          )
+        ).slice(0, limit),
+      }))
+    );
   }
 
   toProductCardViewModel(product: CatalogProduct): ProductCardViewModel {
@@ -388,6 +452,29 @@ export class ProductsService {
       ...this.peripherals,
       ...this.accessories,
     ];
+  }
+
+  private loadCatalogProducts(): Observable<CatalogProduct[]> {
+    const fallback = this.getAllCatalogProducts();
+
+    if (!this.directus.isEnabled('catalog')) {
+      return of(fallback);
+    }
+
+    return this.directus
+      .readItems<DirectusProductRecord>('pc_products', {
+        'filter[published][_eq]': true,
+        fields: '*',
+        sort: 'sort,title',
+        limit: 1000,
+      })
+      .pipe(
+        map((response) => {
+          const products = response.data.map(mapDirectusProductToCatalogProduct);
+          return products.length ? products : fallback;
+        }),
+        catchError(() => of(fallback))
+      );
   }
 
   private applyFilters<T extends CatalogProduct>(

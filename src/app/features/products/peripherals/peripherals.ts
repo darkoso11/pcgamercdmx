@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
@@ -17,6 +17,7 @@ import { PeripheralProduct } from '../../../shared/models';
 })
 export class Peripherals implements OnInit {
   private readonly productsService = inject(ProductsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   products: PeripheralProduct[] = [];
   cards: ProductCardViewModel[] = [];
@@ -37,6 +38,7 @@ export class Peripherals implements OnInit {
       this.cards = products.map((product) =>
         this.productsService.toProductCardViewModel(product)
       );
+      this.cdr.detectChanges();
     });
   }
 

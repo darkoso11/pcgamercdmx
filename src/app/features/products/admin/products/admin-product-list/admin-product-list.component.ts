@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +32,8 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
 
   constructor(
     private productsAdminService: ProductsAdminService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     // Debounce búsqueda
     this.searchSubject$
@@ -58,6 +59,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
         const productsData = Array.isArray(response) ? response : (response.data || []);
         this.products = productsData.map((p: any) => ({ ...p, selected: false }));
         this.filterProducts();
+        this.cdr.detectChanges();
       });
   }
 
@@ -89,6 +91,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
 
     this.totalPages = Math.ceil(this.filteredProducts.length / this.pageSize);
     this.updatePagination();
+    this.cdr.detectChanges();
   }
 
   updatePagination(): void {

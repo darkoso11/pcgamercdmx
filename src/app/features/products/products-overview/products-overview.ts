@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import {
   ProductCardViewModel,
@@ -16,6 +16,7 @@ import { ProductCategory } from '../../../shared/models';
 })
 export class ProductsOverview implements OnInit {
   private readonly productsService = inject(ProductsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   featuredAssemblies: ProductCardViewModel[] = [];
   featuredComponents: ProductCardViewModel[] = [];
@@ -60,6 +61,7 @@ export class ProductsOverview implements OnInit {
       this.featuredPeripherals = cards.filter(
         (card) => card.category === ProductCategory.PERIPHERAL
       );
+      this.cdr.detectChanges();
     });
   }
 }

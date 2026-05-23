@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
-  CatalogProduct,
   ProductCardViewModel,
   ProductsService,
 } from '../services/products.service';
@@ -35,6 +34,7 @@ const tierWeight: Record<PerformanceTier, number> = {
 })
 export class Packages implements OnInit {
   private readonly productsService = inject(ProductsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   products: AssembledPC[] = [];
   cards: ProductCardViewModel[] = [];
@@ -172,6 +172,7 @@ export class Packages implements OnInit {
         this.productsService.toProductCardViewModel(product)
       );
       this.updateFilterMetadata();
+      this.cdr.detectChanges();
     });
   }
 

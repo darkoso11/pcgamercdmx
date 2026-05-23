@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -49,7 +49,8 @@ export class ArticleComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    private directus: DirectusApiService
+    private directus: DirectusApiService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   async ngOnInit() {
@@ -65,6 +66,7 @@ export class ArticleComponent implements OnInit {
         this.article = await res.json();
         const raw = (this.article.sections || []).map((s: any) => s.text || '').join('\n');
         this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
+        this.cdr.detectChanges();
         return;
       }
     } catch (e) {}
@@ -78,6 +80,7 @@ export class ArticleComponent implements OnInit {
         this.article = found;
         const raw = (found.sections || []).map((s: any) => s.text || '').join('\n');
         this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
+        this.cdr.detectChanges();
       }
     } catch (e) {}
   }
@@ -112,6 +115,7 @@ export class ArticleComponent implements OnInit {
       };
       const raw = (this.article.sections || []).map((s: any) => s.text || '').join('\n');
       this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
+      this.cdr.detectChanges();
       return true;
     } catch {
       return false;
