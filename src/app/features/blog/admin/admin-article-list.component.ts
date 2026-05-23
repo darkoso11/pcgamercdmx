@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -168,7 +168,10 @@ export class AdminArticleListComponent {
   totalPages = 0;
   loading = false;
 
-  constructor(private blog: BlogService) {}
+  constructor(
+    private blog: BlogService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadCategories();
@@ -179,6 +182,7 @@ export class AdminArticleListComponent {
   loadCategories() {
     this.blog.getCategories().subscribe((res: any) => {
       this.categories = Array.isArray(res) ? res : (res.data || res);
+      this.cdr.detectChanges();
     });
   }
 
@@ -186,6 +190,7 @@ export class AdminArticleListComponent {
     this.blog.getSubCategories().subscribe((res: any) => {
       this.subcategories = Array.isArray(res) ? res : (res.data || res);
       this.updateFilteredSubcategories();
+      this.cdr.detectChanges();
     });
   }
 
@@ -238,12 +243,14 @@ export class AdminArticleListComponent {
         this.totalArticles = res?.total || 0;
         this.totalPages = Math.ceil(this.totalArticles / this.pageSize);
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.articles = [];
         this.totalArticles = 0;
         this.totalPages = 0;
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

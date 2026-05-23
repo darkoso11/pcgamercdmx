@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
@@ -58,7 +58,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly productsService: ProductsService,
     private readonly meta: Meta,
-    private readonly title: Title
+    private readonly title: Title,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -82,6 +83,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           this.relatedProducts = [];
           this.notFound = true;
           this.loading = false;
+          this.cdr.detectChanges();
           return;
         }
 
@@ -90,6 +92,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         this.updateMetaTags(product);
         this.loadRelatedProducts(product.slug);
         this.loading = false;
+        this.cdr.detectChanges();
       });
   }
 
@@ -101,6 +104,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         this.relatedProducts = products.map((product) =>
           this.productsService.toProductCardViewModel(product)
         );
+        this.cdr.detectChanges();
       });
   }
 

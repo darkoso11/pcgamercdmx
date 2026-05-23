@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +32,10 @@ export class AdminCategoryHierarchyManagerComponent implements OnInit, OnDestroy
 
   private destroy$ = new Subject<void>();
 
-  constructor(private productsAdminService: ProductsAdminService) {}
+  constructor(
+    private productsAdminService: ProductsAdminService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.cargarCategorias();
@@ -45,6 +48,7 @@ export class AdminCategoryHierarchyManagerComponent implements OnInit, OnDestroy
       .subscribe({
         next: (categorias) => {
           this.categorias = categorias;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error cargando categorías:', err);

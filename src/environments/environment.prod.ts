@@ -6,7 +6,7 @@ export const environment = {
     features: {
       blog: true,
       quoteRequests: true,
-      catalog: false,
+      catalog: true,
     },
   },
 };

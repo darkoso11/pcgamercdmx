@@ -1,31 +1,46 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { DirectusApiService } from '../../../core/services/directus-api.service';
+import {
+  clearStoredDirectusSession,
+  getStoredDirectusAccessToken,
+  setStoredDirectusSession,
+} from '../../../core/services/directus-auth.storage';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private base = '/api/blog';
-  private storageKey = 'blog_admin_token';
-  constructor(private http: HttpClient) {}
+  constructor(private directus: DirectusApiService) {}
 
-  login(password: string) {
-    return this.http.post<{ token: string }>(`${this.base}/login`, { password }).pipe(
+  login(email: string, password: string) {
+    return this.directus.login(email, password).pipe(
       tap(r => {
-        if (r?.token) localStorage.setItem(this.storageKey, r.token);
-      })
+        if (r?.data?.access_token) {
+          setStoredDirectusSession(
+            r.data.access_token,
+            r.data.refresh_token,
+            email
+          );
+        }
+      }),
+      map(r => ({
+        token: r.data.access_token,
+        refreshToken: r.data.refresh_token,
+        expires: r.data.expires,
+      }))
     );
   }
 
   logout() {
-    localStorage.removeItem(this.storageKey);
+    clearStoredDirectusSession();
   }
 
   get token(): string | null {
-    return localStorage.getItem(this.storageKey);
+    return getStoredDirectusAccessToken();
   }
 
   // helper for dev or programmatic token set
-  setToken(token: string) {
-    localStorage.setItem(this.storageKey, token);
+  setToken(token: string, refreshToken?: string) {
+    setStoredDirectusSession(token, refreshToken);
   }
 }

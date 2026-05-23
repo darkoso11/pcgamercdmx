@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -44,7 +44,8 @@ export class AdminArticleEditorComponent implements OnInit {
     private blogService: BlogService,
     private uploadService: UploadService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
@@ -78,6 +79,7 @@ export class AdminArticleEditorComponent implements OnInit {
   loadCategories() {
     this.blogService.getCategories().subscribe((res: any) => {
       this.categories = Array.isArray(res) ? res : (res.data || res);
+      this.cdr.detectChanges();
     });
   }
 
@@ -85,6 +87,7 @@ export class AdminArticleEditorComponent implements OnInit {
     this.blogService.getSubCategories().subscribe((res: any) => {
       this.subcategories = Array.isArray(res) ? res : (res.data || res);
       this.updateFilteredSubcategories();
+      this.cdr.detectChanges();
     });
   }
 
@@ -103,7 +106,48 @@ export class AdminArticleEditorComponent implements OnInit {
   }
 
   loadArticle(id: string) {
-    console.log('Cargar artículo:', id);
+    this.blogService.getById(id).subscribe({
+      next: (article) => {
+        this.sectionsArray.clear();
+        (article.sections || []).forEach((section: any) => {
+          const sectionForm = this.fb.group({
+            title: [section.title || ''],
+            text: [section.text || ''],
+            order: [section.order || this.sectionsArray.length],
+            images: this.fb.array((section.images || []).map((image: any) => this.fb.group({
+              url: [image.url || ''],
+              alt: [image.alt || ''],
+              preview: [image.url || ''],
+              order: [image.order || 0]
+            }))),
+            imageLayout: [section.imageLayout || '1']
+          });
+          this.sectionsArray.push(sectionForm);
+        });
+
+        if (this.sectionsArray.length === 0) {
+          this.addSection();
+        }
+
+        this.form.patchValue({
+          title: article.title,
+          slug: article.slug || '',
+          summary: article.summary || '',
+          categoryId: article.categoryId || '',
+          subCategoryId: article.subCategoryId || '',
+          tags: (article.tags || []).join(', '),
+          coverImage: article.coverImage?.url || '',
+          published: article.published
+        });
+        this.coverImagePreview = article.coverImage?.url || null;
+        this.updateFilteredSubcategories();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMsg = 'No se pudo cargar el artículo';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   addSection() {
