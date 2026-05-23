@@ -1,0 +1,28 @@
+name: Branch flow
+
+on:
+  pull_request:
+    branches:
+      - main
+      - test
+
+jobs:
+  validate-branch-flow:
+    name: Validate PR source branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce promotion branches
+        shell: bash
+        run: |
+          echo "Base branch: ${{ github.base_ref }}"
+          echo "Head branch: ${{ github.head_ref }}"
+
+          if [[ "${{ github.base_ref }}" == "main" && "${{ github.head_ref }}" != "test" ]]; then
+            echo "Pull requests into main must come from test."
+            exit 1
+          fi
+
+          if [[ "${{ github.base_ref }}" == "test" && "${{ github.head_ref }}" != "dev" ]]; then
+            echo "Pull requests into test must come from dev."
+            exit 1
+          fi
