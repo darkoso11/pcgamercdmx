@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -89,7 +89,8 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private productsAdminService: ProductsAdminService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -169,6 +170,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (categorias) => {
           this.categorias = categorias;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error cargando categorías:', err);
@@ -228,11 +230,13 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
             }
           }
           this.loading = false;
+          this.cdr.detectChanges();
         },
         error: (err: any) => {
           this.errorMessage = 'Error cargando el producto';
           console.error(err);
           this.loading = false;
+          this.cdr.detectChanges();
         }
       });
   }
