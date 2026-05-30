@@ -1,77 +1,75 @@
-<footer
-  class="w-full py-10 bg-[#0a0d22] text-gray-300"
->
+<footer class="w-full py-10 bg-[#0a0d22] text-gray-300">
   <div class="max-w-7xl mx-auto px-4">
-    <!-- Grid principal del footer -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-      <!-- Columna 1: Logo e información de contacto -->
       <div>
         <div class="mb-6">
           <h2 class="text-2xl font-bold text-white">{{ business.name }}</h2>
-                    <div
-            class="w-12 h-1 bg-gradient-to-r from-cyan-500 to-purple-500 mt-2"
-          ></div>
+          <div class="w-12 h-1 bg-gradient-to-r from-cyan-500 to-purple-500 mt-2"></div>
         </div>
 
         <p class="text-sm mb-4">
-          Tu destino para hardware de gaming de alto rendimiento y
-          configuraciones personalizadas.
+          Tu destino para hardware de gaming de alto rendimiento y configuraciones personalizadas.
         </p>
 
-        <div class="space-y-2">
-          <div class="flex items-center">
-            <i
-              class="fas fa-map-marker-alt text-cyan-400 mr-2 w-5 text-center"
-            ></i>
-            <span class="text-sm">{{ business.addressShort }}</span>
+        <div class="space-y-3">
+          <div class="flex items-start">
+            <i class="fas fa-map-marker-alt text-cyan-400 mr-2 mt-1 w-5 text-center"></i>
+            <a
+              [href]="business.mapDirectionsUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm hover:text-cyan-400 transition-colors"
+            >
+              {{ business.addressLong }}
+            </a>
           </div>
-          <div class="flex items-center">
-            <i class="fas fa-phone text-cyan-400 mr-2 w-5 text-center"></i>
-            <a [href]="business.phoneHref" class="text-sm hover:text-cyan-400 transition-colors">{{ business.phoneDisplay }}</a>
+          <div class="flex items-start">
+            <i class="fas fa-phone text-cyan-400 mr-2 mt-1 w-5 text-center"></i>
+            <span>
+              <a [href]="business.phoneHref" class="text-sm hover:text-cyan-400 transition-colors">
+                {{ business.phoneDisplay }}
+              </a>
+              <small class="block text-xs text-gray-500">{{ business.phoneNote }}</small>
+            </span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-envelope text-cyan-400 mr-2 w-5 text-center"></i>
-            <a [href]="'mailto:' + business.email" class="text-sm hover:text-cyan-400 transition-colors">{{ business.email }}</a>
+            <a [href]="business.emailHref" class="text-sm hover:text-cyan-400 transition-colors">
+              {{ business.email }}
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- Columna 2: Enlaces rápidos -->
       <div>
-        <h3 class="text-lg font-bold text-white mb-4">Enlaces Rápidos</h3>
+        <h3 class="text-lg font-bold text-white mb-4">Enlaces Rapidos</h3>
         <ul class="space-y-2">
           <li>
-            <a
-              routerLink="/"
-              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
-            >
+            <a routerLink="/" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Inicio
             </a>
           </li>
           <li>
-            <a
-              routerLink="/productos"
-              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
-            >
+            <a routerLink="/productos" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Productos
             </a>
           </li>
           <li>
-            <a
-              routerLink="/cotiza-tu-pc"
-              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
-            >
+            <a routerLink="/cotiza-tu-pc" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Cotiza tu PC
             </a>
           </li>
           <li>
-            <a
-              routerLink="/blog"
-              class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center"
-            >
+            <a routerLink="/contacto" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
+              <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
+              Contacto
+            </a>
+          </li>
+          <li>
+            <a routerLink="/blog" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm flex items-center">
               <i class="fas fa-chevron-right text-xs mr-2 text-cyan-400"></i>
               Blog
             </a>
@@ -79,65 +77,68 @@
         </ul>
       </div>
 
-      <!-- Columna 3: Horario de atención -->
       <div>
-        <h3 class="text-lg font-bold text-white mb-4">Horario de Atención</h3>
+        <h3 class="text-lg font-bold text-white mb-4">Horario de Atencion</h3>
         <ul class="space-y-2">
-          <li class="flex justify-between text-sm">
-            <span>Lunes - Viernes:</span>
-            <span class="text-cyan-400">10:00 - 20:00</span>
-          </li>
-          <li class="flex justify-between text-sm">
-            <span>Sábado:</span>
-            <span class="text-cyan-400">10:00 - 18:00</span>
-          </li>
-          <li class="flex justify-between text-sm">
-            <span>Domingo:</span>
-            <span class="text-cyan-400">Cerrado</span>
+          <li class="flex justify-between gap-4 text-sm" *ngFor="let item of business.businessHours">
+            <span>{{ item.day }}:</span>
+            <span class="text-cyan-400 text-right">{{ item.hours }}</span>
           </li>
         </ul>
 
         <div class="mt-6">
-          <h3 class="text-lg font-bold text-white mb-3">Formas de Pago</h3>
-          <div class="flex flex-wrap gap-2">
-            <i class="fab fa-cc-visa text-white text-xl"></i>
-            <i class="fab fa-cc-mastercard text-white text-xl"></i>
-            <i class="fab fa-cc-amex text-white text-xl"></i>
-            <i class="fab fa-paypal text-white text-xl"></i>
+          <h3 class="text-lg font-bold text-white mb-3">Asesores de venta</h3>
+          <div class="space-y-3">
+            <div *ngFor="let advisor of business.salesAdvisors" class="text-sm">
+              <p class="font-semibold text-white">{{ advisor.name }}</p>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-gray-400">
+                <a [href]="advisor.phoneHref" class="hover:text-cyan-400 transition-colors">
+                  {{ advisor.phoneDisplay }}
+                </a>
+                <a [href]="'mailto:' + advisor.email" class="hover:text-cyan-400 transition-colors break-all">
+                  {{ advisor.email }}
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Columna 4: Newsletter y redes sociales -->
       <div>
-        <h3 class="text-lg font-bold text-white mb-4">Mantente Conectado</h3>
+        <h3 class="text-lg font-bold text-white mb-4">Contacto directo</h3>
         <p class="text-sm mb-4">
-          Suscríbete para recibir ofertas exclusivas y novedades.
+          Escríbenos para revisar disponibilidad, cotizaciones o dudas sobre tu siguiente setup.
         </p>
 
-        <div class="flex mb-6">
-          <input
-            type="email"
-            placeholder="Tu correo electrónico"
-            class="flex-1 py-2 px-3 bg-[#161a3c] border border-cyan-500/30 focus:border-cyan-500 rounded-l-lg text-white text-sm focus:outline-none"
-          />
-          <button
-            class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-2 px-4 rounded-r-lg hover:from-cyan-600 hover:to-blue-700 transition-colors"
+        <div class="grid gap-2 mb-6">
+          <a
+            [href]="business.whatsappUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25d366] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#128c7e]"
           >
-            <i class="fas fa-paper-plane"></i>
-          </button>
+            <i class="fab fa-whatsapp"></i>
+            WhatsApp
+          </a>
+          <a
+            routerLink="/contacto"
+            class="inline-flex items-center justify-center gap-2 rounded-lg border border-cyan-500/40 px-4 py-2 text-sm font-bold text-cyan-300 transition-colors hover:border-cyan-400 hover:text-cyan-200"
+          >
+            <i class="fas fa-headset"></i>
+            Ver contacto
+          </a>
         </div>
 
-        <h3 class="text-lg font-bold text-white mb-3">Síguenos</h3>
-        <div class="flex gap-4">
-          @for (contact of contacts; track contact) {
+        <h3 class="text-lg font-bold text-white mb-3">Siguenos</h3>
+        <div class="flex flex-wrap gap-3">
+          @for (contact of contacts; track contact.href) {
           <a
             [href]="contact.href"
             target="_blank"
             rel="noopener noreferrer"
-            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:{{
-              contact.hoverColor
-            }}-500 transition-colors"
+            [attr.aria-label]="contact.label"
+            [title]="contact.label"
+            class="w-8 h-8 rounded-full bg-[#161a3c] flex items-center justify-center text-white hover:bg-cyan-500 transition-colors"
           >
             <i [class]="contact.icon"></i>
           </a>
@@ -146,26 +147,20 @@
       </div>
     </div>
 
-    <!-- Línea divisoria -->
     <div class="border-t border-gray-800 my-6"></div>
 
-    <!-- Texto de copyright -->
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="text-sm">
-        &copy; {{ year }} PC Gamer CDMX. Todos los derechos reservados.
+        &copy; {{ year }} {{ business.name }}. Todos los derechos reservados.
       </div>
 
       <div class="text-sm flex gap-6">
-        <a
-          routerLink="/politica-privacidad"
-          class="text-gray-400 hover:text-cyan-400 transition-colors"
-          >Política de Privacidad</a
-        >
-        <a
-          routerLink="/terminos"
-          class="text-gray-400 hover:text-cyan-400 transition-colors"
-          >Términos y Condiciones</a
-        >
+        <a routerLink="/politica-privacidad" class="text-gray-400 hover:text-cyan-400 transition-colors">
+          Politica de Privacidad
+        </a>
+        <a routerLink="/terminos" class="text-gray-400 hover:text-cyan-400 transition-colors">
+          Terminos y Condiciones
+        </a>
       </div>
     </div>
   </div>

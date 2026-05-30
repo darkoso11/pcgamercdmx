@@ -13,28 +13,38 @@ export class FooterComponent {
   public contacts: {
     href: string;
     icon: string;
-    hoverColor: string;
+    label: string;
   }[] =
   [
     {
       href: BUSINESS_INFO.social.facebook,
       icon: 'fab fa-facebook-f',
-      hoverColor: 'bg-cyan'
+      label: 'Facebook',
     },
     {
       href: BUSINESS_INFO.social.instagram,
       icon: 'fab fa-instagram',
-      hoverColor: 'bg-pink'
+      label: 'Instagram',
+    },
+    {
+      href: BUSINESS_INFO.social.tiktok,
+      icon: 'fab fa-tiktok',
+      label: 'TikTok',
     },
     {
       href: BUSINESS_INFO.social.discord,
       icon: 'fab fa-discord',
-      hoverColor: 'bg-indigo'
+      label: 'Discord',
     },
     {
       href: BUSINESS_INFO.social.youtube,
       icon: 'fab fa-youtube',
-      hoverColor: 'bg-red'
+      label: 'YouTube',
+    },
+    {
+      href: BUSINESS_INFO.social.facebookGroup,
+      icon: 'fas fa-users',
+      label: 'Grupo de Facebook',
     },
   ];
   year: number = new Date().getFullYear();
