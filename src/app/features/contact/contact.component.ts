@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-<<<<<<< HEAD
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BUSINESS_INFO } from '../../shared/config/business-info';
 
@@ -14,11 +13,6 @@ interface AdvisorCard {
   email: string;
   theme: AdvisorTheme;
 }
-=======
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
-import { QuoteRequestService } from '../../core/services/quote-request.service';
->>>>>>> 651e7d46468a13afdc07a8d9a976bfb665314cc3
 
 @Component({
   selector: 'app-contact',
@@ -41,38 +35,11 @@ export class ContactComponent {
   copiedTarget: 'store' | 'address' | null = null;
   expandedFaqIndex: number | null = null;
 
-<<<<<<< HEAD
   readonly advisors: AdvisorCard[] = BUSINESS_INFO.salesAdvisors.map((advisor, index) => ({
     ...advisor,
     whatsappUrl: this.buildAdvisorWhatsAppUrl(advisor.whatsappNumber, advisor.name),
     theme: index === 0 ? 'cyan' : 'pink',
   }));
-=======
-  constructor(
-    private fb: FormBuilder,
-    private quoteRequests: QuoteRequestService
-  ) {
-    this.contactForm = this.fb.group({
-      // Step 1
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9\s\-\+\(\)]+$/)]],
-      
-      // Step 2
-      requestType: ['', Validators.required],
-      serviceModality: ['', Validators.required],
-      
-      // Step 3
-      city: [''],
-      budgetRange: [''],
-      message: ['', [Validators.required, Validators.minLength(10)]],
-      dataConsent: [{ value: false, disabled: false }, Validators.requiredTrue],
-      
-      // File upload
-      attachedFiles: ['']
-    });
-  }
->>>>>>> 651e7d46468a13afdc07a8d9a976bfb665314cc3
 
   readonly faqs = [
     {
@@ -126,28 +93,9 @@ export class ContactComponent {
       }, 1800);
     };
 
-<<<<<<< HEAD
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).then(done);
       return;
-=======
-    this.submitted = true;
-    this.successMessage = 'Abrimos WhatsApp con tu solicitud lista para enviar.';
-
-    this.quoteRequests.submit({
-      name: value.name,
-      email: value.email,
-      phone: value.phone,
-      requestType: value.requestType,
-      serviceModality: value.serviceModality,
-      budget: value.budgetRange,
-      message: value.message,
-      dataConsent: value.dataConsent,
-    }).subscribe();
-
-    if (typeof window !== 'undefined') {
-      window.open(buildWhatsAppUrl(message), '_blank');
->>>>>>> 651e7d46468a13afdc07a8d9a976bfb665314cc3
     }
 
     const area = document.createElement('textarea');
