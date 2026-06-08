@@ -1,14 +1,14 @@
-<div class="min-h-screen bg-[#071029] text-white">
+﻿<div class="min-h-screen bg-[#071029] text-white">
   <!-- Header -->
   <div class="bg-[#0b1220] border-b border-cyan-400/30 px-6 py-4 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-cyan-400">ADMIN — Productos</h1>
-        <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Gestión de catálogo</p>
+        <h1 class="text-3xl font-bold text-cyan-400">ADMIN â€” Productos</h1>
+        <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">GestiÃ³n de catÃ¡logo</p>
       </div>
       <div class="flex gap-2">
         <a routerLink="/admin" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
-          ← Volver a Admin
+          â† Volver a Admin
         </a>
         <a routerLink="/" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
           Ir a Inicio
@@ -18,7 +18,7 @@
   </div>
 
   <div class="max-w-7xl mx-auto px-6 py-8">
-    <!-- Botones de Acción Rápida -->
+    <!-- Botones de AcciÃ³n RÃ¡pida -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       <button
         (click)="goToSection('new-product')"
@@ -39,7 +39,7 @@
         class="bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
       >
         <i class="fas fa-cube mr-2"></i>
-        Ensambles
+        Crear Ensamble
       </button>
       <button
         (click)="goToSection('packages')"
@@ -53,11 +53,31 @@
         class="bg-gradient-to-br from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
       >
         <i class="fas fa-sitemap mr-2"></i>
-        Categorías
+        CategorÃ­as
       </button>
     </div>
 
-    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <button
+        (click)="goToSection('categories')"
+        class="bg-[#0b1220] border border-white/10 hover:border-purple-400/30 rounded-lg p-6 transition text-left"
+      >
+        <i class="fas fa-folder text-2xl text-purple-400 mb-3 block"></i>
+        <h3 class="font-bold mb-1">Gestionar CategorÃ­as</h3>
+        <p class="text-sm text-gray-400">Crear, editar y reordenar categorÃ­as de productos</p>
+      </button>
+
+      <button
+        (click)="goToSection('offers')"
+        class="bg-[#0b1220] border border-white/10 hover:border-red-400/30 rounded-lg p-6 transition text-left"
+      >
+        <i class="fas fa-tag text-2xl text-red-400 mb-3 block"></i>
+        <h3 class="font-bold mb-1">Gestionar Ofertas</h3>
+        <p class="text-sm text-gray-400">Crear descuentos, bundles y promociones especiales</p>
+      </button>
+    </div>
+
+    <!-- EstadÃ­sticas -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <!-- Total de Productos -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-cyan-400/30 transition">
@@ -81,16 +101,19 @@
         </div>
       </div>
 
-      <!-- Borradores -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-yellow-400/30 transition">
+      <!-- Ensambles -->
+      <button
+        (click)="goToSection('assemblies-list')"
+        class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-purple-400/30 transition text-left"
+      >
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Borradores</div>
-            <div class="text-4xl font-bold text-yellow-400">{{ stats?.draftProducts || 0 }}</div>
+            <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Ensambles</div>
+            <div class="text-4xl font-bold text-purple-400">{{ stats?.totalAssemblies || 0 }}</div>
           </div>
-          <i class="fas fa-file-alt text-2xl text-yellow-400 opacity-50"></i>
+          <i class="fas fa-desktop text-2xl text-purple-400 opacity-50"></i>
         </div>
-      </div>
+      </button>
 
       <!-- Bajo Stock (Alerta) -->
       <div
@@ -117,8 +140,19 @@
       </div>
     </div>
 
-    <!-- Estadísticas Secundarias -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <!-- EstadÃ­sticas Secundarias -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <!-- Borradores -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-yellow-400/30 transition">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Borradores</div>
+            <div class="text-3xl font-bold text-yellow-400">{{ stats?.draftProducts || 0 }}</div>
+          </div>
+          <i class="fas fa-file-alt text-2xl text-yellow-400 opacity-50"></i>
+        </div>
+      </div>
+
       <!-- Paquetes -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-yellow-400/30 transition">
         <div class="flex items-start justify-between">
@@ -157,7 +191,7 @@
     <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 mb-8">
       <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
         <i class="fas fa-clock text-cyan-400"></i>
-        Últimos Productos Creados
+        Ãšltimos Productos Creados
       </h2>
 
       <div *ngIf="recentProducts.length > 0; else noProducts">
@@ -165,8 +199,8 @@
           <table class="w-full text-sm">
             <thead class="border-b border-white/20">
               <tr class="text-left">
-                <th class="pb-3 text-gray-400 font-semibold">Título</th>
-                <th class="pb-3 text-gray-400 font-semibold">Categoría</th>
+                <th class="pb-3 text-gray-400 font-semibold">TÃ­tulo</th>
+                <th class="pb-3 text-gray-400 font-semibold">CategorÃ­a</th>
                 <th class="pb-3 text-gray-400 font-semibold">Precio</th>
                 <th class="pb-3 text-gray-400 font-semibold">Stock</th>
                 <th class="pb-3 text-gray-400 font-semibold">Estado</th>
@@ -179,7 +213,7 @@
                   <div class="font-semibold">{{ product.title }}</div>
                   <div class="text-xs text-gray-400">{{ product.slug }}</div>
                 </td>
-                <td class="py-4 text-gray-300">{{ product.category }}</td>
+                <td class="py-4 text-gray-300">{{ getCategoryLabel(product.category) }}</td>
                 <td class="py-4 font-bold text-cyan-400">${{ product.price | number }}</td>
                 <td class="py-4">
                   <span
@@ -217,30 +251,10 @@
       <ng-template #noProducts>
         <div class="text-center py-8 text-gray-400">
           <i class="fas fa-inbox text-3xl mb-3 block opacity-50"></i>
-          <p>No hay productos aún. <a (click)="goToSection('new-product')" class="text-cyan-400 cursor-pointer">Crear uno</a></p>
+          <p>No hay productos aÃºn. <a (click)="goToSection('new-product')" class="text-cyan-400 cursor-pointer">Crear uno</a></p>
         </div>
       </ng-template>
     </div>
 
-    <!-- Navegación a Secciones Secundarias -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <button
-        (click)="goToSection('categories')"
-        class="bg-[#0b1220] border border-white/10 hover:border-purple-400/30 rounded-lg p-6 transition text-left"
-      >
-        <i class="fas fa-folder text-2xl text-purple-400 mb-3 block"></i>
-        <h3 class="font-bold mb-1">Gestionar Categorías</h3>
-        <p class="text-sm text-gray-400">Crear, editar y reordenar categorías de productos</p>
-      </button>
-
-      <button
-        (click)="goToSection('offers')"
-        class="bg-[#0b1220] border border-white/10 hover:border-red-400/30 rounded-lg p-6 transition text-left"
-      >
-        <i class="fas fa-tag text-2xl text-red-400 mb-3 block"></i>
-        <h3 class="font-bold mb-1">Gestionar Ofertas</h3>
-        <p class="text-sm text-gray-400">Crear descuentos, bundles y promociones especiales</p>
-      </button>
-    </div>
   </div>
 </div>

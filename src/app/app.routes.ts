@@ -190,7 +190,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/products/assemblies',
-    loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    loadComponent: () => import('./features/products/admin/assemblies/admin-assemblies-list/admin-assemblies-list.component').then(m => m.AdminAssembliesListComponent),
     title: 'Ensambles | Admin',
     canActivate: [AuthGuard]
   },

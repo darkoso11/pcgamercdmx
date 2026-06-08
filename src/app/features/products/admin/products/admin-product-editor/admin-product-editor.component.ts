@@ -124,11 +124,19 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       discountPrice: [0],
       discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       currency: ['MXN'],
+      pricingMode: ['manual'],
+      syncProvider: [''],
+      providerProductId: [''],
+      providerSku: [''],
+      lastPriceSyncedAt: [{ value: '', disabled: true }],
+      lastSyncStatus: [{ value: '', disabled: true }],
+      lastSyncError: [{ value: '', disabled: true }],
 
       // Sección 6: Stock
       stock: [0, [Validators.required, Validators.min(0)]],
       lowStockAlert: [5, Validators.min(0)],
       sku: [''],
+      supplier: [''],
 
       // Sección 7: Medios
       image: ['', Validators.required],
@@ -212,6 +220,13 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
               discountPrice: product.discountPrice || 0,
               discountPercent: product.discountPercent || 0,
               currency: product.currency || 'MXN',
+              pricingMode: product.pricingMode || 'manual',
+              syncProvider: product.syncProvider || '',
+              providerProductId: product.providerProductId || '',
+              providerSku: product.providerSku || '',
+              lastPriceSyncedAt: product.lastPriceSyncedAt || '',
+              lastSyncStatus: product.lastSyncStatus || '',
+              lastSyncError: product.lastSyncError || '',
               stock: product.stock,
               lowStockAlert: product.lowStockAlert || 5,
               sku: product.sku || '',
@@ -266,6 +281,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     const productData = {
       ...this.form.value,
+      ...this.form.getRawValue(),
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
     };
@@ -304,6 +320,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     const productData = {
       ...this.form.value,
+      ...this.form.getRawValue(),
       published: false,
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []

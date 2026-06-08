@@ -163,6 +163,14 @@ export function mapDirectusProductToAdminProduct(
     subcategoryId: text(admin['subcategoryId'], text(item.subcategory, '')),
     currency: text(admin['currency'], 'MXN'),
     sku: text(admin['sku'] ?? catalog['sku'], ''),
+    pricingMode: text(admin['pricingMode'], 'manual') as any,
+    syncEnabled: Boolean(admin['syncEnabled']),
+    syncProvider: text(admin['syncProvider'], ''),
+    providerProductId: text(admin['providerProductId'], ''),
+    providerSku: text(admin['providerSku'], ''),
+    lastPriceSyncedAt: text(admin['lastPriceSyncedAt'], ''),
+    lastSyncStatus: text(admin['lastSyncStatus'], ''),
+    lastSyncError: text(admin['lastSyncError'], ''),
     modelo: text(admin['modelo'], ''),
     tipo: text(admin['tipo'], ''),
     conexion: text(admin['conexion'], ''),
@@ -189,6 +197,14 @@ export function mapAdminProductToDirectusPayload(
     discountPercent: product.discountPercent ?? null,
     currency: product.currency ?? 'MXN',
     sku: product.sku ?? '',
+    pricingMode: product.pricingMode ?? 'manual',
+    syncEnabled: product.pricingMode === 'provider',
+    syncProvider: product.syncProvider ?? '',
+    providerProductId: product.providerProductId ?? '',
+    providerSku: product.providerSku ?? '',
+    lastPriceSyncedAt: product.lastPriceSyncedAt ?? null,
+    lastSyncStatus: product.lastSyncStatus ?? null,
+    lastSyncError: product.lastSyncError ?? null,
     gallery: product.gallery ?? product.images ?? [],
     modelo: product.modelo ?? '',
     tipo: product.tipo ?? '',
@@ -830,7 +846,45 @@ function text(value: unknown, fallback = ''): string {
     return fallback;
   }
 
-  return String(value);
+  return cleanDisplayText(String(value));
+}
+
+function cleanDisplayText(value: string): string {
+  return decodeHtmlEntities(value)
+    .replace(/Ã¡/g, '\u00e1')
+    .replace(/Ã©/g, '\u00e9')
+    .replace(/Ã­/g, '\u00ed')
+    .replace(/Ã³/g, '\u00f3')
+    .replace(/Ãº/g, '\u00fa')
+    .replace(/Ã±/g, '\u00f1')
+    .replace(/Ã/g, '\u00c1')
+    .replace(/Ã‰/g, '\u00c9')
+    .replace(/Ã/g, '\u00cd')
+    .replace(/Ã“/g, '\u00d3')
+    .replace(/Ãš/g, '\u00da')
+    .replace(/Ã‘/g, '\u00d1')
+    .replace(/Â¿/g, '\u00bf')
+    .replace(/Â¡/g, '\u00a1')
+    .replace(/Â·/g, '\u00b7')
+    .replace(/Â°/g, '\u00b0')
+    .replace(/â€œ|â€/g, '"')
+    .replace(/â€˜|â€™/g, "'")
+    .replace(/â€“|â€”/g, '-')
+    .replace(/â€¦/g, '...')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
 }
 
 function toNumber(value: unknown, fallback = 0): number {
@@ -839,6 +893,10 @@ function toNumber(value: unknown, fallback = 0): number {
 }
 
 function optionalNumber(value: unknown): number | undefined {
+  if (value === null || value === undefined || value === '') {
+    return undefined;
+  }
+
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? numberValue : undefined;
 }

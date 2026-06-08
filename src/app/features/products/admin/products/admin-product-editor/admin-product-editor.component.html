@@ -331,6 +331,68 @@
               <option value="USD">USD - Dólar Americano</option>
             </select>
           </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Modo de precio</label>
+            <select
+              formControlName="pricingMode"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
+            >
+              <option value="manual">Manual</option>
+              <option value="provider">Proveedor</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Proveedor queda preparado para APIs futuras; por ahora no sincroniza automaticamente.</p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Proveedor de precio</label>
+            <input
+              type="text"
+              formControlName="syncProvider"
+              placeholder="Ej: Cyberpuerta"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">ID del proveedor</label>
+            <input
+              type="text"
+              formControlName="providerProductId"
+              placeholder="ID externo del producto"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">SKU del proveedor</label>
+            <input
+              type="text"
+              formControlName="providerSku"
+              placeholder="SKU externo"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Ultima actualizacion de precio</label>
+            <input
+              type="text"
+              formControlName="lastPriceSyncedAt"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/10 rounded text-gray-400"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Estado de sincronizacion</label>
+            <input
+              type="text"
+              formControlName="lastSyncStatus"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/10 rounded text-gray-400"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm text-gray-400 mb-2">Error de sincronizacion</label>
+            <input
+              type="text"
+              formControlName="lastSyncError"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/10 rounded text-gray-400"
+            />
+          </div>
         </div>
       </div>
 

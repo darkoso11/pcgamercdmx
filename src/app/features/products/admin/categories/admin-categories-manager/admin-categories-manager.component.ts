@@ -32,9 +32,8 @@ export class AdminCategoriesManagerComponent implements OnInit, OnDestroy {
   constructor(private productsAdminService: ProductsAdminService) {
     // Inicializar con categorías por defecto
     this.categories = [
-      { name: 'Gabinetes', description: 'Gabinetes para PC', icon: 'fa-box' },
+      { name: 'Hardware y accesorios', description: 'Partes, cables, adaptadores y accesorios para PC', icon: 'fa-microchip' },
       { name: 'Periféricos', description: 'Accesorios y periféricos', icon: 'fa-mouse' },
-      { name: 'Componentes', description: 'Componentes internos', icon: 'fa-microchip' },
       { name: 'Ensambles de Computadoras', description: 'PCs armadas personalizadas', icon: 'fa-cube' }
     ];
   }

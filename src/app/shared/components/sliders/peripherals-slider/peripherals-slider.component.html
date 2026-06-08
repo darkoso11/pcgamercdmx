@@ -17,10 +17,10 @@
            style="min-width: max-content;"
            [style.transform]="isMobile() ? 'none' : 'translateX(-' + scrollPosition + 'px)'">
         <ng-container *ngFor="let item of filteredItems; let last = last">
-          <div class="min-w-[200px] sm:min-w-[250px] flex-shrink-0 bg-[#161a3c] rounded-xl overflow-hidden border border-white/10 group hover:border-red-500/50 transition-all duration-300"
+          <div class="w-[210px] sm:w-[250px] flex-none bg-[#161a3c] rounded-xl overflow-hidden border border-white/10 group hover:border-red-500/50 transition-all duration-300"
                [class.last-peripheral]="last">
             <!-- Imagen -->
-            <div class="relative h-48 overflow-hidden bg-[#0a0d22]">
+            <div class="relative h-44 overflow-hidden bg-[#0a0d22]">
               <img [src]="item.image" 
                    [alt]="item.name"
                    class="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
@@ -36,7 +36,7 @@
             <!-- Detalles -->
             <div class="p-4">
               <div class="flex justify-between items-start mb-2">
-                <h3 class="text-white font-bold text-lg leading-tight line-clamp-1">{{ item.name }}</h3>
+                <h3 class="min-h-[2.5rem] text-white font-bold text-base leading-tight line-clamp-2">{{ item.name }}</h3>
                 <div class="flex items-center">
                   <span class="text-yellow-400 text-xs mr-1">★</span>
                   <span class="text-gray-300 text-xs">{{ item.rating }}</span>

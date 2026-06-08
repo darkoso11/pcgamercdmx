@@ -32,6 +32,15 @@ export interface Product {
   discountPercent?: number;
   currency?: string;
   sku?: string;
+  supplier?: string;
+  pricingMode?: 'manual' | 'provider';
+  syncEnabled?: boolean;
+  syncProvider?: string;
+  providerProductId?: string;
+  providerSku?: string;
+  lastPriceSyncedAt?: string;
+  lastSyncStatus?: string;
+  lastSyncError?: string;
   processor?: string;
   motherboard?: string;
   ram?: string;
@@ -130,6 +139,7 @@ export interface Category {
 
 export interface AdminDashboardStats {
   totalProducts: number;
+  totalAssemblies: number;
   publishedProducts: number;
   draftProducts: number;
   productsWithLowStock: number;
@@ -166,9 +176,9 @@ export class ProductsAdminService {
     },
     {
       _id: '2',
-      name: 'Componentes',
+      name: 'Hardware y accesorios',
       slug: 'componentes',
-      description: 'Componentes internos para PC',
+      description: 'Partes, cables, adaptadores y accesorios para PC',
       icon: 'fa-microchip',
       order: 2,
       subcategories: [
@@ -202,7 +212,7 @@ export class ProductsAdminService {
       return of(this.paginateProducts(filtered, page, limit));
     }
 
-    return this.loadDirectusProducts().pipe(
+    return this.loadDirectusProductsWithFallback().pipe(
       map((products) => this.paginateProducts(this.applyProductFilters(products, filters), page, limit))
     );
   }
@@ -212,12 +222,10 @@ export class ProductsAdminService {
       return of(this.mockProducts.find((product) => product._id === id));
     }
 
-    return this.directus
-      .readItem<DirectusProductRecord>(this.productsCollection, id, { fields: '*' }, { auth: true })
-      .pipe(
-        map((response) => mapDirectusProductToAdminProduct(response.data)),
-        catchError(() => of(undefined))
-      );
+    return this.loadDirectusProductById(id, true).pipe(
+      catchError(() => this.loadDirectusProductById(id, false)),
+      catchError(() => of(undefined))
+    );
   }
 
   createProduct(product: Omit<Product, '_id' | 'createdAt' | 'updatedAt'> | Product): Observable<Product> {
@@ -548,21 +556,29 @@ export class ProductsAdminService {
       return of(this.mockCategories);
     }
 
+    return this.loadDirectusCategories(true).pipe(
+      catchError(() => this.loadDirectusCategories(false))
+    );
+  }
+
+  private loadDirectusCategories(auth: boolean): Observable<Category[]> {
+    const options = auth ? { auth: true } : {};
+
     return forkJoin({
       categories: this.directus.readItems<DirectusCategoryRecord>(
         this.categoriesCollection,
         { fields: '*', sort: 'sort,name', limit: 100 },
-        { auth: true }
+        options
       ),
       subcategories: this.directus.readItems<DirectusSubcategoryRecord>(
         this.subcategoriesCollection,
         { fields: '*', sort: 'sort,name', limit: 300 },
-        { auth: true }
+        options
       ).pipe(catchError(() => of({ data: [] }))),
       products: this.directus.readItems<DirectusProductRecord>(
         this.productsCollection,
         { fields: 'id,category,subcategory', limit: 1000 },
-        { auth: true }
+        options
       ),
     }).pipe(
       map(({ categories, subcategories, products }) => {
@@ -605,25 +621,35 @@ export class ProductsAdminService {
       offers: this.getAllOffers(true),
       packages: this.getAllPackages(),
     }).pipe(
-      map(({ products, offers, packages: packagesList }) => ({
-        totalProducts: products.data.length,
-        publishedProducts: products.data.filter((product) => product.published).length,
-        draftProducts: products.data.filter((product) => !product.published).length,
-        productsWithLowStock: products.data.filter((product) => product.stock <= product.lowStockAlert).length,
-        totalPackages: packagesList.length,
-        totalOffers: offers.length,
-        activeOffers: offers.filter((offer) => offer.active).length,
-      }))
+      map(({ products, offers, packages: packagesList }) => {
+        const catalogProducts = products.data.filter((product) => product.category !== 'paquetes');
+        const assemblies = products.data.filter((product) => product.category === 'paquetes');
+
+        return {
+          totalProducts: catalogProducts.length,
+          totalAssemblies: assemblies.length,
+          publishedProducts: catalogProducts.filter((product) => product.published).length,
+          draftProducts: catalogProducts.filter((product) => !product.published).length,
+          productsWithLowStock: catalogProducts.filter((product) => product.stock <= product.lowStockAlert).length,
+          totalPackages: packagesList.length,
+          totalOffers: offers.length,
+          activeOffers: offers.filter((offer) => offer.active).length,
+        };
+      })
     );
   }
 
   getRecentProducts(limit: number = 10): Observable<Product[]> {
-    return this.getAllProducts().pipe(map((response) => response.data.slice(0, limit)));
+    return this.getAllProducts().pipe(
+      map((response) => response.data.filter((product) => product.category !== 'paquetes').slice(0, limit))
+    );
   }
 
   getLowStockProducts(): Observable<Product[]> {
     return this.getAllProducts().pipe(
-      map((response) => response.data.filter((product) => product.stock <= product.lowStockAlert))
+      map((response) =>
+        response.data.filter((product) => product.category !== 'paquetes' && product.stock <= product.lowStockAlert)
+      )
     );
   }
 
@@ -631,14 +657,31 @@ export class ProductsAdminService {
     return this.directus.isEnabled('catalog');
   }
 
-  private loadDirectusProducts(): Observable<Product[]> {
+  private loadDirectusProductsWithFallback(): Observable<Product[]> {
+    return this.loadDirectusProducts(true).pipe(
+      catchError(() => this.loadDirectusProducts(false))
+    );
+  }
+
+  private loadDirectusProducts(auth: boolean): Observable<Product[]> {
     return this.directus
       .readItems<DirectusProductRecord>(
         this.productsCollection,
         { fields: '*', sort: 'sort,title', limit: 1000 },
-        { auth: true }
+        auth ? { auth: true } : {}
       )
       .pipe(map((response) => response.data.map(mapDirectusProductToAdminProduct)));
+  }
+
+  private loadDirectusProductById(id: string, auth: boolean): Observable<Product | undefined> {
+    return this.directus
+      .readItem<DirectusProductRecord>(
+        this.productsCollection,
+        id,
+        { fields: '*' },
+        auth ? { auth: true } : {}
+      )
+      .pipe(map((response) => mapDirectusProductToAdminProduct(response.data)));
   }
 
   private applyProductFilters(products: Product[], filters?: any): Product[] {

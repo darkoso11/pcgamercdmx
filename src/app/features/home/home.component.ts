@@ -25,6 +25,20 @@ import { PeripheralsSliderComponent } from '../../shared/components/sliders/peri
 import { BannersSliderComponent } from '../../shared/components/sliders/banners-slider/banners-slider.component';
 import { BrandsSectionComponent } from '../../shared/components/brands-section/brands-section.component';
 import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
+import { ProductsService } from '../products/services/products.service';
+import { PeripheralProduct } from '../../shared/models';
+
+interface HomePeripheralItem {
+  id: number;
+  name: string;
+  category: string;
+  image: string;
+  price: number;
+  originalPrice?: number;
+  discount?: number;
+  rating: number;
+  slug: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -535,7 +549,11 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   private bannerIntervalId: any;
   @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
 
-  constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
+    private productsService: ProductsService
+  ) {}
 
   // Métodos para controlar la navegación de los banners
   nextBanner(): void {
@@ -551,6 +569,9 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.peripherals = this.shuffleItems(this.peripherals);
+    this.loadRandomPeripherals();
+
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
       console.log('Home component initialized');
@@ -575,6 +596,73 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
       this.checkForLoadingIssues();
     }
+  }
+
+  private loadRandomPeripherals(): void {
+    this.productsService.getPeripherals().subscribe({
+      next: (products) => {
+        const items = this.shuffleItems(products)
+          .slice(0, 18)
+          .map((product, index) => this.toPeripheralSliderItem(product, index));
+
+        if (items.length) {
+          this.peripherals = items;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        this.peripherals = [];
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private toPeripheralSliderItem(product: PeripheralProduct, index: number) {
+    const originalPrice = product.discountedPrice ? product.price : undefined;
+    const price = product.discountedPrice ?? product.price;
+
+    return {
+      id: product.id ?? index + 1,
+      name: product.title,
+      category: this.toHomePeripheralCategory(product),
+      image: product.image,
+      price,
+      originalPrice,
+      discount: originalPrice ? this.toDiscountPercent(originalPrice, price) : undefined,
+      rating: product.rating?.average ?? 4.8,
+      slug: product.slug,
+    };
+  }
+
+  private toHomePeripheralCategory(product: PeripheralProduct): string {
+    const type = (product as PeripheralProduct & { peripheralType?: string }).peripheralType;
+    const subcategory = product.subcategory?.toLowerCase() ?? '';
+    const title = product.title.toLowerCase();
+    const text = `${type ?? ''} ${subcategory} ${title}`;
+
+    if (text.includes('tecl') || text.includes('keyboard')) return 'keyboard';
+    if (text.includes('headset') || text.includes('auricular') || text.includes('audifono')) return 'headset';
+    if (text.includes('monitor')) return 'monitor';
+    if (text.includes('silla') || text.includes('chair')) return 'chair';
+    if (text.includes('control') || text.includes('mando') || text.includes('gamepad')) return 'gamepad';
+    return 'mouse';
+  }
+
+  private toDiscountPercent(originalPrice: number, price: number): number | undefined {
+    if (!originalPrice || originalPrice <= price) {
+      return undefined;
+    }
+
+    return Math.round(((originalPrice - price) / originalPrice) * 100);
+  }
+
+  private shuffleItems<T>(items: T[]): T[] {
+    const shuffled = [...items];
+    for (let index = shuffled.length - 1; index > 0; index--) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+    }
+    return shuffled;
   }
 
   // Método para diagnosticar problemas de carga
@@ -809,118 +897,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     { name: 'Mandos', value: 'gamepad' },
   ];
 
-  peripherals = [
-    {
-      id: 1,
-      name: 'Razer DeathAdder V2',
-      category: 'mouse',
-      image: 'https://picsum.photos/id/201/400/400',
-      price: 1299,
-      originalPrice: 1499,
-      discount: 13,
-      rating: 4.8,
-      slug: 'razer-deathadder-v2',
-    },
-    {
-      id: 2,
-      name: 'HyperX Alloy FPS Pro',
-      category: 'keyboard',
-      image: 'https://picsum.photos/id/202/400/400',
-      price: 1799,
-      originalPrice: 1999,
-      discount: 10,
-      rating: 4.7,
-      slug: 'hyperx-alloy-fps-pro',
-    },
-    {
-      id: 3,
-      name: 'Logitech G Pro X',
-      category: 'headset',
-      image: 'https://picsum.photos/id/203/400/400',
-      price: 2299,
-      originalPrice: 2599,
-      discount: 12,
-      rating: 4.9,
-      slug: 'logitech-g-pro-x',
-    },
-    {
-      id: 4,
-      name: 'Corsair T1 Race',
-      category: 'chair',
-      image: 'https://picsum.photos/id/204/400/400',
-      price: 5499,
-      originalPrice: 6299,
-      discount: 13,
-      rating: 4.6,
-      slug: 'corsair-t1-race',
-    },
-    {
-      id: 5,
-      name: 'ASUS TUF Gaming VG27AQ',
-      category: 'monitor',
-      image: 'assets/img/marcas/asuspng.png',
-      price: 8999,
-      originalPrice: 9999,
-      discount: 10,
-      rating: 4.8,
-      slug: 'asus-tuf-vg27aq',
-    },
-    {
-      id: 6,
-      name: 'Xbox Elite Controller Series 2',
-      category: 'gamepad',
-      image: 'https://picsum.photos/id/206/400/400',
-      price: 3299,
-      originalPrice: 3799,
-      discount: 13,
-      rating: 4.9,
-      slug: 'xbox-elite-controller-series-2',
-    },
-    {
-      id: 7,
-      name: 'SteelSeries Arctis 7',
-      category: 'headset',
-      image: 'assets/img/marcas/Logitech.png',
-      price: 2799,
-      originalPrice: 3199,
-      discount: 12,
-      rating: 4.7,
-      slug: 'steelseries-arctis-7',
-    },
-    {
-      id: 8,
-      name: 'Logitech G502 HERO',
-      category: 'mouse',
-      image: 'https://picsum.photos/id/208/400/400',
-      price: 1399,
-      originalPrice: 1699,
-      discount: 18,
-      rating: 4.8,
-      slug: 'logitech-g502-hero',
-    },
-    {
-      id: 9,
-      name: 'Razer BlackWidow Elite',
-      category: 'keyboard',
-      image: 'https://picsum.photos/id/209/400/400',
-      price: 2999,
-      originalPrice: 3499,
-      discount: 14,
-      rating: 4.6,
-      slug: 'razer-blackwidow-elite',
-    },
-    {
-      id: 10,
-      name: 'AOC C27G2Z 27" Curvo 240Hz',
-      category: 'monitor',
-      image: 'https://picsum.photos/id/210/400/400',
-      price: 7299,
-      originalPrice: 7999,
-      discount: 9,
-      rating: 4.5,
-      slug: 'aoc-c27g2z',
-    },
-  ];
+  peripherals: HomePeripheralItem[] = [];
 
   // Control de navegación de periféricos
   selectedPeripheralCategory = 0;

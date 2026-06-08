@@ -31,11 +31,11 @@ export class ProductsOverview implements OnInit {
       action: 'Ver ensambles',
     },
     {
-      title: 'Componentes',
+      title: 'Hardware y accesorios',
       description:
-        'Hardware suelto organizado para busqueda, comparacion y crecimiento posterior con filtros mas profundos.',
+        'Partes, cables, adaptadores y accesorios organizados para buscar, comparar y escalar el catalogo.',
       link: '/productos/componentes',
-      action: 'Ver componentes',
+      action: 'Ver hardware',
     },
     {
       title: 'Perifericos',

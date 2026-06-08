@@ -30,6 +30,11 @@ export class Peripherals implements OnInit {
     { value: 'mouse', label: 'Mouse' },
     { value: 'monitor', label: 'Monitores' },
     { value: 'headset', label: 'Headsets' },
+    { value: 'speaker', label: 'Bocinas' },
+    { value: 'chair', label: 'Sillas' },
+    { value: 'controller', label: 'Mandos' },
+    { value: 'microphone', label: 'Microfonos' },
+    { value: 'camera', label: 'Camaras' },
   ];
 
   ngOnInit(): void {

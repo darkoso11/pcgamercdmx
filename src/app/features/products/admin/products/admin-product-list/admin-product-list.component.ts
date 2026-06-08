@@ -162,6 +162,18 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     }).format(price);
   }
 
+  getCategoryLabel(category: Product['category']): string {
+    switch (category) {
+      case 'paquetes':
+        return 'Ensambles';
+      case 'perifericos':
+        return 'Perifericos';
+      case 'componentes':
+      default:
+        return 'Hardware y accesorios';
+    }
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

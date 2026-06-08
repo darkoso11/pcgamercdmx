@@ -30,6 +30,10 @@ export class Components implements OnInit {
     { value: 'gpu', label: 'GPU' },
     { value: 'ram', label: 'RAM' },
     { value: 'storage', label: 'Storage' },
+    { value: 'motherboard', label: 'Motherboard' },
+    { value: 'power-supply', label: 'Fuentes' },
+    { value: 'cooling', label: 'Enfriamiento' },
+    { value: 'case', label: 'Gabinetes' },
   ];
 
   ngOnInit(): void {

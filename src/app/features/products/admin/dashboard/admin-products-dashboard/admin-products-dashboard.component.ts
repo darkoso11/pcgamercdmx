@@ -62,6 +62,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
       'new-product': '/admin/products/new',
       'products': '/admin/products/list',
       'assemblies': '/admin/products/assemblies/new',
+      'assemblies-list': '/admin/products/assemblies',
       'packages': '/admin/products/packages',
       'offers': '/admin/products/offers',
       'categories': '/admin/products/categories'
@@ -77,5 +78,17 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
    */
   editProduct(productId: string) {
     this.router.navigate(['/admin/products', productId, 'edit']);
+  }
+
+  getCategoryLabel(category: Product['category']): string {
+    switch (category) {
+      case 'paquetes':
+        return 'Ensambles';
+      case 'perifericos':
+        return 'Perifericos';
+      case 'componentes':
+      default:
+        return 'Hardware y accesorios';
+    }
   }
 }

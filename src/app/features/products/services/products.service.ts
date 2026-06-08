@@ -254,7 +254,7 @@ export class ProductsService {
       case ProductCategory.ASSEMBLED:
         return 'Ensambles';
       case ProductCategory.COMPONENT:
-        return 'Componentes';
+        return 'Hardware y accesorios';
       case ProductCategory.PERIPHERAL:
         return 'Perifericos';
       case ProductCategory.ACCESSORY:

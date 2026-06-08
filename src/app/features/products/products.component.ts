@@ -18,10 +18,10 @@ export class ProductsComponent {
       description: 'Entrada al catalogo y rutas rapidas por tipo de producto.',
     },
     {
-      label: 'Componentes',
+      label: 'Hardware y accesorios',
       link: '/productos/componentes',
       exact: false,
-      description: 'Hardware suelto para upgrades y builds a medida.',
+      description: 'Partes, cables, adaptadores y accesorios para PC.',
     },
     {
       label: 'Perifericos',
