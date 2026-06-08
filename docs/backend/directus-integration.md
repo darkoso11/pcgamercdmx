@@ -4,14 +4,13 @@ PCGamerCDMX uses Directus as a temporary backend/CMS before moving custom busine
 
 ## Runtime
 
-- Dokploy service: `Directus Backend`
-- Compose ID: `SJseShawHt9GwldxF1BpH`
-- Active URL: `https://cms.test.pcgamercdmx.com`
+- Backend type: Directus CMS
+- Active URL: configured in Angular environment files.
 - Database: PostgreSQL 16
 - Cache: Redis 7
-- Credentials: stored locally at `C:\Users\lince\.pcgamercdmx\directus-backend.txt`
+- Credentials: use local environment variables or a private, untracked credentials file.
 
-`cms.test.pcgamercdmx.com` is currently used because it already resolves to the Dokploy server and has a valid Let's Encrypt certificate. Move to `cms.pcgamercdmx.com` or `api.pcgamercdmx.com` after creating the DNS A record to `129.121.62.218`.
+Move to the production CMS/API domain after DNS and TLS are configured.
 
 ## Collections
 
