@@ -15,7 +15,7 @@ import { BlogService } from '../blog/services/blog.service';
         <!-- Selector de Módulos Admin -->
         <div class="mb-8">
           <h1 class="text-4xl font-bold mb-6">Panel Administrativo</h1>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Admin Blog -->
             <div class="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 border-2 border-cyan-400/50 rounded-lg p-6 hover:border-cyan-400 transition cursor-pointer"
               (click)="currentModule = 'blog'"
@@ -53,6 +53,26 @@ import { BlogService } from '../blog/services/blog.service';
               </div>
               <button routerLink="/admin/products" class="mt-4 w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded transition">
                 Ir a Admin Productos <i class="fas fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+
+            <!-- Admin Comunidad -->
+            <div class="bg-gradient-to-br from-violet-900/30 to-cyan-900/30 border-2 border-violet-400/50 rounded-lg p-6 hover:border-cyan-400 transition cursor-pointer"
+              (click)="currentModule = 'community'"
+              [class.ring-2]="currentModule === 'community'"
+              [class.ring-violet-400]="currentModule === 'community'"
+            >
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h2 class="text-2xl font-bold text-violet-300 mb-2">
+                    <i class="fas fa-users mr-2"></i>Admin Comunidad
+                  </h2>
+                  <p class="text-gray-300 text-sm">Gestiona colaboradores, fotos y textos de la pagina</p>
+                </div>
+                <i class="fas fa-check-circle text-2xl text-violet-300 opacity-0" [class.opacity-100]="currentModule === 'community'"></i>
+              </div>
+              <button routerLink="/admin/community" class="mt-4 w-full bg-violet-500 hover:bg-violet-600 text-white font-bold py-2 px-4 rounded transition">
+                Ir a Admin Comunidad <i class="fas fa-arrow-right ml-2"></i>
               </button>
             </div>
           </div>
@@ -105,6 +125,22 @@ import { BlogService } from '../blog/services/blog.service';
             </ul>
           </div>
         </div>
+
+        <div *ngIf="currentModule === 'community'">
+          <h2 class="text-3xl font-bold mb-6 border-t border-white/20 pt-6">Administracion de Comunidad</h2>
+          <div class="grid gap-4 md:grid-cols-2">
+            <a routerLink="/admin/community" class="rounded-lg border border-violet-400/40 bg-[#081229] p-5 transition hover:border-cyan-300">
+              <i class="fas fa-id-card text-2xl text-violet-300"></i>
+              <h3 class="mt-4 text-xl font-bold">Gestionar colaboradores</h3>
+              <p class="mt-2 text-sm text-gray-300">Agregar, editar, publicar y ordenar perfiles de colaboradores e influencers.</p>
+            </a>
+            <a routerLink="/colaboradores" class="rounded-lg border border-cyan-400/40 bg-[#081229] p-5 transition hover:border-pink-300">
+              <i class="fas fa-external-link-alt text-2xl text-cyan-300"></i>
+              <h3 class="mt-4 text-xl font-bold">Ver pagina publica</h3>
+              <p class="mt-2 text-sm text-gray-300">Revisar como se ve la comunidad para usuarios finales.</p>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   `
@@ -116,7 +152,7 @@ export class AdminDashboardComponent implements OnInit {
   draftCount = 0;
   recentArticles: any[] = [];
 
-  currentModule: 'blog' | 'products' = 'blog';
+  currentModule: 'blog' | 'products' | 'community' = 'blog';
 
   constructor(private blog: BlogService) {}
 

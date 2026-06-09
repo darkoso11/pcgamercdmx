@@ -33,6 +33,13 @@
         >Nosotros</a
       >
     </li>
+    <li>
+      <a
+        routerLink="/colaboradores"
+        class="menu-btn px-6 py-2 border border-white rounded transition hover:bg-white/10 hover:text-pink-400 font-bold"
+        >Colaboradores</a
+      >
+    </li>
   </ul>
   <!-- Cuadrado decorativo derecho -->
   <div class="w-3 h-3 bg-white rounded-sm shadow-neon"></div>
@@ -137,6 +144,16 @@
           >
             <i class="fas fa-calculator mr-3"></i>
             <span>Cotiza</span>
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/colaboradores"
+            class="menu-btn-mobile flex items-center px-4 py-3 rounded-md bg-black/30 text-white"
+            (click)="toggleMobileMenu()"
+          >
+            <i class="fas fa-users mr-3"></i>
+            <span>Colaboradores</span>
           </a>
         </li>
       </ul>

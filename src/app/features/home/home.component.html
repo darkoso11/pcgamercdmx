@@ -310,8 +310,9 @@
 
       <!-- Grid de influencers y miembros destacados -->
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-        <ng-container *ngFor="let influencer of influencers.slice(0, 8)">
-          <div
+        <ng-container *ngFor="let influencer of influencers">
+          <a
+            [routerLink]="['/colaboradores', influencer.slug]"
             class="bg-[#161a3c] border border-violet-500/20 rounded-xl p-4 transition-all duration-300 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/20 group">
             <div class="relative overflow-hidden rounded-lg mb-3 aspect-square">
               <img [src]="influencer.image" [alt]="influencer.name"
@@ -320,21 +321,26 @@
             </div>
             <h3 class="text-sm md:text-lg font-bold text-white mb-1">{{ influencer.name }}</h3>
             <div class="flex gap-2 mt-3">
-              <a [href]="influencer.social.twitch" target="_blank"
-                class="text-violet-400 hover:text-violet-300 transition-colors text-sm md:text-base">
+              <span *ngIf="influencer.twitch"
+                class="text-violet-400 transition-colors text-sm md:text-base">
                 <i class="fab fa-twitch"></i>
-              </a>
-              <a [href]="influencer.social.instagram" target="_blank"
-                class="text-violet-400 hover:text-violet-300 transition-colors text-sm md:text-base">
+              </span>
+              <span *ngIf="influencer.instagram"
+                class="text-violet-400 transition-colors text-sm md:text-base">
                 <i class="fab fa-instagram"></i>
-              </a>
+              </span>
             </div>
-          </div>
+          </a>
         </ng-container>
       </div>
 
       <!-- Botones CTA para redes sociales -->
       <div class="flex flex-wrap justify-center gap-4">
+        <a routerLink="/colaboradores"
+          class="border border-cyan-300/50 text-cyan-200 py-3 px-6 rounded-lg font-bold hover:bg-cyan-300/10 hover:text-white transition-colors flex items-center">
+          <i class="fas fa-users mr-2 text-xl"></i>
+          Ver colaboradores
+        </a>
         <a [href]="business.social.discord" target="_blank" rel="noopener noreferrer"
           class="bg-[#5865F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#4752c4] transition-colors flex items-center">
           <i class="fab fa-discord mr-2 text-xl"></i>
@@ -389,8 +395,8 @@
     </div>
   </section>
 
-  <!-- SECCIÓN 7: JUEGOS FAMOSOS -->
-  <section
+  <!-- SECCIÓN 7: JUEGOS FAMOSOS - Oculta temporalmente hasta contar con contenido final de juegos, imagenes y benchmarks. -->
+  <section *ngIf="false"
     class="min-h-screen relative flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d]">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent">
@@ -425,8 +431,8 @@
   </section>
 
 
-  <!-- SECCIÓN 8: PC PARA NECESIDADES ESPECÍFICAS -->
-  <section class="py-16 relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
+  <!-- SECCIÓN 8: PC PARA NECESIDADES ESPECÍFICAS - Oculta temporalmente hasta contar con contenido final para cada equipo especializado. -->
+  <section *ngIf="false" class="py-16 relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
 
       <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent"></div>

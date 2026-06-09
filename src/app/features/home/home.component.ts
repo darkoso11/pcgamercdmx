@@ -25,8 +25,10 @@ import { PeripheralsSliderComponent } from '../../shared/components/sliders/peri
 import { BannersSliderComponent } from '../../shared/components/sliders/banners-slider/banners-slider.component';
 import { BrandsSectionComponent } from '../../shared/components/brands-section/brands-section.component';
 import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
-import { ProductsService } from '../products/services/products.service';
-import { PeripheralProduct } from '../../shared/models';
+import { Product, ProductsService } from '../products/services/products.service';
+import { AssembledPC, PeripheralProduct } from '../../shared/models';
+import { CommunityCollaborator } from '../community/collaborators.data';
+import { CommunityService } from '../community/community.service';
 
 interface HomePeripheralItem {
   id: number;
@@ -134,80 +136,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   ];
 
-  influencers = [
-    {
-      name: 'GamerMX',
-      image: 'https://picsum.photos/id/237/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'TechGirl',
-      image: 'https://picsum.photos/id/238/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'ProPlayer',
-      image: 'https://picsum.photos/id/239/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'StreamQueen',
-      image: 'https://picsum.photos/id/240/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'PCMaster',
-      image: 'https://picsum.photos/id/241/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'GameDev',
-      image: 'https://picsum.photos/id/242/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'ContentCreator',
-      image: 'https://picsum.photos/id/243/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'RTXPower',
-      image: 'https://picsum.photos/id/244/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'CPUOverclock',
-      image: 'https://picsum.photos/id/245/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-  ];
+  influencers: CommunityCollaborator[] = [];
 
   pcNeeds = [
     {
@@ -298,7 +227,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   private _intervalId: any;
 
   // Productos para el carrusel de ensambles
-  carruselProducts = [
+  carruselProducts: Product[] = [
     {
       id: 1,
       title: 'CPU PRE ARMADO 1',
@@ -487,7 +416,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
         if (Array.isArray(product.brandLogos)) {
           product.brandLogos.forEach((logo) => {
-            propsToCheck.push(logo.src, logo.alt, logo.position);
+            propsToCheck.push(logo.src, logo.alt, logo.position ?? '');
           });
         }
 
@@ -552,7 +481,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
-    private productsService: ProductsService
+    private productsService: ProductsService,
+    private communityService: CommunityService
   ) {}
 
   // Métodos para controlar la navegación de los banners
@@ -570,7 +500,9 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.peripherals = this.shuffleItems(this.peripherals);
+    this.loadRandomAssemblies();
     this.loadRandomPeripherals();
+    this.loadFeaturedCollaborators();
 
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
@@ -614,6 +546,116 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
         this.peripherals = [];
         this.cdr.detectChanges();
       },
+    });
+  }
+
+  private loadRandomAssemblies(): void {
+    this.productsService.getAssembledPCs().subscribe({
+      next: (products) => {
+        const items = this.shuffleItems(products)
+          .slice(0, 12)
+          .map((product, index) => this.toPackageSliderItem(product, index));
+
+        if (items.length) {
+          this.carruselProducts = items;
+          this.filteredCarruselProducts = [...items];
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        this.carruselProducts = this.shuffleItems(this.carruselProducts);
+        this.filteredCarruselProducts = [...this.carruselProducts];
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private toPackageSliderItem(product: AssembledPC, index: number): Product {
+    const price = product.discountedPrice ?? product.price;
+    const processor = product.specifications.processor.title;
+    const motherboard = product.specifications.motherboard.title;
+    const graphicsCard = product.specifications.graphicsCard.title;
+
+    return {
+      id: product.id ?? index + 1,
+      title: product.title,
+      image: product.image,
+      price,
+      processor,
+      motherboard,
+      ram: product.specifications.ram.title,
+      storage: product.specifications.storage.map((item) => item.title).join(' + '),
+      graphicsCard,
+      slug: product.slug,
+      brandLogos: this.getPackageBrandLogos(product, processor, graphicsCard, motherboard),
+      powerCertificate: this.getPowerCertificateImage(product.certifications.certificate),
+      watts: product.certifications.wattage,
+      category: 'paquete',
+      description: product.description,
+    };
+  }
+
+  private getPackageBrandLogos(
+    product: AssembledPC,
+    processor: string,
+    graphicsCard: string,
+    motherboard: string
+  ): Array<{ src: string; alt: string }> {
+    const logos = product.brandLogos
+      .map((logo) => ({ src: logo.logo, alt: logo.name }))
+      .filter((logo) => logo.src && logo.alt);
+
+    const componentText = `${processor} ${graphicsCard} ${motherboard}`.toLowerCase();
+    const derivedLogos = [
+      {
+        match: componentText.includes('nvidia') || componentText.includes('rtx') || componentText.includes('gtx'),
+        src: 'assets/img/marcas/nvidia_tag.svg',
+        alt: 'NVIDIA',
+      },
+      {
+        match: componentText.includes('amd') || componentText.includes('ryzen') || componentText.includes('radeon'),
+        src: 'assets/img/marcas/ryzen_tag.svg',
+        alt: 'AMD Ryzen',
+      },
+      {
+        match: componentText.includes('intel') || componentText.includes('core ultra') || componentText.includes('core i'),
+        src: 'assets/img/marcas/intel_tag.svg',
+        alt: 'Intel',
+      },
+      {
+        match: componentText.includes('asus') || componentText.includes('rog'),
+        src: 'assets/img/marcas/asuspng.png',
+        alt: 'ASUS',
+      },
+      {
+        match: componentText.includes('gigabyte') || componentText.includes('aorus'),
+        src: 'assets/img/marcas/gigabyte.png',
+        alt: 'Gigabyte',
+      },
+      {
+        match: componentText.includes('corsair'),
+        src: 'assets/img/marcas/corsairbrand.png',
+        alt: 'Corsair',
+      },
+    ]
+      .filter((logo) => logo.match)
+      .map(({ src, alt }) => ({ src, alt }));
+
+    return [...logos, ...derivedLogos]
+      .filter((logo, index, all) => all.findIndex((item) => item.alt === logo.alt) === index)
+      .slice(0, 4);
+  }
+
+  private getPowerCertificateImage(certificate: string): string {
+    return certificate === '80+ Bronze'
+      ? 'assets/img/certificaciones/80_Plus_Bronze.svg.png'
+      : 'assets/img/certificaciones/80plusgold.png';
+  }
+
+  private loadFeaturedCollaborators(): void {
+    this.communityService.getFeaturedCollaborators(8).subscribe((collaborators) => {
+      this.influencers = collaborators;
+      this.cdr.detectChanges();
     });
   }
 

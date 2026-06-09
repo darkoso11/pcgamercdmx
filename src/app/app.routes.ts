@@ -30,6 +30,18 @@ export const routes: Routes = [
     title: 'Contacto | PC Gamer CDMX',
     data: { description: 'Ponte en contacto con PC Gamer CDMX para consultas, soporte o información sobre nuestros productos y servicios.' }
   },
+  {
+    path: 'colaboradores',
+    loadComponent: () => import('./features/community/community.component').then(m => m.CommunityComponent),
+    title: 'Colaboradores | PC Gamer CDMX',
+    data: { description: 'Conoce a los colaboradores e influencers de la comunidad PC Gamer CDMX.' }
+  },
+  {
+    path: 'colaboradores/:slug',
+    loadComponent: () => import('./features/community/community-detail.component').then(m => m.CommunityDetailComponent),
+    title: 'Perfil de colaborador | PC Gamer CDMX',
+    data: { renderMode: 'dynamic' }
+  },
   
   // Rutas adicionales
   {
@@ -129,6 +141,12 @@ export const routes: Routes = [
     path: 'admin/blog/login',
     loadComponent: () => import('./features/admin/admin-login.component').then(m => m.AdminLoginComponent),
     title: 'Admin Login | PC Gamer CDMX'
+  },
+  {
+    path: 'admin/community',
+    loadComponent: () => import('./features/community/admin-community.component').then(m => m.AdminCommunityComponent),
+    title: 'Admin Comunidad | PC Gamer CDMX',
+    canActivate: [AuthGuard]
   },
 
   // Admin Products routes
