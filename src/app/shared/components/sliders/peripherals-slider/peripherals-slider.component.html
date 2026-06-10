@@ -31,6 +31,13 @@
                    class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
                 {{ item.discount }}% OFF
               </div>
+
+              <div
+                *ngIf="item.inStock === false"
+                class="absolute top-2 left-2 rounded-full border border-red-300/40 bg-red-500/85 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white"
+              >
+                Sin stock
+              </div>
             </div>
             
             <!-- Detalles -->
@@ -42,6 +49,14 @@
                   <span class="text-gray-300 text-xs">{{ item.rating }}</span>
                 </div>
               </div>
+
+              <p
+                *ngIf="item.inventoryLabel"
+                class="mb-2 text-[11px] font-bold uppercase tracking-[0.16em]"
+                [ngClass]="item.inStock === false ? 'text-red-300' : 'text-green-300'"
+              >
+                {{ item.inventoryLabel }}
+              </p>
               
               <div class="flex justify-between items-end">
                 <div class="text-white">

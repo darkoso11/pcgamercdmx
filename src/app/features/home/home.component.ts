@@ -4,15 +4,9 @@ import {
   OnDestroy,
   NgZone,
   ViewChild,
-  ViewChildren,
-  QueryList,
-  ElementRef,
-  AfterViewInit,
   ChangeDetectorRef,
-  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
@@ -20,15 +14,19 @@ import { take, tap } from 'rxjs/operators';
 // Importar los componentes de slider
 import { HeroSliderComponent } from '../../shared/components/sliders/hero-slider/hero-slider.component';
 import { ProductsSliderComponent } from '../../shared/components/sliders/products-slider/products-slider.component';
-import { NeedsSliderComponent } from '../../shared/components/sliders/needs-slider/needs-slider.component';
 import { PeripheralsSliderComponent } from '../../shared/components/sliders/peripherals-slider/peripherals-slider.component';
 import { BannersSliderComponent } from '../../shared/components/sliders/banners-slider/banners-slider.component';
 import { BrandsSectionComponent } from '../../shared/components/brands-section/brands-section.component';
-import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
+import { BUSINESS_INFO } from '../../shared/config/business-info';
 import { Product, ProductsService } from '../products/services/products.service';
 import { AssembledPC, PeripheralProduct } from '../../shared/models';
 import { CommunityCollaborator } from '../community/collaborators.data';
 import { CommunityService } from '../community/community.service';
+import { HomeBlogSectionComponent } from './components/home-blog-section.component';
+import { HomeCommunitySectionComponent } from './components/home-community-section.component';
+import { HomeCustomCasesSectionComponent } from './components/home-custom-cases-section.component';
+import { HomeProjectRequestSectionComponent } from './components/home-project-request-section.component';
+import { HomeServicesSectionComponent } from './components/home-services-section.component';
 
 interface HomePeripheralItem {
   id: number;
@@ -40,6 +38,8 @@ interface HomePeripheralItem {
   discount?: number;
   rating: number;
   slug: string;
+  inStock: boolean;
+  inventoryLabel: string;
 }
 
 @Component({
@@ -50,19 +50,20 @@ interface HomePeripheralItem {
     RouterModule,
     HeroSliderComponent,
     ProductsSliderComponent,
-    NeedsSliderComponent,
     PeripheralsSliderComponent,
     BannersSliderComponent,
     BrandsSectionComponent,
-    FormsModule,
-    ReactiveFormsModule,
+    HomeBlogSectionComponent,
+    HomeCommunitySectionComponent,
+    HomeCustomCasesSectionComponent,
+    HomeProjectRequestSectionComponent,
+    HomeServicesSectionComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
-export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
+export class HomeComponent implements OnInit, OnDestroy {
   readonly business = BUSINESS_INFO;
-  projectRequestSent = false;
 
   // Slider superior derecho - -
   sliderImages = [
@@ -224,7 +225,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   ];
 
   // Variable para almacenar referencia al intervalo
-  private _intervalId: any;
+  private rotationIntervalId: ReturnType<typeof setInterval> | null = null;
 
   // Productos para el carrusel de ensambles
   carruselProducts: Product[] = [
@@ -475,7 +476,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Control del índice actual del banner
   bannerIndex = 0;
-  private bannerIntervalId: any;
   @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
 
   constructor(
@@ -506,15 +506,12 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
-      console.log('Home component initialized');
-
       setTimeout(() => {
-        console.log('Starting typing effect');
         this.startTypingWithObservable();
       }, 500);
 
       // Añade la rotación de imágenes del slider y PC
-      this._intervalId = setInterval(() => {
+      this.rotationIntervalId = setInterval(() => {
         this.ngZone.run(() => {
           this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
           this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
@@ -522,11 +519,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
         });
       }, 4000);
 
-      window.addEventListener('load', () => {
-        console.log('Window fully loaded');
-      });
-
-      this.checkForLoadingIssues();
     }
   }
 
@@ -673,6 +665,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       discount: originalPrice ? this.toDiscountPercent(originalPrice, price) : undefined,
       rating: product.rating?.average ?? 4.8,
       slug: product.slug,
+      inStock: product.stock > 0,
+      inventoryLabel: product.stock > 0 ? 'Disponible' : 'Sin stock',
     };
   }
 
@@ -707,89 +701,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     return shuffled;
   }
 
-  // Método para diagnosticar problemas de carga
-  checkForLoadingIssues(): void {
-    console.log('Checking for loading issues...');
-
-    // Verificar si hay muchas suscripciones activas (posible memory leak)
-    setTimeout(() => {
-      console.log('Active subscriptions check');
-      if (this.typingSubscription) {
-        console.log('Typing subscription is active');
-      }
-
-      // Comprobar si hay muchas imágenes sin cargar
-      const images = document.querySelectorAll('img');
-      let pendingImages = 0;
-
-      images.forEach((img) => {
-        if (!img.complete) {
-          pendingImages++;
-        }
-      });
-
-      console.log(`Pending images: ${pendingImages}/${images.length}`);
-
-      // Verificar si hay demasiados logs (puede ralentizar la aplicación)
-      if (console.log.toString().indexOf('native code') === -1) {
-        console.warn(
-          'Console logging might be overridden, which can cause performance issues'
-        );
-      }
-    }, 2000);
-  }
-
-  ngAfterViewInit() {
-    // Ya no necesitamos calcular dimensiones aquí, los componentes de slider lo manejan internamente
-  }
-
-  // Método para detectar si estamos en un dispositivo móvil
-  isMobile(): boolean {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768; // 768px es el breakpoint md en Tailwind
-    }
-    return false;
-  }
-
-  submitProjectRequest(form: NgForm): void {
-    if (form.invalid) {
-      form.control.markAllAsTouched();
-      return;
-    }
-
-    const value = form.value;
-    const message = [
-      'Hola PC Gamer CDMX, quiero cotizar una PC personalizada.',
-      `Nombre: ${value.name}`,
-      `Correo: ${value.email}`,
-      `WhatsApp: ${value.phone}`,
-      `Uso principal: ${value.mainUse}`,
-      `Presupuesto: ${value.budget}`,
-      `Detalles: ${value.details}`,
-    ].filter(Boolean).join('\n');
-
-    this.projectRequestSent = true;
-
-    if (typeof window !== 'undefined') {
-      window.open(buildWhatsAppUrl(message), '_blank');
-    }
-
-    form.resetForm();
-
-    setTimeout(() => {
-      this.projectRequestSent = false;
-    }, 3500);
-  }
-
-  // Mejorar manejo de errores en imágenes
-  handleImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    if (img) {
-      console.warn(`Failed to load image: ${img.src}`);
-      img.src = 'assets/img/gabinetes/BR-938686_1.png';
-      img.onerror = null; // Evita bucles infinitos
-    }
-  }
 
   // Método typing
   startTypingWithObservable(): void {
@@ -808,15 +719,12 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
         tap((index) => {
           this.ngZone.run(() => {
             this.typingText += this.fullText.charAt(index);
-            // Eliminar el log para reducir la sobrecarga
-            // console.log('Current text:', this.typingText);
             this.cdr.detectChanges();
           });
         })
       )
       .subscribe({
         complete: () => {
-          console.log('Typing effect completed');
           // Asegurar que la suscripción se limpia
           if (this.typingSubscription) {
             this.typingSubscription.unsubscribe();
@@ -836,7 +744,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Mejorar método de destrucción para asegurar la limpieza de recursos
   ngOnDestroy(): void {
-    console.log('Home component destroyed - cleaning up resources');
 
     // Limpiar todas las suscripciones y timers
     if (this.typingSubscription) {
@@ -844,15 +751,9 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       this.typingSubscription = undefined;
     }
 
-    if (this._intervalId) {
-      clearInterval(this._intervalId);
-      this._intervalId = null;
-    }
-
-    // Limpiar el intervalo de los banners
-    if (this.bannerIntervalId) {
-      clearInterval(this.bannerIntervalId);
-      this.bannerIntervalId = null;
+    if (this.rotationIntervalId) {
+      clearInterval(this.rotationIntervalId);
+      this.rotationIntervalId = null;
     }
   }
 
@@ -919,14 +820,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   ];
 
-  // Variable para almacenar el case seleccionado para el modal
-  selectedCustomCase: any = null;
-
-  // Método para abrir el modal de custom case
-  openCustomCaseModal(customCase: any): void {
-    this.selectedCustomCase = customCase;
-    console.log('Abriendo modal para:', customCase.title);
-  }
 
   // Datos para sección de periféricos
   peripheralCategories = [
@@ -941,90 +834,4 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   peripherals: HomePeripheralItem[] = [];
 
-  // Control de navegación de periféricos
-  selectedPeripheralCategory = 0;
-  peripheralScrollPosition = 0;
-  peripheralScrollStep = 300;
-
-  get filteredPeripherals() {
-    const selectedCategory =
-      this.peripheralCategories[this.selectedPeripheralCategory].value;
-    return selectedCategory === 'all'
-      ? this.peripherals
-      : this.peripherals.filter((p) => p.category === selectedCategory);
-  }
-
-  selectPeripheralCategory(index: number) {
-    this.selectedPeripheralCategory = index;
-    this.peripheralScrollPosition = 0; // Reset scroll position when category changes
-  }
-
-  scrollPeripheralsLeft() {
-    // Ajustamos para mostrar más elementos por clic
-    const scrollStep = this.peripheralScrollStep * 2;
-    this.peripheralScrollPosition = Math.max(
-      0,
-      this.peripheralScrollPosition - scrollStep
-    );
-  }
-
-  scrollPeripheralsRight() {
-    const maxScroll = this.getMaxPeripheralScroll();
-
-    // Si estamos cerca del final, nos vamos directamente al final para mostrar el último elemento
-    if (
-      this.peripheralScrollPosition + this.peripheralScrollStep * 2 >=
-      maxScroll * 0.8
-    ) {
-      this.peripheralScrollPosition = maxScroll;
-    } else {
-      // Ajustamos para mostrar más elementos por clic
-      const scrollStep = this.peripheralScrollStep * 2;
-      this.peripheralScrollPosition = Math.min(
-        maxScroll,
-        this.peripheralScrollPosition + scrollStep
-      );
-    }
-
-    console.log(
-      `Current scroll: ${this.peripheralScrollPosition}, Max: ${maxScroll}`
-    );
-  }
-
-  getMaxPeripheralScroll(): number {
-    if (typeof window !== 'undefined') {
-      // 1. Cálculo preciso del ancho total del contenido
-      const totalItems = this.filteredPeripherals.length;
-      // Ajustamos el ancho para considerar el padding interno, bordes, etc.
-      const itemWidth = 300; // 250px de ancho base + bordes y márgenes
-      const gap = 24; // 6 * 4px (gap-6 en Tailwind)
-
-      // 2. Ancho total del slider (suma de todos los items con sus gaps)
-      const totalContentWidth = totalItems * itemWidth + (totalItems - 1) * gap;
-
-      // 3. Ancho visible del contenedor (viewport)
-      let containerWidth = 0;
-      if (window.innerWidth > 1280) {
-        containerWidth = 1140; // max-w-7xl con padding
-      } else if (window.innerWidth > 768) {
-        containerWidth = window.innerWidth - 90;
-      } else {
-        containerWidth = window.innerWidth - 40;
-      }
-
-      // 4. Margen extra para garantizar que el último producto sea totalmente visible
-      const extraMargin = 50;
-
-      // 5. Cálculo final: el desplazamiento máximo es la diferencia total menos el viewport
-      const maxScroll = Math.max(
-        0,
-        totalContentWidth - containerWidth + extraMargin
-      );
-
-      console.log(`Slider info - Items: ${totalItems}, Content Width: ${totalContentWidth}, 
-                  Container: ${containerWidth}, Max Scroll: ${maxScroll}`);
-      return maxScroll;
-    }
-    return 0;
-  }
 }

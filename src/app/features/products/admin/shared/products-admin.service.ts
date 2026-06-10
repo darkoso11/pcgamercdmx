@@ -143,6 +143,7 @@ export interface AdminDashboardStats {
   publishedProducts: number;
   draftProducts: number;
   productsWithLowStock: number;
+  productsOutOfStock: number;
   totalPackages: number;
   totalOffers: number;
   activeOffers: number;
@@ -630,7 +631,8 @@ export class ProductsAdminService {
           totalAssemblies: assemblies.length,
           publishedProducts: catalogProducts.filter((product) => product.published).length,
           draftProducts: catalogProducts.filter((product) => !product.published).length,
-          productsWithLowStock: catalogProducts.filter((product) => product.stock <= product.lowStockAlert).length,
+          productsWithLowStock: catalogProducts.filter((product) => product.stock > 0 && product.stock <= product.lowStockAlert).length,
+          productsOutOfStock: catalogProducts.filter((product) => product.stock <= 0).length,
           totalPackages: packagesList.length,
           totalOffers: offers.length,
           activeOffers: offers.filter((offer) => offer.active).length,
@@ -648,7 +650,7 @@ export class ProductsAdminService {
   getLowStockProducts(): Observable<Product[]> {
     return this.getAllProducts().pipe(
       map((response) =>
-        response.data.filter((product) => product.category !== 'paquetes' && product.stock <= product.lowStockAlert)
+        response.data.filter((product) => product.category !== 'paquetes' && product.stock > 0 && product.stock <= product.lowStockAlert)
       )
     );
   }

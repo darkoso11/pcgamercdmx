@@ -84,7 +84,9 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       const matchesStatus =
         this.selectedStatus === '' ||
         (this.selectedStatus === 'published' && product.published) ||
-        (this.selectedStatus === 'draft' && !product.published);
+        (this.selectedStatus === 'private' && !product.published) ||
+        (this.selectedStatus === 'out-of-stock' && product.stock <= 0) ||
+        (this.selectedStatus === 'low-stock' && product.stock > 0 && product.stock <= product.lowStockAlert);
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -172,6 +174,18 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       default:
         return 'Hardware y accesorios';
     }
+  }
+
+  getStockLabel(product: Product): string {
+    if (product.stock <= 0) {
+      return 'Sin stock';
+    }
+
+    if (product.stock <= product.lowStockAlert) {
+      return `${product.stock} bajo stock`;
+    }
+
+    return `${product.stock} en stock`;
   }
 
   ngOnDestroy(): void {

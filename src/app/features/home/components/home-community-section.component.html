@@ -1,0 +1,94 @@
+<section class="py-16 relative bg-[#0d1127]">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+    <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
+    <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent"></div>
+  </div>
+
+  <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-violet-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+    Nuestra Comunidad
+  </h2>
+
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-10">
+      <p class="text-gray-300 max-w-3xl mx-auto">
+        Forma parte de nuestra comunidad de jugadores y entusiastas de PC. Comparte tu experiencia, aprende de otros y mantente al dia con las ultimas tendencias en hardware y gaming.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
+      <ng-container *ngFor="let influencer of influencers">
+        <a [routerLink]="['/colaboradores', influencer.slug]" class="bg-[#161a3c] border border-violet-500/20 rounded-xl p-4 transition-all duration-300 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/20 group">
+          <div class="relative overflow-hidden rounded-lg mb-3 aspect-square">
+            <img [src]="influencer.image" [alt]="influencer.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          </div>
+          <h3 class="text-sm md:text-lg font-bold text-white mb-1">{{ influencer.name }}</h3>
+          <div class="flex gap-2 mt-3">
+            <span *ngIf="influencer.twitch" class="text-violet-400 transition-colors text-sm md:text-base">
+              <i class="fab fa-twitch"></i>
+            </span>
+            <span *ngIf="influencer.instagram" class="text-violet-400 transition-colors text-sm md:text-base">
+              <i class="fab fa-instagram"></i>
+            </span>
+          </div>
+        </a>
+      </ng-container>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <a routerLink="/colaboradores" class="border border-cyan-300/50 text-cyan-200 py-3 px-6 rounded-lg font-bold hover:bg-cyan-300/10 hover:text-white transition-colors flex items-center">
+        <i class="fas fa-users mr-2 text-xl"></i>
+        Ver colaboradores
+      </a>
+      <a [href]="business.social.discord" target="_blank" rel="noopener noreferrer" class="bg-[#5865F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#4752c4] transition-colors flex items-center">
+        <i class="fab fa-discord mr-2 text-xl"></i>
+        Unete a Discord
+      </a>
+      <a [href]="business.social.facebookGroup" target="_blank" rel="noopener noreferrer" class="bg-[#1877F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#0d65d9] transition-colors flex items-center">
+        <i class="fab fa-facebook mr-2 text-xl"></i>
+        Grupo de Facebook
+      </a>
+      <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer" class="bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] text-white py-3 px-6 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all flex items-center">
+        <i class="fab fa-instagram mr-2 text-xl"></i>
+        Siguenos en Instagram
+      </a>
+    </div>
+
+    <div class="mt-16 bg-black/30 backdrop-blur-sm border border-violet-500/20 rounded-xl p-6 md:p-8">
+      <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
+        <i class="fas fa-calendar-alt text-violet-400 mr-3"></i>
+        Proximos Eventos
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex gap-4 items-start">
+          <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
+            <span class="block text-xl font-bold">25</span>
+            <span class="text-xs">JUN</span>
+          </div>
+          <div>
+            <h4 class="text-white font-bold">Torneo de Valorant</h4>
+            <p class="text-gray-300 text-sm">Compite con los mejores jugadores de CDMX.</p>
+            <a routerLink="/contacto" [queryParams]="{ topic: 'torneo-valorant' }" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">
+              Mas informacion
+            </a>
+          </div>
+        </div>
+
+        <div class="flex gap-4 items-start">
+          <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
+            <span class="block text-xl font-bold">10</span>
+            <span class="text-xs">JUL</span>
+          </div>
+          <div>
+            <h4 class="text-white font-bold">Stream de Ensamble en Vivo</h4>
+            <p class="text-gray-300 text-sm">Aprende a ensamblar tu PC con expertos.</p>
+            <a routerLink="/contacto" [queryParams]="{ topic: 'stream-ensamble' }" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">
+              Agendar recordatorio
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -39,6 +39,8 @@ export interface ProductCardViewModel {
   badges: string[];
   specHighlights: Array<{ label: string; value: string }>;
   ctaLabel: string;
+  inStock: boolean;
+  inventoryLabel: string;
 }
 
 export interface Product {
@@ -246,6 +248,8 @@ export class ProductsService {
         product.category === ProductCategory.ASSEMBLED
           ? 'Ver ensamble'
           : 'Ver producto',
+      inStock: product.stock > 0,
+      inventoryLabel: this.buildInventoryLabel(product),
     };
   }
 
@@ -572,6 +576,10 @@ export class ProductsService {
   private buildBadges(product: CatalogProduct): string[] {
     const badges: string[] = [];
 
+    if (product.stock <= 0) {
+      badges.push('Sin stock');
+    }
+
     if (product.featured) {
       badges.push('Destacado');
     }
@@ -580,7 +588,7 @@ export class ProductsService {
       badges.push('Promocion');
     }
 
-    if (product.stock <= (product.lowStockThreshold ?? 2)) {
+    if (product.stock > 0 && product.stock <= (product.lowStockThreshold ?? 2)) {
       badges.push('Ultimas piezas');
     }
 
@@ -598,6 +606,22 @@ export class ProductsService {
     }
 
     return badges.slice(0, 4);
+  }
+
+  private buildInventoryLabel(product: CatalogProduct): string {
+    if (product.stock <= 0) {
+      return 'Producto sin stock';
+    }
+
+    if (product.stock <= 1) {
+      return 'Ultima unidad disponible';
+    }
+
+    if (product.stock <= (product.lowStockThreshold ?? 2)) {
+      return 'Inventario limitado';
+    }
+
+    return 'Disponible';
   }
 
   private extractBrand(product: CatalogProduct): string | null {

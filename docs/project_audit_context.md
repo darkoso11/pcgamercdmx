@@ -180,7 +180,7 @@ Evidencia: `src/app/app.routes.ts`.
 
 ### Home
 
-Evidencia: `src/app/features/home/home.component.html`, `src/app/features/home/home.component.ts`, screenshots `.tmp-*`.
+Evidencia: `src/app/features/home/home.component.html`, `src/app/features/home/home.component.ts`.
 
 Estado:
 
@@ -199,7 +199,7 @@ Riesgos:
 
 ### Ensambles
 
-Evidencia: `src/app/features/assemblies/assemblies.component.html`, `docs/products_planning.md`, screenshot `.tmp-ensambles-desktop.png`.
+Evidencia: `src/app/features/assemblies/assemblies.component.html`, `docs/products_planning.md`.
 
 Estado:
 
@@ -217,7 +217,7 @@ Mejoras:
 
 ### Productos
 
-Evidencia: `src/app/features/products/products-overview/*`, `src/app/features/products/services/products.service.ts`, screenshot `.tmp-productos-desktop.png`.
+Evidencia: `src/app/features/products/products-overview/*`, `src/app/features/products/services/products.service.ts`.
 
 Estado:
 
@@ -533,7 +533,4 @@ Recomendacion:
 - `src/app/features/contact/contact.component.*`
 - `src/app/shared/components/navbar/navbar.component.html`
 - `src/styles.css`
-- `.tmp-ensambles-desktop.png`
-- `.tmp-productos-desktop.png`
-- `.tmp-ensamble-detail-mobile.png`
 

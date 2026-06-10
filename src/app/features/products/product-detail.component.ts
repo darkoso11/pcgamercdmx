@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Meta, Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -11,6 +10,7 @@ import {
 } from './services/products.service';
 import { ProductCategory } from '../../shared/models';
 import { buildWhatsAppUrl } from '../../shared/config/business-info';
+import { SeoService } from '../../core/services/seo.service';
 
 interface DetailViewModel {
   rootLabel: string;
@@ -30,6 +30,7 @@ interface DetailViewModel {
   infoChips: string[];
   brandLogos: Array<{ src: string; alt: string }>;
   inventoryLabel: string;
+  inStock: boolean;
   supportLabel: string;
   certificationImage?: string;
   certificationText?: string;
@@ -57,8 +58,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly productsService: ProductsService,
-    private readonly meta: Meta,
-    private readonly title: Title,
+    private readonly seoService: SeoService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -172,6 +172,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       infoChips,
       brandLogos: this.buildBrandLogos(product),
       inventoryLabel: this.buildInventoryLabel(product),
+      inStock: product.stock > 0,
       supportLabel:
         product.category === ProductCategory.ASSEMBLED
           ? 'Cotizamos ajustes de RAM, almacenamiento y GPU sobre esta misma base.'
@@ -278,6 +279,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   private buildInventoryLabel(product: CatalogProduct): string {
+    if (product.stock <= 0) {
+      return 'Producto sin stock';
+    }
+
     if (product.stock <= 1) {
       return 'Ultima unidad disponible';
     }
@@ -300,17 +305,14 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         ? `https://pcgamercdmx.com/ensambles/${product.slug}`
         : `https://pcgamercdmx.com/productos/${product.slug}`;
 
-    this.title.setTitle(title);
-
-    this.meta.updateTag({ name: 'description', content: description });
-    this.meta.updateTag({
-      name: 'keywords',
-      content: [...(product.keywords ?? []), product.title, product.subcategory].join(', '),
+    this.seoService.update({
+      title,
+      description,
+      keywords: [...(product.keywords ?? []), product.title, product.subcategory].join(', '),
+      image: product.image,
+      url: detailUrl,
+      type: 'product',
     });
-    this.meta.updateTag({ property: 'og:title', content: title });
-    this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:image', content: product.image });
-    this.meta.updateTag({ property: 'og:url', content: detailUrl });
   }
 
   private syncNotFoundFallback(): void {

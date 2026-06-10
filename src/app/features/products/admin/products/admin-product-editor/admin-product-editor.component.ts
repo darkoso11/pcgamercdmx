@@ -292,16 +292,17 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     operation.pipe(takeUntil(this.destroy$)).subscribe({
       next: (result: any) => {
-        this.successMessage = this.isEditMode 
-          ? 'Producto actualizado y publicado correctamente'
-          : 'Producto creado y publicado correctamente';
+        const visibility = productData.published ? 'publico' : 'privado';
+        this.successMessage = this.isEditMode
+          ? `Producto actualizado como ${visibility}`
+          : `Producto creado como ${visibility}`;
         this.loading = false;
         setTimeout(() => {
           this.router.navigate(['/admin/products']);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al publicar el producto';
+        this.errorMessage = 'Error al guardar el producto';
         console.error(err);
         this.loading = false;
       }
@@ -332,14 +333,14 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     operation.pipe(takeUntil(this.destroy$)).subscribe({
       next: (result: any) => {
-        this.successMessage = 'Producto guardado como borrador';
+        this.successMessage = 'Producto guardado como privado';
         this.loading = false;
         setTimeout(() => {
           this.router.navigate(['/admin/products']);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el borrador';
+        this.errorMessage = 'Error al guardar el producto privado';
         console.error(err);
         this.loading = false;
       }

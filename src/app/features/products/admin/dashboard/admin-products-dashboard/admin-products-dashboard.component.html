@@ -78,7 +78,7 @@
     </div>
 
     <!-- Estadisticas -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       <!-- Total de Productos -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-cyan-400/30 transition">
         <div class="flex items-start justify-between">
@@ -115,10 +115,34 @@
         </div>
       </button>
 
+      <!-- Sin Stock -->
+      <div
+        class="bg-[#0b1220] border transition"
+        [ngClass]="(stats?.productsOutOfStock || 0) > 0 ? 'border-red-400/50' : 'border-white/10'"
+      >
+        <div class="p-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Sin Stock</div>
+              <div
+                class="text-4xl font-bold"
+                [ngClass]="(stats?.productsOutOfStock || 0) > 0 ? 'text-red-400' : 'text-gray-400'"
+              >
+                {{ stats?.productsOutOfStock || 0 }}
+              </div>
+            </div>
+            <i
+              class="fas fa-ban text-2xl opacity-50"
+              [ngClass]="(stats?.productsOutOfStock || 0) > 0 ? 'text-red-400' : 'text-gray-400'"
+            ></i>
+          </div>
+        </div>
+      </div>
+
       <!-- Bajo Stock (Alerta) -->
       <div
         class="bg-[#0b1220] border transition"
-        [ngClass]="(stats?.productsWithLowStock || 0) > 0 ? 'border-red-400/50' : 'border-white/10'"
+        [ngClass]="(stats?.productsWithLowStock || 0) > 0 ? 'border-yellow-400/50' : 'border-white/10'"
       >
         <div class="p-6">
           <div class="flex items-start justify-between">
@@ -126,14 +150,14 @@
               <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Bajo Stock</div>
               <div
                 class="text-4xl font-bold"
-                [ngClass]="(stats?.productsWithLowStock || 0) > 0 ? 'text-red-400' : 'text-gray-400'"
+                [ngClass]="(stats?.productsWithLowStock || 0) > 0 ? 'text-yellow-400' : 'text-gray-400'"
               >
                 {{ stats?.productsWithLowStock || 0 }}
               </div>
             </div>
             <i
               class="fas fa-exclamation-triangle text-2xl opacity-50"
-              [ngClass]="(stats?.productsWithLowStock || 0) > 0 ? 'text-red-400' : 'text-gray-400'"
+              [ngClass]="(stats?.productsWithLowStock || 0) > 0 ? 'text-yellow-400' : 'text-gray-400'"
             ></i>
           </div>
         </div>
@@ -218,9 +242,9 @@
                 <td class="py-4">
                   <span
                     class="px-2 py-1 rounded text-xs font-semibold"
-                    [ngClass]="product.stock <= product.lowStockAlert ? 'bg-red-500/30 text-red-300' : 'bg-green-500/30 text-green-300'"
+                    [ngClass]="product.stock <= 0 ? 'bg-red-500/30 text-red-300' : (product.stock <= product.lowStockAlert ? 'bg-yellow-500/25 text-yellow-200' : 'bg-green-500/30 text-green-300')"
                   >
-                    {{ product.stock }} unidades
+                    {{ getStockLabel(product) }}
                   </span>
                 </td>
                 <td class="py-4">
@@ -228,7 +252,7 @@
                     class="px-2 py-1 rounded text-xs font-semibold"
                     [ngClass]="product.published ? 'bg-green-500/30 text-green-300' : 'bg-yellow-500/30 text-yellow-300'"
                   >
-                    {{ product.published ? 'Publicado' : 'Borrador' }}
+                    {{ product.published ? 'Publicado' : 'Privado' }}
                   </span>
                 </td>
                 <td class="py-4">

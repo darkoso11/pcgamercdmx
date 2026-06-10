@@ -23,6 +23,7 @@ export class Components implements OnInit {
   cards: ProductCardViewModel[] = [];
   searchTerm = '';
   selectedType = 'all';
+  visibleLimit = 24;
 
   readonly typeOptions = [
     { value: 'all', label: 'Todos' },
@@ -64,5 +65,21 @@ export class Components implements OnInit {
 
         return matchesType && matchesSearch;
       });
+  }
+
+  get visibleProducts(): Array<{ product: ComponentProduct; card: ProductCardViewModel }> {
+    return this.filteredProducts.slice(0, this.visibleLimit);
+  }
+
+  get hiddenProductCount(): number {
+    return Math.max(0, this.filteredProducts.length - this.visibleLimit);
+  }
+
+  showMore(): void {
+    this.visibleLimit += 24;
+  }
+
+  resetVisibleLimit(): void {
+    this.visibleLimit = 24;
   }
 }
