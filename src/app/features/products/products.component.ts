@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-products',
@@ -10,6 +10,14 @@ import { RouterModule } from '@angular/router';
   styleUrl: './products.component.css',
 })
 export class ProductsComponent {
+  constructor(private readonly router: Router) {}
+
+  get isProductDetailRoute(): boolean {
+    return /^\/productos\/(?!componentes(?:[/?#]|$)|perifericos(?:[/?#]|$))[^/?#]+/.test(
+      this.router.url
+    );
+  }
+
   readonly segments = [
     {
       label: 'Vista general',
