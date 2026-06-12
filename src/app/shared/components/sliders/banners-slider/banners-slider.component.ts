@@ -106,11 +106,13 @@ export class BannersSliderComponent implements OnInit, OnDestroy {
   }
 
   prev(): void {
+    if (!this.banners.length) return;
     this.currentIndex = (this.currentIndex - 1 + this.banners.length) % this.banners.length;
     this.updateTransform();
   }
   
   next(): void {
+    if (!this.banners.length) return;
     this.currentIndex = (this.currentIndex + 1) % this.banners.length;
     this.updateTransform();
   }
@@ -131,7 +133,8 @@ export class BannersSliderComponent implements OnInit, OnDestroy {
     const img = event.target as HTMLImageElement;
     if (img) {
       const bannerId = img.getAttribute('data-id') || '1';
-      img.src = `https://picsum.photos/id/${240 + parseInt(bannerId)}/1200/600`;
+      const numericId = Number.parseInt(bannerId, 10);
+      img.src = `https://picsum.photos/id/${240 + (Number.isNaN(numericId) ? 1 : numericId)}/1200/600`;
       img.onerror = null;
     }
   }

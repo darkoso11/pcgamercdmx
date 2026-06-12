@@ -11,6 +11,18 @@
   display: block;
 }
 
+.hero-slider-image {
+  width: clamp(270px, 25vw, 330px);
+  height: clamp(116px, 11vw, 145px);
+}
+
+@media (max-width: 1280px) {
+  .hero-slider-image {
+    width: clamp(260px, 28vw, 320px);
+    height: clamp(110px, 12vw, 136px);
+  }
+}
+
 .slider-arrow {
   position: absolute;
   top: 50%;

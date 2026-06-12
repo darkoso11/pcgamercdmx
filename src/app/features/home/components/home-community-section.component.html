@@ -40,10 +40,7 @@
         <i class="fas fa-users mr-2 text-xl"></i>
         Ver colaboradores
       </a>
-      <a [href]="business.social.discord" target="_blank" rel="noopener noreferrer" class="bg-[#5865F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#4752c4] transition-colors flex items-center">
-        <i class="fab fa-discord mr-2 text-xl"></i>
-        Unete a Discord
-      </a>
+      <!-- Discord button paused until the community server is ready. -->
       <a [href]="business.social.facebookGroup" target="_blank" rel="noopener noreferrer" class="bg-[#1877F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#0d65d9] transition-colors flex items-center">
         <i class="fab fa-facebook mr-2 text-xl"></i>
         Grupo de Facebook
@@ -54,37 +51,23 @@
       </a>
     </div>
 
-    <div class="mt-16 bg-black/30 backdrop-blur-sm border border-violet-500/20 rounded-xl p-6 md:p-8">
+    <div *ngIf="showUpcomingEvents && events.length" class="mt-16 bg-black/30 backdrop-blur-sm border border-violet-500/20 rounded-xl p-6 md:p-8">
       <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
         <i class="fas fa-calendar-alt text-violet-400 mr-3"></i>
         Proximos Eventos
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="flex gap-4 items-start">
+        <div *ngFor="let event of events" class="flex gap-4 items-start">
           <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
-            <span class="block text-xl font-bold">25</span>
-            <span class="text-xs">JUN</span>
+            <span class="block text-xl font-bold">{{ event.day }}</span>
+            <span class="text-xs">{{ event.month }}</span>
           </div>
           <div>
-            <h4 class="text-white font-bold">Torneo de Valorant</h4>
-            <p class="text-gray-300 text-sm">Compite con los mejores jugadores de CDMX.</p>
-            <a routerLink="/contacto" [queryParams]="{ topic: 'torneo-valorant' }" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">
-              Mas informacion
-            </a>
-          </div>
-        </div>
-
-        <div class="flex gap-4 items-start">
-          <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
-            <span class="block text-xl font-bold">10</span>
-            <span class="text-xs">JUL</span>
-          </div>
-          <div>
-            <h4 class="text-white font-bold">Stream de Ensamble en Vivo</h4>
-            <p class="text-gray-300 text-sm">Aprende a ensamblar tu PC con expertos.</p>
-            <a routerLink="/contacto" [queryParams]="{ topic: 'stream-ensamble' }" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">
-              Agendar recordatorio
+            <h4 class="text-white font-bold">{{ event.title }}</h4>
+            <p class="text-gray-300 text-sm">{{ event.description }}</p>
+            <a [routerLink]="event.link" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">
+              {{ event.ctaText }}
             </a>
           </div>
         </div>

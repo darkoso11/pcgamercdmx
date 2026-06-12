@@ -198,6 +198,12 @@ export const routes: Routes = [
     title: 'Admin Comunidad | PC Gamer CDMX',
     canActivate: [AuthGuard]
   },
+  {
+    path: 'admin/home',
+    loadComponent: () => import('./features/home/admin-home-content.component').then(m => m.AdminHomeContentComponent),
+    title: 'Admin Home | PC Gamer CDMX',
+    canActivate: [AuthGuard]
+  },
 
   // Admin Products routes
   {

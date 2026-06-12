@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { BUSINESS_INFO } from '../../../shared/config/business-info';
 import { CommunityCollaborator } from '../../community/collaborators.data';
+import { HomeEvent } from '../services/home-content.service';
 
 @Component({
   selector: 'app-home-community-section',
@@ -13,4 +14,6 @@ import { CommunityCollaborator } from '../../community/collaborators.data';
 export class HomeCommunitySectionComponent {
   readonly business = BUSINESS_INFO;
   @Input({ required: true }) influencers: CommunityCollaborator[] = [];
+  @Input() showUpcomingEvents = true;
+  @Input() events: HomeEvent[] = [];
 }
