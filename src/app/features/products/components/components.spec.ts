@@ -17,7 +17,7 @@ describe('Components', () => {
         {
           provide: ProductsService,
           useValue: {
-            getComponentsByType: () => of([]),
+            getHardwareAndAccessories: () => of([]),
             toProductCardViewModel: () => ({}),
           },
         },
