@@ -30,6 +30,7 @@ yarn-error.log
 
 # Miscellaneous
 /.angular/cache
+/.local-run/
 /data/legacy-catalog/
 .sass-cache/
 /connect.lock
