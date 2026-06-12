@@ -6,7 +6,11 @@ import {
   ProductCardViewModel,
   ProductsService,
 } from '../services/products.service';
-import { ComponentProduct } from '../../../shared/models';
+import {
+  AccessoryProduct,
+  ComponentProduct,
+  ProductCategory,
+} from '../../../shared/models';
 
 @Component({
   selector: 'app-components',
@@ -19,7 +23,7 @@ export class Components implements OnInit {
   private readonly productsService = inject(ProductsService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  products: ComponentProduct[] = [];
+  products: Array<ComponentProduct | AccessoryProduct> = [];
   cards: ProductCardViewModel[] = [];
   searchTerm = '';
   selectedType = 'all';
@@ -35,10 +39,12 @@ export class Components implements OnInit {
     { value: 'power-supply', label: 'Fuentes' },
     { value: 'cooling', label: 'Enfriamiento' },
     { value: 'case', label: 'Gabinetes' },
+    { value: 'cable', label: 'Cables' },
+    { value: 'usb-hub', label: 'Adaptadores y hubs' },
   ];
 
   ngOnInit(): void {
-    this.productsService.getComponentsByType(undefined, { sortBy: 'price-asc' }).subscribe((products) => {
+    this.productsService.getHardwareAndAccessories({ sortBy: 'price-asc' }).subscribe((products) => {
       this.products = products;
       this.cards = products.map((product) =>
         this.productsService.toProductCardViewModel(product)
@@ -47,14 +53,17 @@ export class Components implements OnInit {
     });
   }
 
-  get filteredProducts(): Array<{ product: ComponentProduct; card: ProductCardViewModel }> {
+  get filteredProducts(): Array<{ product: ComponentProduct | AccessoryProduct; card: ProductCardViewModel }> {
     const normalized = this.searchTerm.trim().toLowerCase();
 
     return this.products
       .map((product, index) => ({ product, card: this.cards[index] }))
       .filter(({ product, card }) => {
-        const matchesType =
-          this.selectedType === 'all' || product.componentType === this.selectedType;
+        const productType =
+          product.category === ProductCategory.COMPONENT
+            ? product.componentType
+            : product.accessoryType;
+        const matchesType = this.selectedType === 'all' || productType === this.selectedType;
         const matchesSearch =
           !normalized ||
           product.title.toLowerCase().includes(normalized) ||
@@ -67,7 +76,7 @@ export class Components implements OnInit {
       });
   }
 
-  get visibleProducts(): Array<{ product: ComponentProduct; card: ProductCardViewModel }> {
+  get visibleProducts(): Array<{ product: ComponentProduct | AccessoryProduct; card: ProductCardViewModel }> {
     return this.filteredProducts.slice(0, this.visibleLimit);
   }
 

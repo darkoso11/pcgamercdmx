@@ -71,13 +71,18 @@ export const routes: Routes = [
         }
       },
       {
-        path: 'componentes',
+        path: 'hardware-accesorios',
         loadComponent: () => import('./features/products/components/components').then(m => m.Components),
-        title: 'Componentes para PC | PC Gamer CDMX',
+        title: 'Hardware y accesorios para PC | PC Gamer CDMX',
         data: {
-          description: 'Componentes para armar o actualizar tu PC: procesadores, tarjetas graficas, RAM, almacenamiento, fuentes, gabinetes y enfriamiento.',
-          keywords: 'componentes pc, tarjeta grafica, procesador, memoria ram, fuente pc, gabinete pc'
+          description: 'Hardware, componentes, cables, adaptadores y accesorios para armar, actualizar o conectar tu PC.',
+          keywords: 'hardware pc, accesorios pc, cables pc, adaptadores pc, componentes pc, tarjeta grafica, procesador'
         }
+      },
+      {
+        path: 'componentes',
+        redirectTo: 'hardware-accesorios',
+        pathMatch: 'full'
       },
       {
         path: ':slug',
@@ -86,11 +91,8 @@ export const routes: Routes = [
       },
       {
         path: '',
-        loadComponent: () => import('./features/products/products-overview/products-overview').then(m => m.ProductsOverview),
-        title: 'Catalogo gamer | PC Gamer CDMX',
-        data: {
-          description: 'Vista general del catalogo de PC Gamer CDMX con ensambles destacados, componentes y perifericos para gaming y productividad.'
-        }
+        redirectTo: 'perifericos',
+        pathMatch: 'full'
       }
     ]
   },

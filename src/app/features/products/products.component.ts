@@ -13,44 +13,6 @@ export class ProductsComponent {
   constructor(private readonly router: Router) {}
 
   get isProductDetailRoute(): boolean {
-    return /^\/productos\/(?!componentes(?:[/?#]|$)|perifericos(?:[/?#]|$))[^/?#]+/.test(
-      this.router.url
-    );
+    return /^\/productos\/(?!hardware-accesorios(?:[/?#]|$)|componentes(?:[/?#]|$)|perifericos(?:[/?#]|$))[^/?#]+/.test(this.router.url);
   }
-
-  readonly segments = [
-    {
-      label: 'Vista general',
-      link: '/productos',
-      exact: true,
-      description: 'Entrada al catalogo y rutas rapidas por tipo de producto.',
-    },
-    {
-      label: 'Hardware y accesorios',
-      link: '/productos/componentes',
-      exact: false,
-      description: 'Partes, cables, adaptadores y accesorios para PC.',
-    },
-    {
-      label: 'Perifericos',
-      link: '/productos/perifericos',
-      exact: false,
-      description: 'Teclados, mouse, monitores y audio gaming.',
-    },
-  ];
-
-  readonly highlights = [
-    {
-      value: 'Catalogo',
-      label: 'Navegacion limpia para explorar hardware y perifericos.',
-    },
-    {
-      value: 'Compatibilidad',
-      label: 'Base preparada para crecer con filtros, SEO y detalle por categoria.',
-    },
-    {
-      value: 'Asesoria',
-      label: 'Los ensambles viven en su propia superficie comercial y el catalogo se mantiene enfocado.',
-    },
-  ];
 }
