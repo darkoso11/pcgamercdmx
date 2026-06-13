@@ -93,8 +93,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       sortOrder: 3,
     },
   ];
-  sliderIndex = 0;
-
   // Imagen de PCs para el slider inferior derecho
   pcBuilds = [
     { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/ensambles/cpu-pre-armado-1' },
@@ -480,8 +478,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   ];
 
-  // Control del índice actual del banner
-  bannerIndex = 0;
   showUpcomingEvents = true;
   upcomingEvents: HomeEvent[] = [];
   @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
@@ -521,12 +517,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.startTypingWithObservable();
       }, 500);
 
-      // Añade la rotación de imágenes del slider y PC
+      // Añade la rotación de imágenes de PC
       this.rotationIntervalId = setInterval(() => {
         this.ngZone.run(() => {
-          if (this.sliderImages.length) {
-            this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
-          }
           this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
           this.cdr.detectChanges();
         });
