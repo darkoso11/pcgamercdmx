@@ -102,6 +102,36 @@
   max-height: 100%;
 }
 
+.hero-top-banner {
+  position: absolute;
+  top: 2rem;
+  right: clamp(2rem, 4vw, 4.5rem);
+}
+
+.hero-assembly-stage {
+  position: absolute;
+  right: clamp(2rem, 4vw, 4.5rem);
+  bottom: 5.3rem;
+  width: clamp(280px, 28vw, 420px);
+  height: clamp(340px, 50vh, 520px);
+  align-items: flex-end;
+  justify-content: center;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.hero-assembly-stage:hover {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 0 18px rgba(34, 211, 238, 0.28));
+}
+
+.hero-buy-zone {
+  margin-left: auto;
+  margin-right: clamp(2rem, 4vw, 4.5rem);
+  width: clamp(280px, 28vw, 420px);
+  display: flex;
+  justify-content: center;
+}
+
 .menu-secundario {
   position: relative;
   background: transparent;
@@ -240,7 +270,24 @@
     padding: 0.5em 2em;
     font-size: 16px;
   }
+
+  .hero-top-banner {
+    right: 2rem;
+  }
+
+  .hero-assembly-stage,
+  .hero-buy-zone {
+    right: 2rem;
+    margin-right: 2rem;
+    width: clamp(260px, 29vw, 360px);
+  }
   
+}
+
+@media (max-width: 1245px) {
+  .hero-top-banner {
+    top: 5.2rem;
+  }
 }
 
 @media (max-width: 1150px) {
@@ -256,5 +303,24 @@
     left: 50%;
     transform: translateX(-50%);
   }
+
+  .hero-top-banner {
+    right: 1.5rem;
+  }
+
+  .hero-assembly-stage {
+    width: clamp(240px, 30vw, 330px);
+    height: clamp(320px, 46vh, 460px);
+  }
+
+  .hero-buy-zone {
+    width: clamp(240px, 30vw, 330px);
+  }
   
+}
+
+@media (max-width: 900px) {
+  .hero-top-banner {
+    top: 5.5rem;
+  }
 }

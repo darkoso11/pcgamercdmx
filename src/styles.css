@@ -84,5 +84,47 @@ html, body { height: 100%; background: var(--pc-bg-base); }
     0 0 80px #ec4899;
 }
 
+app-home h2 {
+  text-shadow:
+    0.05em 0 0 rgba(255, 0, 0, 0.75),
+    -0.025em -0.05em 0 rgba(0, 255, 255, 0.75),
+    0.025em 0.05em 0 rgba(139, 92, 246, 0.75);
+  animation: home-title-glitch 520ms infinite;
+}
 
+@keyframes home-title-glitch {
+  0%,
+  14% {
+    text-shadow:
+      0.05em 0 0 rgba(255, 0, 0, 0.75),
+      -0.025em -0.05em 0 rgba(0, 255, 255, 0.75),
+      0.025em 0.05em 0 rgba(139, 92, 246, 0.75);
+  }
+  15%,
+  49% {
+    text-shadow:
+      -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
+      0.025em 0.025em 0 rgba(0, 255, 255, 0.75),
+      -0.05em -0.05em 0 rgba(139, 92, 246, 0.75);
+  }
+  50%,
+  99% {
+    text-shadow:
+      0.025em 0.05em 0 rgba(255, 0, 0, 0.75),
+      0.05em 0 0 rgba(0, 255, 255, 0.75),
+      0 -0.05em 0 rgba(139, 92, 246, 0.75);
+  }
+  100% {
+    text-shadow:
+      -0.025em 0 0 rgba(255, 0, 0, 0.75),
+      -0.025em -0.025em 0 rgba(0, 255, 255, 0.75),
+      -0.025em -0.05em 0 rgba(139, 92, 246, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  app-home h2 {
+    animation: none;
+  }
+}
 

@@ -9,7 +9,7 @@
            class="slide-item">
           <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
                [alt]="itemData.item.alt || 'Slider image'" 
-               class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
+               class="hero-slider-image rounded-lg border border-white shadow-neon object-cover bg-[#222] transition hover:scale-105" />
         </a>
         
         <!-- Si es un enlace interno usamos routerLink -->
@@ -18,14 +18,14 @@
            class="slide-item">
           <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
                [alt]="itemData.item.alt || 'Slider image'"
-               class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222] transition hover:scale-105" />
+               class="hero-slider-image rounded-lg border border-white shadow-neon object-cover bg-[#222] transition hover:scale-105" />
         </a>
         
         <!-- Si no hay enlace, solo muestra la imagen -->
         <div *ngIf="!itemData.item.link" class="slide-item">
           <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
                [alt]="itemData.item.alt || 'Slider image'"
-               class="rounded-lg border border-white shadow-neon w-80 h-36 2xl:w-90 2xl:h-40 object-cover bg-[#222]" />
+               class="hero-slider-image rounded-lg border border-white shadow-neon object-cover bg-[#222]" />
         </div>
       </ng-container>
     </ng-container>

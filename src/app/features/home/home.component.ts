@@ -27,6 +27,7 @@ import { HomeCommunitySectionComponent } from './components/home-community-secti
 import { HomeCustomCasesSectionComponent } from './components/home-custom-cases-section.component';
 import { HomeProjectRequestSectionComponent } from './components/home-project-request-section.component';
 import { HomeServicesSectionComponent } from './components/home-services-section.component';
+import { HomeContentService, HomeEvent, HomeHeroBanner } from './services/home-content.service';
 
 interface HomePeripheralItem {
   id: number;
@@ -66,36 +67,39 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly business = BUSINESS_INFO;
 
   // Slider superior derecho - -
-  sliderImages = [
+  sliderImages: HomeHeroBanner[] = [
     {
-      id: 1,
+      id: 'hero-nzxt-h9',
       src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
       link: '/ensambles',
       alt: 'Slider 1',
+      active: true,
+      sortOrder: 1,
     },
     {
-      id: 2,
+      id: 'hero-hbjnkhgnm',
       src: 'assets/img/gabinetes/HBJNKHGNM.png',
       link: '/ensambles',
       alt: 'Slider 2',
+      active: true,
+      sortOrder: 2,
     },
     {
-      id: 3,
+      id: 'hero-product-section',
       src: 'assets/img/gabinetes/product-section-01.png',
       link: '/ensambles',
       alt: 'Slider 3',
+      active: true,
+      sortOrder: 3,
     },
   ];
-  sliderIndex = 0;
-
   // Imagen de PCs para el slider inferior derecho
   pcBuilds = [
-    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/ensambles' },
-    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/ensambles' },
-    { img: 'assets/img/gabinetes/product-section-01.png', link: '/ensambles' },
-    { img: 'assets/img/gabinetes/rog-hyperion-gr701.png', link: '/ensambles' },
+    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/ensambles/cpu-pre-armado-1' },
+    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/ensambles/cpu-pre-armado-2' },
+    { img: 'assets/img/gabinetes/product-section-01.png', link: '/ensambles/cpu-pre-armado-3' },
   ];
-  pcIndex = 2;
+  pcIndex = 0;
 
   // Datos para las nuevas secciones
   popularGames = [
@@ -441,7 +445,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private typingSubscription?: Subscription;
 
   // Datos para el slider de banners promocionales
-  banners = [
+  banners: any[] = [
     {
       id: 1,
       title: 'Ensambles Personalizados',
@@ -474,15 +478,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   ];
 
-  // Control del índice actual del banner
-  bannerIndex = 0;
+  showUpcomingEvents = true;
+  upcomingEvents: HomeEvent[] = [];
   @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
+  private homeContentSubscription?: Subscription;
 
   constructor(
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
     private productsService: ProductsService,
-    private communityService: CommunityService
+    private communityService: CommunityService,
+    private homeContentService: HomeContentService
   ) {}
 
   // Métodos para controlar la navegación de los banners
@@ -503,6 +509,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadRandomAssemblies();
     this.loadRandomPeripherals();
     this.loadFeaturedCollaborators();
+    this.loadHomeContent();
 
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
@@ -510,16 +517,29 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.startTypingWithObservable();
       }, 500);
 
-      // Añade la rotación de imágenes del slider y PC
+      // Añade la rotación de imágenes de PC
       this.rotationIntervalId = setInterval(() => {
         this.ngZone.run(() => {
-          this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
           this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
           this.cdr.detectChanges();
         });
       }, 4000);
 
     }
+  }
+
+  private loadHomeContent(): void {
+    this.homeContentSubscription = this.homeContentService.getSettings().subscribe((settings) => {
+      this.banners = settings.banners
+        .filter((banner) => banner.active)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      this.sliderImages = settings.heroBanners
+        .filter((banner) => banner.active)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      this.showUpcomingEvents = settings.showUpcomingEvents;
+      this.upcomingEvents = settings.events.filter((event) => event.active);
+      this.cdr.detectChanges();
+    });
   }
 
   private loadRandomPeripherals(): void {
@@ -749,6 +769,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.typingSubscription) {
       this.typingSubscription.unsubscribe();
       this.typingSubscription = undefined;
+    }
+
+    if (this.homeContentSubscription) {
+      this.homeContentSubscription.unsubscribe();
+      this.homeContentSubscription = undefined;
     }
 
     if (this.rotationIntervalId) {
