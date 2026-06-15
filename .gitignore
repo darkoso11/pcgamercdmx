@@ -37,6 +37,7 @@ yarn-error.log
 /coverage
 /libpeerconnection.log
 testem.log
+/.codex-ng-serve.log
 /.tmp-*.log
 /typings
 
