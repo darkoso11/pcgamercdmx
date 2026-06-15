@@ -6,7 +6,7 @@
       <h1 class="text-3xl font-bold text-cyan-400">
         <i class="fas fa-list mr-2"></i>Listado de Productos
       </h1>
-      <a routerLink="/admin/products/new" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 rounded font-semibold transition">
+      <a [routerLink]="adminNewProductUrl" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 rounded font-semibold transition">
         <i class="fas fa-plus mr-2"></i>Nuevo Producto
       </a>
     </div>
@@ -192,7 +192,7 @@
         <div class="p-8 text-center">
           <i class="fas fa-inbox text-4xl text-gray-400 mb-4 block opacity-50"></i>
           <p class="text-gray-400 mb-4">No se encontraron productos con los filtros seleccionados</p>
-          <a routerLink="/admin/products/new" class="text-cyan-400 hover:text-cyan-300 font-semibold transition">
+          <a [routerLink]="adminNewProductUrl" class="text-cyan-400 hover:text-cyan-300 font-semibold transition">
             Crear primer producto <i class="fas fa-arrow-right ml-2"></i>
           </a>
         </div>

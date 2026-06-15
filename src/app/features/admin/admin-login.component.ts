@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { adminUrl } from './admin-route.config';
 
 @Component({
   selector: 'app-admin-login',
@@ -26,7 +27,7 @@ import { AuthService } from './services/auth.service';
               [(ngModel)]="email"
               name="email"
               type="email"
-              placeholder="admin@pcgamercdmx.com"
+              placeholder="correo autorizado"
               required
               autocomplete="username"
               class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-400/20 transition"
@@ -79,7 +80,7 @@ import { AuthService } from './services/auth.service';
   `]
 })
 export class AdminLoginComponent {
-  email = 'admin@pcgamercdmx.com';
+  email = '';
   password = '';
   error = '';
   success = '';
@@ -101,7 +102,7 @@ export class AdminLoginComponent {
       const result = await this.auth.login(this.email.trim(), this.password).toPromise();
       if (result?.token) {
         this.success = 'Autenticación exitosa, redirigiendo...';
-        setTimeout(() => this.router.navigate(['/admin']), 500);
+        setTimeout(() => this.router.navigate([adminUrl()]), 500);
       }
     } catch (e) {
       this.error = 'Correo o contraseña inválidos';

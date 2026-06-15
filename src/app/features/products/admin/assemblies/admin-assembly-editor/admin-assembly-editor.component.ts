@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
+import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService } from '../../shared/products-admin.service';
 
 @Component({
@@ -14,6 +15,7 @@ import { ProductsAdminService } from '../../shared/products-admin.service';
   templateUrl: './admin-assembly-editor.component.html'
 })
 export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
+  readonly adminProductsUrl = adminUrl('products');
   form!: FormGroup;
   isEditMode = false;
   loading = false;
@@ -164,7 +166,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
           : 'Ensamble creado y publicado correctamente';
         this.loading = false;
         setTimeout(() => {
-          this.router.navigate(['/admin/products']);
+          this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
@@ -196,7 +198,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         this.successMessage = 'Ensamble guardado como borrador';
         this.loading = false;
         setTimeout(() => {
-          this.router.navigate(['/admin/products']);
+          this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {

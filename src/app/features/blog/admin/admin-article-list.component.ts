@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { BlogService } from '../services/blog.service';
+import { adminUrl } from '../../admin/admin-route.config';
 
 @Component({
   selector: 'app-admin-article-list',
@@ -15,7 +16,7 @@ import { BlogService } from '../services/blog.service';
       <div class="max-w-6xl mx-auto">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-3xl font-bold text-cyan-400">Artículos</h2>
-          <a routerLink="/admin/blog/new" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded font-semibold transition">+ Nuevo</a>
+          <a [routerLink]="adminNewArticleUrl" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded font-semibold transition">+ Nuevo</a>
         </div>
 
         <div class="bg-[#0b1220] border border-cyan-400/30 p-4 rounded-lg mb-6">
@@ -89,7 +90,7 @@ import { BlogService } from '../services/blog.service';
                 <td class="py-3">{{ formatDate(a.createdAt) }}</td>
                 <td class="py-3">{{ a.published ? 'Sí' : 'No' }}</td>
                 <td class="py-3">
-                  <a [routerLink]="['/admin/blog', a._id, 'edit']" class="text-cyan-300 mr-3">Editar</a>
+                  <a [routerLink]="[adminBlogUrl, a._id, 'edit']" class="text-cyan-300 mr-3">Editar</a>
                   <button (click)="deleteArticle(a._id)" class="text-red-400">Borrar</button>
                 </td>
               </tr>
@@ -149,6 +150,8 @@ import { BlogService } from '../services/blog.service';
   `
 })
 export class AdminArticleListComponent {
+  readonly adminBlogUrl = adminUrl('blog');
+  readonly adminNewArticleUrl = adminUrl('blog/new');
   articles: any[] = [];
   categories: any[] = [];
   subcategories: any[] = [];

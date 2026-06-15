@@ -1,4 +1,5 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
+import { adminRoute } from './features/admin/admin-route.config';
 
 export const serverRoutes: ServerRoute[] = [
   {
@@ -18,7 +19,7 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
   {
-    path: 'admin/**',
+    path: adminRoute('**'),
     renderMode: RenderMode.Server
   },
   {

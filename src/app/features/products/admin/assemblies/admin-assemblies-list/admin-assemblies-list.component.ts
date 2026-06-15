@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
+import { adminUrl } from '../../../../admin/admin-route.config';
 import { Product, ProductsAdminService } from '../../shared/products-admin.service';
 
 @Component({
@@ -40,11 +41,11 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
   }
 
   createAssembly(): void {
-    this.router.navigate(['/admin/products/assemblies/new']);
+    this.router.navigate([adminUrl('products/assemblies/new')]);
   }
 
   editAssembly(id: string): void {
-    this.router.navigate(['/admin/products/assemblies', id, 'edit']);
+    this.router.navigate([adminUrl('products/assemblies'), id, 'edit']);
   }
 
   duplicateAssembly(id: string): void {

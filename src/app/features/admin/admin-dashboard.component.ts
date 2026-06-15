@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AdminHeaderComponent } from './admin-header.component';
+import { adminUrl } from './admin-route.config';
 
 interface AdminModuleCard {
   title: string;
@@ -77,7 +78,7 @@ export class AdminDashboardComponent {
       title: 'Admin Home',
       description: 'Edita la primera impresion del sitio: banner superior, carrusel grande, anuncios y proximos eventos.',
       icon: 'fas fa-bullhorn',
-      route: '/admin/home',
+      route: adminUrl('home'),
       accent: 'sky',
       actions: ['Banner superior del hero', 'Carrusel promocional', 'Switch de proximos eventos', 'Vista publica del home'],
     },
@@ -85,7 +86,7 @@ export class AdminDashboardComponent {
       title: 'Admin Productos',
       description: 'Mantiene actualizado el catalogo comercial, paquetes, ensambles, categorias y ofertas activas.',
       icon: 'fas fa-box',
-      route: '/admin/products',
+      route: adminUrl('products'),
       accent: 'pink',
       actions: ['Productos y perifericos', 'Ensambles y paquetes', 'Ofertas destacadas', 'Categorias del catalogo'],
     },
@@ -93,7 +94,7 @@ export class AdminDashboardComponent {
       title: 'Admin Comunidad',
       description: 'Administra colaboradores, perfiles publicados y textos visibles en la experiencia publica de comunidad.',
       icon: 'fas fa-users',
-      route: '/admin/community',
+      route: adminUrl('community'),
       accent: 'violet',
       actions: ['Perfiles de colaboradores', 'Destacados del home', 'Estado publicado/borrador', 'Pagina publica de comunidad'],
     },
@@ -101,7 +102,7 @@ export class AdminDashboardComponent {
       title: 'Admin Blog',
       description: 'Gestiona articulos, categorias y contenido editorial cuando haya publicaciones listas para el sitio.',
       icon: 'fas fa-newspaper',
-      route: '/admin/blog',
+      route: adminUrl('blog'),
       accent: 'cyan',
       actions: ['Lista de articulos', 'Nuevo articulo', 'Categorias editoriales', 'Contenido publicado'],
     },
