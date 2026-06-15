@@ -4,15 +4,9 @@ import {
   OnDestroy,
   NgZone,
   ViewChild,
-  ViewChildren,
-  QueryList,
-  ElementRef,
-  AfterViewInit,
   ChangeDetectorRef,
-  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
@@ -20,11 +14,34 @@ import { take, tap } from 'rxjs/operators';
 // Importar los componentes de slider
 import { HeroSliderComponent } from '../../shared/components/sliders/hero-slider/hero-slider.component';
 import { ProductsSliderComponent } from '../../shared/components/sliders/products-slider/products-slider.component';
-import { NeedsSliderComponent } from '../../shared/components/sliders/needs-slider/needs-slider.component';
 import { PeripheralsSliderComponent } from '../../shared/components/sliders/peripherals-slider/peripherals-slider.component';
 import { BannersSliderComponent } from '../../shared/components/sliders/banners-slider/banners-slider.component';
 import { BrandsSectionComponent } from '../../shared/components/brands-section/brands-section.component';
-import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-info';
+import { BUSINESS_INFO } from '../../shared/config/business-info';
+import { Product, ProductsService } from '../products/services/products.service';
+import { AssembledPC, PeripheralProduct } from '../../shared/models';
+import { CommunityCollaborator } from '../community/collaborators.data';
+import { CommunityService } from '../community/community.service';
+import { HomeBlogSectionComponent } from './components/home-blog-section.component';
+import { HomeCommunitySectionComponent } from './components/home-community-section.component';
+import { HomeCustomCasesSectionComponent } from './components/home-custom-cases-section.component';
+import { HomeProjectRequestSectionComponent } from './components/home-project-request-section.component';
+import { HomeServicesSectionComponent } from './components/home-services-section.component';
+import { HomeContentService, HomeEvent, HomeHeroBanner } from './services/home-content.service';
+
+interface HomePeripheralItem {
+  id: number;
+  name: string;
+  category: string;
+  image: string;
+  price: number;
+  originalPrice?: number;
+  discount?: number;
+  rating: number;
+  slug: string;
+  inStock: boolean;
+  inventoryLabel: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -34,51 +51,55 @@ import { BUSINESS_INFO, buildWhatsAppUrl } from '../../shared/config/business-in
     RouterModule,
     HeroSliderComponent,
     ProductsSliderComponent,
-    NeedsSliderComponent,
     PeripheralsSliderComponent,
     BannersSliderComponent,
     BrandsSectionComponent,
-    FormsModule,
-    ReactiveFormsModule,
+    HomeBlogSectionComponent,
+    HomeCommunitySectionComponent,
+    HomeCustomCasesSectionComponent,
+    HomeProjectRequestSectionComponent,
+    HomeServicesSectionComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
-export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
+export class HomeComponent implements OnInit, OnDestroy {
   readonly business = BUSINESS_INFO;
-  projectRequestSent = false;
 
   // Slider superior derecho - -
-  sliderImages = [
+  sliderImages: HomeHeroBanner[] = [
     {
-      id: 1,
+      id: 'hero-nzxt-h9',
       src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
       link: '/ensambles',
       alt: 'Slider 1',
+      active: true,
+      sortOrder: 1,
     },
     {
-      id: 2,
+      id: 'hero-hbjnkhgnm',
       src: 'assets/img/gabinetes/HBJNKHGNM.png',
       link: '/ensambles',
       alt: 'Slider 2',
+      active: true,
+      sortOrder: 2,
     },
     {
-      id: 3,
+      id: 'hero-product-section',
       src: 'assets/img/gabinetes/product-section-01.png',
       link: '/ensambles',
       alt: 'Slider 3',
+      active: true,
+      sortOrder: 3,
     },
   ];
-  sliderIndex = 0;
-
   // Imagen de PCs para el slider inferior derecho
   pcBuilds = [
-    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/ensambles' },
-    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/ensambles' },
-    { img: 'assets/img/gabinetes/product-section-01.png', link: '/ensambles' },
-    { img: 'assets/img/gabinetes/rog-hyperion-gr701.png', link: '/ensambles' },
+    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/ensambles/cpu-pre-armado-1' },
+    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/ensambles/cpu-pre-armado-2' },
+    { img: 'assets/img/gabinetes/product-section-01.png', link: '/ensambles/cpu-pre-armado-3' },
   ];
-  pcIndex = 2;
+  pcIndex = 0;
 
   // Datos para las nuevas secciones
   popularGames = [
@@ -120,80 +141,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   ];
 
-  influencers = [
-    {
-      name: 'GamerMX',
-      image: 'https://picsum.photos/id/237/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'TechGirl',
-      image: 'https://picsum.photos/id/238/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'ProPlayer',
-      image: 'https://picsum.photos/id/239/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'StreamQueen',
-      image: 'https://picsum.photos/id/240/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'PCMaster',
-      image: 'https://picsum.photos/id/241/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'GameDev',
-      image: 'https://picsum.photos/id/242/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'ContentCreator',
-      image: 'https://picsum.photos/id/243/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'RTXPower',
-      image: 'https://picsum.photos/id/244/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-    {
-      name: 'CPUOverclock',
-      image: 'https://picsum.photos/id/245/300/300',
-      social: {
-        twitch: 'https://twitch.tv',
-        instagram: 'https://instagram.com',
-      },
-    },
-  ];
+  influencers: CommunityCollaborator[] = [];
 
   pcNeeds = [
     {
@@ -281,10 +229,10 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   ];
 
   // Variable para almacenar referencia al intervalo
-  private _intervalId: any;
+  private rotationIntervalId: ReturnType<typeof setInterval> | null = null;
 
   // Productos para el carrusel de ensambles
-  carruselProducts = [
+  carruselProducts: Product[] = [
     {
       id: 1,
       title: 'CPU PRE ARMADO 1',
@@ -473,7 +421,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
         if (Array.isArray(product.brandLogos)) {
           product.brandLogos.forEach((logo) => {
-            propsToCheck.push(logo.src, logo.alt, logo.position);
+            propsToCheck.push(logo.src, logo.alt, logo.position ?? '');
           });
         }
 
@@ -497,7 +445,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   private typingSubscription?: Subscription;
 
   // Datos para el slider de banners promocionales
-  banners = [
+  banners: any[] = [
     {
       id: 1,
       title: 'Ensambles Personalizados',
@@ -530,12 +478,18 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   ];
 
-  // Control del índice actual del banner
-  bannerIndex = 0;
-  private bannerIntervalId: any;
+  showUpcomingEvents = true;
+  upcomingEvents: HomeEvent[] = [];
   @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
+  private homeContentSubscription?: Subscription;
 
-  constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
+    private productsService: ProductsService,
+    private communityService: CommunityService,
+    private homeContentService: HomeContentService
+  ) {}
 
   // Métodos para controlar la navegación de los banners
   nextBanner(): void {
@@ -551,115 +505,222 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.peripherals = this.shuffleItems(this.peripherals);
+    this.loadRandomAssemblies();
+    this.loadRandomPeripherals();
+    this.loadFeaturedCollaborators();
+    this.loadHomeContent();
+
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
-      console.log('Home component initialized');
-
       setTimeout(() => {
-        console.log('Starting typing effect');
         this.startTypingWithObservable();
       }, 500);
 
-      // Añade la rotación de imágenes del slider y PC
-      this._intervalId = setInterval(() => {
+      // Añade la rotación de imágenes de PC
+      this.rotationIntervalId = setInterval(() => {
         this.ngZone.run(() => {
-          this.sliderIndex = (this.sliderIndex + 1) % this.sliderImages.length;
           this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
           this.cdr.detectChanges();
         });
       }, 4000);
 
-      window.addEventListener('load', () => {
-        console.log('Window fully loaded');
-      });
-
-      this.checkForLoadingIssues();
     }
   }
 
-  // Método para diagnosticar problemas de carga
-  checkForLoadingIssues(): void {
-    console.log('Checking for loading issues...');
+  private loadHomeContent(): void {
+    this.homeContentSubscription = this.homeContentService.getSettings().subscribe((settings) => {
+      this.banners = settings.banners
+        .filter((banner) => banner.active)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      this.sliderImages = settings.heroBanners
+        .filter((banner) => banner.active)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+      this.showUpcomingEvents = settings.showUpcomingEvents;
+      this.upcomingEvents = settings.events.filter((event) => event.active);
+      this.cdr.detectChanges();
+    });
+  }
 
-    // Verificar si hay muchas suscripciones activas (posible memory leak)
-    setTimeout(() => {
-      console.log('Active subscriptions check');
-      if (this.typingSubscription) {
-        console.log('Typing subscription is active');
-      }
+  private loadRandomPeripherals(): void {
+    this.productsService.getPeripherals().subscribe({
+      next: (products) => {
+        const items = this.shuffleItems(products)
+          .slice(0, 18)
+          .map((product, index) => this.toPeripheralSliderItem(product, index));
 
-      // Comprobar si hay muchas imágenes sin cargar
-      const images = document.querySelectorAll('img');
-      let pendingImages = 0;
-
-      images.forEach((img) => {
-        if (!img.complete) {
-          pendingImages++;
+        if (items.length) {
+          this.peripherals = items;
+          this.cdr.detectChanges();
         }
-      });
-
-      console.log(`Pending images: ${pendingImages}/${images.length}`);
-
-      // Verificar si hay demasiados logs (puede ralentizar la aplicación)
-      if (console.log.toString().indexOf('native code') === -1) {
-        console.warn(
-          'Console logging might be overridden, which can cause performance issues'
-        );
-      }
-    }, 2000);
+      },
+      error: () => {
+        this.peripherals = [];
+        this.cdr.detectChanges();
+      },
+    });
   }
 
-  ngAfterViewInit() {
-    // Ya no necesitamos calcular dimensiones aquí, los componentes de slider lo manejan internamente
+  private loadRandomAssemblies(): void {
+    this.productsService.getAssembledPCs().subscribe({
+      next: (products) => {
+        const items = this.shuffleItems(products)
+          .slice(0, 12)
+          .map((product, index) => this.toPackageSliderItem(product, index));
+
+        if (items.length) {
+          this.carruselProducts = items;
+          this.filteredCarruselProducts = [...items];
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        this.carruselProducts = this.shuffleItems(this.carruselProducts);
+        this.filteredCarruselProducts = [...this.carruselProducts];
+        this.cdr.detectChanges();
+      },
+    });
   }
 
-  // Método para detectar si estamos en un dispositivo móvil
-  isMobile(): boolean {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768; // 768px es el breakpoint md en Tailwind
+  private toPackageSliderItem(product: AssembledPC, index: number): Product {
+    const price = product.discountedPrice ?? product.price;
+    const processor = product.specifications.processor.title;
+    const motherboard = product.specifications.motherboard.title;
+    const graphicsCard = product.specifications.graphicsCard.title;
+
+    return {
+      id: product.id ?? index + 1,
+      title: product.title,
+      image: product.image,
+      price,
+      processor,
+      motherboard,
+      ram: product.specifications.ram.title,
+      storage: product.specifications.storage.map((item) => item.title).join(' + '),
+      graphicsCard,
+      slug: product.slug,
+      brandLogos: this.getPackageBrandLogos(product, processor, graphicsCard, motherboard),
+      powerCertificate: this.getPowerCertificateImage(product.certifications.certificate),
+      watts: product.certifications.wattage,
+      category: 'paquete',
+      description: product.description,
+    };
+  }
+
+  private getPackageBrandLogos(
+    product: AssembledPC,
+    processor: string,
+    graphicsCard: string,
+    motherboard: string
+  ): Array<{ src: string; alt: string }> {
+    const logos = product.brandLogos
+      .map((logo) => ({ src: logo.logo, alt: logo.name }))
+      .filter((logo) => logo.src && logo.alt);
+
+    const componentText = `${processor} ${graphicsCard} ${motherboard}`.toLowerCase();
+    const derivedLogos = [
+      {
+        match: componentText.includes('nvidia') || componentText.includes('rtx') || componentText.includes('gtx'),
+        src: 'assets/img/marcas/nvidia_tag.svg',
+        alt: 'NVIDIA',
+      },
+      {
+        match: componentText.includes('amd') || componentText.includes('ryzen') || componentText.includes('radeon'),
+        src: 'assets/img/marcas/ryzen_tag.svg',
+        alt: 'AMD Ryzen',
+      },
+      {
+        match: componentText.includes('intel') || componentText.includes('core ultra') || componentText.includes('core i'),
+        src: 'assets/img/marcas/intel_tag.svg',
+        alt: 'Intel',
+      },
+      {
+        match: componentText.includes('asus') || componentText.includes('rog'),
+        src: 'assets/img/marcas/asuspng.png',
+        alt: 'ASUS',
+      },
+      {
+        match: componentText.includes('gigabyte') || componentText.includes('aorus'),
+        src: 'assets/img/marcas/gigabyte.png',
+        alt: 'Gigabyte',
+      },
+      {
+        match: componentText.includes('corsair'),
+        src: 'assets/img/marcas/corsairbrand.png',
+        alt: 'Corsair',
+      },
+    ]
+      .filter((logo) => logo.match)
+      .map(({ src, alt }) => ({ src, alt }));
+
+    return [...logos, ...derivedLogos]
+      .filter((logo, index, all) => all.findIndex((item) => item.alt === logo.alt) === index)
+      .slice(0, 4);
+  }
+
+  private getPowerCertificateImage(certificate: string): string {
+    return certificate === '80+ Bronze'
+      ? 'assets/img/certificaciones/80_Plus_Bronze.svg.png'
+      : 'assets/img/certificaciones/80plusgold.png';
+  }
+
+  private loadFeaturedCollaborators(): void {
+    this.communityService.getFeaturedCollaborators(8).subscribe((collaborators) => {
+      this.influencers = collaborators;
+      this.cdr.detectChanges();
+    });
+  }
+
+  private toPeripheralSliderItem(product: PeripheralProduct, index: number) {
+    const originalPrice = product.discountedPrice ? product.price : undefined;
+    const price = product.discountedPrice ?? product.price;
+
+    return {
+      id: product.id ?? index + 1,
+      name: product.title,
+      category: this.toHomePeripheralCategory(product),
+      image: product.image,
+      price,
+      originalPrice,
+      discount: originalPrice ? this.toDiscountPercent(originalPrice, price) : undefined,
+      rating: product.rating?.average ?? 4.8,
+      slug: product.slug,
+      inStock: product.stock > 0,
+      inventoryLabel: product.stock > 0 ? 'Disponible' : 'Sin stock',
+    };
+  }
+
+  private toHomePeripheralCategory(product: PeripheralProduct): string {
+    const type = (product as PeripheralProduct & { peripheralType?: string }).peripheralType;
+    const subcategory = product.subcategory?.toLowerCase() ?? '';
+    const title = product.title.toLowerCase();
+    const text = `${type ?? ''} ${subcategory} ${title}`;
+
+    if (text.includes('tecl') || text.includes('keyboard')) return 'keyboard';
+    if (text.includes('headset') || text.includes('auricular') || text.includes('audifono')) return 'headset';
+    if (text.includes('monitor')) return 'monitor';
+    if (text.includes('silla') || text.includes('chair')) return 'chair';
+    if (text.includes('control') || text.includes('mando') || text.includes('gamepad')) return 'gamepad';
+    return 'mouse';
+  }
+
+  private toDiscountPercent(originalPrice: number, price: number): number | undefined {
+    if (!originalPrice || originalPrice <= price) {
+      return undefined;
     }
-    return false;
+
+    return Math.round(((originalPrice - price) / originalPrice) * 100);
   }
 
-  submitProjectRequest(form: NgForm): void {
-    if (form.invalid) {
-      form.control.markAllAsTouched();
-      return;
+  private shuffleItems<T>(items: T[]): T[] {
+    const shuffled = [...items];
+    for (let index = shuffled.length - 1; index > 0; index--) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
     }
-
-    const value = form.value;
-    const message = [
-      'Hola PC Gamer CDMX, quiero cotizar una PC personalizada.',
-      `Nombre: ${value.name}`,
-      `Correo: ${value.email}`,
-      `WhatsApp: ${value.phone}`,
-      `Uso principal: ${value.mainUse}`,
-      `Presupuesto: ${value.budget}`,
-      `Detalles: ${value.details}`,
-    ].filter(Boolean).join('\n');
-
-    this.projectRequestSent = true;
-
-    if (typeof window !== 'undefined') {
-      window.open(buildWhatsAppUrl(message), '_blank');
-    }
-
-    form.resetForm();
-
-    setTimeout(() => {
-      this.projectRequestSent = false;
-    }, 3500);
+    return shuffled;
   }
 
-  // Mejorar manejo de errores en imágenes
-  handleImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    if (img) {
-      console.warn(`Failed to load image: ${img.src}`);
-      img.src = 'assets/img/gabinetes/BR-938686_1.png';
-      img.onerror = null; // Evita bucles infinitos
-    }
-  }
 
   // Método typing
   startTypingWithObservable(): void {
@@ -678,15 +739,12 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
         tap((index) => {
           this.ngZone.run(() => {
             this.typingText += this.fullText.charAt(index);
-            // Eliminar el log para reducir la sobrecarga
-            // console.log('Current text:', this.typingText);
             this.cdr.detectChanges();
           });
         })
       )
       .subscribe({
         complete: () => {
-          console.log('Typing effect completed');
           // Asegurar que la suscripción se limpia
           if (this.typingSubscription) {
             this.typingSubscription.unsubscribe();
@@ -706,7 +764,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Mejorar método de destrucción para asegurar la limpieza de recursos
   ngOnDestroy(): void {
-    console.log('Home component destroyed - cleaning up resources');
 
     // Limpiar todas las suscripciones y timers
     if (this.typingSubscription) {
@@ -714,15 +771,14 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       this.typingSubscription = undefined;
     }
 
-    if (this._intervalId) {
-      clearInterval(this._intervalId);
-      this._intervalId = null;
+    if (this.homeContentSubscription) {
+      this.homeContentSubscription.unsubscribe();
+      this.homeContentSubscription = undefined;
     }
 
-    // Limpiar el intervalo de los banners
-    if (this.bannerIntervalId) {
-      clearInterval(this.bannerIntervalId);
-      this.bannerIntervalId = null;
+    if (this.rotationIntervalId) {
+      clearInterval(this.rotationIntervalId);
+      this.rotationIntervalId = null;
     }
   }
 
@@ -789,14 +845,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     },
   ];
 
-  // Variable para almacenar el case seleccionado para el modal
-  selectedCustomCase: any = null;
-
-  // Método para abrir el modal de custom case
-  openCustomCaseModal(customCase: any): void {
-    this.selectedCustomCase = customCase;
-    console.log('Abriendo modal para:', customCase.title);
-  }
 
   // Datos para sección de periféricos
   peripheralCategories = [
@@ -809,203 +857,6 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     { name: 'Mandos', value: 'gamepad' },
   ];
 
-  peripherals = [
-    {
-      id: 1,
-      name: 'Razer DeathAdder V2',
-      category: 'mouse',
-      image: 'https://picsum.photos/id/201/400/400',
-      price: 1299,
-      originalPrice: 1499,
-      discount: 13,
-      rating: 4.8,
-      slug: 'razer-deathadder-v2',
-    },
-    {
-      id: 2,
-      name: 'HyperX Alloy FPS Pro',
-      category: 'keyboard',
-      image: 'https://picsum.photos/id/202/400/400',
-      price: 1799,
-      originalPrice: 1999,
-      discount: 10,
-      rating: 4.7,
-      slug: 'hyperx-alloy-fps-pro',
-    },
-    {
-      id: 3,
-      name: 'Logitech G Pro X',
-      category: 'headset',
-      image: 'https://picsum.photos/id/203/400/400',
-      price: 2299,
-      originalPrice: 2599,
-      discount: 12,
-      rating: 4.9,
-      slug: 'logitech-g-pro-x',
-    },
-    {
-      id: 4,
-      name: 'Corsair T1 Race',
-      category: 'chair',
-      image: 'https://picsum.photos/id/204/400/400',
-      price: 5499,
-      originalPrice: 6299,
-      discount: 13,
-      rating: 4.6,
-      slug: 'corsair-t1-race',
-    },
-    {
-      id: 5,
-      name: 'ASUS TUF Gaming VG27AQ',
-      category: 'monitor',
-      image: 'assets/img/marcas/asuspng.png',
-      price: 8999,
-      originalPrice: 9999,
-      discount: 10,
-      rating: 4.8,
-      slug: 'asus-tuf-vg27aq',
-    },
-    {
-      id: 6,
-      name: 'Xbox Elite Controller Series 2',
-      category: 'gamepad',
-      image: 'https://picsum.photos/id/206/400/400',
-      price: 3299,
-      originalPrice: 3799,
-      discount: 13,
-      rating: 4.9,
-      slug: 'xbox-elite-controller-series-2',
-    },
-    {
-      id: 7,
-      name: 'SteelSeries Arctis 7',
-      category: 'headset',
-      image: 'assets/img/marcas/Logitech.png',
-      price: 2799,
-      originalPrice: 3199,
-      discount: 12,
-      rating: 4.7,
-      slug: 'steelseries-arctis-7',
-    },
-    {
-      id: 8,
-      name: 'Logitech G502 HERO',
-      category: 'mouse',
-      image: 'https://picsum.photos/id/208/400/400',
-      price: 1399,
-      originalPrice: 1699,
-      discount: 18,
-      rating: 4.8,
-      slug: 'logitech-g502-hero',
-    },
-    {
-      id: 9,
-      name: 'Razer BlackWidow Elite',
-      category: 'keyboard',
-      image: 'https://picsum.photos/id/209/400/400',
-      price: 2999,
-      originalPrice: 3499,
-      discount: 14,
-      rating: 4.6,
-      slug: 'razer-blackwidow-elite',
-    },
-    {
-      id: 10,
-      name: 'AOC C27G2Z 27" Curvo 240Hz',
-      category: 'monitor',
-      image: 'https://picsum.photos/id/210/400/400',
-      price: 7299,
-      originalPrice: 7999,
-      discount: 9,
-      rating: 4.5,
-      slug: 'aoc-c27g2z',
-    },
-  ];
+  peripherals: HomePeripheralItem[] = [];
 
-  // Control de navegación de periféricos
-  selectedPeripheralCategory = 0;
-  peripheralScrollPosition = 0;
-  peripheralScrollStep = 300;
-
-  get filteredPeripherals() {
-    const selectedCategory =
-      this.peripheralCategories[this.selectedPeripheralCategory].value;
-    return selectedCategory === 'all'
-      ? this.peripherals
-      : this.peripherals.filter((p) => p.category === selectedCategory);
-  }
-
-  selectPeripheralCategory(index: number) {
-    this.selectedPeripheralCategory = index;
-    this.peripheralScrollPosition = 0; // Reset scroll position when category changes
-  }
-
-  scrollPeripheralsLeft() {
-    // Ajustamos para mostrar más elementos por clic
-    const scrollStep = this.peripheralScrollStep * 2;
-    this.peripheralScrollPosition = Math.max(
-      0,
-      this.peripheralScrollPosition - scrollStep
-    );
-  }
-
-  scrollPeripheralsRight() {
-    const maxScroll = this.getMaxPeripheralScroll();
-
-    // Si estamos cerca del final, nos vamos directamente al final para mostrar el último elemento
-    if (
-      this.peripheralScrollPosition + this.peripheralScrollStep * 2 >=
-      maxScroll * 0.8
-    ) {
-      this.peripheralScrollPosition = maxScroll;
-    } else {
-      // Ajustamos para mostrar más elementos por clic
-      const scrollStep = this.peripheralScrollStep * 2;
-      this.peripheralScrollPosition = Math.min(
-        maxScroll,
-        this.peripheralScrollPosition + scrollStep
-      );
-    }
-
-    console.log(
-      `Current scroll: ${this.peripheralScrollPosition}, Max: ${maxScroll}`
-    );
-  }
-
-  getMaxPeripheralScroll(): number {
-    if (typeof window !== 'undefined') {
-      // 1. Cálculo preciso del ancho total del contenido
-      const totalItems = this.filteredPeripherals.length;
-      // Ajustamos el ancho para considerar el padding interno, bordes, etc.
-      const itemWidth = 300; // 250px de ancho base + bordes y márgenes
-      const gap = 24; // 6 * 4px (gap-6 en Tailwind)
-
-      // 2. Ancho total del slider (suma de todos los items con sus gaps)
-      const totalContentWidth = totalItems * itemWidth + (totalItems - 1) * gap;
-
-      // 3. Ancho visible del contenedor (viewport)
-      let containerWidth = 0;
-      if (window.innerWidth > 1280) {
-        containerWidth = 1140; // max-w-7xl con padding
-      } else if (window.innerWidth > 768) {
-        containerWidth = window.innerWidth - 90;
-      } else {
-        containerWidth = window.innerWidth - 40;
-      }
-
-      // 4. Margen extra para garantizar que el último producto sea totalmente visible
-      const extraMargin = 50;
-
-      // 5. Cálculo final: el desplazamiento máximo es la diferencia total menos el viewport
-      const maxScroll = Math.max(
-        0,
-        totalContentWidth - containerWidth + extraMargin
-      );
-
-      console.log(`Slider info - Items: ${totalItems}, Content Width: ${totalContentWidth}, 
-                  Container: ${containerWidth}, Max Scroll: ${maxScroll}`);
-      return maxScroll;
-    }
-    return 0;
-  }
 }

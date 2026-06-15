@@ -1,17 +1,46 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, delay } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
+import { DirectusApiService } from '../../../../core/services/directus-api.service';
+import {
+  DirectusCategoryRecord,
+  DirectusProductRecord,
+  DirectusSubcategoryRecord,
+  mapAdminCategoryToDirectusPayload,
+  mapAdminProductToDirectusPayload,
+  mapAdminSubcategoryToDirectusPayload,
+  mapDirectusCategoryToAdminCategory,
+  mapDirectusProductToAdminProduct,
+  mapDirectusSubcategoryToAdminSubcategory,
+  slugify,
+} from '../../../../core/services/directus-content.mapper';
+import { ProductCategory } from '../../../../shared/models';
 
-// Modelos de Datos
 export interface Product {
   _id?: string;
   title: string;
   slug: string;
   description: string;
   category: 'paquetes' | 'perifericos' | 'componentes';
+  productType?: string;
+  brand?: string;
+  categoryId?: string;
+  subcategoryId?: string;
   price: number;
   discountedPrice?: number;
+  discountPrice?: number;
+  discountPercent?: number;
+  currency?: string;
+  sku?: string;
+  supplier?: string;
+  pricingMode?: 'manual' | 'provider';
+  syncEnabled?: boolean;
+  syncProvider?: string;
+  providerProductId?: string;
+  providerSku?: string;
+  lastPriceSyncedAt?: string;
+  lastSyncStatus?: string;
+  lastSyncError?: string;
   processor?: string;
   motherboard?: string;
   ram?: string;
@@ -22,6 +51,7 @@ export interface Product {
   cooling?: string;
   image: string;
   images: string[];
+  gallery?: string[];
   powerCertificate?: string;
   watts?: number;
   brandLogos: Array<{ src: string; alt: string }>;
@@ -31,6 +61,15 @@ export interface Product {
   metaDescription?: string;
   keywords?: string[];
   published: boolean;
+  featured?: boolean;
+  modelo?: string;
+  tipo?: string;
+  conexion?: string;
+  tamaño?: string;
+  material?: string;
+  puertos?: string;
+  especificacionPersonalizada?: string;
+  internalNotes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -100,519 +139,617 @@ export interface Category {
 
 export interface AdminDashboardStats {
   totalProducts: number;
+  totalAssemblies: number;
   publishedProducts: number;
   draftProducts: number;
   productsWithLowStock: number;
+  productsOutOfStock: number;
   totalPackages: number;
   totalOffers: number;
   activeOffers: number;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductsAdminService {
-  private apiUrl = '/api/admin/products';
-
-  // Mock data para desarrollo
-  private mockProducts: Product[] = [
-    {
-      _id: '1',
-      title: 'PC Armada Gaming 2K',
-      slug: 'pc-armada-gaming-2k',
-      description: 'PC armada especializada para gaming en 2K',
-      category: 'paquetes',
-      price: 2500,
-      processor: 'Intel i7-13700K',
-      motherboard: 'ASUS B760',
-      ram: '32GB DDR4',
-      storage: '1TB SSD NVMe',
-      graphicsCard: 'RTX 4070',
-      powerSupply: '850W 80+ Gold',
-      caseModel: 'NZXT H7 Flow RGB',
-      cooling: 'Arctic Liquid 280mm',
-      image: 'https://via.placeholder.com/500?text=Gaming+2K',
-      images: [],
-      powerCertificate: 'https://via.placeholder.com/100?text=80+Gold',
-      watts: 850,
-      brandLogos: [],
-      stock: 5,
-      lowStockAlert: 3,
-      published: true,
-      createdAt: new Date('2026-01-15'),
-      updatedAt: new Date('2026-02-10')
-    }
-  ];
+  private readonly productsCollection = 'pc_products';
+  private readonly categoriesCollection = 'pc_categories';
+  private readonly subcategoriesCollection = 'pc_subcategories';
 
   private mockPackages: Package[] = [];
   private mockOffers: Offer[] = [];
+  private mockProducts: Product[] = [];
   private mockCategories: Category[] = [
     {
       _id: '1',
-      name: 'Gabinetes',
-      slug: 'gabinetes',
-      description: 'Casos y gabinetes para PC',
-      icon: 'fa-box',
-      order: 1,
-      subcategories: [
-        { _id: '1-1', name: 'Gaming', slug: 'gabinetes-gaming', icon: 'fa-gamepad', productCount: 0 },
-        { _id: '1-2', name: 'Workstation', slug: 'gabinetes-workstation', icon: 'fa-cpu', productCount: 0 },
-        { _id: '1-3', name: 'Compactos', slug: 'gabinetes-compactos', icon: 'fa-box-alt', productCount: 0 }
-      ],
-      productCount: 0
-    },
-    {
-      _id: '2',
-      name: 'Periféricos',
-      slug: 'perifericos',
-      description: 'Accesorios y periféricos para PC',
-      icon: 'fa-mouse',
-      order: 2,
-      subcategories: [
-        { _id: '2-1', name: 'Teclados', slug: 'perifericos-teclados', icon: 'fa-keyboard', productCount: 0 },
-        { _id: '2-2', name: 'Ratones', slug: 'perifericos-ratones', icon: 'fa-mouse', productCount: 0 },
-        { _id: '2-3', name: 'Audífonos', slug: 'perifericos-audifonos', icon: 'fa-headphones', productCount: 0 },
-        { _id: '2-4', name: 'Monitores', slug: 'perifericos-monitores', icon: 'fa-tv', productCount: 0 }
-      ],
-      productCount: 0
-    },
-    {
-      _id: '3',
-      name: 'Componentes',
-      slug: 'componentes',
-      description: 'Componentes internos para PC',
-      icon: 'fa-microchip',
-      order: 3,
-      subcategories: [
-        { _id: '3-1', name: 'Procesadores', slug: 'componentes-procesadores', icon: 'fa-cpu', productCount: 0 },
-        { _id: '3-2', name: 'Tarjetas Gráficas', slug: 'componentes-graficas', icon: 'fa-video', productCount: 0 },
-        { _id: '3-3', name: 'Memoria RAM', slug: 'componentes-ram', icon: 'fa-microchip', productCount: 0 },
-        { _id: '3-4', name: 'Almacenamiento', slug: 'componentes-almacenamiento', icon: 'fa-hdd', productCount: 0 },
-        { _id: '3-5', name: 'Fuentes de Poder', slug: 'componentes-psu', icon: 'fa-plug', productCount: 0 }
-      ],
-      productCount: 0
-    },
-    {
-      _id: '4',
       name: 'Ensambles',
       slug: 'ensambles',
       description: 'PCs armadas personalizadas',
       icon: 'fa-cube',
-      order: 4,
+      order: 1,
       subcategories: [
-        { _id: '4-1', name: 'Gaming 1080p', slug: 'ensambles-gaming-1080p', icon: 'fa-gamepad', productCount: 0 },
-        { _id: '4-2', name: 'Gaming 2K', slug: 'ensambles-gaming-2k', icon: 'fa-gamepad', productCount: 0 },
-        { _id: '4-3', name: 'Gaming 4K', slug: 'ensambles-gaming-4k', icon: 'fa-gamepad', productCount: 0 },
-        { _id: '4-4', name: 'Workstation', slug: 'ensambles-workstation', icon: 'fa-cpu', productCount: 0 },
-        { _id: '4-5', name: 'Streaming', slug: 'ensambles-streaming', icon: 'fa-stream', productCount: 0 }
+        { _id: '1-1', name: 'Gaming 1080p', slug: 'ensambles-gaming-1080p', icon: 'fa-gamepad', productCount: 0 },
+        { _id: '1-2', name: 'Gaming 2K', slug: 'ensambles-gaming-2k', icon: 'fa-gamepad', productCount: 0 },
+        { _id: '1-3', name: 'Workstation', slug: 'ensambles-workstation', icon: 'fa-cpu', productCount: 0 },
       ],
-      productCount: 0
-    }
+      productCount: 0,
+    },
+    {
+      _id: '2',
+      name: 'Hardware y accesorios',
+      slug: 'componentes',
+      description: 'Partes, cables, adaptadores y accesorios para PC',
+      icon: 'fa-microchip',
+      order: 2,
+      subcategories: [
+        { _id: '2-1', name: 'Procesadores', slug: 'componentes-procesadores', icon: 'fa-cpu', productCount: 0 },
+        { _id: '2-2', name: 'Tarjetas Graficas', slug: 'componentes-graficas', icon: 'fa-video', productCount: 0 },
+        { _id: '2-3', name: 'Memoria RAM', slug: 'componentes-ram', icon: 'fa-microchip', productCount: 0 },
+      ],
+      productCount: 0,
+    },
+    {
+      _id: '3',
+      name: 'Perifericos',
+      slug: 'perifericos',
+      description: 'Accesorios y perifericos para PC',
+      icon: 'fa-mouse',
+      order: 3,
+      subcategories: [
+        { _id: '3-1', name: 'Teclados', slug: 'perifericos-teclados', icon: 'fa-keyboard', productCount: 0 },
+        { _id: '3-2', name: 'Ratones', slug: 'perifericos-ratones', icon: 'fa-mouse', productCount: 0 },
+        { _id: '3-3', name: 'Monitores', slug: 'perifericos-monitores', icon: 'fa-tv', productCount: 0 },
+      ],
+      productCount: 0,
+    },
   ];
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly directus: DirectusApiService) {}
 
-  // ============ PRODUCTOS ============
-
-  /**
-   * Obtener todos los productos con filtros opcionales
-   */
   getAllProducts(filters?: any, page?: number, limit?: number): Observable<{ data: Product[]; total: number }> {
-    // En desarrollo, retornar mock data
-    // En producción, hacer llamada HTTP
-    const start = (page || 0) * (limit || 10);
-    const end = start + (limit || 10);
-    const paginated = this.mockProducts.slice(start, end);
-    
-    return of({ data: paginated, total: this.mockProducts.length }).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      const filtered = this.applyProductFilters(this.mockProducts, filters);
+      return of(this.paginateProducts(filtered, page, limit));
+    }
+
+    return this.loadDirectusProductsWithFallback().pipe(
+      map((products) => this.paginateProducts(this.applyProductFilters(products, filters), page, limit))
+    );
   }
 
-  /**
-   * Obtener un producto por ID
-   */
   getProductById(id: string): Observable<Product | undefined> {
-    return of(this.mockProducts.find(p => p._id === id)).pipe(delay(200));
-  }
-
-  /**
-   * Crear un nuevo producto
-   */
-  createProduct(product: Omit<Product, '_id' | 'createdAt' | 'updatedAt'>): Observable<Product> {
-    const newProduct: Product = {
-      ...product,
-      _id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.mockProducts.push(newProduct);
-    return of(newProduct).pipe(delay(300));
-  }
-
-  /**
-   * Actualizar un producto existente
-   */
-  updateProduct(id: string, product: Partial<Product>): Observable<Product | undefined> {
-    const index = this.mockProducts.findIndex(p => p._id === id);
-    if (index !== -1) {
-      const updated = { ...this.mockProducts[index], ...product, updatedAt: new Date() };
-      this.mockProducts[index] = updated;
-      return of(updated).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      return of(this.mockProducts.find((product) => product._id === id));
     }
-    return of(undefined).pipe(delay(300));
+
+    return this.loadDirectusProductById(id, true).pipe(
+      catchError(() => this.loadDirectusProductById(id, false)),
+      catchError(() => of(undefined))
+    );
   }
 
-  /**
-   * Eliminar un producto
-   */
-  deleteProduct(id: string): Observable<boolean> {
-    const index = this.mockProducts.findIndex(p => p._id === id);
-    if (index !== -1) {
-      this.mockProducts.splice(index, 1);
-      return of(true).pipe(delay(300));
-    }
-    return of(false).pipe(delay(300));
-  }
-
-  /**
-   * Duplicar un producto existente
-   */
-  duplicateProduct(id: string): Observable<Product | undefined> {
-    const original = this.mockProducts.find(p => p._id === id);
-    if (original) {
-      const duplicated: Product = {
-        ...original,
+  createProduct(product: Omit<Product, '_id' | 'createdAt' | 'updatedAt'> | Product): Observable<Product> {
+    if (!this.usesDirectus()) {
+      const newProduct = {
+        ...product,
         _id: Date.now().toString(),
-        title: `${original.title} (Copia)`,
-        slug: `${original.slug}-copia-${Date.now()}`,
-        published: false,
         createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      this.mockProducts.push(duplicated);
-      return of(duplicated).pipe(delay(300));
+        updatedAt: new Date(),
+      } as Product;
+      this.mockProducts.push(newProduct);
+      return of(newProduct);
     }
-    return of(undefined).pipe(delay(300));
+
+    return this.directus
+      .createItem<DirectusProductRecord>(
+        this.productsCollection,
+        mapAdminProductToDirectusPayload(product) as unknown as Record<string, unknown>,
+        { auth: true }
+      )
+      .pipe(map((response) => mapDirectusProductToAdminProduct(response.data)));
   }
 
-  /**
-   * Buscar productos por término
-   */
+  updateProduct(id: string, product: Partial<Product>): Observable<Product | undefined> {
+    if (!this.usesDirectus()) {
+      const index = this.mockProducts.findIndex((item) => item._id === id);
+      if (index === -1) {
+        return of(undefined);
+      }
+      this.mockProducts[index] = { ...this.mockProducts[index], ...product, updatedAt: new Date() };
+      return of(this.mockProducts[index]);
+    }
+
+    return this.directus
+      .updateItem<DirectusProductRecord>(
+        this.productsCollection,
+        id,
+        mapAdminProductToDirectusPayload(product) as unknown as Record<string, unknown>,
+        { auth: true }
+      )
+      .pipe(
+        map((response) => mapDirectusProductToAdminProduct(response.data)),
+        catchError(() => of(undefined))
+      );
+  }
+
+  deleteProduct(id: string): Observable<boolean> {
+    if (!this.usesDirectus()) {
+      const index = this.mockProducts.findIndex((product) => product._id === id);
+      if (index === -1) {
+        return of(false);
+      }
+      this.mockProducts.splice(index, 1);
+      return of(true);
+    }
+
+    return this.directus
+      .deleteItem(this.productsCollection, id, { auth: true })
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
+  }
+
+  duplicateProduct(id: string): Observable<Product | undefined> {
+    return this.getProductById(id).pipe(
+      switchMap((product) => {
+        if (!product) {
+          return of(undefined);
+        }
+
+        const duplicated: Product = {
+          ...product,
+          title: `${product.title} (Copia)`,
+          slug: `${product.slug}-copia-${Date.now()}`,
+          published: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        delete duplicated._id;
+
+        return this.createProduct(duplicated);
+      })
+    );
+  }
+
   searchProducts(term: string, category?: string): Observable<Product[]> {
-    const results = this.mockProducts.filter(p => {
-      const matchesSearch = p.title.toLowerCase().includes(term.toLowerCase()) ||
-                           p.slug.toLowerCase().includes(term.toLowerCase()) ||
-                           p.processor?.toLowerCase().includes(term.toLowerCase());
-      const matchesCategory = !category || p.category === category;
-      return matchesSearch && matchesCategory;
-    });
-    return of(results).pipe(delay(300));
+    const normalized = term.trim().toLowerCase();
+    return this.getAllProducts().pipe(
+      map((response) =>
+        response.data.filter((product) => {
+          const text = `${product.title} ${product.slug} ${product.description} ${product.processor ?? ''}`.toLowerCase();
+          return (!normalized || text.includes(normalized)) && (!category || product.category === category);
+        })
+      )
+    );
   }
 
-  /**
-   * Obtener productos por categoría
-   */
   getProductsByCategory(category: string): Observable<Product[]> {
-    return of(this.mockProducts.filter(p => p.category === category)).pipe(delay(300));
+    return this.getAllProducts().pipe(
+      map((response) => response.data.filter((product) => product.category === category))
+    );
   }
 
-  // ============ PAQUETES ============
-
-  /**
-   * Obtener todos los paquetes
-   */
   getAllPackages(): Observable<Package[]> {
-    return of(this.mockPackages).pipe(delay(300));
+    return of(this.mockPackages);
   }
 
-  /**
-   * Obtener un paquete por ID
-   */
   getPackageById(id: string): Observable<Package | undefined> {
-    return of(this.mockPackages.find(p => p._id === id)).pipe(delay(200));
+    return of(this.mockPackages.find((pkg) => pkg._id === id));
   }
 
-  /**
-   * Crear un nuevo paquete
-   */
   createPackage(pkg: Omit<Package, '_id' | 'createdAt' | 'updatedAt'>): Observable<Package> {
-    const newPackage: Package = {
-      ...pkg,
-      _id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    const newPackage: Package = { ...pkg, _id: Date.now().toString(), createdAt: new Date(), updatedAt: new Date() };
     this.mockPackages.push(newPackage);
-    return of(newPackage).pipe(delay(300));
+    return of(newPackage);
   }
 
-  /**
-   * Actualizar un paquete
-   */
   updatePackage(id: string, pkg: Partial<Package>): Observable<Package | undefined> {
-    const index = this.mockPackages.findIndex(p => p._id === id);
-    if (index !== -1) {
-      const updated = { ...this.mockPackages[index], ...pkg, updatedAt: new Date() };
-      this.mockPackages[index] = updated;
-      return of(updated).pipe(delay(300));
+    const index = this.mockPackages.findIndex((item) => item._id === id);
+    if (index === -1) {
+      return of(undefined);
     }
-    return of(undefined).pipe(delay(300));
+    this.mockPackages[index] = { ...this.mockPackages[index], ...pkg, updatedAt: new Date() };
+    return of(this.mockPackages[index]);
   }
 
-  /**
-   * Eliminar un paquete
-   */
   deletePackage(id: string): Observable<boolean> {
-    const index = this.mockPackages.findIndex(p => p._id === id);
-    if (index !== -1) {
-      this.mockPackages.splice(index, 1);
-      return of(true).pipe(delay(300));
+    const index = this.mockPackages.findIndex((item) => item._id === id);
+    if (index === -1) {
+      return of(false);
     }
-    return of(false).pipe(delay(300));
+    this.mockPackages.splice(index, 1);
+    return of(true);
   }
 
-  // ============ OFERTAS ============
-
-  /**
-   * Obtener todas las ofertas
-   */
   getAllOffers(includeInactive?: boolean): Observable<Offer[]> {
-    const offers = includeInactive ? this.mockOffers : this.mockOffers.filter(o => o.active);
-    return of(offers).pipe(delay(300));
+    return of(includeInactive ? this.mockOffers : this.mockOffers.filter((offer) => offer.active));
   }
 
-  /**
-   * Crear una nueva oferta
-   */
   createOffer(offer: Omit<Offer, '_id' | 'createdAt' | 'updatedAt'>): Observable<Offer> {
-    const newOffer: Offer = {
-      ...offer,
-      _id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    const newOffer: Offer = { ...offer, _id: Date.now().toString(), createdAt: new Date(), updatedAt: new Date() };
     this.mockOffers.push(newOffer);
-    return of(newOffer).pipe(delay(300));
+    return of(newOffer);
   }
 
-  /**
-   * Actualizar una oferta
-   */
   updateOffer(id: string, offer: Partial<Offer>): Observable<Offer | undefined> {
-    const index = this.mockOffers.findIndex(o => o._id === id);
-    if (index !== -1) {
-      const updated = { ...this.mockOffers[index], ...offer, updatedAt: new Date() };
-      this.mockOffers[index] = updated;
-      return of(updated).pipe(delay(300));
+    const index = this.mockOffers.findIndex((item) => item._id === id);
+    if (index === -1) {
+      return of(undefined);
     }
-    return of(undefined).pipe(delay(300));
+    this.mockOffers[index] = { ...this.mockOffers[index], ...offer, updatedAt: new Date() };
+    return of(this.mockOffers[index]);
   }
 
-  /**
-   * Eliminar una oferta
-   */
   deleteOffer(id: string): Observable<boolean> {
-    const index = this.mockOffers.findIndex(o => o._id === id);
-    if (index !== -1) {
-      this.mockOffers.splice(index, 1);
-      return of(true).pipe(delay(300));
+    const index = this.mockOffers.findIndex((offer) => offer._id === id);
+    if (index === -1) {
+      return of(false);
     }
-    return of(false).pipe(delay(300));
+    this.mockOffers.splice(index, 1);
+    return of(true);
   }
 
-  /**
-   * Activar una oferta
-   */
   activateOffer(id: string): Observable<void> {
-    const offer = this.mockOffers.find(o => o._id === id);
+    const offer = this.mockOffers.find((item) => item._id === id);
     if (offer) {
       offer.active = true;
-      return of(undefined).pipe(delay(300));
     }
-    return of(undefined).pipe(delay(300));
+    return of(undefined);
   }
 
-  /**
-   * Desactivar una oferta
-   */
   deactivateOffer(id: string): Observable<void> {
-    const offer = this.mockOffers.find(o => o._id === id);
+    const offer = this.mockOffers.find((item) => item._id === id);
     if (offer) {
       offer.active = false;
-      return of(undefined).pipe(delay(300));
     }
-    return of(undefined).pipe(delay(300));
+    return of(undefined);
   }
 
-  /**
-   * Obtener ofertas activas
-   */
   getActiveOffers(): Observable<Offer[]> {
-    return of(this.mockOffers.filter(o => o.active)).pipe(delay(300));
+    return of(this.mockOffers.filter((offer) => offer.active));
   }
 
-  // ============ CATEGORÍAS ============
-
-  /**
-   * Crear una nueva categoría
-   */
   createCategory(category: Omit<Category, '_id'>): Observable<Category> {
-    const newCategory: Category = {
-      ...category,
-      _id: Date.now().toString()
-    };
-    this.mockCategories.push(newCategory);
-    return of(newCategory).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      const newCategory: Category = { ...category, _id: Date.now().toString() };
+      this.mockCategories.push(newCategory);
+      return of(newCategory);
+    }
+
+    return this.directus
+      .createItem<DirectusCategoryRecord>(
+        this.categoriesCollection,
+        mapAdminCategoryToDirectusPayload(category) as Record<string, unknown>,
+        { auth: true }
+      )
+      .pipe(map((response) => mapDirectusCategoryToAdminCategory(response.data)));
   }
 
-  /**
-   * Actualizar una categoría
-   */
   updateCategory(id: string, category: Partial<Category>): Observable<Category | undefined> {
-    const index = this.mockCategories.findIndex(c => c._id === id);
-    if (index !== -1) {
-      const updated = { ...this.mockCategories[index], ...category };
-      this.mockCategories[index] = updated;
-      return of(updated).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      const index = this.mockCategories.findIndex((item) => item._id === id);
+      if (index === -1) {
+        return of(undefined);
+      }
+      this.mockCategories[index] = { ...this.mockCategories[index], ...category };
+      return of(this.mockCategories[index]);
     }
-    return of(undefined).pipe(delay(300));
+
+    return this.directus
+      .updateItem<DirectusCategoryRecord>(
+        this.categoriesCollection,
+        id,
+        this.buildCategoryPatch(category),
+        { auth: true }
+      )
+      .pipe(
+        map((response) => mapDirectusCategoryToAdminCategory(response.data)),
+        catchError(() => of(undefined))
+      );
   }
 
-  /**
-   * Eliminar una categoría
-   */
   deleteCategory(id: string): Observable<boolean> {
-    const index = this.mockCategories.findIndex(c => c._id === id);
-    if (index !== -1) {
+    if (!this.usesDirectus()) {
+      const index = this.mockCategories.findIndex((item) => item._id === id);
+      if (index === -1) {
+        return of(false);
+      }
       this.mockCategories.splice(index, 1);
-      return of(true).pipe(delay(300));
+      return of(true);
     }
-    return of(false).pipe(delay(300));
+
+    return this.directus
+      .deleteItem(this.categoriesCollection, id, { auth: true })
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
-  /**
-   * Reordenar categorías
-   */
   reorderCategories(newOrder: Category[]): Observable<void> {
-    this.mockCategories = newOrder;
-    return of(undefined).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      this.mockCategories = newOrder;
+      return of(undefined);
+    }
+
+    return forkJoin(
+      newOrder.map((category, index) =>
+        this.directus.updateItem<DirectusCategoryRecord>(
+          this.categoriesCollection,
+          category._id!,
+          { sort: index + 1 },
+          { auth: true }
+        )
+      )
+    ).pipe(map(() => undefined));
   }
 
-  /**
-   * Agregar subcategoría a una categoría
-   */
   addSubcategory(categoryId: string, subcategory: Omit<Subcategory, '_id'>): Observable<Subcategory> {
-    const category = this.mockCategories.find(c => c._id === categoryId);
-    if (category) {
-      const newSubcategory: Subcategory = {
-        ...subcategory,
-        _id: `${categoryId}-${Date.now()}`,
-        productCount: 0
-      };
+    if (!this.usesDirectus()) {
+      const category = this.mockCategories.find((item) => item._id === categoryId);
+      if (!category) {
+        throw new Error('Categoria no encontrada');
+      }
+      const newSubcategory = { ...subcategory, _id: `${categoryId}-${Date.now()}`, productCount: 0 };
       category.subcategories.push(newSubcategory);
-      return of(newSubcategory).pipe(delay(300));
+      return of(newSubcategory);
     }
-    throw new Error('Categoría no encontrada');
+
+    return this.getCategoryById(categoryId).pipe(
+      switchMap((category) =>
+        this.directus.createItem<DirectusSubcategoryRecord>(
+          this.subcategoriesCollection,
+          mapAdminSubcategoryToDirectusPayload(categoryId, category?.slug ?? categoryId, subcategory) as Record<string, unknown>,
+          { auth: true }
+        )
+      ),
+      map((response) => mapDirectusSubcategoryToAdminSubcategory(response.data))
+    );
   }
 
-  /**
-   * Actualizar una subcategoría
-   */
   updateSubcategory(categoryId: string, subcategoryId: string, subcategory: Partial<Subcategory>): Observable<Subcategory | undefined> {
-    const category = this.mockCategories.find(c => c._id === categoryId);
-    if (category) {
-      const index = category.subcategories.findIndex(s => s._id === subcategoryId);
-      if (index !== -1) {
-        const updated = { ...category.subcategories[index], ...subcategory };
-        category.subcategories[index] = updated;
-        return of(updated).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      const category = this.mockCategories.find((item) => item._id === categoryId);
+      const index = category?.subcategories.findIndex((item) => item._id === subcategoryId) ?? -1;
+      if (!category || index === -1) {
+        return of(undefined);
       }
+      category.subcategories[index] = { ...category.subcategories[index], ...subcategory };
+      return of(category.subcategories[index]);
     }
-    return of(undefined).pipe(delay(300));
+
+    return this.directus
+      .updateItem<DirectusSubcategoryRecord>(
+        this.subcategoriesCollection,
+        subcategoryId,
+        this.buildSubcategoryPatch(subcategory),
+        { auth: true }
+      )
+      .pipe(
+        map((response) => mapDirectusSubcategoryToAdminSubcategory(response.data)),
+        catchError(() => of(undefined))
+      );
   }
 
-  /**
-   * Eliminar una subcategoría
-   */
   deleteSubcategory(categoryId: string, subcategoryId: string): Observable<boolean> {
-    const category = this.mockCategories.find(c => c._id === categoryId);
-    if (category) {
-      const index = category.subcategories.findIndex(s => s._id === subcategoryId);
-      if (index !== -1) {
-        category.subcategories.splice(index, 1);
-        return of(true).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      const category = this.mockCategories.find((item) => item._id === categoryId);
+      const index = category?.subcategories.findIndex((item) => item._id === subcategoryId) ?? -1;
+      if (!category || index === -1) {
+        return of(false);
       }
+      category.subcategories.splice(index, 1);
+      return of(true);
     }
-    return of(false).pipe(delay(300));
+
+    return this.directus
+      .deleteItem(this.subcategoriesCollection, subcategoryId, { auth: true })
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 
-  /**
-   * Obtener todas las categorías con subcategorías
-   */
   getAllCategories(): Observable<Category[]> {
-    return of(this.mockCategories).pipe(delay(300));
+    if (!this.usesDirectus()) {
+      return of(this.mockCategories);
+    }
+
+    return this.loadDirectusCategories(true).pipe(
+      catchError(() => this.loadDirectusCategories(false))
+    );
   }
 
-  /**
-   * Obtener una categoría con sus subcategorías
-   */
+  private loadDirectusCategories(auth: boolean): Observable<Category[]> {
+    const options = auth ? { auth: true } : {};
+
+    return forkJoin({
+      categories: this.directus.readItems<DirectusCategoryRecord>(
+        this.categoriesCollection,
+        { fields: '*', sort: 'sort,name', limit: 100 },
+        options
+      ),
+      subcategories: this.directus.readItems<DirectusSubcategoryRecord>(
+        this.subcategoriesCollection,
+        { fields: '*', sort: 'sort,name', limit: 300 },
+        options
+      ).pipe(catchError(() => of({ data: [] }))),
+      products: this.directus.readItems<DirectusProductRecord>(
+        this.productsCollection,
+        { fields: 'id,category,subcategory', limit: 1000 },
+        options
+      ),
+    }).pipe(
+      map(({ categories, subcategories, products }) => {
+        return categories.data.map((category) => {
+          const categoryId = String(category.id);
+          const categorySubcategories = subcategories.data
+            .filter((subcategory) => String(subcategory.category_id) === categoryId)
+            .map(mapDirectusSubcategoryToAdminSubcategory);
+          const productCount = products.data.filter(
+            (product) => product.category === categorySlugToProductCategory(category.slug)
+          ).length;
+
+          return mapDirectusCategoryToAdminCategory(category, categorySubcategories, productCount);
+        });
+      })
+    );
+  }
+
   getCategoryById(id: string): Observable<Category | undefined> {
-    return of(this.mockCategories.find(c => c._id === id)).pipe(delay(300));
+    return this.getAllCategories().pipe(
+      map((categories) => categories.find((category) => category._id === id))
+    );
   }
 
-  // ============ IMÁGENES ============
-
-  /**
-   * Subir imagen de producto
-   */
   uploadProductImage(file: File): Observable<string> {
-    // En desarrollo, retornar URL placeholder
-    // En producción, hacer upload real
-    return of(`https://via.placeholder.com/500?text=${file.name}`).pipe(delay(500));
+    return of(`https://via.placeholder.com/500?text=${encodeURIComponent(file.name)}`);
   }
 
-  /**
-   * Eliminar imagen de producto
-   */
   deleteProductImage(imageUrl: string): Observable<void> {
-    return of(undefined).pipe(delay(300));
+    return of(undefined);
   }
 
-  /**
-   * Optimizar imagen
-   */
   optimizeImage(file: File, width: number, height: number): Observable<Blob> {
-    return of(file).pipe(delay(500));
+    return of(file);
   }
 
-  // ============ ESTADÍSTICAS ============
-
-  /**
-   * Obtener estadísticas del dashboard
-   */
   getDashboardStats(): Observable<AdminDashboardStats> {
-    const stats: AdminDashboardStats = {
-      totalProducts: this.mockProducts.length,
-      publishedProducts: this.mockProducts.filter(p => p.published).length,
-      draftProducts: this.mockProducts.filter(p => !p.published).length,
-      productsWithLowStock: this.mockProducts.filter(p => p.stock <= p.lowStockAlert).length,
-      totalPackages: this.mockPackages.length,
-      totalOffers: this.mockOffers.length,
-      activeOffers: this.mockOffers.filter(o => o.active).length
-    };
-    return of(stats).pipe(delay(300));
+    return forkJoin({
+      products: this.getAllProducts(),
+      offers: this.getAllOffers(true),
+      packages: this.getAllPackages(),
+    }).pipe(
+      map(({ products, offers, packages: packagesList }) => {
+        const catalogProducts = products.data.filter((product) => product.category !== 'paquetes');
+        const assemblies = products.data.filter((product) => product.category === 'paquetes');
+
+        return {
+          totalProducts: catalogProducts.length,
+          totalAssemblies: assemblies.length,
+          publishedProducts: catalogProducts.filter((product) => product.published).length,
+          draftProducts: catalogProducts.filter((product) => !product.published).length,
+          productsWithLowStock: catalogProducts.filter((product) => product.stock > 0 && product.stock <= product.lowStockAlert).length,
+          productsOutOfStock: catalogProducts.filter((product) => product.stock <= 0).length,
+          totalPackages: packagesList.length,
+          totalOffers: offers.length,
+          activeOffers: offers.filter((offer) => offer.active).length,
+        };
+      })
+    );
   }
 
-  /**
-   * Obtener productos recientes
-   */
   getRecentProducts(limit: number = 10): Observable<Product[]> {
-    return of(this.mockProducts.slice(0, limit)).pipe(delay(300));
+    return this.getAllProducts().pipe(
+      map((response) => response.data.filter((product) => product.category !== 'paquetes').slice(0, limit))
+    );
   }
 
-  /**
-   * Obtener productos con bajo stock
-   */
   getLowStockProducts(): Observable<Product[]> {
-    return of(this.mockProducts.filter(p => p.stock <= p.lowStockAlert)).pipe(delay(300));
+    return this.getAllProducts().pipe(
+      map((response) =>
+        response.data.filter((product) => product.category !== 'paquetes' && product.stock > 0 && product.stock <= product.lowStockAlert)
+      )
+    );
+  }
+
+  private usesDirectus(): boolean {
+    return this.directus.isEnabled('catalog');
+  }
+
+  private loadDirectusProductsWithFallback(): Observable<Product[]> {
+    return this.loadDirectusProducts(true).pipe(
+      catchError(() => this.loadDirectusProducts(false))
+    );
+  }
+
+  private loadDirectusProducts(auth: boolean): Observable<Product[]> {
+    return this.directus
+      .readItems<DirectusProductRecord>(
+        this.productsCollection,
+        { fields: '*', sort: 'sort,title', limit: 1000 },
+        auth ? { auth: true } : {}
+      )
+      .pipe(map((response) => response.data.map(mapDirectusProductToAdminProduct)));
+  }
+
+  private loadDirectusProductById(id: string, auth: boolean): Observable<Product | undefined> {
+    return this.directus
+      .readItem<DirectusProductRecord>(
+        this.productsCollection,
+        id,
+        { fields: '*' },
+        auth ? { auth: true } : {}
+      )
+      .pipe(map((response) => mapDirectusProductToAdminProduct(response.data)));
+  }
+
+  private applyProductFilters(products: Product[], filters?: any): Product[] {
+    let filtered = [...products];
+    if (!filters) {
+      return filtered;
+    }
+
+    if (filters.category) {
+      filtered = filtered.filter((product) => product.category === filters.category);
+    }
+
+    if (filters.published !== undefined) {
+      filtered = filtered.filter((product) => product.published === filters.published);
+    }
+
+    if (filters.search) {
+      const search = String(filters.search).toLowerCase();
+      filtered = filtered.filter((product) =>
+        `${product.title} ${product.slug} ${product.description}`.toLowerCase().includes(search)
+      );
+    }
+
+    return filtered;
+  }
+
+  private paginateProducts(products: Product[], page?: number, limit?: number): { data: Product[]; total: number } {
+    if (page === undefined || limit === undefined) {
+      return { data: products, total: products.length };
+    }
+
+    const start = page * limit;
+    return {
+      data: products.slice(start, start + limit),
+      total: products.length,
+    };
+  }
+
+  private buildCategoryPatch(category: Partial<Category>): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+    if (category.name !== undefined) payload['name'] = category.name;
+    if (category.slug !== undefined) payload['slug'] = category.slug || slugify(category.name ?? 'categoria');
+    if (category.description !== undefined) payload['description'] = category.description;
+    if (category.icon !== undefined) payload['icon'] = category.icon;
+    if (category.order !== undefined) payload['sort'] = category.order;
+    return payload;
+  }
+
+  private buildSubcategoryPatch(subcategory: Partial<Subcategory>): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+    if (subcategory.name !== undefined) payload['name'] = subcategory.name;
+    if (subcategory.slug !== undefined) payload['slug'] = subcategory.slug || slugify(subcategory.name ?? 'subcategoria');
+    if (subcategory.description !== undefined) payload['description'] = subcategory.description;
+    if (subcategory.icon !== undefined) payload['icon'] = subcategory.icon;
+    return payload;
+  }
+}
+
+function categorySlugToProductCategory(slug?: string): ProductCategory {
+  switch (slug) {
+    case 'ensambles':
+      return ProductCategory.ASSEMBLED;
+    case 'perifericos':
+      return ProductCategory.PERIPHERAL;
+    case 'componentes':
+    default:
+      return ProductCategory.COMPONENT;
   }
 }

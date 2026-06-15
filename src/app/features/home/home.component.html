@@ -1,785 +1,162 @@
 <div class="font-orbitron">
-  <!-- PRIMERA SECCIÓN: HERO CON ALTURA COMPLETA -->
-  <section
-    class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
-    <!-- Slider superior derecho - Usando el nuevo componente HeroSlider -->
-    <div class="absolute top-16 md:top-20 right-12 z-20 hidden md:block">
-      <app-hero-slider [items]="sliderImages" [options]="{ autoplay: true, autoplayDelay: 4000 }">
-      </app-hero-slider>
+  <section class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
+    <div class="hero-top-banner z-20 hidden md:block">
+      <app-hero-slider [items]="sliderImages" [options]="{ autoplay: true, autoplayDelay: 4000 }"></app-hero-slider>
     </div>
 
-    <!-- Menú lateral inferior izquierdo - posicionado absolutamente respecto al hero section -->
-    <div class="absolute bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start ultra:bottom-24 ultra:left-6">
+    <nav class="absolute bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start ultra:bottom-24 ultra:left-6" aria-label="Accesos destacados">
       <ul class="flex flex-col min-w-[180px] ultra:min-w-[140px] ultra:text-sm">
         <li>
-          <a routerLink="/sorteos"
-            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
-            style="--hover-bg: #ec4899; --hover-text: #fff">
-            Play
-          </a>
+          <a routerLink="/sorteos" class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2" style="--hover-bg: #ec4899; --hover-text: #fff">Play</a>
         </li>
         <li>
-          <a routerLink="/galeria"
-            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
-            style="--hover-bg: #22d3ee; --hover-text: #222">
-            Galería
-          </a>
+          <a routerLink="/galeria" class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2" style="--hover-bg: #22d3ee; --hover-text: #222">Galeria</a>
         </li>
         <li>
-          <a routerLink="/cotiza-tu-pc"
-            class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
-            style="--hover-bg: #a78bfa; --hover-text: #222">
-            Cotización
-          </a>
+          <a routerLink="/cotiza-tu-pc" class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2" style="--hover-bg: #a78bfa; --hover-text: #222">Cotizacion</a>
         </li>
         <li>
-          <a routerLink="/blog"
-            class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2"
-            style="--hover-bg: #fde047; --hover-text: #222">
-            Blog
-          </a>
+          <a routerLink="/blog" class="menu-secundario block py-1 px-4 border-t-2 border-b-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2" style="--hover-bg: #fde047; --hover-text: #222">Blog</a>
+        </li>
+        <li>
+          <a routerLink="/colaboradores" class="menu-secundario block py-1 px-4 border-b-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2" style="--hover-bg: #22d3ee; --hover-text: #222">Colaboradores</a>
         </li>
       </ul>
-    </div>
+    </nav>
 
-    <!-- Lucesitas de colores debajo del navbar con efecto de carga secuencial -->
-    <div class="fixed top-20 md:left-12 left-4 z-50 flex gap-2">
+    <div class="fixed top-20 md:left-12 left-4 z-50 flex gap-2" aria-hidden="true">
       <div class="w-2 h-2 md:w-3 md:h-3 bg-pink-500 rounded-sm shadow-neon cyber-dot-magenta"></div>
       <div class="w-2 h-2 md:w-3 md:h-3 bg-cyan-400 rounded-sm shadow-neon cyber-dot-cyan"></div>
       <div class="w-2 h-2 md:w-3 md:h-3 bg-purple-500 rounded-sm shadow-neon cyber-dot-purple"></div>
       <div class="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-sm shadow-neon cyber-dot-yellow"></div>
     </div>
 
-    <!-- Centro: Logo, texto typing y PC -->
     <div class="flex-1 flex flex-col md:flex-row items-center justify-center z-10">
-      <!-- Contenedor de logo y texto - ajuste para móvil -->
       <div class="flex flex-col items-center justify-center gap-1 w-full md:w-1/2 max-h-80 py-2 md:py-4">
-        <!-- Logo placeholder - más pequeño en móvil -->
         <div class="w-16 h-16 md:w-20 md:h-20 mx-auto z-30 relative -mt-6 md:mt-0">
-          <img src="assets/img/leon.png" alt="PC Gamer CDMX Logo" class="w-full h-full object-contain" />
+          <img src="assets/img/leon.png" alt="PC Gamer CDMX" class="w-full h-full object-contain" />
         </div>
 
-        <!-- Texto typing cyberpunk - texto más pequeño en móvil -->
-        <h1
-          class="text-xl md:text-2xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
+        <h1 class="text-xl md:text-2xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
           <span>{{ typingText }}</span>
         </h1>
+
+        <p class="launch-notice" aria-live="polite">
+          <span class="launch-notice__label">Sitio recien publicado</span>
+          <span class="launch-notice__copy">Puede presentar algunos errores mientras afinamos la experiencia. Gracias por tu paciencia.</span>
+        </p>
       </div>
 
-      <!-- Imagen ensamble PC alineada a la derecha para desktop -->
-      <div
-        class="hidden md:flex absolute right-8 lg:right-12 bottom-28 lg:bottom-32 ultra:right-6 ultra:bottom-24 w-[28vw] min-w-[240px] max-w-[420px] h-[48vh] max-h-[520px] items-end justify-center">
-        <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
-          class="pc-ensamble-img w-full h-full object-contain object-bottom" />
-      </div>
+      <a [routerLink]="pcBuilds[pcIndex].link" class="hero-assembly-stage hidden md:flex" aria-label="Ver paquete de ensamble">
+        <img [src]="pcBuilds[pcIndex].img" alt="PC gamer ensamblada" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
+      </a>
 
-      <!-- Para móviles, ajustada para ser más grande y con padding superior -->
-      <div class="flex flex-col items-center w-full md:hidden mt-2 mb-5 px-4">
+      <a [routerLink]="pcBuilds[pcIndex].link" class="flex flex-col items-center w-full md:hidden mt-2 mb-5 px-4" aria-label="Ver paquete de ensamble">
         <div class="w-full max-w-[420px] h-[42vh] min-h-[280px] max-h-[420px] flex items-end justify-center">
-          <img [src]="pcBuilds[pcIndex].img" alt="PC Ensamble"
-            class="pc-ensamble-img w-full h-full object-contain object-bottom" />
+          <img [src]="pcBuilds[pcIndex].img" alt="PC gamer ensamblada" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
         </div>
-      </div>
+      </a>
 
-      <!-- Botón comprar móvil - simplificado -->
-      <div class="md:hidden w-full flex justify-center mt-8">
-        <a [routerLink]="pcBuilds[pcIndex].link"
-          class="btn-comprar-cyber py-3 px-8 w-[80%] text-center rounded-lg text-white bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg hover:shadow-pink-500/50">
+      <div class="hero-buy-mobile md:hidden w-full flex justify-center mt-8">
+        <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber py-3 px-8 w-[80%] text-center rounded-lg text-white bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg hover:shadow-pink-500/50">
           Comprar
         </a>
       </div>
     </div>
 
-    <!-- Barra inferior, redes sociales y botón comprar - oculta en móvil -->
     <div class="w-full hidden md:flex items-center px-8 py-3 bg-black/70 backdrop-blur border-t border-white z-40">
       <div class="flex gap-6">
-        <a [href]="business.social.tiktok" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"><i class="fab fa-tiktok"></i></a>
-        <a [href]="business.social.facebook" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"><i class="fab fa-facebook-f"></i></a>
-        <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"><i class="fab fa-instagram"></i></a>
-        <a [href]="business.whatsappUrl" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"><i
-            class="fab fa-whatsapp"></i></a>
+        <a [href]="business.social.tiktok" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a [href]="business.social.facebook" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a [href]="business.whatsappUrl" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
       </div>
-      <div class="flex-1 flex">
-        <div class="w-full flex justify-end ">
-          <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber mr-4 xl:mr-14 ultra:text-sm">Comprar</a>
-        </div>
+      <div class="hero-buy-zone">
+        <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber ultra:text-sm">Comprar</a>
       </div>
     </div>
   </section>
 
-
-  <!-- SECCIÓN 2: SLIDER DE PRODUCTOS/PAQUETES -->
   <section class="min-h-screen flex flex-col relative items-center justify-center py-16 bg-[#090b20]">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent">
-      </div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent">
-      </div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-pink-400 to-transparent">
-      </div>
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-fuchsia-400 to-transparent"></div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-pink-400 to-transparent"></div>
     </div>
-    <h2
-      class="text-3xl md:text-4xl font-bold text-white mb-10 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+
+    <h2 class="text-3xl md:text-4xl font-bold text-white mb-10 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
       Nuestros Paquetes
     </h2>
 
-<!--     <input type="text" placeholder="Buscar productos..." class="mb-4 p-2 rounded bg-white" [(ngModel)]="searchTerm"
-      (ngModelChange)="filterProducts()" /> -->
-
-    <!-- Usando el nuevo componente ProductsSlider -->
     <div class="relative w-full max-w-7xl px-4">
-      <app-products-slider [products]="filteredCarruselProducts" [showArrows]="true" [showMobileIndicator]="true"
-        [wasFiltered]="wasFiltered" (filterChange)="onCarouselReset()">
-      </app-products-slider>
+      <app-products-slider [products]="filteredCarruselProducts" [showArrows]="true" [showMobileIndicator]="true" [wasFiltered]="wasFiltered" (filterChange)="onCarouselReset()"></app-products-slider>
     </div>
 
-    <!-- Botón CTA -->
     <div class="text-center mt-12">
-      <a routerLink="/ensambles"
-        class="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-3 px-8 rounded-lg font-bold hover:from-pink-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-pink-500/30">
-        <i class="fas fa-cogs mr-2"></i>Ver todos los paquetes
+      <a routerLink="/ensambles" class="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-3 px-8 rounded-lg font-bold hover:from-pink-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-pink-500/30">
+        <i class="fas fa-cogs mr-2"></i>
+        Ver todos los paquetes
       </a>
     </div>
   </section>
 
-  <!-- SECCIÓN 3: CUSTOM CASE / GABINETES PERSONALIZADOS -->
+  <app-home-custom-cases-section [customCases]="customCases"></app-home-custom-cases-section>
+
   <section class="py-16 relative bg-[#0a0d22]">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent">
-      </div>
-      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
-      </div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent">
-      </div>
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500 to-transparent"></div>
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-red-500 to-transparent"></div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-red-400 to-transparent"></div>
     </div>
-    <h2
-      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-purple-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Custom Case
-      <span class="block text-xl text-gray-300 mt-2 font-medium">Gabinetes Personalizados</span>
+
+    <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-8 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-red-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
+      Perifericos Gaming
     </h2>
 
-    <!-- Grid de galería de gabinetes personalizados -->
     <div class="max-w-7xl mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        <!-- Imagen destacada más grande -->
-        <div class="md:col-span-2 md:row-span-2 relative overflow-hidden rounded-xl group cyber-card cursor-pointer" (click)="openCustomCaseModal(customCases[0])">
-          <img [src]="customCases[0].imageUrl" [alt]="customCases[0].title"
-            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            (error)="handleImageError($event)" />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity">
-          </div>
-          <div class="absolute bottom-0 left-0 p-6">
-            <h3 class="text-2xl font-bold text-white mb-2">{{ customCases[0].title }}</h3>
-            <p class="text-gray-300 text-sm line-clamp-2">{{ customCases[0].description }}</p>
-            <div class="flex gap-2 mt-4">
-              <ng-container *ngFor="let tag of customCases[0].tags">
-                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag
-                  }}</span>
-              </ng-container>
-            </div>
-          </div>
-        </div>
-
-        <!-- Grid de imágenes más pequeñas -->
-        <ng-container *ngFor="let customCase of customCases.slice(1)">
-          <div class="relative overflow-hidden rounded-xl group h-64 cyber-card cursor-pointer" (click)="openCustomCaseModal(customCase)">
-            <img [src]="customCase.imageUrl" [alt]="customCase.title"
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              (error)="handleImageError($event)" />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-70 group-hover:opacity-80 transition-opacity">
-            </div>
-            <div class="absolute bottom-0 left-0 p-4">
-              <h3 class="text-lg font-bold text-white mb-1">{{ customCase.title }}</h3>
-              <div class="flex flex-wrap gap-1 mt-2">
-                <ng-container *ngFor="let tag of customCase.tags.slice(0, 2)">
-                  <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-0.5 rounded">{{
-                    tag }}</span>
-                </ng-container>
-              </div>
-            </div>
-            <div
-              class="absolute inset-0 border-2 border-transparent group-hover:border-purple-500/50 rounded-xl pointer-events-none transition-all duration-300">
-            </div>
-          </div>
-        </ng-container>
-      </div>
-
-      <!-- Botón CTA -->
-      <div class="text-center mt-12">
-        <a routerLink="/galeria" [queryParams]="{category: 'custom'}"
-          class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-8 rounded-lg font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-purple-500/30">
-          <i class="fas fa-desktop mr-2"></i>Explorar todos los gabinetes
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 4: SLIDER DE PERIFÉRICOS -->
-  <section class="py-16 relative bg-[#0a0d22]">
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500 to-transparent">
-      </div>
-      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-red-500 to-transparent">
-      </div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-red-400 to-transparent">
-      </div>
-    </div>
-    <h2
-      class="text-3xl md:text-4xl font-bold text-white text-center mb-8 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-red-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Periféricos Gaming
-    </h2>
-
-    <!-- Usando el nuevo componente PeripheralsSlider -->
-    <div class="max-w-7xl mx-auto px-4">
-      <app-peripherals-slider [items]="peripherals" [categories]="peripheralCategories" [showFilters]="true"
-        [showArrows]="true" [showMobileIndicator]="true">
-      </app-peripherals-slider>
+      <app-peripherals-slider [items]="peripherals" [categories]="peripheralCategories" [showFilters]="true" [showArrows]="true" [showMobileIndicator]="true"></app-peripherals-slider>
     </div>
 
-    <!-- Botón CTA -->
     <div class="text-center mt-8">
-      <a routerLink="/productos/perifericos"
-        class="inline-block bg-gradient-to-r from-red-600 to-pink-600 text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-red-500/30 transition-all">
-        Ver todos los periféricos
+      <a routerLink="/productos/perifericos" class="inline-block bg-gradient-to-r from-red-600 to-pink-600 text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-red-500/30 transition-all">
+        Ver todos los perifericos
       </a>
     </div>
   </section>
 
-  <!-- SECCIÓN 5: SLIDER DE BANNERS -->
   <section class="py-16 relative bg-[#080a1e]">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent">
-      </div>
-      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
-      </div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent">
-      </div>
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
+      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent"></div>
     </div>
-    <div class="max-w-7xl mx-auto px-4">
-      <!-- Usando el nuevo componente BannersSlider -->
-      <div class="relative">
-        <app-banners-slider #bannersSlider [banners]="banners" [autoPlay]="true" [autoPlayDelay]="5000"
-          [showArrows]="false" [showIndicators]="true" [enableSwipe]="true" class="touch-pan-y">
-        </app-banners-slider>
 
-        <!-- Flechas de navegación - Solo visibles en desktop -->
-        <button
-          class="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10"
-          (click)="previousBanner()">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="relative">
+        <app-banners-slider #bannersSlider [banners]="banners" [autoPlay]="true" [autoPlayDelay]="5000" [showArrows]="false" [showIndicators]="true" [enableSwipe]="true" class="touch-pan-y"></app-banners-slider>
+
+        <button type="button" class="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10" (click)="previousBanner()" aria-label="Banner anterior">
           <i class="fas fa-chevron-left"></i>
         </button>
 
-        <button
-          class="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10"
-          (click)="nextBanner()">
+        <button type="button" class="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full items-center justify-center transition-all z-10" (click)="nextBanner()" aria-label="Siguiente banner">
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
     </div>
   </section>
 
-  <!-- SECCIÓN 6: COMUNIDAD -->
-  <section class="py-16 relative bg-[#0d1127]">
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent">
-      </div>
-      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
-      </div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent">
-      </div>
-    </div>
-    <h2
-      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-violet-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Nuestra Comunidad
-    </h2>
+  <app-home-community-section
+    [influencers]="influencers"
+    [showUpcomingEvents]="showUpcomingEvents"
+    [events]="upcomingEvents"
+  ></app-home-community-section>
 
-    <div class="max-w-7xl mx-auto px-4">
-      <!-- Descripción de la comunidad -->
-      <div class="text-center mb-10">
-        <p class="text-gray-300 max-w-3xl mx-auto">
-          Forma parte de nuestra comunidad de jugadores y entusiastas de PC. Comparte tu experiencia, aprende de otros y
-          mantente al día con las últimas tendencias en hardware y gaming.
-        </p>
-      </div>
-
-      <!-- Grid de influencers y miembros destacados -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-        <ng-container *ngFor="let influencer of influencers.slice(0, 8)">
-          <div
-            class="bg-[#161a3c] border border-violet-500/20 rounded-xl p-4 transition-all duration-300 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/20 group">
-            <div class="relative overflow-hidden rounded-lg mb-3 aspect-square">
-              <img [src]="influencer.image" [alt]="influencer.name"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                (error)="handleImageError($event)" />
-            </div>
-            <h3 class="text-sm md:text-lg font-bold text-white mb-1">{{ influencer.name }}</h3>
-            <div class="flex gap-2 mt-3">
-              <a [href]="influencer.social.twitch" target="_blank"
-                class="text-violet-400 hover:text-violet-300 transition-colors text-sm md:text-base">
-                <i class="fab fa-twitch"></i>
-              </a>
-              <a [href]="influencer.social.instagram" target="_blank"
-                class="text-violet-400 hover:text-violet-300 transition-colors text-sm md:text-base">
-                <i class="fab fa-instagram"></i>
-              </a>
-            </div>
-          </div>
-        </ng-container>
-      </div>
-
-      <!-- Botones CTA para redes sociales -->
-      <div class="flex flex-wrap justify-center gap-4">
-        <a [href]="business.social.discord" target="_blank" rel="noopener noreferrer"
-          class="bg-[#5865F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#4752c4] transition-colors flex items-center">
-          <i class="fab fa-discord mr-2 text-xl"></i>
-          Únete a Discord
-        </a>
-        <a [href]="business.social.facebookGroup" target="_blank" rel="noopener noreferrer"
-          class="bg-[#1877F2] text-white py-3 px-6 rounded-lg font-bold hover:bg-[#0d65d9] transition-colors flex items-center">
-          <i class="fab fa-facebook mr-2 text-xl"></i>
-          Grupo de Facebook
-        </a>
-        <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer"
-          class="bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] text-white py-3 px-6 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all flex items-center">
-          <i class="fab fa-instagram mr-2 text-xl"></i>
-          Síguenos en Instagram
-        </a>
-      </div>
-
-      <!-- Próximos eventos/transmisiones (opcional) -->
-      <div class="mt-16 bg-black/30 backdrop-blur-sm border border-violet-500/20 rounded-xl p-6 md:p-8">
-        <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
-          <i class="fas fa-calendar-alt text-violet-400 mr-3"></i>
-          Próximos Eventos
-        </h3>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="flex gap-4 items-start">
-            <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
-              <span class="block text-xl font-bold">25</span>
-              <span class="text-xs">JUN</span>
-            </div>
-            <div>
-              <h4 class="text-white font-bold">Torneo de Valorant</h4>
-              <p class="text-gray-300 text-sm">Compite con los mejores jugadores de CDMX</p>
-              <a routerLink="/contacto" [queryParams]="{ topic: 'torneo-valorant' }" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">Más información</a>
-            </div>
-          </div>
-
-          <div class="flex gap-4 items-start">
-            <div class="bg-violet-500/20 text-violet-300 p-3 rounded-lg text-center min-w-[60px]">
-              <span class="block text-xl font-bold">10</span>
-              <span class="text-xs">JUL</span>
-            </div>
-            <div>
-              <h4 class="text-white font-bold">Stream de Ensamble en Vivo</h4>
-              <p class="text-gray-300 text-sm">Aprende a ensamblar tu PC con expertos</p>
-              <a routerLink="/contacto" [queryParams]="{ topic: 'stream-ensamble' }" class="text-violet-400 text-xs hover:text-violet-300 mt-2 inline-block">Agendar
-                recordatorio</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 7: JUEGOS FAMOSOS -->
-  <section
-    class="min-h-screen relative flex flex-col items-center justify-center py-16 bg-gradient-to-br from-[#0f172a] to-[#262b4d]">
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent">
-      </div>
-      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-teal-400 to-transparent">
-      </div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-sky-400 to-transparent">
-      </div>
-    </div>
-    <h2
-      class="text-3xl md:text-4xl font-bold text-center text-white mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Juegos Recomendados
-    </h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
-      <ng-container *ngFor="let game of popularGames">
-        <div class="game-card relative overflow-hidden rounded-xl group cursor-pointer">
-          <img [src]="game.image" [alt]="game.title"
-            class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
-          <div class="absolute bottom-0 left-0 p-4">
-            <h3 class="text-xl font-bold text-white">{{ game.title }}</h3>
-            <p class="text-sm text-gray-300">{{ game.specs }}</p>
-          </div>
-          <div class="absolute top-3 right-3 bg-cyan-500 text-xs px-2 py-1 rounded">
-            {{ game.fps }} FPS
-          </div>
-        </div>
-      </ng-container>
-    </div>
-  </section>
-
-
-  <!-- SECCIÓN 8: PC PARA NECESIDADES ESPECÍFICAS -->
-  <section class="py-16 relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0a0d22]">
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-amber-400 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-yellow-300 to-transparent"></div>
-    </div>
-    <h2
-      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-yellow-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Equipos Especializados
-    </h2>
-
-    <!-- Usando el nuevo componente NeedsSlider -->
-    <div class="relative max-w-7xl mx-auto px-4">
-      <app-needs-slider [needs]="pcNeeds" [showArrows]="true" [showIndicators]="true">
-      </app-needs-slider>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 9: MARCAS -->
   <app-brands-section></app-brands-section>
 
-  <!-- SECCIÓN 10: SERVICIOS -->
-  <section class="py-16 bg-gradient-to-br relative from-[#0f172a] via-[#1e293b] to-[#0ea5e9]">
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-400 to-transparent"></div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-pink-500 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-red-500 to-transparent"></div>
-    </div>
-    <h2
-      class="text-3xl md:text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-pink-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Servicios Técnicos
-    </h2>
+  <app-home-services-section [services]="services"></app-home-services-section>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-4">
-      <ng-container *ngFor="let service of services">
-        <div
-          class="bg-black/30 backdrop-blur-sm border border-white/10 p-6 rounded-lg group hover:border-pink-500/50 transition-all duration-300">
-          <div
-            class="w-14 h-14 rounded-full bg-pink-500/20 flex items-center justify-center mb-4 text-pink-400 text-2xl group-hover:bg-pink-500/30 transition-all">
-            <i [class]="service.icon"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2">{{ service.title }}</h3>
-          <p class="text-gray-300 text-sm">{{ service.description }}</p>
-        </div>
-      </ng-container>
-    </div>
+  <app-home-blog-section [posts]="latestPosts"></app-home-blog-section>
 
-    <div class="text-center mt-12">
-      <a routerLink="/servicios"
-        class="bg-white text-blue-900 py-3 px-8 rounded-lg font-bold hover:bg-pink-400 hover:text-white transition-colors">Ver
-        todos los servicios</a>
-    </div>
-  </section>
-
-  <!-- Modal para Custom Case -->
-  <div *ngIf="selectedCustomCase"
-    class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-[#161a3c] border border-purple-500/30 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-      <div class="p-6">
-        <div class="flex justify-between items-start">
-          <h3 class="text-2xl font-bold text-white">{{ selectedCustomCase.title }}</h3>
-          <button (click)="selectedCustomCase = null"
-            class="bg-black/30 hover:bg-black/60 rounded-full p-2 text-white transition-colors">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="rounded-lg overflow-hidden">
-            <img [src]="selectedCustomCase.imageUrl" [alt]="selectedCustomCase.title" class="w-full h-auto object-cover"
-              (error)="handleImageError($event)" />
-          </div>
-
-          <div>
-            <p class="text-gray-300 mb-4">{{ selectedCustomCase.description }}</p>
-
-            <div class="flex flex-wrap gap-2 mb-6">
-              <ng-container *ngFor="let tag of selectedCustomCase.tags">
-                <span class="text-xs bg-purple-500/30 border border-purple-500 text-purple-200 px-2 py-1 rounded">{{ tag
-                  }}</span>
-              </ng-container>
-            </div>
-
-            <a routerLink="/contacto" [queryParams]="{ source: 'custom-case', caseId: selectedCustomCase.id }"
-              class="bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 px-6 rounded-md hover:from-pink-600 hover:to-purple-600 transition inline-block">
-              Solicitar uno similar
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECCIÓN 11: BLOG -->
-  <section class="py-16 bg-[#0a0d22] relative overflow-hidden">
-    <!-- Líneas de circuito decorativas -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <!-- <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-400 to-transparent"></div> -->
-      <!-- <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div> -->
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-indigo-400 to-transparent"></div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-sky-400 to-transparent"></div>
-    </div>
-    <h2
-      class="text-4xl font-bold text-white text-center mb-16 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-cyan-400 before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-      Últimas del Blog
-    </h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
-      <ng-container *ngFor="let post of latestPosts">
-        <a [routerLink]="['/blog', post.slug]"
-          class="block bg-[#161a3c] rounded-xl overflow-hidden group hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300">
-          <div class="h-48 overflow-hidden">
-            <img [src]="post.image" [alt]="post.title"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-          </div>
-          <div class="p-6">
-            <span class="text-xs text-cyan-400">{{ post.date | date }}</span>
-            <h3 class="text-xl font-bold text-white mt-2 group-hover:text-cyan-400 transition-colors">
-              {{ post.title }}
-            </h3>
-            <p class="text-gray-300 text-sm mt-2 line-clamp-2">
-              {{ post.excerpt }}
-            </p>
-          </div>
-        </a>
-      </ng-container>
-    </div>
-
-    <div class="text-center mt-12">
-      <a routerLink="/blog"
-        class="border-2 border-cyan-400 text-cyan-400 py-3 px-8 rounded-lg font-bold hover:bg-cyan-400 hover:text-[#0a0d22] transition-colors">Ver
-        más artículos</a>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 12: FORMULARIO DE NECESIDADES ESPECÍFICAS -->
-  <section class="py-20 bg-[#0d1127] relative overflow-hidden">
-    <!-- Elementos decorativos de fondo -->
-    <div class="absolute inset-0 opacity-10">
-      <div class="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
-      <div class="absolute top-10 left-10 w-32 h-32 rounded-full bg-pink-500 filter blur-3xl opacity-20"></div>
-      <div class="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-blue-500 filter blur-3xl opacity-20"></div>
-      <div class="absolute top-1/2 left-1/4 w-96 h-96 rounded-full bg-purple-500 filter blur-3xl opacity-10"></div>
-    </div>
-
-    <!-- Líneas de circuito decorativas -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent">
-      </div>
-      <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent">
-      </div>
-      <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent">
-      </div>
-      <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-blue-500 to-transparent">
-      </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-4 relative z-10">
-      <h2
-        class="text-3xl md:text-4xl font-bold text-white text-center mb-4 relative before:content-[''] before:absolute before:h-1 before:w-12 before:bg-[#ec4899] before:-bottom-3 before:left-1/2 before:-translate-x-1/2">
-        Cuéntanos tu Proyecto
-      </h2>
-
-      <p class="text-center text-gray-300 mb-12 max-w-3xl mx-auto">
-        ¿Tienes alguna idea específica para tu PC? Cuéntanos los detalles y nuestro equipo de expertos te ayudará a
-        hacerla realidad con los mejores componentes del mercado.
-      </p>
-
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-        <!-- Columna izquierda: Formulario -->
-        <div
-          class="lg:col-span-3 bg-[#161a3c]/80 backdrop-blur rounded-xl p-6 border border-white/10 shadow-xl shadow-[#ec4899]/5">
-          <h3 class="text-2xl font-bold text-white mb-6 flex items-center">
-            <i class="fas fa-microchip text-[#ec4899] mr-3"></i>
-            Personaliza tu Experiencia
-          </h3>
-
-          <form class="space-y-6" #projectForm="ngForm" (ngSubmit)="submitProjectRequest(projectForm)">
-            <div *ngIf="projectRequestSent" class="rounded-lg border border-emerald-400/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">
-              Abrimos WhatsApp con tu consulta lista para enviar.
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-gray-300 mb-2 text-sm">Nombre</label>
-                <input type="text"
-                  name="name"
-                  ngModel
-                  required
-                  class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
-                  placeholder="Tu nombre">
-              </div>
-
-              <div>
-                <label class="block text-gray-300 mb-2 text-sm">Correo Electrónico</label>
-                <input type="email"
-                  name="email"
-                  ngModel
-                  required
-                  email
-                  class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
-                  placeholder="ejemplo@correo.com">
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-gray-300 mb-2 text-sm">Teléfono (WhatsApp)</label>
-              <input type="tel"
-                name="phone"
-                ngModel
-                required
-                  class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
-                placeholder="Tu número con WhatsApp">
-            </div>
-
-            <div>
-              <label class="block text-gray-300 mb-2 text-sm">¿Para qué usarás tu PC principalmente?</label>
-              <select
-                name="mainUse"
-                ngModel
-                required
-                class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition">
-                <option value="">Selecciona una opción</option>
-                <option value="gaming">Gaming de alto rendimiento</option>
-                <option value="streaming">Streaming profesional</option>
-                <option value="content">Creación de contenido</option>
-                <option value="design">Diseño y modelado 3D</option>
-                <option value="office">Trabajo y productividad</option>
-                <option value="ai">IA y Machine Learning</option>
-                <option value="multitask">Uso múltiple</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-gray-300 mb-2 text-sm">Presupuesto aproximado</label>
-              <select
-                name="budget"
-                ngModel
-                required
-                class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition">
-                <option value="">Selecciona una opción</option>
-                <option value="15000">$15,000 - $20,000</option>
-                <option value="20000">$20,000 - $30,000</option>
-                <option value="30000">$30,000 - $40,000</option>
-                <option value="40000">$40,000 - $60,000</option>
-                <option value="60000">Más de $60,000</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-gray-300 mb-2 text-sm">Cuéntanos los detalles de tu idea</label>
-              <textarea rows="5"
-                name="details"
-                ngModel
-                required
-                class="w-full bg-[#0d1127] border border-[#8b5cf6]/30 focus:border-[#ec4899] rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#ec4899]/50 transition"
-                placeholder="Describe tu idea, necesidades específicas, componentes que te interesan, etc."></textarea>
-            </div>
-
-            <div>
-              <button type="submit"
-                class="w-full py-3 px-6 bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#ec4899]/30 transition-all duration-300 relative overflow-hidden group">
-                <span class="relative z-10 flex items-center justify-center">
-                  Enviar Consulta
-                  <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                </span>
-                <span
-                  class="absolute inset-0 bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Columna derecha: Información adicional y gráficos -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Bloque de beneficios -->
-          <div class="bg-[#161a3c]/80 backdrop-blur rounded-xl p-6 border border-white/10 shadow-xl shadow-[#8b5cf6]/5">
-            <h3 class="text-xl font-bold text-white mb-4">¿Por qué personalizar?</h3>
-
-            <ul class="space-y-4">
-              <li class="flex items-start">
-                <div
-                  class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
-                  <i class="fas fa-check text-white text-xs"></i>
-                </div>
-                <div>
-                  <h4 class="text-white font-bold">Máximo rendimiento</h4>
-                  <p class="text-gray-300 text-sm">Optimizada específicamente para tus necesidades</p>
-                </div>
-              </li>
-
-              <li class="flex items-start">
-                <div
-                  class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
-                  <i class="fas fa-check text-white text-xs"></i>
-                </div>
-                <div>
-                  <h4 class="text-white font-bold">Presupuesto optimizado</h4>
-                  <p class="text-gray-300 text-sm">Sin gastar de más en lo que no necesitas</p>
-                </div>
-              </li>
-
-              <li class="flex items-start">
-                <div
-                  class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center mr-3 mt-0.5">
-                  <i class="fas fa-check text-white text-xs"></i>
-                </div>
-                <div>
-                  <h4 class="text-white font-bold">Estética única</h4>
-                  <p class="text-gray-300 text-sm">Diseño personalizado que refleja tu estilo</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Gráfico/Imagen decorativa -->
-          <div class="relative h-64 rounded-xl overflow-hidden">
-            <img src="assets/img/custom/IMG-20250208-WA0056.jpg" alt="PC gamer personalizada"
-              class="w-full h-full object-cover brightness-75" (error)="handleImageError($event)">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#0d1127] to-transparent"></div>
-            <div class="absolute bottom-0 left-0 p-4">
-              <h3 class="text-xl font-bold text-white mb-1">Expertos en ensamble</h3>
-              <p class="text-gray-300 text-sm">Más de 10 años de experiencia construyendo PCs de alto rendimiento</p>
-            </div>
-          </div>
-
-          <!-- Testimonios -->
-          <div class="bg-[#161a3c]/80 backdrop-blur rounded-xl p-6 border border-white/10 shadow-xl shadow-[#8b5cf6]/5">
-            <div class="flex items-center mb-4">
-              <div class="flex-shrink-0">
-                <div
-                  class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
-                  <i class="fas fa-quote-left text-white"></i>
-                </div>
-              </div>
-              <div class="ml-3">
-                <h4 class="text-white font-bold">Alejandro R.</h4>
-                <div class="flex text-yellow-400 text-xs">
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                </div>
-              </div>
-            </div>
-            <p class="text-gray-300 text-sm italic">
-              "Personalizaron mi PC para streaming y gaming. El rendimiento es increíble y el diseño quedó exactamente
-              como lo pedí. 100% recomendados."
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <app-home-project-request-section></app-home-project-request-section>
 </div>

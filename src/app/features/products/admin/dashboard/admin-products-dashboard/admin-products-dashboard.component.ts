@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ProductsAdminService, AdminDashboardStats, Product } from '../../shared/products-admin.service';
@@ -18,7 +18,8 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private productsAdminService: ProductsAdminService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -40,6 +41,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(stats => {
         this.stats = stats;
+        this.cdr.detectChanges();
       });
 
     // Obtener productos recientes
@@ -48,6 +50,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(products => {
         this.recentProducts = products;
+        this.cdr.detectChanges();
       });
   }
 
@@ -59,6 +62,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
       'new-product': '/admin/products/new',
       'products': '/admin/products/list',
       'assemblies': '/admin/products/assemblies/new',
+      'assemblies-list': '/admin/products/assemblies',
       'packages': '/admin/products/packages',
       'offers': '/admin/products/offers',
       'categories': '/admin/products/categories'
@@ -74,5 +78,29 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
    */
   editProduct(productId: string) {
     this.router.navigate(['/admin/products', productId, 'edit']);
+  }
+
+  getCategoryLabel(category: Product['category']): string {
+    switch (category) {
+      case 'paquetes':
+        return 'Ensambles';
+      case 'perifericos':
+        return 'Perifericos';
+      case 'componentes':
+      default:
+        return 'Hardware y accesorios';
+    }
+  }
+
+  getStockLabel(product: Product): string {
+    if (product.stock <= 0) {
+      return 'Sin stock';
+    }
+
+    if (product.stock <= product.lowStockAlert) {
+      return `${product.stock} bajo stock`;
+    }
+
+    return `${product.stock} en stock`;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +32,8 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
 
   constructor(
     private productsAdminService: ProductsAdminService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     // Debounce búsqueda
     this.searchSubject$
@@ -58,6 +59,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
         const productsData = Array.isArray(response) ? response : (response.data || []);
         this.products = productsData.map((p: any) => ({ ...p, selected: false }));
         this.filterProducts();
+        this.cdr.detectChanges();
       });
   }
 
@@ -82,13 +84,16 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       const matchesStatus =
         this.selectedStatus === '' ||
         (this.selectedStatus === 'published' && product.published) ||
-        (this.selectedStatus === 'draft' && !product.published);
+        (this.selectedStatus === 'private' && !product.published) ||
+        (this.selectedStatus === 'out-of-stock' && product.stock <= 0) ||
+        (this.selectedStatus === 'low-stock' && product.stock > 0 && product.stock <= product.lowStockAlert);
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
 
     this.totalPages = Math.ceil(this.filteredProducts.length / this.pageSize);
     this.updatePagination();
+    this.cdr.detectChanges();
   }
 
   updatePagination(): void {
@@ -157,6 +162,30 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(price);
+  }
+
+  getCategoryLabel(category: Product['category']): string {
+    switch (category) {
+      case 'paquetes':
+        return 'Ensambles';
+      case 'perifericos':
+        return 'Perifericos';
+      case 'componentes':
+      default:
+        return 'Hardware y accesorios';
+    }
+  }
+
+  getStockLabel(product: Product): string {
+    if (product.stock <= 0) {
+      return 'Sin stock';
+    }
+
+    if (product.stock <= product.lowStockAlert) {
+      return `${product.stock} bajo stock`;
+    }
+
+    return `${product.stock} en stock`;
   }
 
   ngOnDestroy(): void {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -89,7 +89,8 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private productsAdminService: ProductsAdminService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -123,11 +124,19 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       discountPrice: [0],
       discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       currency: ['MXN'],
+      pricingMode: ['manual'],
+      syncProvider: [''],
+      providerProductId: [''],
+      providerSku: [''],
+      lastPriceSyncedAt: [{ value: '', disabled: true }],
+      lastSyncStatus: [{ value: '', disabled: true }],
+      lastSyncError: [{ value: '', disabled: true }],
 
       // Sección 6: Stock
       stock: [0, [Validators.required, Validators.min(0)]],
       lowStockAlert: [5, Validators.min(0)],
       sku: [''],
+      supplier: [''],
 
       // Sección 7: Medios
       image: ['', Validators.required],
@@ -169,6 +178,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (categorias) => {
           this.categorias = categorias;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error cargando categorías:', err);
@@ -210,6 +220,13 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
               discountPrice: product.discountPrice || 0,
               discountPercent: product.discountPercent || 0,
               currency: product.currency || 'MXN',
+              pricingMode: product.pricingMode || 'manual',
+              syncProvider: product.syncProvider || '',
+              providerProductId: product.providerProductId || '',
+              providerSku: product.providerSku || '',
+              lastPriceSyncedAt: product.lastPriceSyncedAt || '',
+              lastSyncStatus: product.lastSyncStatus || '',
+              lastSyncError: product.lastSyncError || '',
               stock: product.stock,
               lowStockAlert: product.lowStockAlert || 5,
               sku: product.sku || '',
@@ -228,11 +245,13 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
             }
           }
           this.loading = false;
+          this.cdr.detectChanges();
         },
         error: (err: any) => {
           this.errorMessage = 'Error cargando el producto';
           console.error(err);
           this.loading = false;
+          this.cdr.detectChanges();
         }
       });
   }
@@ -262,6 +281,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     const productData = {
       ...this.form.value,
+      ...this.form.getRawValue(),
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
     };
@@ -272,16 +292,17 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     operation.pipe(takeUntil(this.destroy$)).subscribe({
       next: (result: any) => {
-        this.successMessage = this.isEditMode 
-          ? 'Producto actualizado y publicado correctamente'
-          : 'Producto creado y publicado correctamente';
+        const visibility = productData.published ? 'publico' : 'privado';
+        this.successMessage = this.isEditMode
+          ? `Producto actualizado como ${visibility}`
+          : `Producto creado como ${visibility}`;
         this.loading = false;
         setTimeout(() => {
           this.router.navigate(['/admin/products']);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al publicar el producto';
+        this.errorMessage = 'Error al guardar el producto';
         console.error(err);
         this.loading = false;
       }
@@ -300,6 +321,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     const productData = {
       ...this.form.value,
+      ...this.form.getRawValue(),
       published: false,
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
@@ -311,14 +333,14 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
     operation.pipe(takeUntil(this.destroy$)).subscribe({
       next: (result: any) => {
-        this.successMessage = 'Producto guardado como borrador';
+        this.successMessage = 'Producto guardado como privado';
         this.loading = false;
         setTimeout(() => {
           this.router.navigate(['/admin/products']);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el borrador';
+        this.errorMessage = 'Error al guardar el producto privado';
         console.error(err);
         this.loading = false;
       }

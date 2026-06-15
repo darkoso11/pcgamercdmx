@@ -1,3 +1,7 @@
+/ensambles
+/productos
+/productos/hardware-accesorios
+/productos/perifericos
 /productos/laptop-dell-xps
 /productos/monitor-lg-4k
 /productos/cpu-pre-armado-1

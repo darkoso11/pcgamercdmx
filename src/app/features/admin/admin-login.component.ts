@@ -14,12 +14,25 @@ import { AuthService } from './services/auth.service';
         <!-- Logo/Header -->
         <div class="mb-6 text-center">
           <h1 class="text-3xl font-bold text-cyan-400 mb-2">ADMIN</h1>
-          <p class="text-xs text-gray-400 uppercase tracking-widest">Blog Management System</p>
+          <p class="text-xs text-gray-400 uppercase tracking-widest">Content Management System</p>
         </div>
 
         <h2 class="text-xl font-bold text-white mb-6 text-center">Iniciar Sesión</h2>
 
         <form (ngSubmit)="onSubmit()" class="space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Correo</label>
+            <input
+              [(ngModel)]="email"
+              name="email"
+              type="email"
+              placeholder="admin@pcgamercdmx.com"
+              required
+              autocomplete="username"
+              class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-400/20 transition"
+            />
+          </div>
+
           <div>
             <label class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Contraseña</label>
             <input 
@@ -28,6 +41,7 @@ import { AuthService } from './services/auth.service';
               type="password" 
               placeholder="Ingresa tu contraseña"
               required 
+              autocomplete="current-password"
               class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-400/20 transition"
             />
           </div>
@@ -50,7 +64,6 @@ import { AuthService } from './services/auth.service';
         </form>
 
         <div class="mt-6 pt-6 border-t border-white/10 text-center">
-          <p class="text-xs text-gray-400 mb-3">Para desarrollo, usa: <code class="text-cyan-300 bg-black/30 px-2 py-1 rounded">admin</code></p>
           <a routerLink="/" class="text-sm text-gray-400 hover:text-cyan-400 transition">
             ← Volver al inicio
           </a>
@@ -66,6 +79,7 @@ import { AuthService } from './services/auth.service';
   `]
 })
 export class AdminLoginComponent {
+  email = 'admin@pcgamercdmx.com';
   password = '';
   error = '';
   success = '';
@@ -74,8 +88,8 @@ export class AdminLoginComponent {
   constructor(private auth: AuthService, private router: Router) {}
 
   async onSubmit() {
-    if (!this.password.trim()) {
-      this.error = 'Por favor ingresa una contraseña';
+    if (!this.email.trim() || !this.password.trim()) {
+      this.error = 'Por favor ingresa correo y contraseña';
       return;
     }
 
@@ -84,21 +98,13 @@ export class AdminLoginComponent {
     this.loading = true;
 
     try {
-      // Intentar login con servidor primero
-      const result = await this.auth.login(this.password).toPromise();
+      const result = await this.auth.login(this.email.trim(), this.password).toPromise();
       if (result?.token) {
         this.success = 'Autenticación exitosa, redirigiendo...';
-        setTimeout(() => this.router.navigate(['/admin/blog']), 500);
+        setTimeout(() => this.router.navigate(['/admin']), 500);
       }
     } catch (e) {
-      // Fallback para desarrollo local: contraseña 'admin' genera un token mock
-      if (this.password === 'admin') {
-        this.auth.setToken('mock-token-dev');
-        this.success = 'Autenticación exitosa (dev mode), redirigiendo...';
-        setTimeout(() => this.router.navigate(['/admin/blog']), 500);
-        return;
-      }
-      this.error = 'Contraseña inválida';
+      this.error = 'Correo o contraseña inválidos';
       this.loading = false;
     }
   }

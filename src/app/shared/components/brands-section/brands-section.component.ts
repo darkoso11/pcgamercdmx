@@ -165,7 +165,6 @@ export class BrandsSectionComponent implements OnInit {
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     if (img) {
-      console.warn(`Failed to load image: ${img.src}`);
       img.src = 'assets/img/gabinetes/BR-938686_1.png';
       img.onerror = null;
     }

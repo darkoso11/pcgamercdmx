@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { DirectusApiService } from '../../../core/services/directus-api.service';
+import {
+  DirectusProductRecord,
+  mapDirectusProductToCatalogProduct,
+} from '../../../core/services/directus-content.mapper';
 import {
   AccessoryProduct,
   AssembledPC,
@@ -33,6 +39,8 @@ export interface ProductCardViewModel {
   badges: string[];
   specHighlights: Array<{ label: string; value: string }>;
   ctaLabel: string;
+  inStock: boolean;
+  inventoryLabel: string;
 }
 
 export interface Product {
@@ -61,72 +69,125 @@ export class ProductsService {
   private readonly assembledPCs = this.buildAssembledPCs();
   private readonly components = this.buildComponents();
   private readonly peripherals = this.buildPeripherals();
-  private readonly accessories: AccessoryProduct[] = [];
+  private readonly accessories = this.buildAccessories();
+
+  constructor(private readonly directus: DirectusApiService) {}
 
   getAssembledPCs(filters?: FilterCriteria): Observable<AssembledPC[]> {
-    return of(this.applyFilters(this.assembledPCs, filters));
+    return this.getCatalogProducts({
+      ...filters,
+      categories: [ProductCategory.ASSEMBLED],
+    }).pipe(
+      map((products) =>
+        products.filter(
+          (product): product is AssembledPC =>
+            product.category === ProductCategory.ASSEMBLED
+        )
+      )
+    );
   }
 
   getComponentsByType(
     type?: ComponentType,
     filters?: FilterCriteria
   ): Observable<ComponentProduct[]> {
-    const products = type
-      ? this.components.filter((product) => product.componentType === type)
-      : this.components;
-    return of(this.applyFilters(products, filters));
+    return this.getCatalogProducts({
+      ...filters,
+      categories: [ProductCategory.COMPONENT],
+    }).pipe(
+      map((products) =>
+        products
+          .filter(
+            (product): product is ComponentProduct =>
+              product.category === ProductCategory.COMPONENT
+          )
+          .filter((product) => !type || product.componentType === type)
+      )
+    );
   }
 
   getPeripherals(
     type?: PeripheralType,
     filters?: FilterCriteria
   ): Observable<PeripheralProduct[]> {
-    const products = type
-      ? this.peripherals.filter((product) => product.peripheralType === type)
-      : this.peripherals;
-    return of(this.applyFilters(products, filters));
+    return this.getCatalogProducts({
+      ...filters,
+      categories: [ProductCategory.PERIPHERAL],
+    }).pipe(
+      map((products) =>
+        products
+          .filter(
+            (product): product is PeripheralProduct =>
+              product.category === ProductCategory.PERIPHERAL
+          )
+          .filter((product) => !type || product.peripheralType === type)
+      )
+    );
+  }
+
+  getHardwareAndAccessories(
+    filters?: FilterCriteria
+  ): Observable<Array<ComponentProduct | AccessoryProduct>> {
+    return this.getCatalogProducts({
+      ...filters,
+      categories: [ProductCategory.COMPONENT, ProductCategory.ACCESSORY],
+    }).pipe(
+      map((products) =>
+        products.filter(
+          (product): product is ComponentProduct | AccessoryProduct =>
+            product.category === ProductCategory.COMPONENT ||
+            product.category === ProductCategory.ACCESSORY
+        )
+      )
+    );
   }
 
   getCatalogProducts(filters?: FilterCriteria): Observable<CatalogProduct[]> {
-    return of(this.applyFilters(this.getAllCatalogProducts(), filters));
+    return this.loadCatalogProducts().pipe(
+      map((products) => this.applyFilters(products, filters))
+    );
   }
 
   getFeaturedCatalogProducts(limit = 6): Observable<CatalogProduct[]> {
-    const featured = this.getAllCatalogProducts()
-      .filter((product) => product.featured)
-      .sort((a, b) => (a.position ?? 999) - (b.position ?? 999))
-      .slice(0, limit);
-
-    return of(featured);
+    return this.loadCatalogProducts().pipe(
+      map((products) =>
+        products
+          .filter((product) => product.featured)
+          .sort((a, b) => (a.position ?? 999) - (b.position ?? 999))
+          .slice(0, limit)
+      )
+    );
   }
 
   getCatalogProductBySlug(slug: string): Observable<CatalogProduct | null> {
-    const product =
-      this.getAllCatalogProducts().find((item) => item.slug === slug) ?? null;
-    return of(product);
+    return this.loadCatalogProducts().pipe(
+      map((products) => products.find((item) => item.slug === slug) ?? null)
+    );
   }
 
   getRelatedCatalogProducts(
     slug: string,
     limit = 4
   ): Observable<CatalogProduct[]> {
-    const current = this.getAllCatalogProducts().find((item) => item.slug === slug);
-    if (!current) {
-      return of([]);
-    }
-
-    const related = this.getAllCatalogProducts()
-      .filter((item) => item.slug !== slug && item.category === current.category)
-      .sort((a, b) => {
-        const featuredWeight = Number(b.featured) - Number(a.featured);
-        if (featuredWeight !== 0) {
-          return featuredWeight;
+    return this.loadCatalogProducts().pipe(
+      map((products) => {
+        const current = products.find((item) => item.slug === slug);
+        if (!current) {
+          return [];
         }
-        return a.title.localeCompare(b.title);
-      })
-      .slice(0, limit);
 
-    return of(related);
+        return products
+          .filter((item) => item.slug !== slug && item.category === current.category)
+          .sort((a, b) => {
+            const featuredWeight = Number(b.featured) - Number(a.featured);
+            if (featuredWeight !== 0) {
+              return featuredWeight;
+            }
+            return a.title.localeCompare(b.title);
+          })
+          .slice(0, limit);
+      })
+    );
   }
 
   searchCatalog(query: string, limit = 20): Observable<SearchResult> {
@@ -157,12 +218,34 @@ export class ProductsService {
         return text.includes(normalized);
       });
 
-    return of({
-      assembled: filterByQuery(this.assembledPCs).slice(0, limit),
-      components: filterByQuery(this.components).slice(0, limit),
-      peripherals: filterByQuery(this.peripherals).slice(0, limit),
-      accessories: filterByQuery(this.accessories).slice(0, limit),
-    });
+    return this.loadCatalogProducts().pipe(
+      map((products) => ({
+        assembled: filterByQuery(
+          products.filter(
+            (product): product is AssembledPC =>
+              product.category === ProductCategory.ASSEMBLED
+          )
+        ).slice(0, limit),
+        components: filterByQuery(
+          products.filter(
+            (product): product is ComponentProduct =>
+              product.category === ProductCategory.COMPONENT
+          )
+        ).slice(0, limit),
+        peripherals: filterByQuery(
+          products.filter(
+            (product): product is PeripheralProduct =>
+              product.category === ProductCategory.PERIPHERAL
+          )
+        ).slice(0, limit),
+        accessories: filterByQuery(
+          products.filter(
+            (product): product is AccessoryProduct =>
+              product.category === ProductCategory.ACCESSORY
+          )
+        ).slice(0, limit),
+      }))
+    );
   }
 
   toProductCardViewModel(product: CatalogProduct): ProductCardViewModel {
@@ -182,6 +265,8 @@ export class ProductsService {
         product.category === ProductCategory.ASSEMBLED
           ? 'Ver ensamble'
           : 'Ver producto',
+      inStock: product.stock > 0,
+      inventoryLabel: this.buildInventoryLabel(product),
     };
   }
 
@@ -190,7 +275,7 @@ export class ProductsService {
       case ProductCategory.ASSEMBLED:
         return 'Ensambles';
       case ProductCategory.COMPONENT:
-        return 'Componentes';
+        return 'Hardware y accesorios';
       case ProductCategory.PERIPHERAL:
         return 'Perifericos';
       case ProductCategory.ACCESSORY:
@@ -203,11 +288,11 @@ export class ProductsService {
       case ProductCategory.ASSEMBLED:
         return '/ensambles';
       case ProductCategory.COMPONENT:
-        return '/productos/componentes';
+        return '/productos/hardware-accesorios';
       case ProductCategory.PERIPHERAL:
         return '/productos/perifericos';
       case ProductCategory.ACCESSORY:
-        return '/productos';
+        return '/productos/hardware-accesorios';
     }
   }
 
@@ -320,9 +405,33 @@ export class ProductsService {
       ];
     }
 
-    return [
-      { label: 'Categoria', value: this.getCategoryLabel(product.category) },
-    ];
+    if (product.category === ProductCategory.ACCESSORY) {
+      const specs = product.specifications;
+      const details = [
+        { label: 'Marca', value: specs.brand },
+        { label: 'Modelo', value: specs.model },
+      ];
+
+      if ('type' in specs) {
+        details.push({ label: 'Tipo', value: specs.type });
+      }
+
+      if ('length' in specs && specs.length) {
+        details.push({ label: 'Longitud', value: specs.length });
+      }
+
+      if ('ports' in specs) {
+        details.push({ label: 'Puertos', value: `${specs.ports}` });
+      }
+
+      if ('connection' in specs && specs.connection) {
+        details.push({ label: 'Conexion', value: specs.connection });
+      }
+
+      return details.slice(0, limit);
+    }
+
+    return [];
   }
 
   getAllProducts(): Observable<Product[]> {
@@ -388,6 +497,29 @@ export class ProductsService {
       ...this.peripherals,
       ...this.accessories,
     ];
+  }
+
+  private loadCatalogProducts(): Observable<CatalogProduct[]> {
+    const fallback = this.getAllCatalogProducts();
+
+    if (!this.directus.isEnabled('catalog')) {
+      return of(fallback);
+    }
+
+    return this.directus
+      .readItems<DirectusProductRecord>('pc_products', {
+        'filter[published][_eq]': true,
+        fields: '*',
+        sort: 'sort,title',
+        limit: 1000,
+      })
+      .pipe(
+        map((response) => {
+          const products = response.data.map(mapDirectusProductToCatalogProduct);
+          return products.length ? products : fallback;
+        }),
+        catchError(() => of(fallback))
+      );
   }
 
   private applyFilters<T extends CatalogProduct>(
@@ -485,6 +617,10 @@ export class ProductsService {
   private buildBadges(product: CatalogProduct): string[] {
     const badges: string[] = [];
 
+    if (product.stock <= 0) {
+      badges.push('Sin stock');
+    }
+
     if (product.featured) {
       badges.push('Destacado');
     }
@@ -493,7 +629,7 @@ export class ProductsService {
       badges.push('Promocion');
     }
 
-    if (product.stock <= (product.lowStockThreshold ?? 2)) {
+    if (product.stock > 0 && product.stock <= (product.lowStockThreshold ?? 2)) {
       badges.push('Ultimas piezas');
     }
 
@@ -510,7 +646,27 @@ export class ProductsService {
       badges.push(this.formatLabel(product.peripheralType));
     }
 
+    if (product.category === ProductCategory.ACCESSORY) {
+      badges.push(this.formatLabel(product.accessoryType));
+    }
+
     return badges.slice(0, 4);
+  }
+
+  private buildInventoryLabel(product: CatalogProduct): string {
+    if (product.stock <= 0) {
+      return 'Producto sin stock';
+    }
+
+    if (product.stock <= 1) {
+      return 'Ultima unidad disponible';
+    }
+
+    if (product.stock <= (product.lowStockThreshold ?? 2)) {
+      return 'Inventario limitado';
+    }
+
+    return 'Disponible';
   }
 
   private extractBrand(product: CatalogProduct): string | null {
@@ -1109,6 +1265,117 @@ export class ProductsService {
           warranty: '5 anos',
         },
         bestFor: ['Gaming', 'Edicion', 'Bibliotecas grandes'],
+      },
+    ];
+  }
+
+  private buildAccessories(): AccessoryProduct[] {
+    const baseDate = new Date('2026-04-01T10:00:00');
+
+    return [
+      {
+        _id: 'acc-001',
+        sku: 'CB-HDMI-8K-3M',
+        category: ProductCategory.ACCESSORY,
+        subcategory: 'cable',
+        status: ProductStatus.ACTIVE,
+        accessoryType: 'cable',
+        title: 'Cable HDMI 2.1 8K 3m',
+        slug: 'cable-hdmi-2-1-8k-3m',
+        image: 'assets/img/marcas/thermaltake.png',
+        price: 349,
+        currency: 'MXN',
+        description: 'Cable HDMI de alta velocidad para monitores, consolas y tarjetas graficas modernas.',
+        stock: 18,
+        lowStockThreshold: 4,
+        published: true,
+        featured: true,
+        createdAt: baseDate,
+        updatedAt: baseDate,
+        specifications: {
+          brand: 'Manhattan',
+          model: 'HDMI 2.1 8K',
+          type: 'HDMI',
+          standard: '2.1',
+          length: '3m',
+          shielded: true,
+          braided: true,
+          color: 'Negro',
+          connectorType: 'HDMI macho a macho',
+        },
+        compatibility: {
+          devices: ['PC', 'Monitor', 'TV', 'Consola'],
+          notes: 'Soporta altas tasas de refresco segun equipo y pantalla.',
+        },
+        bundleReady: true,
+      },
+      {
+        _id: 'acc-002',
+        sku: 'AD-USBC-DP',
+        category: ProductCategory.ACCESSORY,
+        subcategory: 'usb-hub',
+        status: ProductStatus.ACTIVE,
+        accessoryType: 'usb-hub',
+        title: 'Adaptador USB-C a DisplayPort',
+        slug: 'adaptador-usb-c-displayport',
+        image: 'assets/img/marcas/Logitech.png',
+        price: 599,
+        currency: 'MXN',
+        description: 'Adaptador compacto para conectar laptops y PCs con USB-C a pantallas DisplayPort.',
+        stock: 9,
+        lowStockThreshold: 2,
+        published: true,
+        featured: true,
+        createdAt: baseDate,
+        updatedAt: baseDate,
+        specifications: {
+          brand: 'Manhattan',
+          model: 'USB-C DP Adapter',
+          ports: 1,
+          portTypes: ['DisplayPort'],
+          maxDataRate: '4K 60Hz',
+          powerDelivery: false,
+          material: 'Aluminio',
+          connection: 'USB-C',
+        },
+        compatibility: {
+          devices: ['Laptop', 'PC', 'Monitor DisplayPort'],
+        },
+        bundleReady: true,
+      },
+      {
+        _id: 'acc-003',
+        sku: 'HUB-USBC-6IN1',
+        category: ProductCategory.ACCESSORY,
+        subcategory: 'usb-hub',
+        status: ProductStatus.ACTIVE,
+        accessoryType: 'usb-hub',
+        title: 'Hub USB-C 6 en 1',
+        slug: 'hub-usb-c-6-en-1',
+        image: 'assets/img/marcas/corsairbrand.png',
+        price: 899,
+        currency: 'MXN',
+        description: 'Hub para escritorios compactos con USB, HDMI y carga de paso para setups diarios.',
+        stock: 11,
+        lowStockThreshold: 3,
+        published: true,
+        createdAt: baseDate,
+        updatedAt: baseDate,
+        specifications: {
+          brand: 'Acteck',
+          model: 'USB-C 6 en 1',
+          ports: 6,
+          portTypes: ['USB-A', 'USB-C', 'HDMI', 'SD'],
+          maxDataRate: '5Gbps',
+          powerDelivery: true,
+          powerDeliveryWatts: 100,
+          material: 'Aluminio',
+          connection: 'USB-C',
+        },
+        compatibility: {
+          devices: ['Laptop', 'PC', 'Tablet USB-C'],
+        },
+        bundleReady: true,
       },
     ];
   }

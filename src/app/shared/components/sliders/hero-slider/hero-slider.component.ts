@@ -74,6 +74,8 @@ export class HeroSliderComponent implements OnInit, OnDestroy, OnChanges {
   }
   
   startAutoplay(): void {
+    if (!this.items.length) return;
+
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
@@ -91,11 +93,13 @@ export class HeroSliderComponent implements OnInit, OnDestroy, OnChanges {
   }
   
   next(): void {
+    if (!this.items.length) return;
     this.currentIndex = (this.currentIndex + 1) % this.items.length;
     this.cdr.detectChanges();
   }
   
   prev(): void {
+    if (!this.items.length) return;
     this.currentIndex = (this.currentIndex - 1 + this.items.length) % this.items.length;
     this.cdr.detectChanges();
   }

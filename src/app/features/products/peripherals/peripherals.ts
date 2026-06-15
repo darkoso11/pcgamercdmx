@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
@@ -17,11 +17,13 @@ import { PeripheralProduct } from '../../../shared/models';
 })
 export class Peripherals implements OnInit {
   private readonly productsService = inject(ProductsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   products: PeripheralProduct[] = [];
   cards: ProductCardViewModel[] = [];
   searchTerm = '';
   selectedType = 'all';
+  visibleLimit = 24;
 
   readonly typeOptions = [
     { value: 'all', label: 'Todos' },
@@ -29,6 +31,11 @@ export class Peripherals implements OnInit {
     { value: 'mouse', label: 'Mouse' },
     { value: 'monitor', label: 'Monitores' },
     { value: 'headset', label: 'Headsets' },
+    { value: 'speaker', label: 'Bocinas' },
+    { value: 'chair', label: 'Sillas' },
+    { value: 'controller', label: 'Mandos' },
+    { value: 'microphone', label: 'Microfonos' },
+    { value: 'camera', label: 'Camaras' },
   ];
 
   ngOnInit(): void {
@@ -37,6 +44,7 @@ export class Peripherals implements OnInit {
       this.cards = products.map((product) =>
         this.productsService.toProductCardViewModel(product)
       );
+      this.cdr.detectChanges();
     });
   }
 
@@ -58,5 +66,21 @@ export class Peripherals implements OnInit {
 
         return matchesType && matchesSearch;
       });
+  }
+
+  get visibleProducts(): Array<{ product: PeripheralProduct; card: ProductCardViewModel }> {
+    return this.filteredProducts.slice(0, this.visibleLimit);
+  }
+
+  get hiddenProductCount(): number {
+    return Math.max(0, this.filteredProducts.length - this.visibleLimit);
+  }
+
+  showMore(): void {
+    this.visibleLimit += 24;
+  }
+
+  resetVisibleLimit(): void {
+    this.visibleLimit = 24;
   }
 }

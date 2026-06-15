@@ -5,13 +5,21 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
-    title: 'Inicio | PC Gamer CDMX',
+    title: 'PC Gamer CDMX | Ensambles y computadoras gamer en CDMX',
+    data: {
+      description: 'Compra o cotiza tu PC gamer en CDMX: ensambles personalizados, paquetes listos, perifericos, componentes y soporte tecnico especializado.',
+      keywords: 'pc gamer cdmx, ensambles pc gamer, computadoras gamer cdmx, cotizar pc gamer, perifericos gamer',
+      image: '/assets/img/leon.png'
+    }
   },
   {
     path: 'ensambles',
     loadComponent: () => import('./features/assemblies/assemblies.component').then(m => m.AssembliesComponent),
     title: 'Ensambles | PC Gamer CDMX',
-    data: { description: 'Explora ensambles de PC listos para gaming, streaming y trabajo creativo en PC Gamer CDMX.' }
+    data: {
+      description: 'Explora ensambles de PC listos para gaming, streaming y trabajo creativo en PC Gamer CDMX.',
+      keywords: 'ensambles pc gamer, pc prearmada, pc gaming mexico, pc gamer cdmx'
+    }
   },
   {
     path: 'ensambles/:slug',
@@ -30,17 +38,62 @@ export const routes: Routes = [
     title: 'Contacto | PC Gamer CDMX',
     data: { description: 'Ponte en contacto con PC Gamer CDMX para consultas, soporte o información sobre nuestros productos y servicios.' }
   },
+  {
+    path: 'colaboradores',
+    loadComponent: () => import('./features/community/community.component').then(m => m.CommunityComponent),
+    title: 'Colaboradores | PC Gamer CDMX',
+    data: { description: 'Conoce a los colaboradores e influencers de la comunidad PC Gamer CDMX.' }
+  },
+  {
+    path: 'colaboradores/:slug',
+    loadComponent: () => import('./features/community/community-detail.component').then(m => m.CommunityDetailComponent),
+    title: 'Perfil de colaborador | PC Gamer CDMX',
+    data: { renderMode: 'dynamic' }
+  },
   
   // Rutas adicionales
   {
     path: 'productos',
     loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
     title: 'Productos | PC Gamer CDMX',
+    data: {
+      description: 'Catalogo de componentes, perifericos, paquetes y productos gamer disponibles en PC Gamer CDMX.',
+      keywords: 'componentes pc, perifericos gamer, productos gamer, pc gamer cdmx'
+    },
     children: [
-      { path: 'perifericos', loadComponent: () => import('./features/products/peripherals/peripherals').then(m => m.Peripherals) },
-      { path: 'componentes', loadComponent: () => import('./features/products/components/components').then(m => m.Components) },
-      { path: ':slug', loadComponent: () => import('./features/products/product-detail.component').then(m => m.ProductDetailComponent) },
-      { path: '', loadComponent: () => import('./features/products/products-overview/products-overview').then(m => m.ProductsOverview) }
+      {
+        path: 'perifericos',
+        loadComponent: () => import('./features/products/peripherals/peripherals').then(m => m.Peripherals),
+        title: 'Perifericos gamer | PC Gamer CDMX',
+        data: {
+          description: 'Explora perifericos gamer: teclados, mouse, monitores, headsets, sillas y accesorios para completar tu setup.',
+          keywords: 'perifericos gamer, teclados gamer, mouse gamer, monitores gamer, headsets gamer'
+        }
+      },
+      {
+        path: 'hardware-accesorios',
+        loadComponent: () => import('./features/products/components/components').then(m => m.Components),
+        title: 'Hardware y accesorios para PC | PC Gamer CDMX',
+        data: {
+          description: 'Hardware, componentes, cables, adaptadores y accesorios para armar, actualizar o conectar tu PC.',
+          keywords: 'hardware pc, accesorios pc, cables pc, adaptadores pc, componentes pc, tarjeta grafica, procesador'
+        }
+      },
+      {
+        path: 'componentes',
+        redirectTo: 'hardware-accesorios',
+        pathMatch: 'full'
+      },
+      {
+        path: ':slug',
+        loadComponent: () => import('./features/products/product-detail.component').then(m => m.ProductDetailComponent),
+        data: { seoType: 'product' }
+      },
+      {
+        path: '',
+        redirectTo: 'perifericos',
+        pathMatch: 'full'
+      }
     ]
   },
   {
@@ -51,20 +104,27 @@ export const routes: Routes = [
   },
   {
     path: 'galeria',
-    loadComponent: () => import('./features/gallery/gallery.component').then(m => m.GalleryComponent)
+    loadComponent: () => import('./features/gallery/gallery.component').then(m => m.GalleryComponent),
+    title: 'Galeria | PC Gamer CDMX',
+    data: { description: 'Galeria de ensambles, gabinetes personalizados y setups creados por PC Gamer CDMX.' }
   },
   {
     path: 'sorteos',
-    loadComponent: () => import('./features/giveaways/giveaways.component').then(m => m.GiveawaysComponent)
+    loadComponent: () => import('./features/giveaways/giveaways.component').then(m => m.GiveawaysComponent),
+    title: 'Sorteos | PC Gamer CDMX',
+    data: { description: 'Sorteos, dinamicas y eventos de la comunidad PC Gamer CDMX.' }
   },
   {
     path: 'servicios',
-    loadComponent: () => import('./features/services/services.component').then(m => m.ServicesComponent)
+    loadComponent: () => import('./features/services/services.component').then(m => m.ServicesComponent),
+    title: 'Servicios tecnicos | PC Gamer CDMX',
+    data: { description: 'Servicio tecnico para PCs gamer: mantenimiento, actualizaciones, diagnostico, reparacion y ensamble.' }
   },
   {
     path: 'cotiza-tu-pc',
     loadComponent: () => import('./features/quotation/quotation.component').then(m => m.QuotationComponent),
-    title: 'Cotiza tu PC | PC Gamer CDMX'
+    title: 'Cotiza tu PC | PC Gamer CDMX',
+    data: { description: 'Cotiza una PC gamer personalizada con componentes seleccionados para tu presupuesto, juegos y flujo de trabajo.' }
   },
   {
     path: 'politica-privacidad',
@@ -83,7 +143,8 @@ export const routes: Routes = [
   {
     path: 'blog',
     loadComponent: () => import('./features/blog/blog-list.component').then(m => m.BlogListComponent),
-    title: 'Blog | PC Gamer CDMX'
+    title: 'Blog | PC Gamer CDMX',
+    data: { description: 'Guias, noticias y consejos de hardware, gaming, streaming y ensamble de PCs en el blog de PC Gamer CDMX.' }
   },
   {
     path: 'blog/:slug',
@@ -97,6 +158,7 @@ export const routes: Routes = [
     path: 'admin',
     loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent),
     title: 'Admin | PC Gamer CDMX',
+    data: { noIndex: true },
     canActivate: [AuthGuard]
   },
   {
@@ -129,6 +191,18 @@ export const routes: Routes = [
     path: 'admin/blog/login',
     loadComponent: () => import('./features/admin/admin-login.component').then(m => m.AdminLoginComponent),
     title: 'Admin Login | PC Gamer CDMX'
+  },
+  {
+    path: 'admin/community',
+    loadComponent: () => import('./features/community/admin-community.component').then(m => m.AdminCommunityComponent),
+    title: 'Admin Comunidad | PC Gamer CDMX',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'admin/home',
+    loadComponent: () => import('./features/home/admin-home-content.component').then(m => m.AdminHomeContentComponent),
+    title: 'Admin Home | PC Gamer CDMX',
+    canActivate: [AuthGuard]
   },
 
   // Admin Products routes
@@ -190,7 +264,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/products/assemblies',
-    loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
+    loadComponent: () => import('./features/products/admin/assemblies/admin-assemblies-list/admin-assemblies-list.component').then(m => m.AdminAssembliesListComponent),
     title: 'Ensambles | Admin',
     canActivate: [AuthGuard]
   },

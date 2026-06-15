@@ -126,7 +126,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
     try {
       localStorage.setItem(CATEGORIES_KEY, JSON.stringify(initialCategories));
       localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(initialSubcategories));
-      console.log('Mock data reset successfully');
     } catch (e) {
       console.error('Error resetting mock data:', e);
     }
@@ -260,7 +259,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       };
       mockArticles.push(newArticle);
       try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(mockArticles)); } catch (e) {}
-      console.log('Mock: Article created', newArticle);
       return of(new HttpResponse({ status: 201, body: newArticle }));
     }
 
@@ -275,7 +273,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
           updatedAt: new Date().toISOString()
         };
         try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(mockArticles)); } catch (e) {}
-        console.log('Mock: Article updated', mockArticles[idx]);
         return of(new HttpResponse({ status: 200, body: mockArticles[idx] }));
       }
       return throwError(() => new Error('Article not found'));
@@ -288,7 +285,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       if (idx >= 0) {
         const deleted = mockArticles.splice(idx, 1)[0];
         try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(mockArticles)); } catch (e) {}
-        console.log('Mock: Article deleted', deleted);
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }
       return throwError(() => new Error('Article not found'));
@@ -307,7 +303,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
 
     // GET /api/blog/categories
     if (req.method === 'GET' && req.url.includes('/api/blog/categories')) {
-      console.log('Mock: Returning categories:', mockCategories);
       return of(new HttpResponse({ status: 200, body: mockCategories }));
     }
 
@@ -317,7 +312,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const newCat = { _id: String(Date.now()), name: body.name || 'Sin nombre', description: body.description || '' };
       mockCategories.push(newCat);
       try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(mockCategories)); } catch (e) {}
-      console.log('Mock: Category created', newCat);
       return of(new HttpResponse({ status: 201, body: newCat }));
     }
 
@@ -328,7 +322,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       if (idx >= 0) {
         mockCategories[idx] = { ...mockCategories[idx], ...(req.body || {}) };
         try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(mockCategories)); } catch (e) {}
-        console.log('Mock: Category updated', mockCategories[idx]);
         return of(new HttpResponse({ status: 200, body: mockCategories[idx] }));
       }
       return throwError(() => new Error('Category not found'));
@@ -341,7 +334,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       if (idx >= 0) {
         const deleted = mockCategories.splice(idx, 1)[0];
         try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(mockCategories)); } catch (e) {}
-        console.log('Mock: Category deleted', deleted);
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }
       return throwError(() => new Error('Category not found'));
@@ -364,7 +356,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const newSub = { _id: String(Date.now()), name: body.name || 'Sin nombre', categoryId: body.categoryId, description: body.description || '' };
       mockSubCategories.push(newSub);
       try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(mockSubCategories)); } catch (e) {}
-      console.log('Mock: Subcategory created', newSub);
       return of(new HttpResponse({ status: 201, body: newSub }));
     }
 
@@ -375,7 +366,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       if (idx >= 0) {
         mockSubCategories[idx] = { ...mockSubCategories[idx], ...(req.body || {}) };
         try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(mockSubCategories)); } catch (e) {}
-        console.log('Mock: Subcategory updated', mockSubCategories[idx]);
         return of(new HttpResponse({ status: 200, body: mockSubCategories[idx] }));
       }
       return throwError(() => new Error('Subcategory not found'));
@@ -388,7 +378,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
       if (idx >= 0) {
         const deleted = mockSubCategories.splice(idx, 1)[0];
         try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(mockSubCategories)); } catch (e) {}
-        console.log('Mock: Subcategory deleted', deleted);
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }
       return throwError(() => new Error('Subcategory not found'));

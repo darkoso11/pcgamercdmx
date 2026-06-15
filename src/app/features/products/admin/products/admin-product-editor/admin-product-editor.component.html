@@ -331,6 +331,68 @@
               <option value="USD">USD - Dólar Americano</option>
             </select>
           </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Modo de precio</label>
+            <select
+              formControlName="pricingMode"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
+            >
+              <option value="manual">Manual</option>
+              <option value="provider">Proveedor</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Proveedor queda preparado para APIs futuras; por ahora no sincroniza automaticamente.</p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Proveedor de precio</label>
+            <input
+              type="text"
+              formControlName="syncProvider"
+              placeholder="Ej: Cyberpuerta"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">ID del proveedor</label>
+            <input
+              type="text"
+              formControlName="providerProductId"
+              placeholder="ID externo del producto"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">SKU del proveedor</label>
+            <input
+              type="text"
+              formControlName="providerSku"
+              placeholder="SKU externo"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Ultima actualizacion de precio</label>
+            <input
+              type="text"
+              formControlName="lastPriceSyncedAt"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/10 rounded text-gray-400"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Estado de sincronizacion</label>
+            <input
+              type="text"
+              formControlName="lastSyncStatus"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/10 rounded text-gray-400"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm text-gray-400 mb-2">Error de sincronizacion</label>
+            <input
+              type="text"
+              formControlName="lastSyncError"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/10 rounded text-gray-400"
+            />
+          </div>
         </div>
       </div>
 
@@ -546,9 +608,12 @@
               <i class="fas fa-globe mr-2"></i>Publicación y Visibilidad
             </h3>
             <div class="space-y-4">
-              <label class="flex items-center gap-3 cursor-pointer p-3 bg-indigo-600/10 border border-indigo-400/20 rounded">
+              <label class="flex items-start gap-3 cursor-pointer p-3 bg-indigo-600/10 border border-indigo-400/20 rounded">
                 <input type="checkbox" formControlName="published" class="w-4 h-4 accent-indigo-400" />
-                <span class="text-gray-300">Publicar este producto en la tienda</span>
+                <span>
+                  <span class="block text-gray-300">Visible en la tienda publica</span>
+                  <span class="block text-xs text-gray-500 mt-1">Desactivalo para dejar el producto privado en el admin.</span>
+                </span>
               </label>
               <label class="flex items-center gap-3 cursor-pointer p-3 bg-yellow-600/10 border border-yellow-400/20 rounded">
                 <input type="checkbox" formControlName="featured" class="w-4 h-4 accent-yellow-400" />
@@ -583,7 +648,7 @@
             class="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-800 disabled:opacity-50 text-white font-semibold rounded-lg transition flex items-center gap-2"
           >
             <i class="fas fa-save"></i>
-            Guardar Borrador
+            Guardar Privado
           </button>
 
           <button
@@ -593,11 +658,11 @@
           >
             <span *ngIf="!loading">
               <i class="fas fa-rocket"></i>
-              Publicar Producto
+              Guardar Producto
             </span>
             <span *ngIf="loading">
               <i class="fas fa-spinner fa-spin"></i>
-              Publicando...
+              Guardando...
             </span>
           </button>
         </div>

@@ -1,0 +1,70 @@
+<main class="min-h-screen bg-[#070a1c] px-6 py-28 text-white">
+  <section *ngIf="collaborator; else notFound" class="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+    <div class="relative">
+      <div class="absolute -inset-3 rounded-2xl bg-gradient-to-br from-cyan-400/25 via-pink-500/20 to-violet-500/25 blur-xl"></div>
+      <div class="relative overflow-hidden rounded-2xl border border-cyan-300/20 bg-[#101633] p-3">
+        <img
+          [src]="collaborator.image"
+          [alt]="collaborator.name"
+          class="aspect-[4/5] w-full rounded-xl object-cover"
+        />
+      </div>
+    </div>
+
+    <div>
+      <a routerLink="/colaboradores" class="text-sm font-bold uppercase tracking-[0.2em] text-cyan-300 hover:text-white">
+        Regresar a colaboradores
+      </a>
+      <div class="mt-6 flex flex-wrap gap-2">
+        <span class="rounded-full border border-pink-400/40 bg-pink-400/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-pink-200">
+          {{ collaborator.role }}
+        </span>
+        <span *ngIf="collaborator.featured" class="rounded-full border border-cyan-300/40 bg-cyan-300/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-cyan-200">
+          Destacado
+        </span>
+      </div>
+
+      <h1 class="mt-5 font-['Orbitron'] text-4xl font-black leading-tight md:text-6xl">
+        {{ collaborator.name }}
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg leading-9 text-slate-300">{{ collaborator.bio }}</p>
+
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a
+          *ngIf="collaborator.instagram"
+          [href]="collaborator.instagram"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-lg border border-pink-400/50 px-4 py-3 font-bold text-pink-200 transition hover:bg-pink-400/10 hover:text-white"
+        >
+          <i class="fab fa-instagram"></i>
+          Instagram
+        </a>
+        <a
+          *ngIf="collaborator.twitch"
+          [href]="collaborator.twitch"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-lg border border-violet-400/50 px-4 py-3 font-bold text-violet-200 transition hover:bg-violet-400/10 hover:text-white"
+        >
+          <i class="fab fa-twitch"></i>
+          Twitch
+        </a>
+        <a
+          [routerLink]="settings.detailCtaUrl"
+          class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-400 to-pink-500 px-5 py-3 font-black text-[#070a1c] transition hover:scale-[1.02]"
+        >
+          {{ settings.detailCtaLabel }}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <ng-template #notFound>
+    <section class="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/5 p-10 text-center">
+      <h1 class="text-3xl font-black">Colaborador no encontrado</h1>
+      <p class="mt-4 text-slate-300">El perfil no esta publicado o fue removido.</p>
+      <a routerLink="/colaboradores" class="mt-6 inline-flex text-cyan-300 hover:text-white">Ver colaboradores</a>
+    </section>
+  </ng-template>
+</main>

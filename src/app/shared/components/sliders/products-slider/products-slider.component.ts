@@ -184,4 +184,12 @@ export class ProductsSliderComponent implements AfterViewInit, OnChanges {
       img.onerror = null; // Evita bucles infinitos
     }
   }
+
+  handleLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      img.style.display = 'none';
+      img.onerror = null;
+    }
+  }
 }
