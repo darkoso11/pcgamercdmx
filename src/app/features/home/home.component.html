@@ -40,6 +40,11 @@
         <h1 class="text-xl md:text-2xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
           <span>{{ typingText }}</span>
         </h1>
+
+        <p class="launch-notice" aria-live="polite">
+          <span class="launch-notice__label">Sitio recien publicado</span>
+          <span class="launch-notice__copy">Puede presentar algunos errores mientras afinamos la experiencia. Gracias por tu paciencia.</span>
+        </p>
       </div>
 
       <a [routerLink]="pcBuilds[pcIndex].link" class="hero-assembly-stage hidden md:flex" aria-label="Ver paquete de ensamble">
