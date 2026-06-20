@@ -21,4 +21,14 @@ describe('admin routes', () => {
     expect(paths.some((path) => path === 'admin' || path.startsWith('admin/'))).toBeFalse();
     expect(paths).not.toContain(`${ADMIN_BASE_PATH}/blog/login`);
   });
+
+  it('redirects legacy package admin routes to the active assembly CRUD', () => {
+    const packagesRoute = routes.find((route) => route.path === `${ADMIN_BASE_PATH}/products/packages`);
+    const newPackageRoute = routes.find((route) => route.path === `${ADMIN_BASE_PATH}/products/packages/new`);
+    const editPackageRoute = routes.find((route) => route.path === `${ADMIN_BASE_PATH}/products/packages/:id/edit`);
+
+    expect(packagesRoute?.redirectTo).toBe(`${ADMIN_BASE_PATH}/products/assemblies`);
+    expect(newPackageRoute?.redirectTo).toBe(`${ADMIN_BASE_PATH}/products/assemblies/new`);
+    expect(editPackageRoute?.redirectTo).toBe(`${ADMIN_BASE_PATH}/products/assemblies/:id/edit`);
+  });
 });
