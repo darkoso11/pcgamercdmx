@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { AnalyticsService, SeoService } from './core/services/seo.service';
+import { isAdminUrl } from './features/admin/admin-route.config';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, NavbarComponent, FooterComponent],
@@ -38,7 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private updateFooterVisibility(url: string) {
-    this.showFooter.set(!url.startsWith('/admin'));
+    this.showFooter.set(!isAdminUrl(url));
   }
 
   private updateSeo() {
@@ -60,7 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
       keywords: data['keywords'] as string | undefined,
       image: data['image'] as string | undefined,
       type: data['seoType'] as 'website' | 'article' | 'product' | undefined,
-      noIndex: Boolean(data['noIndex']) || url.startsWith('/admin'),
+      noIndex: Boolean(data['noIndex']) || isAdminUrl(url),
       url,
     });
   }

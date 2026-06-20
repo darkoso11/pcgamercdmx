@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './features/admin/services/auth.guard';
+import { adminRoute } from './features/admin/admin-route.config';
 
 export const routes: Routes = [
   {
@@ -155,32 +156,32 @@ export const routes: Routes = [
 
   // Admin Blog routes
   {
-    path: 'admin',
+    path: adminRoute(),
     loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent),
     title: 'Admin | PC Gamer CDMX',
     data: { noIndex: true },
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/blog',
+    path: adminRoute('blog'),
     loadComponent: () => import('./features/blog/admin/admin-article-list.component').then(m => m.AdminArticleListComponent),
     title: 'Admin Blog | PC Gamer CDMX',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/blog/new',
+    path: adminRoute('blog/new'),
     loadComponent: () => import('./features/blog/admin/admin-article-editor.component').then(m => m.AdminArticleEditorComponent),
     title: 'Nuevo Artículo | PC Gamer CDMX',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/blog/categories',
+    path: adminRoute('blog/categories'),
     loadComponent: () => import('./features/blog/admin/admin-categories.component').then(m => m.AdminCategoriesComponent),
     title: 'Categorías | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/blog/:id/edit',
+    path: adminRoute('blog/:id/edit'),
     loadComponent: () => import('./features/blog/admin/admin-article-editor.component').then(m => m.AdminArticleEditorComponent),
     title: 'Editar Artículo | PC Gamer CDMX',
     data: { renderMode: 'dynamic' }
@@ -188,18 +189,18 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/blog/login',
+    path: adminRoute('login'),
     loadComponent: () => import('./features/admin/admin-login.component').then(m => m.AdminLoginComponent),
     title: 'Admin Login | PC Gamer CDMX'
   },
   {
-    path: 'admin/community',
+    path: adminRoute('community'),
     loadComponent: () => import('./features/community/admin-community.component').then(m => m.AdminCommunityComponent),
     title: 'Admin Comunidad | PC Gamer CDMX',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/home',
+    path: adminRoute('home'),
     loadComponent: () => import('./features/home/admin-home-content.component').then(m => m.AdminHomeContentComponent),
     title: 'Admin Home | PC Gamer CDMX',
     canActivate: [AuthGuard]
@@ -207,75 +208,75 @@ export const routes: Routes = [
 
   // Admin Products routes
   {
-    path: 'admin/products',
+    path: adminRoute('products'),
     loadComponent: () => import('./features/products/admin/dashboard/admin-products-dashboard/admin-products-dashboard.component').then(m => m.AdminProductsDashboardComponent),
     title: 'Admin Productos | PC Gamer CDMX',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/list',
+    path: adminRoute('products/list'),
     loadComponent: () => import('./features/products/admin/products/admin-product-list/admin-product-list.component').then(m => m.AdminProductListComponent),
     title: 'Productos | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/new',
+    path: adminRoute('products/new'),
     loadComponent: () => import('./features/products/admin/products/admin-product-editor/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
     title: 'Nuevo Producto | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/:id/edit',
+    path: adminRoute('products/:id/edit'),
     loadComponent: () => import('./features/products/admin/products/admin-product-editor/admin-product-editor.component').then(m => m.AdminProductEditorComponent),
     title: 'Editar Producto | Admin',
     data: { renderMode: 'dynamic' },
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/packages',
+    path: adminRoute('products/packages'),
     loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
     title: 'Paquetes | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/packages/new',
+    path: adminRoute('products/packages/new'),
     loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
     title: 'Nuevo Paquete | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/packages/:id/edit',
+    path: adminRoute('products/packages/:id/edit'),
     loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
     title: 'Editar Paquete | Admin',
     data: { renderMode: 'dynamic' },
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/offers',
+    path: adminRoute('products/offers'),
     loadComponent: () => import('./features/products/admin/offers/admin-offers-manager/admin-offers-manager.component').then(m => m.AdminOffersManagerComponent),
     title: 'Ofertas | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/categories',
+    path: adminRoute('products/categories'),
     loadComponent: () => import('./features/products/admin/categories/admin-category-hierarchy-manager/admin-category-hierarchy-manager.component').then(m => m.AdminCategoryHierarchyManagerComponent),
     title: 'Categorías | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/assemblies',
+    path: adminRoute('products/assemblies'),
     loadComponent: () => import('./features/products/admin/assemblies/admin-assemblies-list/admin-assemblies-list.component').then(m => m.AdminAssembliesListComponent),
     title: 'Ensambles | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/assemblies/new',
+    path: adminRoute('products/assemblies/new'),
     loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
     title: 'Nuevo Ensamble | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: 'admin/products/assemblies/:id/edit',
+    path: adminRoute('products/assemblies/:id/edit'),
     loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
     title: 'Editar Ensamble | Admin',
     data: { renderMode: 'dynamic' },

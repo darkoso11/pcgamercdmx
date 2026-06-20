@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
+import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService, Product } from '../../shared/products-admin.service';
 
 @Component({
@@ -14,6 +15,7 @@ import { ProductsAdminService, Product } from '../../shared/products-admin.servi
   templateUrl: './admin-product-list.component.html'
 })
 export class AdminProductListComponent implements OnInit, OnDestroy {
+  readonly adminNewProductUrl = adminUrl('products/new');
   products: (Product & { selected?: boolean })[] = [];
   filteredProducts: (Product & { selected?: boolean })[] = [];
   paginatedProducts: (Product & { selected?: boolean })[] = [];
@@ -130,7 +132,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   }
 
   editProduct(productId: string): void {
-    this.router.navigate(['/admin/products', productId, 'edit']);
+    this.router.navigate([adminUrl('products'), productId, 'edit']);
   }
 
   duplicateProduct(productId: string): void {
@@ -150,7 +152,12 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       this.productsAdminService
         .deleteProduct(productId)
         .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
+        .subscribe((deleted) => {
+          if (!deleted) {
+            alert('No se pudo eliminar el producto. Intenta de nuevo.');
+            return;
+          }
+
           this.loadProducts();
           alert('Producto eliminado correctamente');
         });

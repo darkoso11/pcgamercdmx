@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { BUSINESS_INFO } from '../../config/business-info';
+import { isAdminUrl } from '../../../features/admin/admin-route.config';
 
 @Component({
   selector: 'app-navbar',
@@ -36,7 +37,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   private updateVisibility(url: string) {
-    this.showNavbar = !url.startsWith('/admin');
+    this.showNavbar = !isAdminUrl(url);
   }
 }
 
