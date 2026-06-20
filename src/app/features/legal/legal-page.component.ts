@@ -6,7 +6,6 @@ type LegalPageData = {
   eyebrow: string;
   title: string;
   description: string;
-  sourceLabel?: string;
   ctaLabel?: string;
   ctaLink?: string;
   sections: Array<{ title: string; body: string; accent?: string }>;
@@ -15,58 +14,57 @@ type LegalPageData = {
 const PAGE_DATA: Record<string, LegalPageData> = {
   privacidad: {
     eyebrow: 'Aviso legal',
-    title: 'Politica de privacidad',
+    title: 'Política de privacidad',
     description:
-      'Esta pagina resume como PC Gamer CDMX debe tratar la informacion enviada por formularios, cotizaciones y contacto.',
+      'Esta página resume cómo PC Gamer CDMX debe tratar la información enviada por formularios, cotizaciones y contacto.',
     sections: [
       {
-        title: 'Informacion recopilada',
+        title: 'Información recopilada',
         body:
-          'El sitio puede solicitar nombre, correo, telefono, presupuesto, tipo de uso y detalles tecnicos necesarios para responder solicitudes comerciales.',
+          'El sitio puede solicitar nombre, correo, teléfono, presupuesto, tipo de uso y detalles técnicos necesarios para responder solicitudes comerciales.',
       },
       {
-        title: 'Uso de la informacion',
+        title: 'Uso de la información',
         body:
           'Los datos se usan para seguimiento de cotizaciones, contacto comercial, soporte y mejora de la experiencia del sitio.',
       },
       {
         title: 'Estado actual',
         body:
-          'El frontend esta preparado para integrarse con un backend. La politica final debe validarse antes de publicar el sitio en produccion.',
+          'El frontend está preparado para integrarse con un backend. La política final debe validarse antes de publicar el sitio en producción.',
       },
     ],
   },
   terminos: {
-    eyebrow: 'Politicas de devolucion',
-    title: 'Terminos y condiciones',
+    eyebrow: 'Políticas de devolución',
+    title: 'Términos y condiciones',
     description:
-      'En PC Gamer CDMX cada compra se acompana con asesoria tecnica, verificacion de componentes y soporte para que tu equipo llegue probado, sellado y listo para usarse.',
-    sourceLabel: 'Contenido migrado desde pcgamercdmx.mx/9266-2',
+      'En PC Gamer CDMX cada compra se acompaña con asesoría técnica, verificación de componentes y soporte para que tu equipo llegue probado, sellado y listo para usarse.',
     ctaLabel: 'Contactar asesor',
     ctaLink: '/contacto',
     sections: [
       {
         title: '1. Nuestro compromiso contigo',
         body:
-          'Antes de concretar una compra, el equipo tecnico puede orientarte para elegir una computadora acorde a tus necesidades reales de juego, trabajo, creacion, compatibilidad y presupuesto.',
-        accent: 'Asesoria personalizada',
+          'Antes de concretar una compra, el equipo técnico puede orientarte para elegir una computadora acorde a tus necesidades reales de juego, trabajo, creación, compatibilidad y presupuesto.',
+        accent: 'Asesoría personalizada',
       },
       {
-        title: '2. Politica de devoluciones',
+        title: '2. Política de devoluciones',
         body:
-          'Por la naturaleza tecnica y personalizada de los productos, no se aceptan cambios ni devoluciones despues de realizada la compra. Esta politica ayuda a garantizar que cada pieza entregada sea nueva, sin uso previo y configurada para el cliente que la solicito.',
+          'Por la naturaleza técnica y personalizada de los productos, no se aceptan cambios ni devoluciones después de realizada la compra. Esta política ayuda a garantizar que cada pieza entregada sea nueva, sin uso previo y configurada para el cliente que la solicitó.',
         accent: 'Compra final',
       },
       {
-        title: '3. Productos con garantia',
+        title: '3. Productos con garantía',
         body:
-          'Los productos comercializados cuentan con garantia directa del fabricante o proveedor oficial para defectos de fabrica durante el periodo definido por cada marca. Si detectas una falla tecnica, el equipo te orientara para gestionar reparacion o reemplazo segun aplique.',
+          'Los productos comercializados cuentan con garantía directa del fabricante o proveedor oficial para defectos de fábrica durante el periodo definido por cada marca. Si detectas una falla técnica, el equipo te orientará para gestionar reparación o reemplazo según aplique.',
         accent: 'Soporte de marca',
       },
       {
-        title: '4. Asesoria previa a la compra',
+        title: '4. Asesoría previa a la compra',
         body:
-          'Recomendamos resolver dudas de compatibilidad, rendimiento y alcance antes de comprar. La meta es evitar errores de seleccion y entregar desde el inicio el equipo o componente correcto para tu setup.',
+          'Recomendamos resolver dudas de compatibilidad, rendimiento y alcance antes de comprar. La meta es evitar errores de selección y entregar desde el inicio el equipo o componente correcto para tu setup.',
         accent: 'Compra informada',
       },
     ],
@@ -97,15 +95,11 @@ const PAGE_DATA: Record<string, LegalPageData> = {
             <p class="text-xs font-semibold uppercase tracking-[0.28em] text-pink-300">
               {{ page.eyebrow }}
             </p>
-            <h1 class="mt-4 font-orbitron text-4xl font-black leading-tight text-white drop-shadow-[0_0_18px_rgba(34,211,238,0.45)] md:text-6xl">
+            <h1 class="mt-4 font-['Orbitron'] text-4xl font-black leading-tight text-white drop-shadow-[0_0_18px_rgba(34,211,238,0.45)] md:text-6xl">
               {{ page.title }}
             </h1>
             <p class="mt-6 max-w-2xl text-base leading-7 text-slate-300">
               {{ page.description }}
-            </p>
-
-            <p *ngIf="page.sourceLabel" class="mt-6 inline-flex border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">
-              {{ page.sourceLabel }}
             </p>
 
             <a
@@ -127,7 +121,7 @@ const PAGE_DATA: Record<string, LegalPageData> = {
               <p *ngIf="section.accent" class="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-cyan-300">
                 {{ section.accent }}
               </p>
-              <h2 class="mt-2 font-orbitron text-xl font-bold text-white">{{ section.title }}</h2>
+              <h2 class="mt-2 font-['Orbitron'] text-xl font-bold text-white">{{ section.title }}</h2>
               <p class="mt-3 text-sm leading-7 text-slate-300">{{ section.body }}</p>
             </article>
           </div>
