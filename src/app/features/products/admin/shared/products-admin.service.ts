@@ -45,9 +45,11 @@ export interface Product {
   motherboard?: string;
   ram?: string;
   storage?: string;
+  nvmeSsd?: string;
   graphicsCard?: string;
   powerSupply?: string;
   caseModel?: string;
+  case?: string;
   cooling?: string;
   image: string;
   images: string[];

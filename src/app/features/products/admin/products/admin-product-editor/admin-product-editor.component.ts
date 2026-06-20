@@ -284,6 +284,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const productData = {
       ...this.form.value,
       ...this.form.getRawValue(),
+      category: this.resolveSelectedCategorySlug(),
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
     };
@@ -324,6 +325,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const productData = {
       ...this.form.value,
       ...this.form.getRawValue(),
+      category: this.resolveSelectedCategorySlug(),
       published: false,
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
@@ -407,6 +409,26 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const img = event.target as HTMLImageElement;
     if (img) {
       img.src = 'https://via.placeholder.com/400x400?text=Imagen+No+Disponible';
+    }
+  }
+
+  private resolveSelectedCategorySlug(): Product['category'] {
+    const categoryId = this.form.get('categoryId')?.value;
+    const category = this.categorias.find((item) => item._id === categoryId);
+    const slug = category?.slug || categoryId;
+
+    switch (slug) {
+      case 'paquetes':
+      case 'ensambles':
+      case 'assembled':
+        return 'paquetes';
+      case 'perifericos':
+      case 'peripheral':
+        return 'perifericos';
+      case 'componentes':
+      case 'component':
+      default:
+        return 'componentes';
     }
   }
 
