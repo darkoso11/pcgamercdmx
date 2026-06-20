@@ -65,7 +65,6 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
       'products': adminUrl('products/list'),
       'assemblies': adminUrl('products/assemblies/new'),
       'assemblies-list': adminUrl('products/assemblies'),
-      'packages': adminUrl('products/packages'),
       'offers': adminUrl('products/offers'),
       'categories': adminUrl('products/categories')
     };

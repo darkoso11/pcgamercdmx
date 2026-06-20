@@ -146,7 +146,6 @@ export interface AdminDashboardStats {
   draftProducts: number;
   productsWithLowStock: number;
   productsOutOfStock: number;
-  totalPackages: number;
   totalOffers: number;
   activeOffers: number;
 }
@@ -622,9 +621,8 @@ export class ProductsAdminService {
     return forkJoin({
       products: this.getAllProducts(),
       offers: this.getAllOffers(true),
-      packages: this.getAllPackages(),
     }).pipe(
-      map(({ products, offers, packages: packagesList }) => {
+      map(({ products, offers }) => {
         const catalogProducts = products.data.filter((product) => product.category !== 'paquetes');
         const assemblies = products.data.filter((product) => product.category === 'paquetes');
 
@@ -635,7 +633,6 @@ export class ProductsAdminService {
           draftProducts: catalogProducts.filter((product) => !product.published).length,
           productsWithLowStock: catalogProducts.filter((product) => product.stock > 0 && product.stock <= product.lowStockAlert).length,
           productsOutOfStock: catalogProducts.filter((product) => product.stock <= 0).length,
-          totalPackages: packagesList.length,
           totalOffers: offers.length,
           activeOffers: offers.filter((offer) => offer.active).length,
         };
