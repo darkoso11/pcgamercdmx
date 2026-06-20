@@ -234,22 +234,18 @@ export const routes: Routes = [
   },
   {
     path: adminRoute('products/packages'),
-    loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
-    title: 'Paquetes | Admin',
-    canActivate: [AuthGuard]
+    redirectTo: adminRoute('products/assemblies'),
+    pathMatch: 'full'
   },
   {
     path: adminRoute('products/packages/new'),
-    loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
-    title: 'Nuevo Paquete | Admin',
-    canActivate: [AuthGuard]
+    redirectTo: adminRoute('products/assemblies/new'),
+    pathMatch: 'full'
   },
   {
     path: adminRoute('products/packages/:id/edit'),
-    loadComponent: () => import('./features/products/admin/packages/admin-package-editor/admin-package-editor.component').then(m => m.AdminPackageEditorComponent),
-    title: 'Editar Paquete | Admin',
-    data: { renderMode: 'dynamic' },
-    canActivate: [AuthGuard]
+    redirectTo: adminRoute('products/assemblies/:id/edit'),
+    pathMatch: 'full'
   },
   {
     path: adminRoute('products/offers'),
