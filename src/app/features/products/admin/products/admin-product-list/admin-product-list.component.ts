@@ -152,7 +152,12 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       this.productsAdminService
         .deleteProduct(productId)
         .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
+        .subscribe((deleted) => {
+          if (!deleted) {
+            alert('No se pudo eliminar el producto. Intenta de nuevo.');
+            return;
+          }
+
           this.loadProducts();
           alert('Producto eliminado correctamente');
         });

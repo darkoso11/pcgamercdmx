@@ -15,6 +15,7 @@ import { Product, ProductsAdminService } from '../../shared/products-admin.servi
 export class AdminAssembliesListComponent implements OnInit, OnDestroy {
   assemblies: Product[] = [];
   loading = true;
+  errorMessage = '';
 
   private destroy$ = new Subject<void>();
 
@@ -30,6 +31,7 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
 
   loadAssemblies(): void {
     this.loading = true;
+    this.errorMessage = '';
     this.productsAdminService
       .getProductsByCategory('paquetes')
       .pipe(takeUntil(this.destroy$))
@@ -63,7 +65,14 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
     this.productsAdminService
       .deleteProduct(id)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.loadAssemblies());
+      .subscribe((deleted) => {
+        if (!deleted) {
+          this.errorMessage = 'No se pudo eliminar el ensamble. Intenta de nuevo.';
+          return;
+        }
+
+        this.loadAssemblies();
+      });
   }
 
   formatPrice(price: number): string {
