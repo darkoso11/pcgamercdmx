@@ -2,8 +2,8 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { forkJoin, Observable, of, Subject } from 'rxjs';
+import { map, switchMap, takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService, Product, Category, Subcategory } from '../../shared/products-admin.service';
@@ -32,6 +32,8 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   productId: string | null = null;
   galleryImages: string[] = [];
   newGalleryImage = '';
+  private selectedMainImageFile: File | null = null;
+  private selectedGalleryImageFiles = new Map<string, File>();
 
   // Categorías y subcategorías
   categorias: Category[] = [];
@@ -180,6 +182,10 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (categorias) => {
           this.categorias = categorias;
+          const currentCategoryId = this.form.get('categoryId')?.value;
+          if (currentCategoryId) {
+            this.actualizarSubcategorias(currentCategoryId);
+          }
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -239,7 +245,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
               published: product.published || false,
               featured: product.featured || false,
               internalNotes: product.internalNotes || ''
-            });
+            }, { emitEvent: false });
 
             // Cargar categoría y actualizar subcategorías
             if (product.categoryId) {
@@ -289,11 +295,16 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
     };
 
-    const operation = this.isEditMode
-      ? this.productsAdminService.updateProduct(this.productId!, productData)
-      : this.productsAdminService.createProduct(productData);
-
-    operation.pipe(takeUntil(this.destroy$)).subscribe({
+    this.prepareImagesForSave(productData)
+      .pipe(
+        switchMap((preparedProductData) =>
+          this.isEditMode
+            ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
+            : this.productsAdminService.createProduct(preparedProductData)
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
       next: (result: any) => {
         const visibility = productData.published ? 'publico' : 'privado';
         this.successMessage = this.isEditMode
@@ -331,11 +342,16 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
     };
 
-    const operation = this.isEditMode
-      ? this.productsAdminService.updateProduct(this.productId!, productData)
-      : this.productsAdminService.createProduct(productData);
-
-    operation.pipe(takeUntil(this.destroy$)).subscribe({
+    this.prepareImagesForSave(productData)
+      .pipe(
+        switchMap((preparedProductData) =>
+          this.isEditMode
+            ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
+            : this.productsAdminService.createProduct(preparedProductData)
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
       next: (result: any) => {
         this.successMessage = 'Producto guardado como privado';
         this.loading = false;
@@ -362,10 +378,24 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
+      if (!this.isSupportedImageFile(file)) {
+        this.errorMessage = 'Formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
+        input.value = '';
+        this.cdr.detectChanges();
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const result = e.target?.result as string;
-        this.form.patchValue({ image: result });
+        const imageControl = this.form.get('image');
+        this.selectedMainImageFile = file;
+        imageControl?.setValue(result);
+        imageControl?.markAsDirty();
+        imageControl?.markAsTouched();
+        imageControl?.updateValueAndValidity();
+        this.errorMessage = '';
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
@@ -376,10 +406,18 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const files = input.files;
     if (files) {
       Array.from(files).forEach((file) => {
+        if (!this.isSupportedImageFile(file)) {
+          this.errorMessage = 'Una o mas imagenes tienen un formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = (e: ProgressEvent<FileReader>) => {
           const result = e.target?.result as string;
+          this.selectedGalleryImageFiles.set(result, file);
           this.galleryImages.push(result);
+          this.errorMessage = '';
+          this.cdr.detectChanges();
         };
         reader.readAsDataURL(file);
       });
@@ -388,6 +426,10 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   }
 
   removeGalleryImage(index: number): void {
+    const removedImage = this.galleryImages[index];
+    if (removedImage) {
+      this.selectedGalleryImageFiles.delete(removedImage);
+    }
     this.galleryImages.splice(index, 1);
   }
 
@@ -430,6 +472,31 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       default:
         return 'componentes';
     }
+  }
+
+  private isSupportedImageFile(file: File): boolean {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const fileName = file.name.toLowerCase();
+
+    return allowedTypes.includes(file.type) || allowedExtensions.some((extension) => fileName.endsWith(extension));
+  }
+
+  private prepareImagesForSave<T extends { image: string; gallery: string[] }>(data: T): Observable<T> {
+    const mainImage$ = this.selectedMainImageFile
+      ? this.productsAdminService.uploadProductImage(this.selectedMainImageFile)
+      : of(data.image);
+
+    const galleryUploads = data.gallery.map((image) => {
+      const file = this.selectedGalleryImageFiles.get(image);
+      return file ? this.productsAdminService.uploadProductImage(file) : of(image);
+    });
+
+    const gallery$ = galleryUploads.length > 0 ? forkJoin(galleryUploads) : of([]);
+
+    return forkJoin({ image: mainImage$, gallery: gallery$ }).pipe(
+      map(({ image, gallery }) => ({ ...data, image, gallery }))
+    );
   }
 
   ngOnDestroy(): void {
