@@ -606,7 +606,13 @@ export class ProductsAdminService {
   }
 
   uploadProductImage(file: File): Observable<string> {
-    return of(`https://via.placeholder.com/500?text=${encodeURIComponent(file.name)}`);
+    if (!this.usesDirectus()) {
+      return of(`https://via.placeholder.com/500?text=${encodeURIComponent(file.name)}`);
+    }
+
+    return this.directus.uploadFile(file, file.name, { auth: true }).pipe(
+      map((response) => this.directus.assetUrl(response.data.id))
+    );
   }
 
   deleteProductImage(imageUrl: string): Observable<void> {
