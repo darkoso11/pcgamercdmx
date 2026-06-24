@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService, Product, Category, Subcategory } from '../../shared/products-admin.service';
@@ -302,6 +302,10 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
             : this.productsAdminService.createProduct(preparedProductData)
         ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
@@ -310,15 +314,15 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
         this.successMessage = this.isEditMode
           ? `Producto actualizado como ${visibility}`
           : `Producto creado como ${visibility}`;
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el producto';
+        this.errorMessage = this.getSaveErrorMessage(err, 'Error al guardar el producto');
         console.error(err);
-        this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -349,20 +353,24 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
             : this.productsAdminService.createProduct(preparedProductData)
         ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
       next: (result: any) => {
         this.successMessage = 'Producto guardado como privado';
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el producto privado';
+        this.errorMessage = this.getSaveErrorMessage(err, 'Error al guardar el producto privado');
         console.error(err);
-        this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -497,6 +505,19 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     return forkJoin({ image: mainImage$, gallery: gallery$ }).pipe(
       map(({ image, gallery }) => ({ ...data, image, gallery }))
     );
+  }
+
+  private getSaveErrorMessage(error: any, fallback: string): string {
+    const status = error?.status;
+    if (status === 401 || status === 403) {
+      return `${fallback}. Tu sesion de Directus expiro o no tiene permisos; cierra sesion e ingresa de nuevo.`;
+    }
+
+    if (error?.name === 'TimeoutError') {
+      return `${fallback}. Directus tardo demasiado en responder; intenta con una imagen mas ligera o vuelve a iniciar sesion.`;
+    }
+
+    return fallback;
   }
 
   ngOnDestroy(): void {

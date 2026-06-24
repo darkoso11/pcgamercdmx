@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService } from '../../shared/products-admin.service';
@@ -165,6 +165,10 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedAssemblyData)
             : this.productsAdminService.createProduct(preparedAssemblyData)
         ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
@@ -172,15 +176,15 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         this.successMessage = this.isEditMode 
           ? 'Ensamble actualizado y publicado correctamente'
           : 'Ensamble creado y publicado correctamente';
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al publicar el ensamble';
+        this.errorMessage = this.getSaveErrorMessage(err, 'Error al publicar el ensamble');
         console.error(err);
-        this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -204,20 +208,24 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedAssemblyData)
             : this.productsAdminService.createProduct(preparedAssemblyData)
         ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
       next: (result: any) => {
         this.successMessage = 'Ensamble guardado como borrador';
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el borrador';
+        this.errorMessage = this.getSaveErrorMessage(err, 'Error al guardar el borrador');
         console.error(err);
-        this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -322,6 +330,19 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     return forkJoin({ image: mainImage$, gallery: gallery$ }).pipe(
       map(({ image, gallery }) => ({ ...data, image, gallery }))
     );
+  }
+
+  private getSaveErrorMessage(error: any, fallback: string): string {
+    const status = error?.status;
+    if (status === 401 || status === 403) {
+      return `${fallback}. Tu sesion de Directus expiro o no tiene permisos; cierra sesion e ingresa de nuevo.`;
+    }
+
+    if (error?.name === 'TimeoutError') {
+      return `${fallback}. Directus tardo demasiado en responder; intenta con una imagen mas ligera o vuelve a iniciar sesion.`;
+    }
+
+    return fallback;
   }
 
   ngOnDestroy(): void {
