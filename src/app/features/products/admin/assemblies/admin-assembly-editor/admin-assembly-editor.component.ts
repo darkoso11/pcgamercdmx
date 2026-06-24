@@ -2,11 +2,16 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { finalize, switchMap, takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService } from '../../shared/products-admin.service';
+import {
+  getCatalogSaveErrorMessage,
+  isSupportedCatalogImageFile,
+  prepareCatalogImagesForSave
+} from '../../shared/catalog-image-save.utils';
 
 @Component({
   selector: 'app-admin-assembly-editor',
@@ -125,9 +130,8 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
           }
           this.loading = false;
         },
-        error: (err: any) => {
+        error: () => {
           this.errorMessage = 'Error cargando el ensamble';
-          console.error(err);
           this.loading = false;
         }
       });
@@ -182,8 +186,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = this.getSaveErrorMessage(err, 'Error al publicar el ensamble');
-        console.error(err);
+        this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al publicar el ensamble');
         this.cdr.detectChanges();
       }
     });
@@ -223,8 +226,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = this.getSaveErrorMessage(err, 'Error al guardar el borrador');
-        console.error(err);
+        this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al guardar el borrador');
         this.cdr.detectChanges();
       }
     });
@@ -241,7 +243,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
-      if (!this.isSupportedImageFile(file)) {
+      if (!isSupportedCatalogImageFile(file)) {
         this.errorMessage = 'Formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
         input.value = '';
         this.cdr.detectChanges();
@@ -269,7 +271,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     const files = input.files;
     if (files) {
       Array.from(files).forEach((file) => {
-        if (!this.isSupportedImageFile(file)) {
+        if (!isSupportedCatalogImageFile(file)) {
           this.errorMessage = 'Una o mas imagenes tienen un formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
           return;
         }
@@ -307,42 +309,13 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  private isSupportedImageFile(file: File): boolean {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    const fileName = file.name.toLowerCase();
-
-    return allowedTypes.includes(file.type) || allowedExtensions.some((extension) => fileName.endsWith(extension));
-  }
-
-  private prepareImagesForSave<T extends { image: string; gallery: string[] }>(data: T): Observable<T> {
-    const mainImage$ = this.selectedMainImageFile
-      ? this.productsAdminService.uploadProductImage(this.selectedMainImageFile)
-      : of(data.image);
-
-    const galleryUploads = data.gallery.map((image) => {
-      const file = this.selectedGalleryImageFiles.get(image);
-      return file ? this.productsAdminService.uploadProductImage(file) : of(image);
-    });
-
-    const gallery$ = galleryUploads.length > 0 ? forkJoin(galleryUploads) : of([]);
-
-    return forkJoin({ image: mainImage$, gallery: gallery$ }).pipe(
-      map(({ image, gallery }) => ({ ...data, image, gallery }))
+  private prepareImagesForSave<T extends { image: string; gallery: string[] }>(data: T) {
+    return prepareCatalogImagesForSave(
+      data,
+      this.selectedMainImageFile,
+      this.selectedGalleryImageFiles,
+      (file) => this.productsAdminService.uploadProductImage(file)
     );
-  }
-
-  private getSaveErrorMessage(error: any, fallback: string): string {
-    const status = error?.status;
-    if (status === 401 || status === 403) {
-      return `${fallback}. Tu sesion de Directus expiro o no tiene permisos; cierra sesion e ingresa de nuevo.`;
-    }
-
-    if (error?.name === 'TimeoutError') {
-      return `${fallback}. Directus tardo demasiado en responder; intenta con una imagen mas ligera o vuelve a iniciar sesion.`;
-    }
-
-    return fallback;
   }
 
   ngOnDestroy(): void {
