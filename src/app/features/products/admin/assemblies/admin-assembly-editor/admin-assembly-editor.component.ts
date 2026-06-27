@@ -1,12 +1,17 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, switchMap, takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService } from '../../shared/products-admin.service';
+import {
+  getCatalogSaveErrorMessage,
+  isSupportedCatalogImageFile,
+  prepareCatalogImagesForSave
+} from '../../shared/catalog-image-save.utils';
 
 @Component({
   selector: 'app-admin-assembly-editor',
@@ -24,6 +29,8 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   productId: string | null = null;
   galleryImages: string[] = [];
   newGalleryImage = '';
+  private selectedMainImageFile: File | null = null;
+  private selectedGalleryImageFiles = new Map<string, File>();
 
   private destroy$ = new Subject<void>();
 
@@ -31,7 +38,8 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private productsAdminService: ProductsAdminService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -122,9 +130,8 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
           }
           this.loading = false;
         },
-        error: (err: any) => {
+        error: () => {
           this.errorMessage = 'Error cargando el ensamble';
-          console.error(err);
           this.loading = false;
         }
       });
@@ -153,26 +160,34 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const assemblyData = { ...this.form.value, gallery: this.galleryImages };
+    const assemblyData = { ...this.form.value, published: true, gallery: this.galleryImages };
 
-    const operation = this.isEditMode
-      ? this.productsAdminService.updateProduct(this.productId!, assemblyData)
-      : this.productsAdminService.createProduct(assemblyData);
-
-    operation.pipe(takeUntil(this.destroy$)).subscribe({
+    this.prepareImagesForSave(assemblyData)
+      .pipe(
+        switchMap((preparedAssemblyData) =>
+          this.isEditMode
+            ? this.productsAdminService.updateProduct(this.productId!, preparedAssemblyData)
+            : this.productsAdminService.createProduct(preparedAssemblyData)
+        ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
       next: (result: any) => {
         this.successMessage = this.isEditMode 
           ? 'Ensamble actualizado y publicado correctamente'
           : 'Ensamble creado y publicado correctamente';
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al publicar el ensamble';
-        console.error(err);
-        this.loading = false;
+        this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al publicar el ensamble');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -189,22 +204,30 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
 
     const assemblyData = { ...this.form.value, published: false, gallery: this.galleryImages };
 
-    const operation = this.isEditMode
-      ? this.productsAdminService.updateProduct(this.productId!, assemblyData)
-      : this.productsAdminService.createProduct(assemblyData);
-
-    operation.pipe(takeUntil(this.destroy$)).subscribe({
+    this.prepareImagesForSave(assemblyData)
+      .pipe(
+        switchMap((preparedAssemblyData) =>
+          this.isEditMode
+            ? this.productsAdminService.updateProduct(this.productId!, preparedAssemblyData)
+            : this.productsAdminService.createProduct(preparedAssemblyData)
+        ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
       next: (result: any) => {
         this.successMessage = 'Ensamble guardado como borrador';
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el borrador';
-        console.error(err);
-        this.loading = false;
+        this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al guardar el borrador');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -220,10 +243,24 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
+      if (!isSupportedCatalogImageFile(file)) {
+        this.errorMessage = 'Formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
+        input.value = '';
+        this.cdr.detectChanges();
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const result = e.target?.result as string;
-        this.form.patchValue({ image: result });
+        const imageControl = this.form.get('image');
+        this.selectedMainImageFile = file;
+        imageControl?.setValue(result);
+        imageControl?.markAsDirty();
+        imageControl?.markAsTouched();
+        imageControl?.updateValueAndValidity();
+        this.errorMessage = '';
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
@@ -234,10 +271,18 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     const files = input.files;
     if (files) {
       Array.from(files).forEach((file) => {
+        if (!isSupportedCatalogImageFile(file)) {
+          this.errorMessage = 'Una o mas imagenes tienen un formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = (e: ProgressEvent<FileReader>) => {
           const result = e.target?.result as string;
+          this.selectedGalleryImageFiles.set(result, file);
           this.galleryImages.push(result);
+          this.errorMessage = '';
+          this.cdr.detectChanges();
         };
         reader.readAsDataURL(file);
       });
@@ -246,6 +291,10 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   removeGalleryImage(index: number): void {
+    const removedImage = this.galleryImages[index];
+    if (removedImage) {
+      this.selectedGalleryImageFiles.delete(removedImage);
+    }
     this.galleryImages.splice(index, 1);
   }
 
@@ -258,6 +307,15 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     if (img) {
       img.src = 'https://via.placeholder.com/400x400?text=Imagen+No+Disponible';
     }
+  }
+
+  private prepareImagesForSave<T extends { image: string; gallery: string[] }>(data: T) {
+    return prepareCatalogImagesForSave(
+      data,
+      this.selectedMainImageFile,
+      this.selectedGalleryImageFiles,
+      (file) => this.productsAdminService.uploadProductImage(file)
+    );
   }
 
   ngOnDestroy(): void {
