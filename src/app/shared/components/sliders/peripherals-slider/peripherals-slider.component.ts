@@ -29,9 +29,20 @@ export class PeripheralsSliderComponent implements OnInit, AfterViewInit {
   
   get filteredItems() {
     const selectedCategory = this.categories[this.selectedCategoryIndex].value;
-    return selectedCategory === 'all' 
-      ? this.items 
-      : this.items.filter(item => item.category === selectedCategory);
+    const availableItems = this.items.filter((item) => this.hasStock(item));
+
+    return selectedCategory === 'all'
+      ? availableItems
+      : availableItems.filter(item => item.category === selectedCategory);
+  }
+
+  private hasStock(item: any): boolean {
+    if (typeof item.inStock === 'boolean') {
+      return item.inStock;
+    }
+
+    const stock = Number(item.stock);
+    return Number.isFinite(stock) && stock > 0;
   }
   
   ngOnInit(): void {
