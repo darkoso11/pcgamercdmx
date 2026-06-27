@@ -125,6 +125,8 @@ export function mapDirectusProductToAdminProduct(
   const gallery = normalizeStringArray(admin['gallery']).length
     ? normalizeStringArray(admin['gallery'])
     : images;
+  const storage = text(specs['storage'] ?? readNested(catalog, ['performance', 'storageCapacity']), '');
+  const caseModel = text(specs['caseModel'] ?? readNested(catalog, ['specifications', 'case', 'title']), '');
 
   return {
     _id: idToString(item.id),
@@ -139,10 +141,12 @@ export function mapDirectusProductToAdminProduct(
     processor: text(specs['processor'] ?? readNested(catalog, ['specifications', 'processor', 'title']), ''),
     motherboard: text(specs['motherboard'] ?? readNested(catalog, ['specifications', 'motherboard', 'title']), ''),
     ram: text(specs['ram'] ?? readNested(catalog, ['specifications', 'ram', 'title']), ''),
-    storage: text(specs['storage'] ?? readNested(catalog, ['performance', 'storageCapacity']), ''),
+    storage,
+    nvmeSsd: storage,
     graphicsCard: text(specs['graphicsCard'] ?? readNested(catalog, ['specifications', 'graphicsCard', 'title']), ''),
     powerSupply: text(specs['powerSupply'] ?? readNested(catalog, ['specifications', 'powerSupply', 'title']), ''),
-    caseModel: text(specs['caseModel'] ?? readNested(catalog, ['specifications', 'case', 'title']), ''),
+    caseModel,
+    case: caseModel,
     cooling: text(specs['cooling'] ?? readNested(catalog, ['specifications', 'cooling', 'title']), ''),
     image: text(item.image ?? catalog['image'], DEFAULT_IMAGE),
     images,
@@ -188,6 +192,8 @@ export function mapAdminProductToDirectusPayload(
   product: Partial<AdminProduct>
 ): DirectusProductPayload {
   const category = adminCategoryToDirectus(product.category);
+  const storage = product.storage ?? product.nvmeSsd ?? '';
+  const caseModel = product.caseModel ?? product.case ?? '';
   const adminMetadata = {
     productType: product.productType ?? defaultProductType(product.category),
     brand: product.brand ?? '',
@@ -232,10 +238,10 @@ export function mapAdminProductToDirectusPayload(
       processor: product.processor ?? '',
       motherboard: product.motherboard ?? '',
       ram: product.ram ?? '',
-      storage: product.storage ?? '',
+      storage,
       graphicsCard: product.graphicsCard ?? '',
       powerSupply: product.powerSupply ?? '',
-      caseModel: product.caseModel ?? '',
+      caseModel,
       cooling: product.cooling ?? '',
       powerCertificate: product.powerCertificate ?? '',
       watts: product.watts ?? null,
@@ -479,6 +485,9 @@ export function adminCategoryToDirectus(
   switch (category) {
     case 'paquetes':
     case 'ensambles':
+    case 'Ensambles de Computadoras':
+    case 'Ensamble':
+    case 'Ensamble de Computadora':
     case ProductCategory.ASSEMBLED:
       return ProductCategory.ASSEMBLED;
     case 'componentes':

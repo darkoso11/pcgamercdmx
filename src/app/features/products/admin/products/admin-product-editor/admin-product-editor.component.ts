@@ -3,9 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, switchMap, takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
+import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService, Product, Category, Subcategory } from '../../shared/products-admin.service';
+import {
+  getCatalogSaveErrorMessage,
+  isSupportedCatalogImageFile,
+  prepareCatalogImagesForSave
+} from '../../shared/catalog-image-save.utils';
 
 // Tipos de producto disponibles
 export interface ProductType {
@@ -22,6 +28,7 @@ export interface ProductType {
   templateUrl: './admin-product-editor.component.html'
 })
 export class AdminProductEditorComponent implements OnInit, OnDestroy {
+  readonly adminProductsUrl = adminUrl('products');
   form!: FormGroup;
   isEditMode = false;
   loading = false;
@@ -30,6 +37,8 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   productId: string | null = null;
   galleryImages: string[] = [];
   newGalleryImage = '';
+  private selectedMainImageFile: File | null = null;
+  private selectedGalleryImageFiles = new Map<string, File>();
 
   // Categorías y subcategorías
   categorias: Category[] = [];
@@ -178,10 +187,14 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (categorias) => {
           this.categorias = categorias;
+          const currentCategoryId = this.form.get('categoryId')?.value;
+          if (currentCategoryId) {
+            this.actualizarSubcategorias(currentCategoryId);
+          }
           this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error cargando categorías:', err);
+        error: () => {
+          this.errorMessage = 'Error cargando categorías';
         }
       });
   }
@@ -237,7 +250,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
               published: product.published || false,
               featured: product.featured || false,
               internalNotes: product.internalNotes || ''
-            });
+            }, { emitEvent: false });
 
             // Cargar categoría y actualizar subcategorías
             if (product.categoryId) {
@@ -247,9 +260,8 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.detectChanges();
         },
-        error: (err: any) => {
+        error: () => {
           this.errorMessage = 'Error cargando el producto';
-          console.error(err);
           this.loading = false;
           this.cdr.detectChanges();
         }
@@ -282,29 +294,38 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const productData = {
       ...this.form.value,
       ...this.form.getRawValue(),
+      category: this.resolveSelectedCategorySlug(),
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
     };
 
-    const operation = this.isEditMode
-      ? this.productsAdminService.updateProduct(this.productId!, productData)
-      : this.productsAdminService.createProduct(productData);
-
-    operation.pipe(takeUntil(this.destroy$)).subscribe({
+    this.prepareImagesForSave(productData)
+      .pipe(
+        switchMap((preparedProductData) =>
+          this.isEditMode
+            ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
+            : this.productsAdminService.createProduct(preparedProductData)
+        ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
       next: (result: any) => {
         const visibility = productData.published ? 'publico' : 'privado';
         this.successMessage = this.isEditMode
           ? `Producto actualizado como ${visibility}`
           : `Producto creado como ${visibility}`;
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate(['/admin/products']);
+          this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el producto';
-        console.error(err);
-        this.loading = false;
+        this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al guardar el producto');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -322,27 +343,36 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const productData = {
       ...this.form.value,
       ...this.form.getRawValue(),
+      category: this.resolveSelectedCategorySlug(),
       published: false,
       gallery: this.galleryImages,
       keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
     };
 
-    const operation = this.isEditMode
-      ? this.productsAdminService.updateProduct(this.productId!, productData)
-      : this.productsAdminService.createProduct(productData);
-
-    operation.pipe(takeUntil(this.destroy$)).subscribe({
+    this.prepareImagesForSave(productData)
+      .pipe(
+        switchMap((preparedProductData) =>
+          this.isEditMode
+            ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
+            : this.productsAdminService.createProduct(preparedProductData)
+        ),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
       next: (result: any) => {
         this.successMessage = 'Producto guardado como privado';
-        this.loading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate(['/admin/products']);
+          this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
-        this.errorMessage = 'Error al guardar el producto privado';
-        console.error(err);
-        this.loading = false;
+        this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al guardar el producto privado');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -358,10 +388,24 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
+      if (!isSupportedCatalogImageFile(file)) {
+        this.errorMessage = 'Formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
+        input.value = '';
+        this.cdr.detectChanges();
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const result = e.target?.result as string;
-        this.form.patchValue({ image: result });
+        const imageControl = this.form.get('image');
+        this.selectedMainImageFile = file;
+        imageControl?.setValue(result);
+        imageControl?.markAsDirty();
+        imageControl?.markAsTouched();
+        imageControl?.updateValueAndValidity();
+        this.errorMessage = '';
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }
@@ -372,10 +416,18 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     const files = input.files;
     if (files) {
       Array.from(files).forEach((file) => {
+        if (!isSupportedCatalogImageFile(file)) {
+          this.errorMessage = 'Una o mas imagenes tienen un formato no permitido. Usa JPG, JPEG, PNG, GIF o WebP.';
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = (e: ProgressEvent<FileReader>) => {
           const result = e.target?.result as string;
+          this.selectedGalleryImageFiles.set(result, file);
           this.galleryImages.push(result);
+          this.errorMessage = '';
+          this.cdr.detectChanges();
         };
         reader.readAsDataURL(file);
       });
@@ -384,6 +436,10 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   }
 
   removeGalleryImage(index: number): void {
+    const removedImage = this.galleryImages[index];
+    if (removedImage) {
+      this.selectedGalleryImageFiles.delete(removedImage);
+    }
     this.galleryImages.splice(index, 1);
   }
 
@@ -406,6 +462,35 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     if (img) {
       img.src = 'https://via.placeholder.com/400x400?text=Imagen+No+Disponible';
     }
+  }
+
+  private resolveSelectedCategorySlug(): Product['category'] {
+    const categoryId = this.form.get('categoryId')?.value;
+    const category = this.categorias.find((item) => item._id === categoryId);
+    const slug = category?.slug || categoryId;
+
+    switch (slug) {
+      case 'paquetes':
+      case 'ensambles':
+      case 'assembled':
+        return 'paquetes';
+      case 'perifericos':
+      case 'peripheral':
+        return 'perifericos';
+      case 'componentes':
+      case 'component':
+      default:
+        return 'componentes';
+    }
+  }
+
+  private prepareImagesForSave<T extends { image: string; gallery: string[] }>(data: T) {
+    return prepareCatalogImagesForSave(
+      data,
+      this.selectedMainImageFile,
+      this.selectedGalleryImageFiles,
+      (file) => this.productsAdminService.uploadProductImage(file)
+    );
   }
 
   ngOnDestroy(): void {

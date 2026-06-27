@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { adminUrl } from './admin-route.config';
 
 @Component({
   selector: 'app-admin-header',
@@ -15,7 +16,7 @@ import { AuthService } from './services/auth.service';
           <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Gestión de contenido</p>
         </div>
         <div class="flex gap-2">
-          <a routerLink="/admin" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
+          <a [routerLink]="adminHomeUrl" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
             ← Volver al panel administrativo
           </a>
           <a routerLink="/" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
@@ -30,10 +31,12 @@ import { AuthService } from './services/auth.service';
   `
 })
 export class AdminHeaderComponent {
+  readonly adminHomeUrl = adminUrl();
+
   constructor(private auth: AuthService, private router: Router) {}
 
   onLogout() {
     this.auth.logout();
-    this.router.navigate(['/admin/blog/login']);
+    this.router.navigate([adminUrl('login')]);
   }
 }

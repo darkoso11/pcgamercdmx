@@ -20,6 +20,10 @@
       Cargando ensambles...
     </section>
 
+    <section *ngIf="!loading && errorMessage" class="mb-6 rounded-lg border border-red-400/40 bg-red-500/15 p-4 text-sm text-red-200">
+      {{ errorMessage }}
+    </section>
+
     <section *ngIf="!loading && assemblies.length" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
       <article
         *ngFor="let assembly of assemblies"

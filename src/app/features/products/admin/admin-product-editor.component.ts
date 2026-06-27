@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
+import { adminUrl } from '../../admin/admin-route.config';
 import { ProductsAdminService, Product, Category, Subcategory } from './products-admin.service';
 
 // Tipos de producto disponibles
@@ -22,6 +23,7 @@ export interface ProductType {
   templateUrl: './admin-product-editor.component.html'
 })
 export class AdminProductEditorComponent implements OnInit, OnDestroy {
+  readonly adminProductsUrl = adminUrl('products');
   form!: FormGroup;
   isEditMode = false;
   loading = false;
@@ -277,7 +279,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
           : 'Producto creado y publicado correctamente';
         this.loading = false;
         setTimeout(() => {
-          this.router.navigate(['/admin/products']);
+          this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {
@@ -314,7 +316,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
         this.successMessage = 'Producto guardado como borrador';
         this.loading = false;
         setTimeout(() => {
-          this.router.navigate(['/admin/products']);
+          this.router.navigate([this.adminProductsUrl]);
         }, 1500);
       },
       error: (err: any) => {

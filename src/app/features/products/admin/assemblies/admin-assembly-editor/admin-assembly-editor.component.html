@@ -254,7 +254,7 @@
                   type="file"
                   #mainImageInput
                   (change)="onMainImageSelected($event)"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
                   class="hidden"
                 />
                 <button
@@ -266,7 +266,7 @@
                   Seleccionar Imagen
                 </button>
               </div>
-              <p class="text-xs text-gray-500 mt-2">Formatos permitidos: JPG, PNG, GIF, WebP</p>
+              <p class="text-xs text-gray-500 mt-2">Formatos permitidos: JPG, JPEG, PNG, GIF, WebP</p>
             </div>
             <div *ngIf="form.get('image')?.value" class="flex items-center justify-center">
               <div class="text-center">
@@ -291,7 +291,7 @@
                 type="file"
                 #galleryInput
                 (change)="onGalleryImageSelected($event)"
-                accept="image/*"
+                accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
                 multiple
                 class="hidden"
               />
@@ -368,7 +368,7 @@
 
       <!-- Botones de Acción -->
       <div class="flex justify-between gap-4">
-        <a routerLink="/admin/products" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded font-semibold transition">
+        <a [routerLink]="adminProductsUrl" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded font-semibold transition">
           Cancelar
         </a>
         <div class="flex gap-4">

@@ -6,6 +6,7 @@ import { QuillModule } from 'ngx-quill';
 import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
+import { adminUrl } from '../../admin/admin-route.config';
 
 @Component({
   selector: 'app-admin-article-editor',
@@ -15,6 +16,7 @@ import { AdminHeaderComponent } from '../../admin/admin-header.component';
   styleUrls: ['./admin-article-editor.component.css']
 })
 export class AdminArticleEditorComponent implements OnInit {
+  readonly adminBlogUrl = adminUrl('blog');
   form: FormGroup;
   isNew = true;
   saving = false;
@@ -311,12 +313,12 @@ export class AdminArticleEditorComponent implements OnInit {
       if (this.isNew) {
         await this.blogService.create(formData).toPromise();
         this.successMsg = 'Artículo creado exitosamente';
-        setTimeout(() => this.router.navigate(['/admin/blog']), 1500);
+        setTimeout(() => this.router.navigate([this.adminBlogUrl]), 1500);
       } else {
         const id = this.route.snapshot.params['id'];
         await this.blogService.update(id, formData).toPromise();
         this.successMsg = 'Artículo actualizado exitosamente';
-        setTimeout(() => this.router.navigate(['/admin/blog']), 1500);
+        setTimeout(() => this.router.navigate([this.adminBlogUrl]), 1500);
       }
     } catch (e) {
       this.errorMsg = 'Error al guardar: ' + (e as any).message;

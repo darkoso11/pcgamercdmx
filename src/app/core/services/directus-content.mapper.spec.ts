@@ -99,6 +99,54 @@ describe('Directus content mapper', () => {
     expect(admin['gallery']).toEqual(['keyboard-2.png']);
   });
 
+  it('maps assembly editor category labels to assembled Directus products', () => {
+    const payload = mapAdminProductToDirectusPayload({
+      title: 'PC Gaming Lista',
+      slug: 'pc-gaming-lista',
+      description: 'Ensamble listo para jugar',
+      category: 'Ensambles de Computadoras',
+      price: 18999,
+      image: 'pc.png',
+      stock: 3,
+      published: true,
+      featured: false,
+      processor: 'Ryzen 7',
+      motherboard: 'B650',
+      ram: '32GB DDR5',
+      storage: '1TB NVMe',
+      graphicsCard: 'RTX 4070',
+      powerSupply: '750W Gold',
+      caseModel: 'Flow',
+      cooling: 'Liquid 240',
+    } as any);
+
+    expect(payload.category).toBe(ProductCategory.ASSEMBLED);
+    expect(payload.subcategory).toBe(ProductCategory.ASSEMBLED);
+    expect(payload.specifications['storage']).toBe('1TB NVMe');
+    expect(payload.specifications['caseModel']).toBe('Flow');
+  });
+
+  it('maps Directus assembly storage and case aliases back to the assembly editor', () => {
+    const product = mapDirectusProductToAdminProduct({
+      id: 20,
+      title: 'PC Edicion',
+      slug: 'pc-edicion',
+      description: 'PC editable',
+      category: 'assembled',
+      price: 20000,
+      image: 'pc.png',
+      specifications: {
+        storage: '2TB NVMe',
+        caseModel: 'O11 Dynamic',
+      },
+      stock: 1,
+      published: false,
+    });
+
+    expect((product as any).nvmeSsd).toBe('2TB NVMe');
+    expect((product as any).case).toBe('O11 Dynamic');
+  });
+
   it('maps Directus blog posts to articles and back', () => {
     const article = mapDirectusBlogPostToArticle({
       id: 5,

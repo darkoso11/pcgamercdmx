@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ProductsAdminService, AdminDashboardStats, Product } from '../../shared/products-admin.service';
 import { Subject, takeUntil } from 'rxjs';
+import { adminUrl } from '../../../../admin/admin-route.config';
 
 @Component({
   selector: 'app-admin-products-dashboard',
@@ -12,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
   styleUrls: []
 })
 export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
+  readonly adminHomeUrl = adminUrl();
   stats: AdminDashboardStats | null = null;
   recentProducts: any[] = [];
   private destroy$ = new Subject<void>();
@@ -59,13 +61,12 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
    */
   goToSection(section: string) {
     const routes: { [key: string]: string } = {
-      'new-product': '/admin/products/new',
-      'products': '/admin/products/list',
-      'assemblies': '/admin/products/assemblies/new',
-      'assemblies-list': '/admin/products/assemblies',
-      'packages': '/admin/products/packages',
-      'offers': '/admin/products/offers',
-      'categories': '/admin/products/categories'
+      'new-product': adminUrl('products/new'),
+      'products': adminUrl('products/list'),
+      'assemblies': adminUrl('products/assemblies/new'),
+      'assemblies-list': adminUrl('products/assemblies'),
+      'offers': adminUrl('products/offers'),
+      'categories': adminUrl('products/categories')
     };
 
     if (routes[section]) {
@@ -77,7 +78,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
    * Editar un producto
    */
   editProduct(productId: string) {
-    this.router.navigate(['/admin/products', productId, 'edit']);
+    this.router.navigate([adminUrl('products'), productId, 'edit']);
   }
 
   getCategoryLabel(category: Product['category']): string {

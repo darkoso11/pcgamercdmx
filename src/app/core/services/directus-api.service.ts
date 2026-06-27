@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { getStoredDirectusAccessToken } from './directus-auth.storage';
 
@@ -28,6 +29,13 @@ export interface DirectusAuthResponse {
     access_token: string;
     expires: number;
     refresh_token: string;
+  };
+}
+
+export interface DirectusFileResponse {
+  data: {
+    id: string;
+    filename_download?: string;
   };
 }
 
@@ -93,7 +101,7 @@ export class DirectusApiService {
       `${this.baseUrl}/items/${collection}`,
       payload,
       { headers: this.toHeaders(options) }
-    );
+    ).pipe(timeout(60000));
   }
 
   updateItem<T>(
@@ -106,7 +114,7 @@ export class DirectusApiService {
       `${this.baseUrl}/items/${collection}/${id}`,
       payload,
       { headers: this.toHeaders(options) }
-    );
+    ).pipe(timeout(60000));
   }
 
   deleteItem(
@@ -118,6 +126,28 @@ export class DirectusApiService {
       `${this.baseUrl}/items/${collection}/${id}`,
       { headers: this.toHeaders(options) }
     );
+  }
+
+  uploadFile(
+    file: File,
+    title?: string,
+    options: DirectusRequestOptions = {}
+  ): Observable<DirectusFileResponse> {
+    const formData = new FormData();
+    if (title) {
+      formData.append('title', title);
+    }
+    formData.append('file', file, file.name);
+
+    return this.http.post<DirectusFileResponse>(
+      `${this.baseUrl}/files`,
+      formData,
+      { headers: this.toHeaders(options) }
+    ).pipe(timeout(60000));
+  }
+
+  assetUrl(fileId: string): string {
+    return `${this.baseUrl}/assets/${fileId}`;
   }
 
   private toParams(query: Record<string, DirectusQueryValue>): HttpParams {

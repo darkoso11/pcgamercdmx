@@ -7,7 +7,7 @@
         <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Gestion de catalogo</p>
       </div>
       <div class="flex gap-2">
-        <a routerLink="/admin" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
+        <a [routerLink]="adminHomeUrl" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
           Volver a Admin
         </a>
         <a routerLink="/" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
@@ -19,7 +19,7 @@
 
   <div class="max-w-7xl mx-auto px-6 py-8">
     <!-- Botones de Accion Rapida -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <button
         (click)="goToSection('new-product')"
         class="bg-gradient-to-br from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
@@ -40,13 +40,6 @@
       >
         <i class="fas fa-cube mr-2"></i>
         Crear Ensamble
-      </button>
-      <button
-        (click)="goToSection('packages')"
-        class="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 px-6 py-4 rounded-lg font-bold transition-all transform hover:scale-105 h-full text-sm"
-      >
-        <i class="fas fa-box-open mr-2"></i>
-        Paquetes
       </button>
       <button
         (click)="goToSection('categories')"
@@ -165,7 +158,7 @@
     </div>
 
     <!-- Estadisticas Secundarias -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       <!-- Borradores -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-yellow-400/30 transition">
         <div class="flex items-start justify-between">
@@ -174,17 +167,6 @@
             <div class="text-3xl font-bold text-yellow-400">{{ stats?.draftProducts || 0 }}</div>
           </div>
           <i class="fas fa-file-alt text-2xl text-yellow-400 opacity-50"></i>
-        </div>
-      </div>
-
-      <!-- Paquetes -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-yellow-400/30 transition">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Paquetes</div>
-            <div class="text-3xl font-bold text-yellow-400">{{ stats?.totalPackages || 0 }}</div>
-          </div>
-          <i class="fas fa-gift text-2xl text-yellow-400 opacity-50"></i>
         </div>
       </div>
 
