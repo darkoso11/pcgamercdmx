@@ -43,6 +43,8 @@ interface HomePeripheralItem {
   inventoryLabel: string;
 }
 
+type HomeCarouselProduct = Omit<Product, 'image'> & { image?: string };
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -232,11 +234,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   private rotationIntervalId: ReturnType<typeof setInterval> | null = null;
 
   // Productos para el carrusel de ensambles
-  carruselProducts: Product[] = [
+  carruselProducts: HomeCarouselProduct[] = [
     {
       id: 1,
       title: 'CPU PRE ARMADO 1',
-      image: 'assets/img/gabinetes/BR-938686_1.png',
       price: 11999,
       processor: 'AMD RYZEN 7 5700',
       motherboard: 'ASUS ROG STRIX B550-F',
@@ -267,7 +268,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 2,
       title: 'CPU PRE ARMADO 2',
-      image: 'assets/img/gabinetes/HBJNKHGNM.png',
       price: 15999,
       processor: 'INTEL CORE i5-12400F',
       motherboard: 'ASUS PRIME B660M-A',
@@ -298,7 +298,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 3,
       title: 'CPU PRE ARMADO 3',
-      image: 'assets/img/gabinetes/product-section-01.png',
       price: 21999,
       processor: 'AMD RYZEN 9 5900X',
       motherboard: 'ASUS ROG STRIX X570-E',
@@ -329,7 +328,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 4,
       title: 'CPU PRE ARMADO 4',
-      image: 'assets/img/gabinetes/rog-hyperion-gr701.png',
       price: 29999,
       processor: 'INTEL CORE i9-12900K',
       motherboard: 'ASUS ROG MAXIMUS Z690 HERO',
@@ -360,7 +358,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 5,
       title: 'CPU PRE ARMADO 5',
-      image: 'assets/img/gabinetes/rog-hyperion-gr701.png',
       price: 34999,
       processor: 'AMD RYZEN 9 5950X',
       motherboard: 'ASUS ROG CROSSHAIR VIII HERO',
