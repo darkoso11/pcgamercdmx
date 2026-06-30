@@ -9,6 +9,7 @@ import { HomeContentService } from './services/home-content.service';
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
+  let component: HomeComponent;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -44,6 +45,7 @@ describe('HomeComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(HomeComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
@@ -53,5 +55,13 @@ describe('HomeComponent', () => {
     expect(notice).not.toBeNull();
     expect(notice.textContent).toContain('Sitio recien publicado');
     expect(notice.textContent).toContain('Gracias por tu paciencia');
+  });
+
+  it('does not define placeholder cabinet images for static assembly cards', () => {
+    const staticImages = component.carruselProducts
+      .map((product) => product.image)
+      .filter(Boolean);
+
+    expect(staticImages).toEqual([]);
   });
 });

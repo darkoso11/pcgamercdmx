@@ -3,7 +3,6 @@ import path from 'node:path';
 
 const credentials = await loadCredentials();
 const token = await login(credentials);
-const assemblyPlaceholderImage = 'https://placehold.co/900x700/101633/67e8f9?text=Ensamble+PC+Gamer+CDMX';
 
 await ensurePricePrecision();
 
@@ -23,7 +22,6 @@ const assemblies = [
     powerSupply: 'Fuente 500W integrada en gabinete',
     caseModel: 'Acteck Kioto GC220F Mini-ATX 500W USB Negro',
     cooling: 'Disipador incluido AMD',
-    image: assemblyPlaceholderImage,
     sourcePdf: 'Cotizacion CPU Basico.xlsx - Cotizador Max.pdf',
   },
   {
@@ -41,7 +39,6 @@ const assemblies = [
     powerSupply: 'Gigabyte 650W PCIe Gen5 80 Plus Gold',
     caseModel: 'Lian Li Vector V100 Black ARGB ATX',
     cooling: 'Disipador AMD Stealth incluido',
-    image: assemblyPlaceholderImage,
     sourcePdf: 'Cotización 5060.xlsx - Cotizador Max.pdf',
   },
   {
@@ -59,7 +56,6 @@ const assemblies = [
     powerSupply: 'MSI MAG A850GL 850W 80 Plus Gold Full Modular PCIe5',
     caseModel: 'Lian Li Vector V100 Black ARGB ATX',
     cooling: 'Cooler Master MasterLiquid 360 Core II ARGB Negro',
-    image: assemblyPlaceholderImage,
     sourcePdf: 'Cotización Andrea Duran - Configuracion Ideale.xlsx - Cotizador Max.pdf',
   },
   {
@@ -77,7 +73,6 @@ const assemblies = [
     powerSupply: 'MSI MAG A1000GL PCIe5 1000W 80 Plus Gold Full Modular',
     caseModel: 'Lian Li O11 Vision Compact White Cristal Templado EATX',
     cooling: 'Lian Li Hydroshift II LCD-S White 360mm',
-    image: assemblyPlaceholderImage,
     sourcePdf: 'Cotización Armada 13 5080.xlsx.pdf',
   },
   {
@@ -95,7 +90,6 @@ const assemblies = [
     powerSupply: 'Gigabyte 650W PCIe Gen5 80 Plus Gold',
     caseModel: 'Formula Air Power G5 Duo Mid ATX Black',
     cooling: 'Disipador incluido AMD',
-    image: assemblyPlaceholderImage,
     sourcePdf: 'Cotización Gama de Entrada.xlsx - Cotizador Max.pdf',
   },
   {
@@ -113,7 +107,6 @@ const assemblies = [
     powerSupply: 'NZXT C1200 1200W 80 Plus Gold ATX 3.1 Full Modular',
     caseModel: 'NZXT H9 Flow 2 RGB Black ATX',
     cooling: 'Cooler Master MasterLiquid 360 Core II ARGB Negro',
-    image: assemblyPlaceholderImage,
     sourcePdf: 'Cotización Tope de Gama 2.xlsx - Cotizador Max.pdf',
   },
 ];
@@ -159,7 +152,7 @@ function buildPayload(assembly, index) {
     subcategory: assembly.subcategory,
     price: assembly.price,
     discounted_price: null,
-    image: assembly.image,
+    image: assembly.image ?? '',
     images: [],
     specifications: {
       processor: assembly.processor,
