@@ -39,6 +39,8 @@ yarn-error.log
 testem.log
 /.codex-ng-serve.log
 /.tmp-*.log
+/.tmp-*.png
+/.qa/screenshots/
 /typings
 
 # System files
