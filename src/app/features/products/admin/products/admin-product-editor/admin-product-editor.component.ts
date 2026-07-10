@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { finalize, switchMap, takeUntil } from 'rxjs/operators';
+import { finalize, switchMap, takeUntil, timeout } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService, Product, Category, Subcategory } from '../../shared/products-admin.service';
@@ -12,6 +12,7 @@ import {
   isSupportedCatalogImageFile,
   prepareCatalogImagesForSave
 } from '../../shared/catalog-image-save.utils';
+import { asTrimmedText, normalizeCatalogSlug } from '../../shared/catalog-form.utils';
 
 // Tipos de producto disponibles
 export interface ProductType {
@@ -282,22 +283,11 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   }
 
   saveProduct(): void {
-    if (this.form.invalid) {
-      alert('Por favor, completa todos los campos requeridos');
-      return;
-    }
-
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
 
-    const productData = {
-      ...this.form.value,
-      ...this.form.getRawValue(),
-      category: this.resolveSelectedCategorySlug(),
-      gallery: this.galleryImages,
-      keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
-    };
+    const productData = this.buildProductPayload(true);
 
     this.prepareImagesForSave(productData)
       .pipe(
@@ -306,6 +296,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
             : this.productsAdminService.createProduct(preparedProductData)
         ),
+        timeout(20000),
         finalize(() => {
           this.loading = false;
           this.cdr.detectChanges();
@@ -314,6 +305,14 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe({
       next: (result: any) => {
+        if (!result) {
+          this.errorMessage = this.isEditMode
+            ? 'No se pudo actualizar el producto. Verifica tu sesion y vuelve a intentar.'
+            : 'No se pudo crear el producto. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         const visibility = productData.published ? 'publico' : 'privado';
         this.successMessage = this.isEditMode
           ? `Producto actualizado como ${visibility}`
@@ -340,14 +339,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const productData = {
-      ...this.form.value,
-      ...this.form.getRawValue(),
-      category: this.resolveSelectedCategorySlug(),
-      published: false,
-      gallery: this.galleryImages,
-      keywords: this.form.get('keywords')?.value?.split(',').map((k: string) => k.trim()) || []
-    };
+    const productData = this.buildProductPayload(false);
 
     this.prepareImagesForSave(productData)
       .pipe(
@@ -356,6 +348,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedProductData)
             : this.productsAdminService.createProduct(preparedProductData)
         ),
+        timeout(20000),
         finalize(() => {
           this.loading = false;
           this.cdr.detectChanges();
@@ -364,6 +357,14 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe({
       next: (result: any) => {
+        if (!result) {
+          this.errorMessage = this.isEditMode
+            ? 'No se pudo actualizar el producto. Verifica tu sesion y vuelve a intentar.'
+            : 'No se pudo crear el producto. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.successMessage = 'Producto guardado como privado';
         this.cdr.detectChanges();
         setTimeout(() => {
@@ -491,6 +492,39 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       this.selectedGalleryImageFiles,
       (file) => this.productsAdminService.uploadProductImage(file)
     );
+  }
+
+  private buildProductPayload(published: boolean) {
+    const rawValue = {
+      ...this.form.value,
+      ...this.form.getRawValue(),
+    };
+    const fallbackName = `Producto ${Date.now()}`;
+    const title = asTrimmedText(rawValue.title) || fallbackName;
+    const slug = normalizeCatalogSlug(asTrimmedText(rawValue.slug) || title) || `producto-${Date.now()}`;
+
+    return {
+      ...rawValue,
+      title,
+      slug,
+      description: asTrimmedText(rawValue.description),
+      image: asTrimmedText(rawValue.image) || 'https://via.placeholder.com/600x400?text=Producto',
+      category: this.resolveSelectedCategorySlug(),
+      published,
+      gallery: this.galleryImages,
+      keywords: this.parseKeywords(rawValue.keywords),
+    };
+  }
+
+  private parseKeywords(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value.map((item) => asTrimmedText(item)).filter(Boolean);
+    }
+
+    return asTrimmedText(value)
+      .split(',')
+      .map((keyword) => keyword.trim())
+      .filter(Boolean);
   }
 
   ngOnDestroy(): void {

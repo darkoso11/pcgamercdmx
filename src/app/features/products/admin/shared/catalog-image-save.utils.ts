@@ -39,7 +39,7 @@ export function prepareCatalogImagesForSave<T extends CatalogImageData>(
 export function getCatalogSaveErrorMessage(error: any, fallback: string): string {
   const status = error?.status;
   if (status === 401 || status === 403) {
-    return `${fallback}. Tu sesion de Directus expiro o no tiene permisos; cierra sesion e ingresa de nuevo.`;
+    return `${fallback}. No se pudo renovar tu sesion de Directus o tu usuario no tiene permisos; inicia sesion de nuevo.`;
   }
 
   if (error?.name === 'TimeoutError') {
