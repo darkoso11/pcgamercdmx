@@ -268,10 +268,7 @@ export class ProductsAdminService {
         mapAdminProductToDirectusPayload(product) as unknown as Record<string, unknown>,
         { auth: true }
       )
-      .pipe(
-        map((response) => mapDirectusProductToAdminProduct(response.data)),
-        catchError(() => of(undefined))
-      );
+      .pipe(map((response) => mapDirectusProductToAdminProduct(response.data)));
   }
 
   deleteProduct(id: string): Observable<boolean> {

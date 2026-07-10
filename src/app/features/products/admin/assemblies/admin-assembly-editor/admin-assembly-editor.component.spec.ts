@@ -79,6 +79,21 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(payload.image).toBe('https://cms.test.pcgamercdmx.com/assets/file-1');
   });
 
+  it('publishes an assembly even when optional catalog fields are incomplete', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.reset({
+      title: 'Ensamble Rapido',
+      slug: 'ensamble-rapido',
+      published: false,
+    });
+
+    component.saveAssembly();
+
+    expect(productsAdminService.createProduct).toHaveBeenCalled();
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.published).toBeTrue();
+  });
+
   it('stops loading and shows an error when assembly creation fails', () => {
     spyOn(console, 'error');
     const { component } = createComponent(throwError(() => new Error('Directus rejected payload')));
@@ -87,5 +102,17 @@ describe('AdminAssemblyEditorComponent', () => {
 
     expect(component.loading).toBeFalse();
     expect(component.errorMessage).toBe('Error al publicar el ensamble');
+  });
+
+  it('shows an error instead of success when an update returns no saved assembly', () => {
+    const { component, productsAdminService } = createComponent();
+    productsAdminService.updateProduct.and.returnValue(of(undefined));
+    component.isEditMode = true;
+    component.productId = '123';
+
+    component.saveAssembly();
+
+    expect(component.successMessage).toBe('');
+    expect(component.errorMessage).toBe('No se pudo actualizar el ensamble. Verifica tu sesion y vuelve a intentar.');
   });
 });
