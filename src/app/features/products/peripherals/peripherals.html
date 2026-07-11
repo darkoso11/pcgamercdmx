@@ -38,12 +38,6 @@
       >
         <a [routerLink]="['/productos', item.card.slug]" class="block">
           <div class="relative flex aspect-square items-center justify-center rounded-lg border border-white/10 bg-[#070b1c] p-4">
-            <span
-              *ngIf="!item.card.inStock"
-              class="absolute left-3 top-3 rounded-full border border-red-400/50 bg-red-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-red-200"
-            >
-              Sin stock
-            </span>
             <img [src]="item.card.image" [alt]="item.card.title" loading="lazy" decoding="async" class="h-full w-full object-contain transition duration-300 group-hover:scale-105" />
           </div>
 
