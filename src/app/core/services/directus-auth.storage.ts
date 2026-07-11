@@ -6,6 +6,10 @@ export function getStoredDirectusAccessToken(): string | null {
   return getStorageValue(DIRECTUS_ACCESS_TOKEN_KEY);
 }
 
+export function getStoredDirectusRefreshToken(): string | null {
+  return getStorageValue(DIRECTUS_REFRESH_TOKEN_KEY);
+}
+
 export function setStoredDirectusSession(
   accessToken: string,
   refreshToken?: string,

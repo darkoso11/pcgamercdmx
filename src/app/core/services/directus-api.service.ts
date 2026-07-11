@@ -1,9 +1,14 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { timeout } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, switchMap, timeout } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { getStoredDirectusAccessToken } from './directus-auth.storage';
+import {
+  clearStoredDirectusSession,
+  getStoredDirectusAccessToken,
+  getStoredDirectusRefreshToken,
+  setStoredDirectusSession,
+} from './directus-auth.storage';
 
 type DirectusFeature = keyof typeof environment.directus.features;
 type DirectusQueryValue = string | number | boolean;
@@ -63,17 +68,52 @@ export class DirectusApiService {
     });
   }
 
+  refreshSession(): Observable<DirectusAuthResponse> {
+    const refreshToken = getStoredDirectusRefreshToken();
+    if (!refreshToken) {
+      clearStoredDirectusSession();
+      return throwError(() => new Error('Missing Directus refresh token'));
+    }
+
+    return this.http
+      .post<DirectusAuthResponse>(`${this.baseUrl}/auth/refresh`, {
+        refresh_token: refreshToken,
+        mode: 'json',
+      })
+      .pipe(
+        map((response) => {
+          if (!response.data?.access_token) {
+            clearStoredDirectusSession();
+            throw new Error('Directus refresh did not return an access token');
+          }
+
+          setStoredDirectusSession(
+            response.data.access_token,
+            response.data.refresh_token
+          );
+          return response;
+        }),
+        catchError((error) => {
+          clearStoredDirectusSession();
+          return throwError(() => error);
+        })
+      );
+  }
+
   readItems<T>(
     collection: string,
     query: Record<string, DirectusQueryValue> = {},
     options: DirectusRequestOptions = {}
   ): Observable<DirectusListResponse<T>> {
-    return this.http.get<DirectusListResponse<T>>(
-      `${this.baseUrl}/items/${collection}`,
-      {
-        params: this.toParams(query),
-        headers: this.toHeaders(options),
-      }
+    return this.withAuthRetry(
+      () => this.http.get<DirectusListResponse<T>>(
+        `${this.baseUrl}/items/${collection}`,
+        {
+          params: this.toParams(query),
+          headers: this.toHeaders(options),
+        }
+      ),
+      options
     );
   }
 
@@ -83,12 +123,15 @@ export class DirectusApiService {
     query: Record<string, DirectusQueryValue> = {},
     options: DirectusRequestOptions = {}
   ): Observable<DirectusItemResponse<T>> {
-    return this.http.get<DirectusItemResponse<T>>(
-      `${this.baseUrl}/items/${collection}/${id}`,
-      {
-        params: this.toParams(query),
-        headers: this.toHeaders(options),
-      }
+    return this.withAuthRetry(
+      () => this.http.get<DirectusItemResponse<T>>(
+        `${this.baseUrl}/items/${collection}/${id}`,
+        {
+          params: this.toParams(query),
+          headers: this.toHeaders(options),
+        }
+      ),
+      options
     );
   }
 
@@ -97,10 +140,13 @@ export class DirectusApiService {
     payload: Record<string, unknown>,
     options: DirectusRequestOptions = {}
   ): Observable<DirectusItemResponse<T>> {
-    return this.http.post<DirectusItemResponse<T>>(
-      `${this.baseUrl}/items/${collection}`,
-      payload,
-      { headers: this.toHeaders(options) }
+    return this.withAuthRetry(
+      () => this.http.post<DirectusItemResponse<T>>(
+        `${this.baseUrl}/items/${collection}`,
+        payload,
+        { headers: this.toHeaders(options) }
+      ),
+      options
     ).pipe(timeout(60000));
   }
 
@@ -110,10 +156,13 @@ export class DirectusApiService {
     payload: Record<string, unknown>,
     options: DirectusRequestOptions = {}
   ): Observable<DirectusItemResponse<T>> {
-    return this.http.patch<DirectusItemResponse<T>>(
-      `${this.baseUrl}/items/${collection}/${id}`,
-      payload,
-      { headers: this.toHeaders(options) }
+    return this.withAuthRetry(
+      () => this.http.patch<DirectusItemResponse<T>>(
+        `${this.baseUrl}/items/${collection}/${id}`,
+        payload,
+        { headers: this.toHeaders(options) }
+      ),
+      options
     ).pipe(timeout(60000));
   }
 
@@ -122,9 +171,12 @@ export class DirectusApiService {
     id: string | number,
     options: DirectusRequestOptions = {}
   ): Observable<void> {
-    return this.http.delete<void>(
-      `${this.baseUrl}/items/${collection}/${id}`,
-      { headers: this.toHeaders(options) }
+    return this.withAuthRetry(
+      () => this.http.delete<void>(
+        `${this.baseUrl}/items/${collection}/${id}`,
+        { headers: this.toHeaders(options) }
+      ),
+      options
     );
   }
 
@@ -139,10 +191,13 @@ export class DirectusApiService {
     }
     formData.append('file', file, file.name);
 
-    return this.http.post<DirectusFileResponse>(
-      `${this.baseUrl}/files`,
-      formData,
-      { headers: this.toHeaders(options) }
+    return this.withAuthRetry(
+      () => this.http.post<DirectusFileResponse>(
+        `${this.baseUrl}/files`,
+        formData,
+        { headers: this.toHeaders(options) }
+      ),
+      options
     ).pipe(timeout(60000));
   }
 
@@ -166,5 +221,30 @@ export class DirectusApiService {
     return token
       ? new HttpHeaders({ Authorization: `Bearer ${token}` })
       : undefined;
+  }
+
+  private withAuthRetry<T>(
+    request: () => Observable<T>,
+    options: DirectusRequestOptions
+  ): Observable<T> {
+    if (!options.auth) {
+      return request();
+    }
+
+    return request().pipe(
+      catchError((error) => {
+        if (!this.isAuthError(error)) {
+          return throwError(() => error);
+        }
+
+        return this.refreshSession().pipe(
+          switchMap(() => request())
+        );
+      })
+    );
+  }
+
+  private isAuthError(error: any): boolean {
+    return error?.status === 401 || error?.status === 403;
   }
 }

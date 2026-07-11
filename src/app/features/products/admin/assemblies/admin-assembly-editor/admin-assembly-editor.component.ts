@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { finalize, switchMap, takeUntil } from 'rxjs/operators';
+import { finalize, switchMap, takeUntil, timeout } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { ProductsAdminService } from '../../shared/products-admin.service';
@@ -12,6 +12,7 @@ import {
   isSupportedCatalogImageFile,
   prepareCatalogImagesForSave
 } from '../../shared/catalog-image-save.utils';
+import { asTrimmedText, normalizeCatalogSlug } from '../../shared/catalog-form.utils';
 
 @Component({
   selector: 'app-admin-assembly-editor',
@@ -151,16 +152,11 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   saveAssembly(): void {
-    if (this.form.invalid) {
-      alert('Por favor, completa todos los campos requeridos');
-      return;
-    }
-
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
 
-    const assemblyData = { ...this.form.value, published: true, gallery: this.galleryImages };
+    const assemblyData = this.buildAssemblyPayload(true);
 
     this.prepareImagesForSave(assemblyData)
       .pipe(
@@ -169,6 +165,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedAssemblyData)
             : this.productsAdminService.createProduct(preparedAssemblyData)
         ),
+        timeout(20000),
         finalize(() => {
           this.loading = false;
           this.cdr.detectChanges();
@@ -177,6 +174,14 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe({
       next: (result: any) => {
+        if (!result) {
+          this.errorMessage = this.isEditMode
+            ? 'No se pudo actualizar el ensamble. Verifica tu sesion y vuelve a intentar.'
+            : 'No se pudo crear el ensamble. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.successMessage = this.isEditMode 
           ? 'Ensamble actualizado y publicado correctamente'
           : 'Ensamble creado y publicado correctamente';
@@ -202,7 +207,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const assemblyData = { ...this.form.value, published: false, gallery: this.galleryImages };
+    const assemblyData = this.buildAssemblyPayload(false);
 
     this.prepareImagesForSave(assemblyData)
       .pipe(
@@ -211,6 +216,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
             ? this.productsAdminService.updateProduct(this.productId!, preparedAssemblyData)
             : this.productsAdminService.createProduct(preparedAssemblyData)
         ),
+        timeout(20000),
         finalize(() => {
           this.loading = false;
           this.cdr.detectChanges();
@@ -219,6 +225,14 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe({
       next: (result: any) => {
+        if (!result) {
+          this.errorMessage = this.isEditMode
+            ? 'No se pudo actualizar el ensamble. Verifica tu sesion y vuelve a intentar.'
+            : 'No se pudo crear el ensamble. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.successMessage = 'Ensamble guardado como borrador';
         this.cdr.detectChanges();
         setTimeout(() => {
@@ -316,6 +330,32 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       this.selectedGalleryImageFiles,
       (file) => this.productsAdminService.uploadProductImage(file)
     );
+  }
+
+  private buildAssemblyPayload(published: boolean) {
+    const rawValue = this.form.value;
+    const fallbackName = `Ensamble ${Date.now()}`;
+    const title = asTrimmedText(rawValue.title) || fallbackName;
+    const slug = normalizeCatalogSlug(asTrimmedText(rawValue.slug) || title) || `ensamble-${Date.now()}`;
+
+    return {
+      ...rawValue,
+      title,
+      slug,
+      description: asTrimmedText(rawValue.description),
+      category: asTrimmedText(rawValue.category) || 'Ensambles de Computadoras',
+      processor: asTrimmedText(rawValue.processor),
+      motherboard: asTrimmedText(rawValue.motherboard),
+      graphicsCard: asTrimmedText(rawValue.graphicsCard),
+      ram: asTrimmedText(rawValue.ram),
+      nvmeSsd: asTrimmedText(rawValue.nvmeSsd),
+      powerSupply: asTrimmedText(rawValue.powerSupply),
+      cooling: asTrimmedText(rawValue.cooling),
+      case: asTrimmedText(rawValue.case),
+      image: asTrimmedText(rawValue.image) || 'https://via.placeholder.com/600x400?text=Ensamble',
+      published,
+      gallery: this.galleryImages,
+    };
   }
 
   ngOnDestroy(): void {

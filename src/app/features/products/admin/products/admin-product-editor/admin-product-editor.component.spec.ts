@@ -154,4 +154,43 @@ describe('AdminProductEditorComponent', () => {
     const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
     expect(payload.image).toBe('https://cms.test.pcgamercdmx.com/assets/file-1');
   });
+
+  it('publishes a product even when optional catalog fields are incomplete', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.patchValue({
+      title: 'Producto Rapido',
+      slug: 'producto-rapido',
+    });
+
+    component.saveProduct();
+
+    expect(productsAdminService.createProduct).toHaveBeenCalled();
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.published).toBeTrue();
+  });
+
+  it('shows an error instead of success when an update returns no saved product', () => {
+    const { component, productsAdminService } = createComponent();
+    productsAdminService.updateProduct.and.returnValue(of(undefined));
+    component.isEditMode = true;
+    component.productId = '123';
+    component.form.patchValue({
+      productType: 'periferico',
+      brand: 'Logitech',
+      categoryId: 'perifericos',
+      subcategoryId: 'mouse',
+      title: 'Mouse Gamer',
+      slug: 'mouse-gamer',
+      description: 'Mouse gamer inalambrico',
+      price: 999,
+      stock: 5,
+      image: 'mouse.png',
+      published: true,
+    });
+
+    component.saveProduct();
+
+    expect(component.successMessage).toBe('');
+    expect(component.errorMessage).toBe('No se pudo actualizar el producto. Verifica tu sesion y vuelve a intentar.');
+  });
 });
