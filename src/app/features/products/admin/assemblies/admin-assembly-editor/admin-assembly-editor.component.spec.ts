@@ -66,6 +66,46 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(payload.published).toBeTrue();
   });
 
+  it('provides a form control for selecting assembly brand logos', () => {
+    const { component } = createComponent();
+
+    expect(component.form.contains('brandLogos')).toBeTrue();
+  });
+
+  it('includes the selected brand logos in the published payload', () => {
+    const { component, productsAdminService } = createComponent();
+    const selectedLogos = [
+      { src: 'assets/img/marcas/nvidia_tag.svg', alt: 'NVIDIA' },
+      { src: 'assets/img/marcas/intel_tag.svg', alt: 'Intel' },
+    ];
+    component.form.patchValue({ brandLogos: selectedLogos });
+
+    component.saveAssembly();
+
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.brandLogos).toEqual(selectedLogos);
+  });
+
+  it('restores saved brand logos when editing an assembly', () => {
+    const { component, productsAdminService } = createComponent();
+    const savedLogos = [{ src: 'assets/img/marcas/ryzen_tag.svg', alt: 'AMD' }];
+    productsAdminService.getProductById.and.returnValue(
+      of({
+        title: 'PC AMD',
+        slug: 'pc-amd',
+        description: 'Ensamble AMD listo para jugar',
+        price: 18000,
+        stock: 1,
+        image: 'amd.png',
+        brandLogos: savedLogos,
+      })
+    );
+
+    component.loadAssembly('pc-amd');
+
+    expect(component.form.get('brandLogos')?.value).toEqual(savedLogos);
+  });
+
   it('uploads selected images before creating an assembly record', () => {
     const { component, productsAdminService } = createComponent();
     const file = new File(['image'], 'pc.jpeg', { type: 'image/jpeg' });

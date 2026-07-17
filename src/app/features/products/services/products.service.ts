@@ -66,7 +66,7 @@ export interface Product {
   providedIn: 'root',
 })
 export class ProductsService {
-  private readonly assembledPCs = this.buildAssembledPCs();
+  private readonly assembledPCs: AssembledPC[] = [];
   private readonly components = this.buildComponents();
   private readonly peripherals = this.buildPeripherals();
   private readonly accessories = this.buildAccessories();
@@ -793,8 +793,8 @@ export class ProductsService {
         status: ProductStatus.ACTIVE,
         title: 'Apex Starter 1080p',
         slug: 'apex-starter-1080p',
-        image: 'assets/img/gabinetes/BR-938686_1.png',
-        images: ['assets/img/gabinetes/BR-938686_1.png'],
+        image: '',
+        images: [],
         price: 18999,
         currency: 'MXN',
         description:
