@@ -14,6 +14,11 @@ import {
 } from '../../shared/catalog-image-save.utils';
 import { asTrimmedText, normalizeCatalogSlug } from '../../shared/catalog-form.utils';
 
+interface AssemblyBrandLogo {
+  src: string;
+  alt: string;
+}
+
 @Component({
   selector: 'app-admin-assembly-editor',
   standalone: true,
@@ -22,6 +27,14 @@ import { asTrimmedText, normalizeCatalogSlug } from '../../shared/catalog-form.u
 })
 export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   readonly adminProductsUrl = adminUrl('products');
+  readonly brandOptions: ReadonlyArray<AssemblyBrandLogo> = [
+    { src: 'assets/img/marcas/nvidia_tag.svg', alt: 'NVIDIA' },
+    { src: 'assets/img/marcas/intel_tag.svg', alt: 'Intel' },
+    { src: 'assets/img/marcas/ryzen_tag.svg', alt: 'AMD' },
+    { src: 'assets/img/marcas/asuspng.png', alt: 'ASUS' },
+    { src: 'assets/img/marcas/corsairbrand.png', alt: 'Corsair' },
+    { src: 'assets/img/marcas/gigabyte.png', alt: 'Gigabyte' },
+  ];
   form!: FormGroup;
   isEditMode = false;
   loading = false;
@@ -64,21 +77,24 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       case: ['', Validators.required],
       operatingSystem: [''],
 
-      // Sección 3: Precios
+      // Sección 3: Marcas visibles
+      brandLogos: [[]],
+
+      // Sección 4: Precios
       price: [0, [Validators.required, Validators.min(0)]],
       discountPrice: [0],
       discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       currency: ['MXN'],
 
-      // Sección 4: Stock
+      // Sección 5: Stock
       stock: [0, [Validators.required, Validators.min(0)]],
       sku: [''],
 
-      // Sección 5: Imagen
+      // Sección 6: Imagen
       image: ['', Validators.required],
       gallery: [[]],
 
-      // Sección 6: Publicación
+      // Sección 7: Publicación
       published: [false],
       featured: [false]
     });
@@ -117,6 +133,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
               cooling: assembly.cooling || '',
               case: assembly.case || '',
               operatingSystem: assembly.operatingSystem || '',
+              brandLogos: this.normalizeBrandLogos(assembly.brandLogos),
               price: assembly.price,
               discountPrice: assembly.discountPrice || 0,
               discountPercent: assembly.discountPercent || 0,
@@ -316,6 +333,25 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     return this.form.get(controlName);
   }
 
+  isBrandSelected(brand: AssemblyBrandLogo): boolean {
+    const selectedBrandKey = this.getBrandKey(brand);
+
+    return this.normalizeBrandLogos(this.form.get('brandLogos')?.value)
+      .some((logo) => this.getBrandKey(logo) === selectedBrandKey);
+  }
+
+  toggleBrandLogo(brand: AssemblyBrandLogo, selected: boolean): void {
+    const control = this.form.get('brandLogos');
+    const selectedBrandKey = this.getBrandKey(brand);
+    const current = this.normalizeBrandLogos(control?.value)
+      .filter((logo) => this.getBrandKey(logo) !== selectedBrandKey);
+    const next = selected ? [...current, { ...brand }] : current;
+
+    control?.setValue(next);
+    control?.markAsDirty();
+    control?.markAsTouched();
+  }
+
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     if (img) {
@@ -352,10 +388,44 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       powerSupply: asTrimmedText(rawValue.powerSupply),
       cooling: asTrimmedText(rawValue.cooling),
       case: asTrimmedText(rawValue.case),
+      brandLogos: this.normalizeBrandLogos(rawValue.brandLogos),
       image: asTrimmedText(rawValue.image) || 'https://via.placeholder.com/600x400?text=Ensamble',
       published,
       gallery: this.galleryImages,
     };
+  }
+
+  private normalizeBrandLogos(value: unknown): AssemblyBrandLogo[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((logo) => {
+        const item = logo as Partial<AssemblyBrandLogo> & { logo?: unknown; name?: unknown };
+        return {
+          src: asTrimmedText(item.src ?? item.logo),
+          alt: asTrimmedText(item.alt ?? item.name),
+        };
+      })
+      .filter((logo) => logo.src && logo.alt)
+      .filter(
+        (logo, index, logos) =>
+          logos.findIndex((item) => this.getBrandKey(item) === this.getBrandKey(logo)) === index
+      );
+  }
+
+  private getBrandKey(brand: AssemblyBrandLogo): string {
+    const identity = `${brand.alt} ${brand.src}`.toLowerCase();
+
+    if (identity.includes('nvidia')) return 'nvidia';
+    if (identity.includes('intel')) return 'intel';
+    if (identity.includes('amd') || identity.includes('ryzen')) return 'amd';
+    if (identity.includes('asus')) return 'asus';
+    if (identity.includes('corsair')) return 'corsair';
+    if (identity.includes('gigabyte')) return 'gigabyte';
+
+    return brand.alt.toLowerCase();
   }
 
   ngOnDestroy(): void {

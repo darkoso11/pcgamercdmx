@@ -47,12 +47,12 @@ export class Packages implements OnInit {
     editing: 0,
   };
   pcTypeImages: Record<PcTypeFilter, string> = {
-    all: 'assets/img/gabinetes/BR-938686_1.png',
-    gaming: 'assets/img/gabinetes/BR-938686_1.png',
-    streaming: 'assets/img/gabinetes/BR-938686_1.png',
-    workstation: 'assets/img/gabinetes/BR-938686_1.png',
-    creator: 'assets/img/gabinetes/BR-938686_1.png',
-    editing: 'assets/img/gabinetes/BR-938686_1.png',
+    all: '',
+    gaming: '',
+    streaming: '',
+    workstation: '',
+    creator: '',
+    editing: '',
   };
   platformCounts: Record<PlatformFilter, number> = {
     all: 0,
@@ -279,7 +279,7 @@ export class Packages implements OnInit {
     this.pcTypeImages = this.pcTypeCards.reduce(
       (images, card) => ({
         ...images,
-        [card.value]: this.getRepresentativeProduct(card.value)?.image ?? 'assets/img/gabinetes/BR-938686_1.png',
+        [card.value]: this.getRepresentativeProduct(card.value)?.image ?? '',
       }),
       {} as Record<PcTypeFilter, string>
     );
