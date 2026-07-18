@@ -43,8 +43,6 @@ interface HomePeripheralItem {
   inventoryLabel: string;
 }
 
-type HomeCarouselProduct = Omit<Product, 'image'> & { image?: string };
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -234,158 +232,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private rotationIntervalId: ReturnType<typeof setInterval> | null = null;
 
   // Productos para el carrusel de ensambles
-  carruselProducts: HomeCarouselProduct[] = [
-    {
-      id: 1,
-      title: 'CPU PRE ARMADO 1',
-      price: 11999,
-      processor: 'AMD RYZEN 7 5700',
-      motherboard: 'ASUS ROG STRIX B550-F',
-      ram: '16 GB DDR4',
-      storage: 'SSD M.2 NVME 1TB',
-      graphicsCard: 'NVIDIA RTX 3060',
-      slug: 'cpu-pre-armado-1',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 2,
-      title: 'CPU PRE ARMADO 2',
-      price: 15999,
-      processor: 'INTEL CORE i5-12400F',
-      motherboard: 'ASUS PRIME B660M-A',
-      ram: '32 GB DDR4',
-      storage: 'SSD M.2 NVME 1TB',
-      graphicsCard: 'NVIDIA RTX 3070',
-      slug: 'cpu-pre-armado-2',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 3,
-      title: 'CPU PRE ARMADO 3',
-      price: 21999,
-      processor: 'AMD RYZEN 9 5900X',
-      motherboard: 'ASUS ROG STRIX X570-E',
-      ram: '32 GB DDR4',
-      storage: 'SSD M.2 NVME 2TB',
-      graphicsCard: 'NVIDIA RTX 3080',
-      slug: 'cpu-pre-armado-3',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 4,
-      title: 'CPU PRE ARMADO 4',
-      price: 29999,
-      processor: 'INTEL CORE i9-12900K',
-      motherboard: 'ASUS ROG MAXIMUS Z690 HERO',
-      ram: '64 GB DDR5',
-      storage: 'SSD M.2 NVME 2TB',
-      graphicsCard: 'NVIDIA RTX 4080',
-      slug: 'cpu-pre-armado-4',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 5,
-      title: 'CPU PRE ARMADO 5',
-      price: 34999,
-      processor: 'AMD RYZEN 9 5950X',
-      motherboard: 'ASUS ROG CROSSHAIR VIII HERO',
-      ram: '64 GB DDR4',
-      storage: 'SSD M.2 NVME 2TB',
-      graphicsCard: 'NVIDIA RTX 4090',
-      slug: 'cpu-pre-armado-5',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-  ];
+  carruselProducts: Product[] = [];
 
   public filteredCarruselProducts = [...this.carruselProducts];
   public searchTerm: string = '';
@@ -565,15 +412,13 @@ export class HomeComponent implements OnInit, OnDestroy {
           .slice(0, 12)
           .map((product, index) => this.toPackageSliderItem(product, index));
 
-        if (items.length) {
-          this.carruselProducts = items;
-          this.filteredCarruselProducts = [...items];
-          this.cdr.detectChanges();
-        }
+        this.carruselProducts = items;
+        this.filteredCarruselProducts = [...items];
+        this.cdr.detectChanges();
       },
       error: () => {
-        this.carruselProducts = this.shuffleItems(this.carruselProducts);
-        this.filteredCarruselProducts = [...this.carruselProducts];
+        this.carruselProducts = [];
+        this.filteredCarruselProducts = [];
         this.cdr.detectChanges();
       },
     });
@@ -596,7 +441,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       storage: product.specifications.storage.map((item) => item.title).join(' + '),
       graphicsCard,
       slug: product.slug,
-      brandLogos: this.getPackageBrandLogos(product, processor, graphicsCard, motherboard),
+      brandLogos: this.getPackageBrandLogos(product),
       powerCertificate: this.getPowerCertificateImage(product.certifications.certificate),
       watts: product.certifications.wattage,
       category: 'paquete',
@@ -604,55 +449,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     };
   }
 
-  private getPackageBrandLogos(
-    product: AssembledPC,
-    processor: string,
-    graphicsCard: string,
-    motherboard: string
-  ): Array<{ src: string; alt: string }> {
-    const logos = product.brandLogos
+  private getPackageBrandLogos(product: AssembledPC): Array<{ src: string; alt: string }> {
+    return product.brandLogos
       .map((logo) => ({ src: logo.logo, alt: logo.name }))
-      .filter((logo) => logo.src && logo.alt);
-
-    const componentText = `${processor} ${graphicsCard} ${motherboard}`.toLowerCase();
-    const derivedLogos = [
-      {
-        match: componentText.includes('nvidia') || componentText.includes('rtx') || componentText.includes('gtx'),
-        src: 'assets/img/marcas/nvidia_tag.svg',
-        alt: 'NVIDIA',
-      },
-      {
-        match: componentText.includes('amd') || componentText.includes('ryzen') || componentText.includes('radeon'),
-        src: 'assets/img/marcas/ryzen_tag.svg',
-        alt: 'AMD Ryzen',
-      },
-      {
-        match: componentText.includes('intel') || componentText.includes('core ultra') || componentText.includes('core i'),
-        src: 'assets/img/marcas/intel_tag.svg',
-        alt: 'Intel',
-      },
-      {
-        match: componentText.includes('asus') || componentText.includes('rog'),
-        src: 'assets/img/marcas/asuspng.png',
-        alt: 'ASUS',
-      },
-      {
-        match: componentText.includes('gigabyte') || componentText.includes('aorus'),
-        src: 'assets/img/marcas/gigabyte.png',
-        alt: 'Gigabyte',
-      },
-      {
-        match: componentText.includes('corsair'),
-        src: 'assets/img/marcas/corsairbrand.png',
-        alt: 'Corsair',
-      },
-    ]
-      .filter((logo) => logo.match)
-      .map(({ src, alt }) => ({ src, alt }));
-
-    return [...logos, ...derivedLogos]
-      .filter((logo, index, all) => all.findIndex((item) => item.alt === logo.alt) === index)
-      .slice(0, 4);
+      .filter((logo) => logo.src && logo.alt)
+      .filter((logo, index, all) => all.findIndex((item) => item.alt === logo.alt) === index);
   }
 
   private getPowerCertificateImage(certificate: string): string {

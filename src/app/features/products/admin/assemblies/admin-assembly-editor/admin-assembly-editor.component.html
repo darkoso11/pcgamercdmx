@@ -162,7 +162,40 @@
         </div>
       </div>
 
-      <!-- Sección 3: Precios -->
+      <!-- Sección 3: Marcas -->
+      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+          <i class="fas fa-tags text-cyan-400"></i>
+          Marcas visibles en el slider
+        </h2>
+        <p class="mb-6 text-sm text-gray-300">
+          Selecciona solamente las marcas que aparecen en este ensamble.
+        </p>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Marcas del ensamble">
+          <label
+            *ngFor="let brand of brandOptions"
+            class="flex min-h-20 cursor-pointer items-center gap-3 rounded-lg border p-3 transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-cyan-300"
+            [ngClass]="isBrandSelected(brand)
+              ? 'border-cyan-300 bg-cyan-400/15 ring-1 ring-cyan-300/70'
+              : 'border-white/20 bg-[#071029] hover:border-white/40'"
+          >
+            <input
+              type="checkbox"
+              class="h-5 w-5 shrink-0 accent-cyan-400"
+              [checked]="isBrandSelected(brand)"
+              [attr.aria-label]="'Seleccionar marca ' + brand.alt"
+              (change)="toggleBrandLogo(brand, $any($event.target).checked)"
+            />
+            <span class="flex h-10 w-24 shrink-0 items-center justify-center rounded bg-white p-1">
+              <img [src]="brand.src" [alt]="brand.alt" class="max-h-8 max-w-20 object-contain" />
+            </span>
+            <span class="min-w-0 font-semibold text-white">{{ brand.alt }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Sección 4: Precios -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
           <i class="fas fa-dollar-sign text-green-400"></i>
@@ -204,7 +237,7 @@
         </div>
       </div>
 
-      <!-- Sección 4: Stock -->
+      <!-- Sección 5: Stock -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
           <i class="fas fa-box-open text-yellow-400"></i>
@@ -233,7 +266,7 @@
         </div>
       </div>
 
-      <!-- Sección 5: Imágenes -->
+      <!-- Sección 6: Imágenes -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
           <i class="fas fa-images text-purple-400"></i>
@@ -348,7 +381,7 @@
         </div>
       </div>
 
-      <!-- Sección 6: Publicación -->
+      <!-- Sección 7: Publicación -->
       <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
           <i class="fas fa-globe text-blue-400"></i>
