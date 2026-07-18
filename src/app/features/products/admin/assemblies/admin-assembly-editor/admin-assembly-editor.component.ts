@@ -334,14 +334,17 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   isBrandSelected(brand: AssemblyBrandLogo): boolean {
+    const selectedBrandKey = this.getBrandKey(brand);
+
     return this.normalizeBrandLogos(this.form.get('brandLogos')?.value)
-      .some((logo) => logo.alt.toLowerCase() === brand.alt.toLowerCase());
+      .some((logo) => this.getBrandKey(logo) === selectedBrandKey);
   }
 
   toggleBrandLogo(brand: AssemblyBrandLogo, selected: boolean): void {
     const control = this.form.get('brandLogos');
+    const selectedBrandKey = this.getBrandKey(brand);
     const current = this.normalizeBrandLogos(control?.value)
-      .filter((logo) => logo.alt.toLowerCase() !== brand.alt.toLowerCase());
+      .filter((logo) => this.getBrandKey(logo) !== selectedBrandKey);
     const next = selected ? [...current, { ...brand }] : current;
 
     control?.setValue(next);
@@ -408,8 +411,21 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       .filter((logo) => logo.src && logo.alt)
       .filter(
         (logo, index, logos) =>
-          logos.findIndex((item) => item.alt.toLowerCase() === logo.alt.toLowerCase()) === index
+          logos.findIndex((item) => this.getBrandKey(item) === this.getBrandKey(logo)) === index
       );
+  }
+
+  private getBrandKey(brand: AssemblyBrandLogo): string {
+    const identity = `${brand.alt} ${brand.src}`.toLowerCase();
+
+    if (identity.includes('nvidia')) return 'nvidia';
+    if (identity.includes('intel')) return 'intel';
+    if (identity.includes('amd') || identity.includes('ryzen')) return 'amd';
+    if (identity.includes('asus')) return 'asus';
+    if (identity.includes('corsair')) return 'corsair';
+    if (identity.includes('gigabyte')) return 'gigabyte';
+
+    return brand.alt.toLowerCase();
   }
 
   ngOnDestroy(): void {

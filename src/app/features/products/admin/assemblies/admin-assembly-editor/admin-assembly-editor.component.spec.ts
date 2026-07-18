@@ -106,6 +106,22 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(component.form.get('brandLogos')?.value).toEqual(savedLogos);
   });
 
+  it('recognizes and replaces a legacy AMD Ryzen logo without duplicating the brand', () => {
+    const { component } = createComponent();
+    const amdOption = component.brandOptions.find((brand) => brand.alt === 'AMD')!;
+    component.form.patchValue({
+      brandLogos: [
+        { src: 'assets/img/marcas/AMD-Ryzen.png', alt: 'AMD Ryzen' },
+      ],
+    });
+
+    expect(component.isBrandSelected(amdOption)).toBeTrue();
+
+    component.toggleBrandLogo(amdOption, true);
+
+    expect(component.form.get('brandLogos')?.value).toEqual([amdOption]);
+  });
+
   it('uploads selected images before creating an assembly record', () => {
     const { component, productsAdminService } = createComponent();
     const file = new File(['image'], 'pc.jpeg', { type: 'image/jpeg' });
