@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ProductsAdminService, AdminDashboardStats, Category, Product } from '../../shared/products-admin.service';
+import { getAdminProductCategoryLabel } from '../../shared/admin-product-display.utils';
 import { Subject, takeUntil } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
 
@@ -99,27 +100,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   }
 
   getCategoryLabel(product: Product): string {
-    const subcategory = this.categories
-      .flatMap((category) => category.subcategories)
-      .find((item) => item._id === product.subcategoryId);
-    if (subcategory) {
-      return subcategory.name;
-    }
-
-    const category = this.categories.find((item) => item._id === product.categoryId);
-    if (category) {
-      return category.name;
-    }
-
-    switch (product.category) {
-      case 'paquetes':
-        return 'Ensambles';
-      case 'perifericos':
-        return 'Perifericos';
-      case 'componentes':
-      default:
-        return 'Componentes';
-    }
+    return getAdminProductCategoryLabel(product, this.categories);
   }
 
   getStockLabel(product: Product): string {

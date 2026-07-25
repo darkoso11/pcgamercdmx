@@ -7,6 +7,7 @@ import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { Category, ProductsAdminService, Product } from '../../shared/products-admin.service';
+import { getAdminProductCategoryLabel } from '../../shared/admin-product-display.utils';
 
 @Component({
   selector: 'app-admin-product-list',
@@ -16,7 +17,6 @@ import { Category, ProductsAdminService, Product } from '../../shared/products-a
 })
 export class AdminProductListComponent implements OnInit, OnDestroy {
   readonly adminNewProductUrl = adminUrl('products/new');
-  readonly adminAssembliesUrl = adminUrl('products/assemblies');
   products: (Product & { selected?: boolean })[] = [];
   filteredProducts: (Product & { selected?: boolean })[] = [];
   paginatedProducts: (Product & { selected?: boolean })[] = [];
@@ -151,11 +151,8 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     this.filterProducts();
   }
 
-  editProduct(product: Product): void {
-    const editorUrl = product.category === 'paquetes'
-      ? this.adminAssembliesUrl
-      : adminUrl('products');
-    this.router.navigate([editorUrl, product._id, 'edit']);
+  editProduct(productId: string): void {
+    this.router.navigate([adminUrl('products'), productId, 'edit']);
   }
 
   duplicateProduct(productId: string): void {
@@ -195,27 +192,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   }
 
   getCategoryLabel(product: Product): string {
-    const subcategory = this.categories
-      .flatMap((category) => category.subcategories)
-      .find((item) => item._id === product.subcategoryId);
-    if (subcategory) {
-      return subcategory.name;
-    }
-
-    const category = this.categories.find((item) => item._id === product.categoryId);
-    if (category) {
-      return category.name;
-    }
-
-    switch (product.category) {
-      case 'paquetes':
-        return 'Ensambles';
-      case 'perifericos':
-        return 'Perifericos';
-      case 'componentes':
-      default:
-        return 'Componentes';
-    }
+    return getAdminProductCategoryLabel(product, this.categories);
   }
 
   getStockLabel(product: Product): string {

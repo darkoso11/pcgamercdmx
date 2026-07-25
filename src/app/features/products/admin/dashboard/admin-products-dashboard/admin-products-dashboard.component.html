@@ -1,6 +1,6 @@
-﻿<div class="min-h-screen bg-[#071029] text-white">
+<div class="min-h-screen pc-bg-page text-white">
   <!-- Header -->
-  <div class="bg-[#0b1220] border-b border-cyan-400/30 px-6 py-4 sticky top-0 z-40">
+  <div class="pc-panel border-b border-cyan-400/30 px-6 py-4 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-bold text-cyan-400">ADMIN - Productos</h1>
@@ -53,7 +53,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       <button
         (click)="goToSection('categories')"
-        class="bg-[#0b1220] border border-white/10 hover:border-purple-400/30 rounded-lg p-6 transition text-left"
+        class="pc-panel border border-white/10 hover:border-purple-400/30 rounded-lg p-6 transition text-left"
       >
         <i class="fas fa-folder text-2xl text-purple-400 mb-3 block"></i>
         <h3 class="font-bold mb-1">Gestionar Categorias</h3>
@@ -62,7 +62,7 @@
 
       <button
         (click)="goToSection('offers')"
-        class="bg-[#0b1220] border border-white/10 hover:border-red-400/30 rounded-lg p-6 transition text-left"
+        class="pc-panel border border-white/10 hover:border-red-400/30 rounded-lg p-6 transition text-left"
       >
         <i class="fas fa-tag text-2xl text-red-400 mb-3 block"></i>
         <h3 class="font-bold mb-1">Gestionar Ofertas</h3>
@@ -73,7 +73,7 @@
     <!-- Estadisticas -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       <!-- Total de Productos -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-cyan-400/30 transition">
+      <div class="pc-panel border border-white/10 rounded-lg p-6 hover:border-cyan-400/30 transition">
         <div class="flex items-start justify-between">
           <div>
             <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Productos Totales</div>
@@ -84,7 +84,7 @@
       </div>
 
       <!-- Publicados -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-green-400/30 transition">
+      <div class="pc-panel border border-white/10 rounded-lg p-6 hover:border-green-400/30 transition">
         <div class="flex items-start justify-between">
           <div>
             <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Publicados</div>
@@ -97,7 +97,7 @@
       <!-- Ensambles -->
       <button
         (click)="goToSection('assemblies-list')"
-        class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-purple-400/30 transition text-left"
+        class="pc-panel border border-white/10 rounded-lg p-6 hover:border-purple-400/30 transition text-left"
       >
         <div class="flex items-start justify-between">
           <div>
@@ -110,7 +110,7 @@
 
       <!-- Sin Stock -->
       <div
-        class="bg-[#0b1220] border transition"
+        class="pc-panel border transition"
         [ngClass]="(stats?.productsOutOfStock || 0) > 0 ? 'border-red-400/50' : 'border-white/10'"
       >
         <div class="p-6">
@@ -134,7 +134,7 @@
 
       <!-- Bajo Stock (Alerta) -->
       <div
-        class="bg-[#0b1220] border transition"
+        class="pc-panel border transition"
         [ngClass]="(stats?.productsWithLowStock || 0) > 0 ? 'border-yellow-400/50' : 'border-white/10'"
       >
         <div class="p-6">
@@ -160,7 +160,7 @@
     <!-- Estadisticas Secundarias -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       <!-- Borradores -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-yellow-400/30 transition">
+      <div class="pc-panel border border-white/10 rounded-lg p-6 hover:border-yellow-400/30 transition">
         <div class="flex items-start justify-between">
           <div>
             <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Borradores</div>
@@ -171,7 +171,7 @@
       </div>
 
       <!-- Ofertas Totales -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-red-400/30 transition">
+      <div class="pc-panel border border-white/10 rounded-lg p-6 hover:border-red-400/30 transition">
         <div class="flex items-start justify-between">
           <div>
             <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Ofertas Totales</div>
@@ -182,7 +182,7 @@
       </div>
 
       <!-- Ofertas Activas -->
-      <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 hover:border-green-400/30 transition">
+      <div class="pc-panel border border-white/10 rounded-lg p-6 hover:border-green-400/30 transition">
         <div class="flex items-start justify-between">
           <div>
             <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Ofertas Activas</div>
@@ -194,7 +194,7 @@
     </div>
 
     <!-- Recientes Productos -->
-    <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 mb-8">
+    <div class="pc-panel border border-white/10 rounded-lg p-6 mb-8">
       <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
         <i class="fas fa-clock text-cyan-400"></i>
         Ultimos Productos Creados
@@ -238,7 +238,10 @@
                   </span>
                 </td>
                 <td class="py-4">
-                  <button (click)="editProduct(product)" class="text-cyan-400 hover:text-cyan-300 text-xs font-semibold">
+                  <button
+                    (click)="editProduct(product)"
+                    class="min-h-11 px-2 text-cyan-400 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 text-xs font-semibold"
+                  >
                     <i class="fas fa-edit"></i> Editar
                   </button>
                 </td>
@@ -248,7 +251,10 @@
         </div>
 
         <div class="mt-6 text-center">
-          <button (click)="goToSection('products')" class="text-cyan-400 hover:text-cyan-300 font-semibold transition">
+          <button
+            (click)="goToSection('products')"
+            class="min-h-11 px-2 text-cyan-400 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 font-semibold transition"
+          >
             Ver todos los productos <i class="fas fa-arrow-right ml-2"></i>
           </button>
         </div>

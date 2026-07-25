@@ -1,4 +1,5 @@
 import { of } from 'rxjs';
+import { adminUrl } from '../../../../admin/admin-route.config';
 import { AdminProductListComponent } from './admin-product-list.component';
 
 describe('AdminProductListComponent', () => {
@@ -69,14 +70,14 @@ describe('AdminProductListComponent', () => {
     expect(component.products.map((product) => product._id)).toEqual(['18']);
   });
 
-  it('routes assemblies to the assembly editor as a defensive fallback', () => {
+  it('routes a listed product to the generic product editor', () => {
     const { component, router } = createComponent();
 
-    component.editProduct({ _id: '871', category: 'paquetes' } as any);
+    component.editProduct('18');
 
     expect(router.navigate).toHaveBeenCalledWith([
-      component.adminAssembliesUrl,
-      '871',
+      adminUrl('products'),
+      '18',
       'edit',
     ]);
   });
