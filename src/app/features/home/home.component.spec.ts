@@ -88,4 +88,39 @@ describe('HomeComponent', () => {
       { src: 'assets/img/marcas/corsairbrand.png', alt: 'Corsair' },
     ]);
   });
+
+  it('maps the effective offer and selected power certification to the assembly slider', () => {
+    const sliderItem = (component as any).toPackageSliderItem(
+      {
+        id: 8,
+        title: 'Ensamble en oferta',
+        slug: 'ensamble-oferta',
+        image: 'ensamble.png',
+        price: 30000,
+        discountedPrice: 27000,
+        offerBadgeVisible: false,
+        description: 'Ensamble de prueba',
+        specifications: {
+          processor: { title: 'AMD Ryzen 7' },
+          motherboard: { title: 'B650' },
+          ram: { title: '32 GB' },
+          storage: [{ title: '1 TB NVMe' }],
+          graphicsCard: { title: 'RTX 4070' },
+        },
+        certifications: {
+          certificate: 'Cybenetics Platinum',
+          image: 'https://cms.test/assets/platinum',
+          wattage: 850,
+        },
+        brandLogos: [],
+      },
+      0
+    );
+
+    expect(sliderItem.price).toBe(27000);
+    expect(sliderItem.originalPrice).toBe(30000);
+    expect(sliderItem.showOfferBadge).toBeFalse();
+    expect(sliderItem.powerCertificate).toBe('https://cms.test/assets/platinum');
+    expect(sliderItem.powerCertificateName).toBe('Cybenetics Platinum');
+  });
 });

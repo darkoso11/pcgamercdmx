@@ -22,7 +22,9 @@
             <span>{{ product.watts }}W</span>
           </div>
 
-          <span class="package-card__offer">Oferta</span>
+          <span *ngIf="shouldShowOfferBadge(product)" class="package-card__offer">
+            Oferta
+          </span>
 
           <div class="package-card__media">
             <img
@@ -42,8 +44,12 @@
               />
             </div>
 
-            <div class="package-card__power">
-              <img [src]="product.powerCertificate" alt="Certificación de fuente" />
+            <div *ngIf="product.powerCertificate" class="package-card__power">
+              <img
+                [src]="product.powerCertificate"
+                [alt]="getCertificationAlt(product)"
+                (error)="handleLogoError($event)"
+              />
             </div>
 
             <div class="package-card__watts">{{ product.watts }}W</div>
@@ -80,7 +86,12 @@
             </div>
 
             <div class="package-card__footer">
-              <p class="package-card__price">${{ product.price | number }}</p>
+              <div>
+                <p *ngIf="product.originalPrice" class="package-card__original-price">
+                  ${{ product.originalPrice | number }}
+                </p>
+                <p class="package-card__price">${{ product.price | number }}</p>
+              </div>
               <a [routerLink]="getProductLink(product)" class="package-card__cta">
                 Ver ensamble
               </a>

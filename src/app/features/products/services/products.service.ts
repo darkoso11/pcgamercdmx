@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { DirectusApiService } from '../../../core/services/directus-api.service';
 import {
@@ -18,6 +18,11 @@ import {
   ProductStatus,
   SearchResult,
 } from '../../../shared/models';
+import {
+  getOfferDomain,
+  resolveOfferPresentation,
+} from '../admin/shared/admin-catalog-flow.utils';
+import type { Offer } from '../admin/shared/products-admin.service';
 export type CatalogProduct =
   | AssembledPC
   | ComponentProduct
@@ -30,6 +35,7 @@ export interface ProductCardViewModel {
   image: string;
   price: number;
   discountedPrice?: number;
+  offerBadgeVisible?: boolean;
   description: string;
   category: ProductCategory;
   categoryLabel: string;
@@ -54,7 +60,10 @@ export interface Product {
   slug: string;
   brandLogos: Array<{ src: string; alt: string; position?: string }>;
   powerCertificate: string;
+  powerCertificateName?: string;
   watts: number;
+  originalPrice?: number;
+  showOfferBadge?: boolean;
   category?: 'paquete' | 'periferico' | 'componente';
   description?: string;
   specifications?: { [key: string]: string };
@@ -253,6 +262,7 @@ export class ProductsService {
       image: product.image,
       price: product.price,
       discountedPrice: product.discountedPrice,
+      offerBadgeVisible: product.offerBadgeVisible,
       description: product.description,
       category: product.category,
       categoryLabel: this.getCategoryLabel(product.category),
@@ -504,20 +514,75 @@ export class ProductsService {
       return of(fallback);
     }
 
-    return this.directus
-      .readItems<DirectusProductRecord>('pc_products', {
-        'filter[published][_eq]': true,
-        fields: '*',
-        sort: 'sort,title',
-        limit: 1000,
-      })
+    return forkJoin({
+      products: this.directus.readItems<DirectusProductRecord>('pc_products', {
+          'filter[published][_eq]': true,
+          fields: '*',
+          sort: 'sort,title',
+          limit: 1000,
+        }),
+      offers: this.directus.readItems<Record<string, unknown>>('pc_offers', {
+          fields: '*',
+          limit: 1000,
+        }).pipe(catchError(() => of({ data: [] }))),
+    })
       .pipe(
-        map((response) => {
-          const products = response.data.map(mapDirectusProductToCatalogProduct);
-          return products.length ? products : fallback;
+        map(({ products: productResponse, offers: offerResponse }) => {
+          const products = productResponse.data.map(mapDirectusProductToCatalogProduct);
+          const offers = offerResponse.data.map((record) => this.mapPublicOffer(record));
+          return products.length ? this.applyEffectiveOffers(products, offers) : fallback;
         }),
         catchError(() => of(fallback))
       );
+  }
+
+  private applyEffectiveOffers(products: CatalogProduct[], offers: Offer[]): CatalogProduct[] {
+    const now = new Date();
+    return products.map((product) => {
+      const domain = product.category === ProductCategory.ASSEMBLED ? 'assemblies' : 'products';
+      const effectiveOffer = offers.find((offer) => {
+        if ((offer.catalogDomain ?? getOfferDomain(offer)) !== domain) return false;
+        const ids = domain === 'assemblies'
+          ? offer.applicableTo.packages ?? []
+          : offer.applicableTo.products ?? [];
+        const categoryMatch = (offer.applicableTo.categories ?? []).includes(product.subcategory);
+        const presentation = resolveOfferPresentation(product.price, offer, now);
+        return presentation.hasEffectiveOffer && (ids.includes(product._id ?? '') || categoryMatch);
+      });
+      const presentation = resolveOfferPresentation(product.price, effectiveOffer ?? null, now);
+
+      return {
+        ...product,
+        discountedPrice: presentation.hasEffectiveOffer ? presentation.effectivePrice : undefined,
+        offerBadgeVisible: presentation.showOfferBadge,
+        activeOfferId: effectiveOffer?._id,
+      };
+    });
+  }
+
+  private mapPublicOffer(record: Record<string, unknown>): Offer {
+    const normalizeIds = (value: unknown) =>
+      Array.isArray(value) ? value.map((item) => String(item ?? '')).filter(Boolean) : [];
+
+    return {
+      _id: record['id'] === undefined ? undefined : String(record['id']),
+      title: String(record['title'] ?? ''),
+      description: String(record['description'] ?? ''),
+      catalogDomain: record['catalog_domain'] === 'assemblies' ? 'assemblies' : 'products',
+      type: record['discount_type'] === 'fixed' ? 'fixed' : 'percentage',
+      discountValue: Number(record['discount_value']) || 0,
+      applicableTo: {
+        products: normalizeIds(record['applicable_products']),
+        packages: normalizeIds(record['applicable_assemblies']),
+        categories: normalizeIds(record['applicable_categories']),
+      },
+      startDate: new Date(String(record['starts_at'] ?? '')),
+      endDate: new Date(String(record['ends_at'] ?? '')),
+      active: Boolean(record['active']),
+      showBadge: record['show_badge'] !== false,
+      createdAt: new Date(String(record['date_created'] ?? Date.now())),
+      updatedAt: new Date(String(record['date_updated'] ?? Date.now())),
+    };
   }
 
   private applyFilters<T extends CatalogProduct>(
@@ -623,7 +688,7 @@ export class ProductsService {
       badges.push('Destacado');
     }
 
-    if (product.discountedPrice) {
+    if (product.discountedPrice && product.offerBadgeVisible !== false) {
       badges.push('Promocion');
     }
 
@@ -691,7 +756,8 @@ export class ProductsService {
       id,
       title: product.title,
       image: product.image,
-      price: product.price,
+      price: product.discountedPrice ?? product.price,
+      originalPrice: product.discountedPrice ? product.price : undefined,
       processor: product.specifications.processor.title,
       motherboard: product.specifications.motherboard.title,
       ram: product.specifications.ram.title,
@@ -699,8 +765,10 @@ export class ProductsService {
       graphicsCard: product.specifications.graphicsCard.title,
       slug: product.slug,
       brandLogos: product.brandLogos.map((logo) => ({ src: logo.logo, alt: logo.name })),
-      powerCertificate: this.getCertificationImage(product.certifications.certificate),
+      powerCertificate: product.certifications.image || this.getCertificationImage(product.certifications.certificate),
+      powerCertificateName: product.certifications.certificate,
       watts: product.certifications.wattage,
+      showOfferBadge: Boolean(product.discountedPrice && product.offerBadgeVisible),
       category: 'paquete',
       description: product.description,
       specifications: Object.fromEntries(

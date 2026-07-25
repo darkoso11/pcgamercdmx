@@ -84,11 +84,19 @@ export class AdminDashboardComponent {
     },
     {
       title: 'Admin Productos',
-      description: 'Mantiene actualizado el catalogo comercial, paquetes, ensambles, categorias y ofertas activas.',
+      description: 'Gestiona hardware, componentes, perifericos, accesorios, categorias y ofertas de productos.',
       icon: 'fas fa-box',
       route: adminUrl('products'),
       accent: 'pink',
-      actions: ['Productos y perifericos', 'Ensambles y paquetes', 'Ofertas destacadas', 'Categorias del catalogo'],
+      actions: ['Hardware y componentes', 'Perifericos y accesorios', 'Categorias de productos', 'Ofertas de productos'],
+    },
+    {
+      title: 'Admin Ensambles',
+      description: 'Gestiona computadoras armadas, paquetes, categorias y ofertas exclusivas de ensambles.',
+      icon: 'fas fa-desktop',
+      route: adminUrl('assemblies'),
+      accent: 'violet',
+      actions: ['Computadoras armadas', 'Paquetes de ensamble', 'Categorias de ensambles', 'Ofertas de ensambles'],
     },
     {
       title: 'Admin Comunidad',
