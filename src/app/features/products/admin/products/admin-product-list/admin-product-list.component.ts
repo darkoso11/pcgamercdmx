@@ -16,6 +16,7 @@ import { Category, ProductsAdminService, Product } from '../../shared/products-a
 })
 export class AdminProductListComponent implements OnInit, OnDestroy {
   readonly adminNewProductUrl = adminUrl('products/new');
+  readonly adminAssembliesUrl = adminUrl('products/assemblies');
   products: (Product & { selected?: boolean })[] = [];
   filteredProducts: (Product & { selected?: boolean })[] = [];
   paginatedProducts: (Product & { selected?: boolean })[] = [];
@@ -59,9 +60,14 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     this.productsAdminService
       .getAllCategories()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((categories) => {
-        this.categories = categories;
-        this.cdr.detectChanges();
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.categories = [];
+        },
       });
   }
 
@@ -71,7 +77,9 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: any) => {
         const productsData = Array.isArray(response) ? response : (response.data || []);
-        this.products = productsData.map((p: any) => ({ ...p, selected: false }));
+        this.products = productsData
+          .filter((product: Product) => product.category !== 'paquetes')
+          .map((product: Product) => ({ ...product, selected: false }));
         this.filterProducts();
         this.cdr.detectChanges();
       });
@@ -143,8 +151,11 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     this.filterProducts();
   }
 
-  editProduct(productId: string): void {
-    this.router.navigate([adminUrl('products'), productId, 'edit']);
+  editProduct(product: Product): void {
+    const editorUrl = product.category === 'paquetes'
+      ? this.adminAssembliesUrl
+      : adminUrl('products');
+    this.router.navigate([editorUrl, product._id, 'edit']);
   }
 
   duplicateProduct(productId: string): void {
@@ -203,7 +214,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
         return 'Perifericos';
       case 'componentes':
       default:
-        return 'Hardware y accesorios';
+        return 'Componentes';
     }
   }
 

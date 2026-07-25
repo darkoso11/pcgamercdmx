@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { ProductsAdminService, AdminDashboardStats, Product } from '../../shared/products-admin.service';
+import { ProductsAdminService, AdminDashboardStats, Category, Product } from '../../shared/products-admin.service';
 import { Subject, takeUntil } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
 
@@ -16,6 +16,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   readonly adminHomeUrl = adminUrl();
   stats: AdminDashboardStats | null = null;
   recentProducts: any[] = [];
+  categories: Category[] = [];
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -37,6 +38,19 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
    * Cargar datos del dashboard
    */
   private loadDashboardData() {
+    this.productsAdminService
+      .getAllCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.categories = [];
+        },
+      });
+
     // Obtener estadísticas
     this.productsAdminService
       .getDashboardStats()
@@ -77,19 +91,34 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   /**
    * Editar un producto
    */
-  editProduct(productId: string) {
-    this.router.navigate([adminUrl('products'), productId, 'edit']);
+  editProduct(product: Product) {
+    const editorUrl = product.category === 'paquetes'
+      ? adminUrl('products/assemblies')
+      : adminUrl('products');
+    this.router.navigate([editorUrl, product._id, 'edit']);
   }
 
-  getCategoryLabel(category: Product['category']): string {
-    switch (category) {
+  getCategoryLabel(product: Product): string {
+    const subcategory = this.categories
+      .flatMap((category) => category.subcategories)
+      .find((item) => item._id === product.subcategoryId);
+    if (subcategory) {
+      return subcategory.name;
+    }
+
+    const category = this.categories.find((item) => item._id === product.categoryId);
+    if (category) {
+      return category.name;
+    }
+
+    switch (product.category) {
       case 'paquetes':
         return 'Ensambles';
       case 'perifericos':
         return 'Perifericos';
       case 'componentes':
       default:
-        return 'Hardware y accesorios';
+        return 'Componentes';
     }
   }
 

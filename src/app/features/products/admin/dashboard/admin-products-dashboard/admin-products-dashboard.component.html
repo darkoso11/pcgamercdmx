@@ -219,7 +219,7 @@
                   <div class="font-semibold">{{ product.title }}</div>
                   <div class="text-xs text-gray-400">{{ product.slug }}</div>
                 </td>
-                <td class="py-4 text-gray-300">{{ getCategoryLabel(product.category) }}</td>
+                <td class="py-4 text-gray-300">{{ getCategoryLabel(product) }}</td>
                 <td class="py-4 font-bold text-cyan-400">${{ product.price | number }}</td>
                 <td class="py-4">
                   <span
@@ -238,7 +238,7 @@
                   </span>
                 </td>
                 <td class="py-4">
-                  <button (click)="editProduct(product._id!)" class="text-cyan-400 hover:text-cyan-300 text-xs font-semibold">
+                  <button (click)="editProduct(product)" class="text-cyan-400 hover:text-cyan-300 text-xs font-semibold">
                     <i class="fas fa-edit"></i> Editar
                   </button>
                 </td>

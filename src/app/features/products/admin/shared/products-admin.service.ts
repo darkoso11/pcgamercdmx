@@ -178,7 +178,7 @@ export class ProductsAdminService {
     },
     {
       _id: '2',
-      name: 'Hardware y accesorios',
+      name: 'Componentes',
       slug: 'componentes',
       description: 'Partes, cables, adaptadores y accesorios para PC',
       icon: 'fa-microchip',

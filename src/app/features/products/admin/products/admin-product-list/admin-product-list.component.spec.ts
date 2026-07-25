@@ -18,7 +18,7 @@ describe('AdminProductListComponent', () => {
       cdr as any
     );
 
-    return { component, productsAdminService };
+    return { component, productsAdminService, router };
   }
 
   it('does not reload products or show success when delete service reports failure', () => {
@@ -53,5 +53,38 @@ describe('AdminProductListComponent', () => {
     };
 
     expect(component.getCategoryLabel(product as any)).toBe('Memorias RAM');
+  });
+
+  it('excludes assemblies from the generic product list', () => {
+    const { component, productsAdminService } = createComponent();
+    productsAdminService.getAllProducts.and.returnValue(of({
+      data: [
+        { _id: '871', title: 'CAPSULA', category: 'paquetes' },
+        { _id: '18', title: 'Memoria XPG', category: 'componentes' },
+      ],
+    }));
+
+    component.loadProducts();
+
+    expect(component.products.map((product) => product._id)).toEqual(['18']);
+  });
+
+  it('routes assemblies to the assembly editor as a defensive fallback', () => {
+    const { component, router } = createComponent();
+
+    component.editProduct({ _id: '871', category: 'paquetes' } as any);
+
+    expect(router.navigate).toHaveBeenCalledWith([
+      component.adminAssembliesUrl,
+      '871',
+      'edit',
+    ]);
+  });
+
+  it('uses the real canonical category name as the final fallback', () => {
+    const { component } = createComponent();
+    component.categories = [];
+
+    expect(component.getCategoryLabel({ category: 'componentes' } as any)).toBe('Componentes');
   });
 });
