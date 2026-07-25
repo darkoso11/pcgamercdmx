@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
-import { ProductsAdminService, Product } from '../../shared/products-admin.service';
+import { Category, ProductsAdminService, Product } from '../../shared/products-admin.service';
 
 @Component({
   selector: 'app-admin-product-list',
@@ -19,6 +19,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   products: (Product & { selected?: boolean })[] = [];
   filteredProducts: (Product & { selected?: boolean })[] = [];
   paginatedProducts: (Product & { selected?: boolean })[] = [];
+  categories: Category[] = [];
 
   searchTerm = '';
   selectedCategory = '';
@@ -50,7 +51,18 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadProducts();
+  }
+
+  loadCategories(): void {
+    this.productsAdminService
+      .getAllCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((categories) => {
+        this.categories = categories;
+        this.cdr.detectChanges();
+      });
   }
 
   loadProducts(): void {
@@ -171,8 +183,20 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     }).format(price);
   }
 
-  getCategoryLabel(category: Product['category']): string {
-    switch (category) {
+  getCategoryLabel(product: Product): string {
+    const subcategory = this.categories
+      .flatMap((category) => category.subcategories)
+      .find((item) => item._id === product.subcategoryId);
+    if (subcategory) {
+      return subcategory.name;
+    }
+
+    const category = this.categories.find((item) => item._id === product.categoryId);
+    if (category) {
+      return category.name;
+    }
+
+    switch (product.category) {
       case 'paquetes':
         return 'Ensambles';
       case 'perifericos':

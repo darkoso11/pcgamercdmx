@@ -66,6 +66,18 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(payload.published).toBeTrue();
   });
 
+  it('keeps an edited assembly in the assemblies category', () => {
+    const { component, productsAdminService } = createComponent();
+    component.isEditMode = true;
+    component.productId = '871';
+    component.form.patchValue({ category: 'componentes' });
+
+    component.saveAssembly();
+
+    const payload = productsAdminService.updateProduct.calls.mostRecent().args[1];
+    expect(payload.category).toBe('paquetes');
+  });
+
   it('provides a form control for selecting assembly brand logos', () => {
     const { component } = createComponent();
 
