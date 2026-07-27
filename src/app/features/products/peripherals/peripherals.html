@@ -39,6 +39,12 @@
         <a [routerLink]="['/productos', item.card.slug]" class="block">
           <div class="relative flex aspect-square items-center justify-center rounded-lg border border-white/10 bg-[#070b1c] p-4">
             <img [src]="item.card.image" [alt]="item.card.title" loading="lazy" decoding="async" class="h-full w-full object-contain transition duration-300 group-hover:scale-105" />
+            <span
+              *ngIf="item.card.offerBadgeVisible"
+              class="absolute right-3 top-3 rounded-full bg-pink-600 px-3 py-1 text-xs font-bold uppercase text-white"
+            >
+              Oferta
+            </span>
           </div>
 
           <div class="pt-4">
@@ -52,7 +58,14 @@
               {{ item.card.inventoryLabel }}
             </p>
             <div class="mt-4 flex items-center justify-between gap-3">
-              <p class="text-xl font-bold text-pink-300">$ {{ item.card.price | number:'1.2-2' }}</p>
+              <div>
+                <p *ngIf="item.card.discountedPrice" class="text-xs text-slate-400 line-through">
+                  $ {{ item.card.price | number:'1.2-2' }}
+                </p>
+                <p class="text-xl font-bold text-pink-300">
+                  $ {{ (item.card.discountedPrice ?? item.card.price) | number:'1.2-2' }}
+                </p>
+              </div>
               <span class="text-sm font-semibold text-cyan-300 transition group-hover:text-white">Ver detalle</span>
             </div>
           </div>

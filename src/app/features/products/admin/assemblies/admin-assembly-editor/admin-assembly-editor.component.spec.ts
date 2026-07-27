@@ -10,6 +10,22 @@ describe('AdminAssemblyEditorComponent', () => {
       createProduct: jasmine.createSpy('createProduct').and.returnValue(createResult),
       updateProduct: jasmine.createSpy('updateProduct').and.returnValue(createResult),
       uploadProductImage: jasmine.createSpy('uploadProductImage').and.returnValue(of('https://cms.test.pcgamercdmx.com/assets/file-1')),
+      getPowerCertifications: jasmine.createSpy('getPowerCertifications').and.returnValue(of([
+        {
+          _id: 'cert-gold',
+          name: '80 Plus Gold',
+          image: 'https://cms.test.pcgamercdmx.com/assets/gold',
+          active: true,
+          sort: 1,
+        },
+      ])),
+      createPowerCertification: jasmine.createSpy('createPowerCertification').and.returnValue(of({
+        _id: 'cert-platinum',
+        name: '80 Plus Platinum',
+        image: 'https://cms.test.pcgamercdmx.com/assets/platinum',
+        active: true,
+        sort: 2,
+      })),
     };
     const route = { params: of({}) };
     const router = { navigate: jasmine.createSpy('navigate') };
@@ -33,8 +49,11 @@ describe('AdminAssemblyEditorComponent', () => {
       ram: '32GB DDR5',
       nvmeSsd: '1TB NVMe',
       powerSupply: '750W Gold',
+      watts: 750,
+      powerCertificationId: 'cert-gold',
       cooling: 'Liquid 240',
       case: 'Flow RGB',
+      operatingSystem: 'Windows 11 Pro',
       price: 20000,
       stock: 2,
       image: 'pc.png',
@@ -53,7 +72,7 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(productsAdminService.createProduct).toHaveBeenCalled();
     expect(component.loading).toBeFalse();
     expect(component.successMessage).toBe('Ensamble creado y publicado correctamente');
-    expect(router.navigate).toHaveBeenCalledWith([component.adminProductsUrl]);
+    expect(router.navigate).toHaveBeenCalledWith([component.adminAssembliesUrl]);
   }));
 
   it('forces published true when using the publish action', () => {
@@ -70,6 +89,14 @@ describe('AdminAssemblyEditorComponent', () => {
     const { component } = createComponent();
 
     expect(component.form.contains('brandLogos')).toBeTrue();
+  });
+
+  it('leaves promotional pricing and publication state to their explicit admin actions', () => {
+    const { component } = createComponent();
+
+    expect(component.form.contains('discountPrice')).toBeFalse();
+    expect(component.form.contains('discountPercent')).toBeFalse();
+    expect(component.form.contains('published')).toBeFalse();
   });
 
   it('includes the selected brand logos in the published payload', () => {
@@ -135,7 +162,7 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(payload.image).toBe('https://cms.test.pcgamercdmx.com/assets/file-1');
   });
 
-  it('publishes an assembly even when optional catalog fields are incomplete', () => {
+  it('blocks publication when required public catalog fields are incomplete', () => {
     const { component, productsAdminService } = createComponent();
     component.form.reset({
       title: 'Ensamble Rapido',
@@ -145,9 +172,37 @@ describe('AdminAssemblyEditorComponent', () => {
 
     component.saveAssembly();
 
-    expect(productsAdminService.createProduct).toHaveBeenCalled();
+    expect(productsAdminService.createProduct).not.toHaveBeenCalled();
+    expect(component.errorMessage).toBe('Completa los campos obligatorios antes de publicar el ensamble.');
+  });
+
+  it('persists watts, selected certification and operating system in the assembly payload', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+
+    component.saveAssembly();
+
     const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
-    expect(payload.published).toBeTrue();
+    expect(payload).toEqual(jasmine.objectContaining({
+      watts: 750,
+      powerCertificationId: 'cert-gold',
+      powerCertificate: '80 Plus Gold',
+      powerCertificateImage: 'https://cms.test.pcgamercdmx.com/assets/gold',
+      operatingSystem: 'Windows 11 Pro',
+    }));
+  });
+
+  it('registers a new reusable certification and selects it for the assembly', () => {
+    const { component, productsAdminService } = createComponent();
+    const file = new File(['platinum'], 'platinum.png', { type: 'image/png' });
+    (component as any).newCertificationName = '80 Plus Platinum';
+    (component as any).selectedCertificationImageFile = file;
+
+    (component as any).saveNewCertification();
+
+    expect(productsAdminService.createPowerCertification)
+      .toHaveBeenCalledWith('80 Plus Platinum', file);
+    expect(component.form.get('powerCertificationId')?.value).toBe('cert-platinum');
   });
 
   it('stops loading and shows an error when assembly creation fails', () => {

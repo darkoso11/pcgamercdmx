@@ -176,6 +176,17 @@ export class ProductsSliderComponent implements AfterViewInit, OnChanges {
       : ['/productos', product.slug];
   }
 
+  shouldShowOfferBadge(product: any): boolean {
+    return product?.showOfferBadge === true;
+  }
+
+  getCertificationAlt(product: any): string {
+    const name = String(product?.powerCertificateName ?? '').trim();
+    return name
+      ? `Certificación ${name} de la fuente de poder`
+      : 'Certificación de la fuente de poder';
+  }
+
   // Para manejar errores de carga de imagen
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
