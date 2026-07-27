@@ -1,96 +1,70 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { ProductsAdminService, AdminDashboardStats, Product } from '../../shared/products-admin.service';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
+import { CatalogStatusFilter } from '../../shared/admin-catalog-flow.utils';
+import {
+  Category,
+  CatalogDashboardStats,
+  Product,
+  ProductsAdminService,
+} from '../../shared/products-admin.service';
+import { getAdminProductCategoryLabel } from '../../shared/admin-product-display.utils';
 
 @Component({
   selector: 'app-admin-products-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-products-dashboard.component.html',
-  styleUrls: []
 })
 export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   readonly adminHomeUrl = adminUrl();
-  stats: AdminDashboardStats | null = null;
-  recentProducts: any[] = [];
-  private destroy$ = new Subject<void>();
+  stats: CatalogDashboardStats | null = null;
+  recentProducts: Product[] = [];
+  categories: Category[] = [];
+
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private productsAdminService: ProductsAdminService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private readonly productsAdminService: ProductsAdminService,
+    private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadDashboardData();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  /**
-   * Cargar datos del dashboard
-   */
-  private loadDashboardData() {
-    // Obtener estadísticas
-    this.productsAdminService
-      .getDashboardStats()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(stats => {
-        this.stats = stats;
-        this.cdr.detectChanges();
-      });
-
-    // Obtener productos recientes
-    this.productsAdminService
-      .getRecentProducts(5)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(products => {
-        this.recentProducts = products;
-        this.cdr.detectChanges();
-      });
-  }
-
-  /**
-   * Navegar a una sección del admin
-   */
-  goToSection(section: string) {
-    const routes: { [key: string]: string } = {
+  goToSection(section: 'new-product' | 'products' | 'offers' | 'categories'): void {
+    const routes: Record<typeof section, string> = {
       'new-product': adminUrl('products/new'),
-      'products': adminUrl('products/list'),
-      'assemblies': adminUrl('products/assemblies/new'),
-      'assemblies-list': adminUrl('products/assemblies'),
-      'offers': adminUrl('products/offers'),
-      'categories': adminUrl('products/categories')
+      products: adminUrl('products/list'),
+      offers: adminUrl('products/offers'),
+      categories: adminUrl('products/categories'),
     };
 
-    if (routes[section]) {
-      this.router.navigate([routes[section]]);
-    }
+    this.router.navigate([routes[section]]);
   }
 
-  /**
-   * Editar un producto
-   */
-  editProduct(productId: string) {
+  goToStatus(status: CatalogStatusFilter): void {
+    this.router.navigate(
+      [adminUrl('products/list')],
+      { queryParams: { status } }
+    );
+  }
+
+  editProduct(productId: string): void {
     this.router.navigate([adminUrl('products'), productId, 'edit']);
   }
 
-  getCategoryLabel(category: Product['category']): string {
-    switch (category) {
-      case 'paquetes':
-        return 'Ensambles';
-      case 'perifericos':
-        return 'Perifericos';
-      case 'componentes':
-      default:
-        return 'Hardware y accesorios';
-    }
+  getCategoryLabel(product: Product): string {
+    return getAdminProductCategoryLabel(product, this.categories);
   }
 
   getStockLabel(product: Product): string {
@@ -103,5 +77,36 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
     }
 
     return `${product.stock} en stock`;
+  }
+
+  private loadDashboardData(): void {
+    this.productsAdminService
+      .getAllCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.categories = [];
+        },
+      });
+
+    this.productsAdminService
+      .getCatalogDashboardStats('products')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((stats) => {
+        this.stats = stats;
+        this.cdr.detectChanges();
+      });
+
+    this.productsAdminService
+      .getRecentCatalogItems('products', 5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((products) => {
+        this.recentProducts = products;
+        this.cdr.detectChanges();
+      });
   }
 }

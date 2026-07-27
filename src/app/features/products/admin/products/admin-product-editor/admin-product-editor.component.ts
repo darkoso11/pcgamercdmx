@@ -36,6 +36,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   successMessage = '';
   errorMessage = '';
   productId: string | null = null;
+  private loadedCategory: Product['category'] | null = null;
   galleryImages: string[] = [];
   newGalleryImage = '';
   private selectedMainImageFile: File | null = null;
@@ -214,6 +215,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (product: any) => {
           if (product) {
+            this.loadedCategory = product.category || null;
             this.galleryImages = product.gallery || [];
             this.form.patchValue({
               productType: product.productType || '',
@@ -480,8 +482,11 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
         return 'perifericos';
       case 'componentes':
       case 'component':
-      default:
         return 'componentes';
+      default:
+        return this.isEditMode && this.loadedCategory
+          ? this.loadedCategory
+          : 'componentes';
     }
   }
 

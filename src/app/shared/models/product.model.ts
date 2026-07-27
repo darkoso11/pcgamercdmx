@@ -165,6 +165,8 @@ export interface BaseProduct {
   // Pricing
   price: number;                    // Precio base en MXN
   discountedPrice?: number;         // Precio con descuento
+  offerBadgeVisible?: boolean;      // Mostrar etiqueta de oferta efectiva
+  activeOfferId?: string;           // Oferta efectiva resuelta
   discount?: ProductDiscount;       // Información de descuento
   currency: string;                 // "MXN" (solo MXN por ahora)
 

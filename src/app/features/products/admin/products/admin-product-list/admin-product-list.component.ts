@@ -1,12 +1,17 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
-import { ProductsAdminService, Product } from '../../shared/products-admin.service';
+import { Category, ProductsAdminService, Product } from '../../shared/products-admin.service';
+import { getAdminProductCategoryLabel } from '../../shared/admin-product-display.utils';
+import {
+  CatalogStatusFilter,
+  filterAndSortCatalogItems,
+} from '../../shared/admin-catalog-flow.utils';
 
 @Component({
   selector: 'app-admin-product-list',
@@ -19,10 +24,11 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   products: (Product & { selected?: boolean })[] = [];
   filteredProducts: (Product & { selected?: boolean })[] = [];
   paginatedProducts: (Product & { selected?: boolean })[] = [];
+  categories: Category[] = [];
 
   searchTerm = '';
   selectedCategory = '';
-  selectedStatus = '';
+  selectedStatus: CatalogStatusFilter = 'all';
   selectAll = false;
 
   currentPage = 0;
@@ -35,8 +41,11 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   constructor(
     private productsAdminService: ProductsAdminService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {
+    this.selectedStatus = asCatalogStatusFilter(this.route.snapshot.queryParamMap.get('status'));
+
     // Debounce búsqueda
     this.searchSubject$
       .pipe(
@@ -50,7 +59,23 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadProducts();
+  }
+
+  loadCategories(): void {
+    this.productsAdminService
+      .getAllCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.categories = [];
+        },
+      });
   }
 
   loadProducts(): void {
@@ -59,7 +84,8 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: any) => {
         const productsData = Array.isArray(response) ? response : (response.data || []);
-        this.products = productsData.map((p: any) => ({ ...p, selected: false }));
+        this.products = filterAndSortCatalogItems(productsData, 'products', 'all')
+          .map((product) => ({ ...product, selected: false }));
         this.filterProducts();
         this.cdr.detectChanges();
       });
@@ -73,7 +99,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     this.currentPage = 0;
     this.selectAll = false;
 
-    this.filteredProducts = this.products.filter((product) => {
+    const textAndCategoryMatches = this.products.filter((product) => {
       const matchesSearch =
         this.searchTerm === '' ||
         product.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -83,17 +109,16 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       const matchesCategory =
         this.selectedCategory === '' || product.category === this.selectedCategory;
 
-      const matchesStatus =
-        this.selectedStatus === '' ||
-        (this.selectedStatus === 'published' && product.published) ||
-        (this.selectedStatus === 'private' && !product.published) ||
-        (this.selectedStatus === 'out-of-stock' && product.stock <= 0) ||
-        (this.selectedStatus === 'low-stock' && product.stock > 0 && product.stock <= product.lowStockAlert);
-
-      return matchesSearch && matchesCategory && matchesStatus;
+      return matchesSearch && matchesCategory;
     });
 
-    this.totalPages = Math.ceil(this.filteredProducts.length / this.pageSize);
+    this.filteredProducts = filterAndSortCatalogItems(
+      textAndCategoryMatches,
+      'products',
+      this.selectedStatus
+    ) as (Product & { selected?: boolean })[];
+
+    this.totalPages = Math.max(1, Math.ceil(this.filteredProducts.length / this.pageSize));
     this.updatePagination();
     this.cdr.detectChanges();
   }
@@ -127,7 +152,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCategory = '';
-    this.selectedStatus = '';
+    this.selectedStatus = 'all';
     this.filterProducts();
   }
 
@@ -171,16 +196,8 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     }).format(price);
   }
 
-  getCategoryLabel(category: Product['category']): string {
-    switch (category) {
-      case 'paquetes':
-        return 'Ensambles';
-      case 'perifericos':
-        return 'Perifericos';
-      case 'componentes':
-      default:
-        return 'Hardware y accesorios';
-    }
+  getCategoryLabel(product: Product): string {
+    return getAdminProductCategoryLabel(product, this.categories);
   }
 
   getStockLabel(product: Product): string {
@@ -199,4 +216,18 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+}
+
+function asCatalogStatusFilter(value: string | null): CatalogStatusFilter {
+  const validStatuses: CatalogStatusFilter[] = [
+    'all',
+    'published',
+    'draft',
+    'low-stock',
+    'out-of-stock',
+  ];
+
+  return validStatuses.includes(value as CatalogStatusFilter)
+    ? value as CatalogStatusFilter
+    : 'all';
 }

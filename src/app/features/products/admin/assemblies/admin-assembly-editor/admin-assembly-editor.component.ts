@@ -6,7 +6,10 @@ import { Subject } from 'rxjs';
 import { finalize, switchMap, takeUntil, timeout } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
-import { ProductsAdminService } from '../../shared/products-admin.service';
+import {
+  PowerCertification,
+  ProductsAdminService,
+} from '../../shared/products-admin.service';
 import {
   getCatalogSaveErrorMessage,
   isSupportedCatalogImageFile,
@@ -26,7 +29,7 @@ interface AssemblyBrandLogo {
   templateUrl: './admin-assembly-editor.component.html'
 })
 export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
-  readonly adminProductsUrl = adminUrl('products');
+  readonly adminAssembliesUrl = adminUrl('assemblies');
   readonly brandOptions: ReadonlyArray<AssemblyBrandLogo> = [
     { src: 'assets/img/marcas/nvidia_tag.svg', alt: 'NVIDIA' },
     { src: 'assets/img/marcas/intel_tag.svg', alt: 'Intel' },
@@ -43,8 +46,14 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   productId: string | null = null;
   galleryImages: string[] = [];
   newGalleryImage = '';
+  powerCertifications: PowerCertification[] = [];
+  showCertificationCreator = false;
+  newCertificationName = '';
+  newCertificationImagePreview = '';
+  savingCertification = false;
   private selectedMainImageFile: File | null = null;
   private selectedGalleryImageFiles = new Map<string, File>();
+  private selectedCertificationImageFile: File | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -73,6 +82,8 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       ram: ['', Validators.required],
       nvmeSsd: ['', Validators.required],
       powerSupply: ['', Validators.required],
+      watts: [0, [Validators.required, Validators.min(1)]],
+      powerCertificationId: ['', Validators.required],
       cooling: ['', Validators.required],
       case: ['', Validators.required],
       operatingSystem: [''],
@@ -82,8 +93,6 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
 
       // Sección 4: Precios
       price: [0, [Validators.required, Validators.min(0)]],
-      discountPrice: [0],
-      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       currency: ['MXN'],
 
       // Sección 5: Stock
@@ -95,12 +104,12 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       gallery: [[]],
 
       // Sección 7: Publicación
-      published: [false],
       featured: [false]
     });
   }
 
   ngOnInit(): void {
+    this.loadPowerCertifications();
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
@@ -130,19 +139,18 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
               ram: assembly.ram || '',
               nvmeSsd: assembly.nvmeSsd || '',
               powerSupply: assembly.powerSupply || '',
+              watts: assembly.watts || 0,
+              powerCertificationId: assembly.powerCertificationId || '',
               cooling: assembly.cooling || '',
               case: assembly.case || '',
               operatingSystem: assembly.operatingSystem || '',
               brandLogos: this.normalizeBrandLogos(assembly.brandLogos),
               price: assembly.price,
-              discountPrice: assembly.discountPrice || 0,
-              discountPercent: assembly.discountPercent || 0,
               currency: assembly.currency || 'MXN',
               stock: assembly.stock,
               sku: assembly.sku || '',
               image: assembly.image,
               gallery: assembly.gallery || [],
-              published: assembly.published || false,
               featured: assembly.featured || false
             });
           }
@@ -169,6 +177,13 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   saveAssembly(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.errorMessage = 'Completa los campos obligatorios antes de publicar el ensamble.';
+      this.focusFirstInvalidControl();
+      return;
+    }
+
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -204,7 +219,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
           : 'Ensamble creado y publicado correctamente';
         this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate([this.adminProductsUrl]);
+          this.router.navigate([this.adminAssembliesUrl]);
         }, 1500);
       },
       error: (err: any) => {
@@ -253,7 +268,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         this.successMessage = 'Ensamble guardado como borrador';
         this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate([this.adminProductsUrl]);
+          this.router.navigate([this.adminAssembliesUrl]);
         }, 1500);
       },
       error: (err: any) => {
@@ -321,6 +336,67 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  onCertificationImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!isSupportedCatalogImageFile(file)) {
+      this.errorMessage = 'Formato no permitido para la certificación. Usa JPG, JPEG, PNG, GIF o WebP.';
+      input.value = '';
+      return;
+    }
+
+    this.selectedCertificationImageFile = file;
+    const reader = new FileReader();
+    reader.onload = (loadEvent) => {
+      this.newCertificationImagePreview = String(loadEvent.target?.result ?? '');
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  saveNewCertification(): void {
+    const name = this.newCertificationName.trim();
+    if (!name || !this.selectedCertificationImageFile) {
+      this.errorMessage = 'Escribe el nombre y selecciona la imagen de la certificación.';
+      return;
+    }
+
+    this.savingCertification = true;
+    this.errorMessage = '';
+    this.productsAdminService
+      .createPowerCertification(name, this.selectedCertificationImageFile)
+      .pipe(
+        finalize(() => {
+          this.savingCertification = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (certification) => {
+          this.powerCertifications = [
+            ...this.powerCertifications.filter((item) => item._id !== certification._id),
+            certification,
+          ].sort((left, right) => left.sort - right.sort || left.name.localeCompare(right.name));
+          this.form.get('powerCertificationId')?.setValue(certification._id ?? '');
+          this.form.get('powerCertificationId')?.markAsDirty();
+          this.cancelCertificationCreator();
+        },
+        error: () => {
+          this.errorMessage = 'No se pudo registrar la certificación. El ensamble conserva sus datos.';
+        },
+      });
+  }
+
+  cancelCertificationCreator(): void {
+    this.showCertificationCreator = false;
+    this.newCertificationName = '';
+    this.newCertificationImagePreview = '';
+    this.selectedCertificationImageFile = null;
+  }
+
   removeGalleryImage(index: number): void {
     const removedImage = this.galleryImages[index];
     if (removedImage) {
@@ -374,18 +450,27 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     const title = asTrimmedText(rawValue.title) || fallbackName;
     const slug = normalizeCatalogSlug(asTrimmedText(rawValue.slug) || title) || `ensamble-${Date.now()}`;
 
+    const selectedCertification = this.powerCertifications.find(
+      (certification) => certification._id === rawValue.powerCertificationId
+    );
+
     return {
       ...rawValue,
       title,
       slug,
       description: asTrimmedText(rawValue.description),
-      category: asTrimmedText(rawValue.category) || 'Ensambles de Computadoras',
+      category: 'paquetes',
       processor: asTrimmedText(rawValue.processor),
       motherboard: asTrimmedText(rawValue.motherboard),
       graphicsCard: asTrimmedText(rawValue.graphicsCard),
       ram: asTrimmedText(rawValue.ram),
       nvmeSsd: asTrimmedText(rawValue.nvmeSsd),
       powerSupply: asTrimmedText(rawValue.powerSupply),
+      watts: Number(rawValue.watts) || 0,
+      powerCertificationId: asTrimmedText(rawValue.powerCertificationId),
+      powerCertificate: selectedCertification?.name ?? '',
+      powerCertificateImage: selectedCertification?.image ?? '',
+      operatingSystem: asTrimmedText(rawValue.operatingSystem),
       cooling: asTrimmedText(rawValue.cooling),
       case: asTrimmedText(rawValue.case),
       brandLogos: this.normalizeBrandLogos(rawValue.brandLogos),
@@ -393,6 +478,36 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       published,
       gallery: this.galleryImages,
     };
+  }
+
+  private loadPowerCertifications(): void {
+    this.productsAdminService
+      .getPowerCertifications()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (certifications) => {
+          this.powerCertifications = certifications;
+          const currentId = asTrimmedText(this.form.get('powerCertificationId')?.value);
+          if (!currentId && certifications.length === 1) {
+            this.form.get('powerCertificationId')?.setValue(certifications[0]._id ?? '');
+          }
+        },
+        error: () => {
+          this.errorMessage = 'No se pudo cargar la biblioteca de certificaciones.';
+        },
+      });
+  }
+
+  private focusFirstInvalidControl(): void {
+    const firstInvalidName = Object.keys(this.form.controls).find(
+      (controlName) => this.form.get(controlName)?.invalid
+    );
+    if (!firstInvalidName || typeof document === 'undefined') return;
+
+    setTimeout(() => {
+      const element = document.querySelector<HTMLElement>(`[formControlName="${firstInvalidName}"]`);
+      element?.focus();
+    });
   }
 
   private normalizeBrandLogos(value: unknown): AssemblyBrandLogo[] {

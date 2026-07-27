@@ -15,6 +15,13 @@ import {
   slugify,
 } from '../../../../core/services/directus-content.mapper';
 import { ProductCategory } from '../../../../shared/models';
+import {
+  calculateCatalogMetrics,
+  CatalogDomain,
+  CatalogMetrics,
+  filterAndSortCatalogItems,
+  getOfferDomain,
+} from './admin-catalog-flow.utils';
 
 export interface Product {
   _id?: string;
@@ -48,6 +55,7 @@ export interface Product {
   nvmeSsd?: string;
   graphicsCard?: string;
   powerSupply?: string;
+  operatingSystem?: string;
   caseModel?: string;
   case?: string;
   cooling?: string;
@@ -55,6 +63,8 @@ export interface Product {
   images: string[];
   gallery?: string[];
   powerCertificate?: string;
+  powerCertificationId?: string;
+  powerCertificateImage?: string;
   watts?: number;
   brandLogos: Array<{ src: string; alt: string }>;
   stock: number;
@@ -105,6 +115,7 @@ export interface Offer {
   _id?: string;
   title: string;
   description: string;
+  catalogDomain?: CatalogDomain;
   type: 'percentage' | 'fixed' | 'bundle' | 'category';
   discountValue: number;
   applicableTo: {
@@ -115,8 +126,48 @@ export interface Offer {
   startDate: Date;
   endDate: Date;
   active: boolean;
+  showBadge?: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface DirectusOfferRecord {
+  id?: string | number;
+  title?: string;
+  description?: string;
+  catalog_domain?: CatalogDomain;
+  discount_type?: Offer['type'];
+  discount_value?: number | string;
+  applicable_products?: unknown;
+  applicable_assemblies?: unknown;
+  applicable_categories?: unknown;
+  starts_at?: string;
+  ends_at?: string;
+  active?: boolean;
+  show_badge?: boolean;
+  date_created?: string;
+  date_updated?: string;
+}
+
+export interface PowerCertification {
+  _id?: string;
+  name: string;
+  image: string;
+  imageFileId?: string;
+  active: boolean;
+  sort: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface DirectusPowerCertificationRecord {
+  id?: string | number;
+  name?: string;
+  image?: unknown;
+  active?: boolean;
+  sort?: number | string;
+  date_created?: string;
+  date_updated?: string;
 }
 
 export interface Subcategory {
@@ -150,6 +201,11 @@ export interface AdminDashboardStats {
   activeOffers: number;
 }
 
+export interface CatalogDashboardStats extends CatalogMetrics {
+  totalOffers: number;
+  activeOffers: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -157,6 +213,8 @@ export class ProductsAdminService {
   private readonly productsCollection = 'pc_products';
   private readonly categoriesCollection = 'pc_categories';
   private readonly subcategoriesCollection = 'pc_subcategories';
+  private readonly offersCollection = 'pc_offers';
+  private readonly powerCertificationsCollection = 'pc_power_certifications';
 
   private mockPackages: Package[] = [];
   private mockOffers: Offer[] = [];
@@ -178,7 +236,7 @@ export class ProductsAdminService {
     },
     {
       _id: '2',
-      name: 'Hardware y accesorios',
+      name: 'Componentes',
       slug: 'componentes',
       description: 'Partes, cables, adaptadores y accesorios para PC',
       icon: 'fa-microchip',
@@ -362,16 +420,50 @@ export class ProductsAdminService {
   }
 
   getAllOffers(includeInactive?: boolean): Observable<Offer[]> {
-    return of(includeInactive ? this.mockOffers : this.mockOffers.filter((offer) => offer.active));
+    if (!this.usesDirectus()) {
+      return of(includeInactive ? this.mockOffers : this.mockOffers.filter((offer) => offer.active));
+    }
+
+    return this.directus
+      .readItems<DirectusOfferRecord>(
+        this.offersCollection,
+        { fields: '*', sort: '-date_updated,title', limit: 1000 },
+        { auth: true }
+      )
+      .pipe(
+        map((response) => response.data.map((record) => this.mapDirectusOffer(record))),
+        map((offers) => includeInactive ? offers : offers.filter((offer) => offer.active))
+      );
   }
 
   createOffer(offer: Omit<Offer, '_id' | 'createdAt' | 'updatedAt'>): Observable<Offer> {
+    if (this.usesDirectus()) {
+      return this.directus
+        .createItem<DirectusOfferRecord>(
+          this.offersCollection,
+          this.mapOfferToDirectusPayload(offer),
+          { auth: true }
+        )
+        .pipe(map((response) => this.mapDirectusOffer(response.data)));
+    }
+
     const newOffer: Offer = { ...offer, _id: Date.now().toString(), createdAt: new Date(), updatedAt: new Date() };
     this.mockOffers.push(newOffer);
     return of(newOffer);
   }
 
   updateOffer(id: string, offer: Partial<Offer>): Observable<Offer | undefined> {
+    if (this.usesDirectus()) {
+      return this.directus
+        .updateItem<DirectusOfferRecord>(
+          this.offersCollection,
+          id,
+          this.mapOfferPatchToDirectusPayload(offer),
+          { auth: true }
+        )
+        .pipe(map((response) => this.mapDirectusOffer(response.data)));
+    }
+
     const index = this.mockOffers.findIndex((item) => item._id === id);
     if (index === -1) {
       return of(undefined);
@@ -390,6 +482,17 @@ export class ProductsAdminService {
   }
 
   activateOffer(id: string): Observable<void> {
+    if (this.usesDirectus()) {
+      return this.directus
+        .updateItem<DirectusOfferRecord>(
+          this.offersCollection,
+          id,
+          { active: true },
+          { auth: true }
+        )
+        .pipe(map(() => undefined));
+    }
+
     const offer = this.mockOffers.find((item) => item._id === id);
     if (offer) {
       offer.active = true;
@@ -398,11 +501,85 @@ export class ProductsAdminService {
   }
 
   deactivateOffer(id: string): Observable<void> {
+    if (this.usesDirectus()) {
+      return this.directus
+        .updateItem<DirectusOfferRecord>(
+          this.offersCollection,
+          id,
+          { active: false },
+          { auth: true }
+        )
+        .pipe(map(() => undefined));
+    }
+
     const offer = this.mockOffers.find((item) => item._id === id);
     if (offer) {
       offer.active = false;
     }
     return of(undefined);
+  }
+
+  getPowerCertifications(includeInactive = false): Observable<PowerCertification[]> {
+    if (!this.usesDirectus()) {
+      const certifications: PowerCertification[] = [
+        {
+          _id: 'legacy-bronze',
+          name: '80 Plus Bronze',
+          image: 'assets/img/certificaciones/80_Plus_Bronze.svg.png',
+          active: true,
+          sort: 1,
+        },
+        {
+          _id: 'legacy-gold',
+          name: '80 Plus Gold',
+          image: 'assets/img/certificaciones/80plusgold.png',
+          active: true,
+          sort: 2,
+        },
+      ];
+      return of(includeInactive ? certifications : certifications.filter((item) => item.active));
+    }
+
+    return this.directus
+      .readItems<DirectusPowerCertificationRecord>(
+        this.powerCertificationsCollection,
+        { fields: '*', sort: 'sort,name', limit: 200 },
+        { auth: true }
+      )
+      .pipe(
+        map((response) => response.data.map((record) => this.mapDirectusPowerCertification(record))),
+        map((items) => includeInactive ? items : items.filter((item) => item.active))
+      );
+  }
+
+  createPowerCertification(name: string, file: File): Observable<PowerCertification> {
+    const normalizedName = name.trim();
+
+    if (!this.usesDirectus()) {
+      return of({
+        _id: `certification-${Date.now()}`,
+        name: normalizedName,
+        image: `https://via.placeholder.com/160?text=${encodeURIComponent(normalizedName)}`,
+        active: true,
+        sort: 0,
+      });
+    }
+
+    return this.directus.uploadFile(file, normalizedName, { auth: true }).pipe(
+      switchMap((uploadResponse) =>
+        this.directus.createItem<DirectusPowerCertificationRecord>(
+          this.powerCertificationsCollection,
+          {
+            name: normalizedName,
+            image: uploadResponse.data.id,
+            active: true,
+            sort: 0,
+          },
+          { auth: true }
+        )
+      ),
+      map((response) => this.mapDirectusPowerCertification(response.data))
+    );
   }
 
   getActiveOffers(): Observable<Offer[]> {
@@ -643,6 +820,45 @@ export class ProductsAdminService {
     );
   }
 
+  getCatalogDashboardStats(domain: CatalogDomain): Observable<CatalogDashboardStats> {
+    return forkJoin({
+      products: this.getAllProducts(),
+      offers: this.getAllOffers(true),
+    }).pipe(
+      map(({ products, offers }) => {
+        const scopedOffers = offers.filter((offer) => getOfferDomain(offer) === domain);
+
+        return {
+          ...calculateCatalogMetrics(products.data, domain),
+          totalOffers: scopedOffers.length,
+          activeOffers: scopedOffers.filter((offer) => offer.active).length,
+        };
+      })
+    );
+  }
+
+  getRecentCatalogItems(domain: CatalogDomain, limit: number = 10): Observable<Product[]> {
+    return this.getAllProducts().pipe(
+      map((response) => filterAndSortCatalogItems(response.data, domain, 'all').slice(0, limit))
+    );
+  }
+
+  getCategoriesByDomain(domain: CatalogDomain): Observable<Category[]> {
+    const ownedSlugs = domain === 'assemblies'
+      ? new Set(['ensambles'])
+      : new Set(['componentes', 'perifericos']);
+
+    return this.getAllCategories().pipe(
+      map((categories) => categories.filter((category) => ownedSlugs.has(category.slug)))
+    );
+  }
+
+  getOffersByDomain(domain: CatalogDomain, includeInactive = true): Observable<Offer[]> {
+    return this.getAllOffers(includeInactive).pipe(
+      map((offers) => offers.filter((offer) => getOfferDomain(offer) === domain))
+    );
+  }
+
   getRecentProducts(limit: number = 10): Observable<Product[]> {
     return this.getAllProducts().pipe(
       map((response) => response.data.filter((product) => product.category !== 'paquetes').slice(0, limit))
@@ -659,6 +875,113 @@ export class ProductsAdminService {
 
   private usesDirectus(): boolean {
     return this.directus.isEnabled('catalog');
+  }
+
+  private mapDirectusOffer(record: DirectusOfferRecord): Offer {
+    return {
+      _id: record.id === undefined ? undefined : String(record.id),
+      title: String(record.title ?? ''),
+      description: String(record.description ?? ''),
+      catalogDomain: record.catalog_domain,
+      type: record.discount_type ?? 'percentage',
+      discountValue: Number(record.discount_value) || 0,
+      applicableTo: {
+        products: this.normalizeIds(record.applicable_products),
+        packages: this.normalizeIds(record.applicable_assemblies),
+        categories: this.normalizeIds(record.applicable_categories),
+      },
+      startDate: new Date(record.starts_at ?? Date.now()),
+      endDate: new Date(record.ends_at ?? Date.now()),
+      active: Boolean(record.active),
+      showBadge: record.show_badge !== false,
+      createdAt: new Date(record.date_created ?? Date.now()),
+      updatedAt: new Date(record.date_updated ?? record.date_created ?? Date.now()),
+    };
+  }
+
+  private mapOfferToDirectusPayload(
+    offer: Omit<Offer, '_id' | 'createdAt' | 'updatedAt'> | Partial<Offer>
+  ): Record<string, unknown> {
+    return {
+      title: offer.title ?? '',
+      description: offer.description ?? '',
+      catalog_domain: offer.catalogDomain ?? getOfferDomain(offer as Offer),
+      discount_type: offer.type ?? 'percentage',
+      discount_value: Number(offer.discountValue) || 0,
+      applicable_products: offer.applicableTo?.products ?? [],
+      applicable_assemblies: offer.applicableTo?.packages ?? [],
+      applicable_categories: offer.applicableTo?.categories ?? [],
+      starts_at: offer.startDate ? new Date(offer.startDate).toISOString() : null,
+      ends_at: offer.endDate ? new Date(offer.endDate).toISOString() : null,
+      active: Boolean(offer.active),
+      show_badge: offer.showBadge !== false,
+    };
+  }
+
+  private mapOfferPatchToDirectusPayload(offer: Partial<Offer>): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+    if (offer.title !== undefined) payload['title'] = offer.title;
+    if (offer.description !== undefined) payload['description'] = offer.description;
+    if (offer.catalogDomain !== undefined) payload['catalog_domain'] = offer.catalogDomain;
+    if (offer.type !== undefined) payload['discount_type'] = offer.type;
+    if (offer.discountValue !== undefined) payload['discount_value'] = Number(offer.discountValue) || 0;
+    if (offer.applicableTo?.products !== undefined) payload['applicable_products'] = offer.applicableTo.products;
+    if (offer.applicableTo?.packages !== undefined) payload['applicable_assemblies'] = offer.applicableTo.packages;
+    if (offer.applicableTo?.categories !== undefined) payload['applicable_categories'] = offer.applicableTo.categories;
+    if (offer.startDate !== undefined) payload['starts_at'] = new Date(offer.startDate).toISOString();
+    if (offer.endDate !== undefined) payload['ends_at'] = new Date(offer.endDate).toISOString();
+    if (offer.active !== undefined) payload['active'] = offer.active;
+    if (offer.showBadge !== undefined) payload['show_badge'] = offer.showBadge;
+    return payload;
+  }
+
+  private mapDirectusPowerCertification(
+    record: DirectusPowerCertificationRecord
+  ): PowerCertification {
+    const imageFileId = this.extractDirectusFileId(record.image);
+    const rawImage = typeof record.image === 'string' ? record.image : '';
+    const image = imageFileId
+      ? this.directus.assetUrl(imageFileId)
+      : rawImage;
+
+    return {
+      _id: record.id === undefined ? undefined : String(record.id),
+      name: String(record.name ?? ''),
+      image,
+      imageFileId: imageFileId || undefined,
+      active: record.active !== false,
+      sort: Number(record.sort) || 0,
+      createdAt: record.date_created ? new Date(record.date_created) : undefined,
+      updatedAt: record.date_updated ? new Date(record.date_updated) : undefined,
+    };
+  }
+
+  private extractDirectusFileId(value: unknown): string {
+    if (typeof value === 'string' || typeof value === 'number') {
+      const normalized = String(value);
+      return /^(?:https?:|assets\/)/.test(normalized) ? '' : normalized;
+    }
+    if (typeof value === 'object' && value !== null) {
+      const record = value as Record<string, unknown>;
+      return String(record['id'] ?? '');
+    }
+    return '';
+  }
+
+  private normalizeIds(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((item) => {
+        if (typeof item === 'object' && item !== null) {
+          const record = item as Record<string, unknown>;
+          return String(record['pc_products_id'] ?? record['product_id'] ?? record['id'] ?? '');
+        }
+        return String(item ?? '');
+      })
+      .filter(Boolean);
   }
 
   private loadDirectusProductsWithFallback(): Observable<Product[]> {
