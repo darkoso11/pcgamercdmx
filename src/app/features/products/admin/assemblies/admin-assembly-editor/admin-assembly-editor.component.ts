@@ -459,7 +459,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       title,
       slug,
       description: asTrimmedText(rawValue.description),
-      category: asTrimmedText(rawValue.category) || 'Ensambles de Computadoras',
+      category: 'paquetes',
       processor: asTrimmedText(rawValue.processor),
       motherboard: asTrimmedText(rawValue.motherboard),
       graphicsCard: asTrimmedText(rawValue.graphicsCard),

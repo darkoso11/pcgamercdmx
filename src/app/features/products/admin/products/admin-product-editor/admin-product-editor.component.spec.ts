@@ -102,6 +102,35 @@ describe('AdminProductEditorComponent', () => {
     expect(component.form.get('subcategoryId')?.value).toBe('3-1');
   });
 
+  it('keeps the original category when editing before categories have loaded', () => {
+    const { component, productsAdminService } = createComponent();
+    component.isEditMode = true;
+    component.productId = '871';
+    component.categorias = [];
+    productsAdminService.getProductById.and.returnValue(of({
+      category: 'paquetes',
+      productType: 'gabinete',
+      brand: 'Otro',
+      categoryId: '1',
+      subcategoryId: '1',
+      title: 'CAPSULA',
+      slug: 'capsula',
+      description: 'Ensamble personalizado CAPSULA',
+      price: 4203,
+      stock: 1,
+      image: 'capsula.png',
+      published: true,
+    }));
+
+    component.cargarProducto('871');
+    component.saveProduct();
+
+    const payload = productsAdminService.updateProduct.calls.mostRecent().args[1];
+    expect(payload.category).toBe('paquetes');
+    expect(payload.categoryId).toBe('1');
+    expect(payload.subcategoryId).toBe('1');
+  });
+
   it('refreshes subcategories after categories load for an existing product', () => {
     const { component, productsAdminService } = createComponent();
     component.form.patchValue({ categoryId: '3', subcategoryId: '3-1' }, { emitEvent: false });

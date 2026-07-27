@@ -5,10 +5,12 @@ import { Subject, takeUntil } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { CatalogStatusFilter } from '../../shared/admin-catalog-flow.utils';
 import {
+  Category,
   CatalogDashboardStats,
   Product,
   ProductsAdminService,
 } from '../../shared/products-admin.service';
+import { getAdminProductCategoryLabel } from '../../shared/admin-product-display.utils';
 
 @Component({
   selector: 'app-admin-products-dashboard',
@@ -20,6 +22,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   readonly adminHomeUrl = adminUrl();
   stats: CatalogDashboardStats | null = null;
   recentProducts: Product[] = [];
+  categories: Category[] = [];
 
   private readonly destroy$ = new Subject<void>();
 
@@ -60,8 +63,8 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate([adminUrl('products'), productId, 'edit']);
   }
 
-  getCategoryLabel(category: Product['category']): string {
-    return category === 'perifericos' ? 'Perifericos' : 'Hardware y accesorios';
+  getCategoryLabel(product: Product): string {
+    return getAdminProductCategoryLabel(product, this.categories);
   }
 
   getStockLabel(product: Product): string {
@@ -77,6 +80,19 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadDashboardData(): void {
+    this.productsAdminService
+      .getAllCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.categories = [];
+        },
+      });
+
     this.productsAdminService
       .getCatalogDashboardStats('products')
       .pipe(takeUntil(this.destroy$))

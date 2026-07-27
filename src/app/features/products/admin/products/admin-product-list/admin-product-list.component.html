@@ -1,5 +1,5 @@
 <app-admin-header></app-admin-header>
-<div class="min-h-screen bg-[#071029] text-white">
+<div class="min-h-screen pc-bg-page text-white">
   <div class="max-w-7xl mx-auto px-6 py-8">
     <!-- Encabezado -->
     <div class="flex items-center justify-between mb-8">
@@ -12,12 +12,13 @@
     </div>
 
     <!-- Barra de Búsqueda y Filtros -->
-    <div class="bg-[#0b1220] border border-white/10 rounded-lg p-6 mb-8">
+    <div class="pc-panel border border-white/10 rounded-lg p-6 mb-8">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Búsqueda -->
         <div>
-          <label class="block text-sm text-gray-400 mb-2">Buscar Producto</label>
+          <label for="product-search" class="block text-sm text-gray-400 mb-2">Buscar Producto</label>
           <input
+            id="product-search"
             [(ngModel)]="searchTerm"
             (ngModelChange)="onSearchChange()"
             type="text"
@@ -28,22 +29,24 @@
 
         <!-- Filtro por Categoría -->
         <div>
-          <label class="block text-sm text-gray-400 mb-2">Categoría</label>
+          <label for="product-category-filter" class="block text-sm text-gray-400 mb-2">Categoría</label>
           <select
+            id="product-category-filter"
             [(ngModel)]="selectedCategory"
             (ngModelChange)="filterProducts()"
             class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
           >
             <option value="">Todas las categorías</option>
-            <option value="componentes">Hardware y accesorios</option>
+            <option value="componentes">Componentes</option>
             <option value="perifericos">Periféricos</option>
           </select>
         </div>
 
         <!-- Filtro por Estado -->
         <div>
-          <label class="block text-sm text-gray-400 mb-2">Estado</label>
+          <label for="product-status-filter" class="block text-sm text-gray-400 mb-2">Estado</label>
           <select
+            id="product-status-filter"
             [(ngModel)]="selectedStatus"
             (ngModelChange)="filterProducts()"
             class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
@@ -75,7 +78,7 @@
     </div>
 
     <!-- Tabla de Productos -->
-    <div class="bg-[#0b1220] border border-white/10 rounded-lg overflow-hidden">
+    <div class="pc-panel border border-white/10 rounded-lg overflow-hidden">
       <div *ngIf="filteredProducts.length > 0; else noProducts">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
@@ -87,6 +90,7 @@
                     [(ngModel)]="selectAll"
                     (ngModelChange)="toggleSelectAll()"
                     class="w-4 h-4 cursor-pointer"
+                    aria-label="Seleccionar todos los productos de esta página"
                   />
                 </th>
                 <th class="px-4 py-3 text-gray-400 font-semibold">Producto</th>
@@ -107,6 +111,7 @@
                     type="checkbox"
                     [(ngModel)]="product.selected"
                     class="w-4 h-4 cursor-pointer"
+                    [attr.aria-label]="'Seleccionar ' + product.title"
                   />
                 </td>
                 <td class="px-4 py-3">
@@ -130,13 +135,14 @@
                     {{ product.published ? 'Publicado' : 'Borrador' }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-gray-300">{{ getCategoryLabel(product.category) }}</td>
+                <td class="px-4 py-3 text-gray-300">{{ getCategoryLabel(product) }}</td>
                 <td class="px-4 py-3 text-center">
                   <div class="flex gap-2 justify-center">
                     <button
                       (click)="editProduct(product._id!)"
                       class="text-cyan-400 hover:text-cyan-300 transition"
                       title="Editar"
+                      [attr.aria-label]="'Editar ' + product.title"
                     >
                       <i class="fas fa-edit"></i>
                     </button>
@@ -144,6 +150,7 @@
                       (click)="duplicateProduct(product._id!)"
                       class="text-yellow-400 hover:text-yellow-300 transition"
                       title="Duplicar"
+                      [attr.aria-label]="'Duplicar ' + product.title"
                     >
                       <i class="fas fa-copy"></i>
                     </button>
@@ -151,6 +158,7 @@
                       (click)="deleteProduct(product._id!)"
                       class="text-red-400 hover:text-red-300 transition"
                       title="Eliminar"
+                      [attr.aria-label]="'Eliminar ' + product.title"
                     >
                       <i class="fas fa-trash"></i>
                     </button>

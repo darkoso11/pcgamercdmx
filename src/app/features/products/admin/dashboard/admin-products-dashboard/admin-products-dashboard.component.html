@@ -1,5 +1,5 @@
-<div class="min-h-screen bg-[#071029] text-white">
-  <header class="sticky top-0 z-40 border-b border-cyan-400/30 bg-[#0b1220]/95 px-6 py-4 backdrop-blur">
+<div class="min-h-screen pc-bg-page text-white">
+  <header class="sticky top-0 z-40 border-b border-cyan-400/30 pc-panel px-6 py-4 backdrop-blur">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4">
       <div>
         <p class="text-xs uppercase tracking-[0.22em] text-cyan-300">Catalogo de productos</p>
@@ -124,11 +124,11 @@
           <tbody>
             <tr *ngFor="let product of recentProducts" class="border-t border-white/10 transition hover:bg-white/[0.04]">
               <td class="px-6 py-4"><strong class="block">{{ product.title }}</strong><span class="text-xs text-slate-500">{{ product.slug }}</span></td>
-              <td class="px-6 py-4 text-slate-300">{{ getCategoryLabel(product.category) }}</td>
+              <td class="px-6 py-4 text-slate-300">{{ getCategoryLabel(product) }}</td>
               <td class="px-6 py-4 font-bold text-cyan-300">${{ product.price | number }}</td>
               <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-bold" [ngClass]="product.stock <= 0 ? 'bg-red-500/15 text-red-300' : (product.stock <= product.lowStockAlert ? 'bg-orange-500/15 text-orange-300' : 'bg-green-500/15 text-green-300')">{{ getStockLabel(product) }}</span></td>
               <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-bold" [ngClass]="product.published ? 'bg-green-500/15 text-green-300' : 'bg-amber-500/15 text-amber-300'">{{ product.published ? 'Publicado' : 'Borrador' }}</span></td>
-              <td class="px-6 py-4 text-right"><button type="button" (click)="editProduct(product._id!)" class="font-bold text-cyan-300 hover:text-cyan-100">Editar</button></td>
+              <td class="px-6 py-4 text-right"><button type="button" (click)="editProduct(product._id!)" class="min-h-11 rounded px-3 font-bold text-cyan-300 hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" [attr.aria-label]="'Editar ' + product.title">Editar</button></td>
             </tr>
           </tbody>
         </table>

@@ -6,7 +6,8 @@ import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
-import { ProductsAdminService, Product } from '../../shared/products-admin.service';
+import { Category, ProductsAdminService, Product } from '../../shared/products-admin.service';
+import { getAdminProductCategoryLabel } from '../../shared/admin-product-display.utils';
 import {
   CatalogStatusFilter,
   filterAndSortCatalogItems,
@@ -23,6 +24,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   products: (Product & { selected?: boolean })[] = [];
   filteredProducts: (Product & { selected?: boolean })[] = [];
   paginatedProducts: (Product & { selected?: boolean })[] = [];
+  categories: Category[] = [];
 
   searchTerm = '';
   selectedCategory = '';
@@ -57,7 +59,23 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadProducts();
+  }
+
+  loadCategories(): void {
+    this.productsAdminService
+      .getAllCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (categories) => {
+          this.categories = categories;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.categories = [];
+        },
+      });
   }
 
   loadProducts(): void {
@@ -178,16 +196,8 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     }).format(price);
   }
 
-  getCategoryLabel(category: Product['category']): string {
-    switch (category) {
-      case 'paquetes':
-        return 'Ensambles';
-      case 'perifericos':
-        return 'Perifericos';
-      case 'componentes':
-      default:
-        return 'Hardware y accesorios';
-    }
+  getCategoryLabel(product: Product): string {
+    return getAdminProductCategoryLabel(product, this.categories);
   }
 
   getStockLabel(product: Product): string {

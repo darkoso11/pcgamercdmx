@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { environment } from '../environments/environment';
 import { mockBackendProviders } from '../environments/mock-backend.providers';
 
 export const appConfig: ApplicationConfig = {
@@ -12,7 +13,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()),
-    provideClientHydration(withEventReplay()),
+    ...(environment.production ? [provideClientHydration(withEventReplay())] : []),
     ...mockBackendProviders
   ]
 };
