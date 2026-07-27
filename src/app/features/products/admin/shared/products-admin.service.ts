@@ -427,7 +427,7 @@ export class ProductsAdminService {
     return this.directus
       .readItems<DirectusOfferRecord>(
         this.offersCollection,
-        { fields: '*', sort: '-date_updated,title', limit: 1000 },
+        { fields: '*', sort: 'title', limit: 1000 },
         { auth: true }
       )
       .pipe(
