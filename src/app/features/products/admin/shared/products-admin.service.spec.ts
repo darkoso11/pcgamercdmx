@@ -163,7 +163,10 @@ describe('ProductsAdminService offer persistence', () => {
 
     expect(directus.readItems).toHaveBeenCalledWith(
       'pc_offers',
-      jasmine.objectContaining({ fields: '*' }),
+      jasmine.objectContaining({
+        fields: '*',
+        sort: 'title',
+      }),
       { auth: true }
     );
     expect(offers[0]).toEqual(jasmine.objectContaining({
