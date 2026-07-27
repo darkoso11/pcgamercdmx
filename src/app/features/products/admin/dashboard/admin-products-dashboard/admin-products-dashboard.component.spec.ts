@@ -5,31 +5,52 @@ import { AdminProductsDashboardComponent } from './admin-products-dashboard.comp
 describe('AdminProductsDashboardComponent', () => {
   function createComponent() {
     const productsAdminService = {
-      getDashboardStats: jasmine.createSpy('getDashboardStats').and.returnValue(of(null)),
-      getRecentProducts: jasmine.createSpy('getRecentProducts').and.returnValue(of([])),
+      getCatalogDashboardStats: jasmine.createSpy('getCatalogDashboardStats').and.returnValue(of({
+        total: 4,
+        published: 3,
+        draft: 1,
+        lowStock: 1,
+        outOfStock: 1,
+        totalOffers: 2,
+        activeOffers: 1,
+      })),
+      getRecentCatalogItems: jasmine.createSpy('getRecentCatalogItems').and.returnValue(of([])),
       getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
     };
     const router = { navigate: jasmine.createSpy('navigate') };
     const cdr = { detectChanges: jasmine.createSpy('detectChanges') };
-
     const component = new AdminProductsDashboardComponent(
       productsAdminService as any,
       router as any,
       cdr as any
     );
 
-    return { component, router };
+    return { component, productsAdminService, router };
   }
 
-  it('does not expose a separate package quick action', () => {
-    const { component, router } = createComponent();
+  it('loads only product dashboard data', () => {
+    const { component, productsAdminService } = createComponent();
 
-    component.goToSection('packages');
+    component.ngOnInit();
 
-    expect(router.navigate).not.toHaveBeenCalled();
+    expect(productsAdminService.getCatalogDashboardStats).toHaveBeenCalledOnceWith('products');
+    expect(productsAdminService.getRecentCatalogItems).toHaveBeenCalledOnceWith('products', 5);
+    expect(productsAdminService.getAllCategories).toHaveBeenCalled();
+    expect(component.stats?.draft).toBe(1);
   });
 
-  it('shows the selected subcategory on the dashboard', () => {
+  it('opens the product list with the selected metric filter', () => {
+    const { component, router } = createComponent();
+
+    component.goToStatus('draft');
+
+    expect(router.navigate).toHaveBeenCalledOnceWith(
+      [adminUrl('products/list')],
+      { queryParams: { status: 'draft' } }
+    );
+  });
+
+  it('shows the selected subcategory instead of a generic category label', () => {
     const { component } = createComponent();
     component.categories = [{
       _id: '2',
@@ -44,23 +65,5 @@ describe('AdminProductsDashboardComponent', () => {
       categoryId: '2',
       subcategoryId: '13',
     } as any)).toBe('Memorias RAM');
-  });
-
-  it('does not invent a hardware and accessories category', () => {
-    const { component } = createComponent();
-
-    expect(component.getCategoryLabel({ category: 'componentes' } as any)).toBe('Componentes');
-  });
-
-  it('routes an assembly from the dashboard to the assembly editor', () => {
-    const { component, router } = createComponent();
-
-    component.editProduct({ _id: '871', category: 'paquetes' } as any);
-
-    expect(router.navigate).toHaveBeenCalledWith([
-      adminUrl('products/assemblies'),
-      '871',
-      'edit',
-    ]);
   });
 });

@@ -442,8 +442,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       graphicsCard,
       slug: product.slug,
       brandLogos: this.getPackageBrandLogos(product),
-      powerCertificate: this.getPowerCertificateImage(product.certifications.certificate),
+      powerCertificate:
+        product.certifications.image ||
+        this.getPowerCertificateImage(product.certifications.certificate),
+      powerCertificateName: product.certifications.certificate,
       watts: product.certifications.wattage,
+      originalPrice: product.discountedPrice ? product.price : undefined,
+      showOfferBadge: Boolean(
+        product.discountedPrice && product.offerBadgeVisible
+      ),
       category: 'paquete',
       description: product.description,
     };

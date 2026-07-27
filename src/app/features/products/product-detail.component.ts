@@ -20,6 +20,7 @@ interface DetailViewModel {
   image: string;
   gallery: string[];
   price: number;
+  originalPrice?: number;
   priceLabel: string;
   categoryLabel: string;
   segmentLabel: string;
@@ -158,7 +159,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       description: product.fullDescription ?? product.description,
       image: product.image,
       gallery: product.images?.length ? product.images : [product.image],
-      price: product.price,
+      price: product.discountedPrice ?? product.price,
+      originalPrice: product.discountedPrice ? product.price : undefined,
       priceLabel:
         product.category === ProductCategory.ASSEMBLED
           ? 'Precio referencial'
@@ -265,9 +267,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       return undefined;
     }
 
-    return product.certifications.certificate === '80+ Bronze'
-      ? 'assets/img/certificaciones/80_Plus_Bronze.svg.png'
-      : 'assets/img/certificaciones/80plusgold.png';
+    return product.certifications.image ||
+      (product.certifications.certificate === '80+ Bronze'
+        ? 'assets/img/certificaciones/80_Plus_Bronze.svg.png'
+        : 'assets/img/certificaciones/80plusgold.png');
   }
 
   private buildCertificationText(product: CatalogProduct): string | undefined {

@@ -116,6 +116,11 @@ describe('Directus content mapper', () => {
       storage: '1TB NVMe',
       graphicsCard: 'RTX 4070',
       powerSupply: '750W Gold',
+      watts: 750,
+      powerCertificationId: 'cert-gold',
+      powerCertificate: '80 Plus Gold',
+      powerCertificateImage: 'https://cms.test/assets/gold',
+      operatingSystem: 'Windows 11 Pro',
       caseModel: 'Flow',
       cooling: 'Liquid 240',
     } as any);
@@ -124,6 +129,11 @@ describe('Directus content mapper', () => {
     expect(payload.subcategory).toBe(ProductCategory.ASSEMBLED);
     expect(payload.specifications['storage']).toBe('1TB NVMe');
     expect(payload.specifications['caseModel']).toBe('Flow');
+    expect(payload.specifications['watts']).toBe(750);
+    expect(payload.specifications['powerCertificationId']).toBe('cert-gold');
+    expect(payload.specifications['powerCertificate']).toBe('80 Plus Gold');
+    expect(payload.specifications['powerCertificateImage']).toBe('https://cms.test/assets/gold');
+    expect(payload.specifications['operatingSystem']).toBe('Windows 11 Pro');
   });
 
   it('maps Directus assembly storage and case aliases back to the assembly editor', () => {
@@ -138,6 +148,11 @@ describe('Directus content mapper', () => {
       specifications: {
         storage: '2TB NVMe',
         caseModel: 'O11 Dynamic',
+        watts: 850,
+        powerCertificationId: 'cert-platinum',
+        powerCertificate: '80 Plus Platinum',
+        powerCertificateImage: 'https://cms.test/assets/platinum',
+        operatingSystem: 'Windows 11 Pro',
       },
       stock: 1,
       published: false,
@@ -145,6 +160,11 @@ describe('Directus content mapper', () => {
 
     expect((product as any).nvmeSsd).toBe('2TB NVMe');
     expect((product as any).case).toBe('O11 Dynamic');
+    expect((product as any).watts).toBe(850);
+    expect((product as any).powerCertificationId).toBe('cert-platinum');
+    expect((product as any).powerCertificate).toBe('80 Plus Platinum');
+    expect((product as any).powerCertificateImage).toBe('https://cms.test/assets/platinum');
+    expect((product as any).operatingSystem).toBe('Windows 11 Pro');
   });
 
   it('maps Directus blog posts to articles and back', () => {

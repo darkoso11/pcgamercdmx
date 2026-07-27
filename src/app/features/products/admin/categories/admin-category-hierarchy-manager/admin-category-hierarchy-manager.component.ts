@@ -2,10 +2,12 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { ProductsAdminService, Category, Subcategory } from '../../shared/products-admin.service';
+import { CatalogDomain } from '../../shared/admin-catalog-flow.utils';
 
 @Component({
   selector: 'app-admin-category-hierarchy-manager',
@@ -15,6 +17,7 @@ import { ProductsAdminService, Category, Subcategory } from '../../shared/produc
 })
 export class AdminCategoryHierarchyManagerComponent implements OnInit, OnDestroy {
   categorias: Category[] = [];
+  readonly catalogDomain: CatalogDomain;
   
   // Estados de edición
   newCategoryName = '';
@@ -34,8 +37,13 @@ export class AdminCategoryHierarchyManagerComponent implements OnInit, OnDestroy
 
   constructor(
     private productsAdminService: ProductsAdminService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    route: ActivatedRoute
+  ) {
+    this.catalogDomain = route.snapshot.data['catalogDomain'] === 'assemblies'
+      ? 'assemblies'
+      : 'products';
+  }
 
   ngOnInit(): void {
     this.cargarCategorias();
@@ -43,7 +51,7 @@ export class AdminCategoryHierarchyManagerComponent implements OnInit, OnDestroy
 
   cargarCategorias(): void {
     this.productsAdminService
-      .getAllCategories()
+      .getCategoriesByDomain(this.catalogDomain)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (categorias) => {

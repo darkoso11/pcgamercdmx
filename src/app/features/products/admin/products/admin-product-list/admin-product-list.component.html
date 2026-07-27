@@ -23,7 +23,7 @@
             (ngModelChange)="onSearchChange()"
             type="text"
             placeholder="Nombre, slug o descripción..."
-            class="w-full px-3 py-2 pc-bg-page border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
           />
         </div>
 
@@ -34,7 +34,7 @@
             id="product-category-filter"
             [(ngModel)]="selectedCategory"
             (ngModelChange)="filterProducts()"
-            class="w-full px-3 py-2 pc-bg-page border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
+            class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
           >
             <option value="">Todas las categorías</option>
             <option value="componentes">Componentes</option>
@@ -49,13 +49,13 @@
             id="product-status-filter"
             [(ngModel)]="selectedStatus"
             (ngModelChange)="filterProducts()"
-            class="w-full px-3 py-2 pc-bg-page border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
+            class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
           >
-            <option value="">Todos los estados</option>
+            <option value="all">Todos los estados</option>
             <option value="published">Publicados</option>
-            <option value="private">Privados</option>
-            <option value="out-of-stock">Sin stock</option>
+            <option value="draft">Borradores</option>
             <option value="low-stock">Bajo stock</option>
+            <option value="out-of-stock">Sin stock</option>
           </select>
         </div>
 
@@ -82,15 +82,15 @@
       <div *ngIf="filteredProducts.length > 0; else noProducts">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="pc-field border-b border-white/10">
+            <thead class="bg-[#081229] border-b border-white/10">
               <tr class="text-left">
                 <th class="px-4 py-3 text-gray-400 font-semibold">
                   <input
                     type="checkbox"
-                    aria-label="Seleccionar todos los productos de la página"
                     [(ngModel)]="selectAll"
                     (ngModelChange)="toggleSelectAll()"
                     class="w-4 h-4 cursor-pointer"
+                    aria-label="Seleccionar todos los productos de esta página"
                   />
                 </th>
                 <th class="px-4 py-3 text-gray-400 font-semibold">Producto</th>
@@ -109,9 +109,9 @@
                 <td class="px-4 py-3">
                   <input
                     type="checkbox"
-                    [attr.aria-label]="'Seleccionar ' + product.title"
                     [(ngModel)]="product.selected"
                     class="w-4 h-4 cursor-pointer"
+                    [attr.aria-label]="'Seleccionar ' + product.title"
                   />
                 </td>
                 <td class="px-4 py-3">
@@ -132,7 +132,7 @@
                     class="px-2 py-1 rounded text-xs font-semibold"
                     [ngClass]="product.published ? 'bg-green-500/30 text-green-300' : 'bg-yellow-500/30 text-yellow-300'"
                   >
-                    {{ product.published ? 'Publicado' : 'Privado' }}
+                    {{ product.published ? 'Publicado' : 'Borrador' }}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-gray-300">{{ getCategoryLabel(product) }}</td>
@@ -140,25 +140,25 @@
                   <div class="flex gap-2 justify-center">
                     <button
                       (click)="editProduct(product._id!)"
-                      class="inline-flex min-h-11 min-w-11 items-center justify-center text-cyan-400 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 transition"
-                      [attr.aria-label]="'Editar ' + product.title"
+                      class="text-cyan-400 hover:text-cyan-300 transition"
                       title="Editar"
+                      [attr.aria-label]="'Editar ' + product.title"
                     >
                       <i class="fas fa-edit"></i>
                     </button>
                     <button
                       (click)="duplicateProduct(product._id!)"
-                      class="inline-flex min-h-11 min-w-11 items-center justify-center text-yellow-400 hover:text-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300 transition"
-                      [attr.aria-label]="'Duplicar ' + product.title"
+                      class="text-yellow-400 hover:text-yellow-300 transition"
                       title="Duplicar"
+                      [attr.aria-label]="'Duplicar ' + product.title"
                     >
                       <i class="fas fa-copy"></i>
                     </button>
                     <button
                       (click)="deleteProduct(product._id!)"
-                      class="inline-flex min-h-11 min-w-11 items-center justify-center text-red-400 hover:text-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300 transition"
-                      [attr.aria-label]="'Eliminar ' + product.title"
+                      class="text-red-400 hover:text-red-300 transition"
                       title="Eliminar"
+                      [attr.aria-label]="'Eliminar ' + product.title"
                     >
                       <i class="fas fa-trash"></i>
                     </button>
@@ -170,7 +170,7 @@
         </div>
 
         <!-- Paginación -->
-        <div class="pc-field border-t border-white/10 px-6 py-4 flex items-center justify-between">
+        <div class="bg-[#081229] border-t border-white/10 px-6 py-4 flex items-center justify-between">
           <div class="text-sm text-gray-400">
             Página <span class="text-cyan-400 font-semibold">{{ currentPage + 1 }}</span> de
             <span class="text-cyan-400 font-semibold">{{ totalPages }}</span>
@@ -179,14 +179,14 @@
             <button
               (click)="previousPage()"
               [disabled]="currentPage === 0"
-              class="min-h-11 px-3 py-1 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:opacity-50 rounded text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 transition"
+              class="px-3 py-1 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:opacity-50 rounded text-sm font-semibold transition"
             >
               ← Anterior
             </button>
             <button
               (click)="nextPage()"
               [disabled]="currentPage >= totalPages - 1"
-              class="min-h-11 px-3 py-1 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:opacity-50 rounded text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 transition"
+              class="px-3 py-1 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-800 disabled:opacity-50 rounded text-sm font-semibold transition"
             >
               Siguiente →
             </button>

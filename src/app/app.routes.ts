@@ -234,45 +234,82 @@ export const routes: Routes = [
   },
   {
     path: adminRoute('products/packages'),
-    redirectTo: adminRoute('products/assemblies'),
+    redirectTo: adminRoute('assemblies/list'),
     pathMatch: 'full'
   },
   {
     path: adminRoute('products/packages/new'),
-    redirectTo: adminRoute('products/assemblies/new'),
+    redirectTo: adminRoute('assemblies/new'),
     pathMatch: 'full'
   },
   {
     path: adminRoute('products/packages/:id/edit'),
-    redirectTo: adminRoute('products/assemblies/:id/edit'),
+    redirectTo: adminRoute('assemblies/:id/edit'),
     pathMatch: 'full'
   },
   {
     path: adminRoute('products/offers'),
     loadComponent: () => import('./features/products/admin/offers/admin-offers-manager/admin-offers-manager.component').then(m => m.AdminOffersManagerComponent),
     title: 'Ofertas | Admin',
+    data: { catalogDomain: 'products' },
     canActivate: [AuthGuard]
   },
   {
     path: adminRoute('products/categories'),
     loadComponent: () => import('./features/products/admin/categories/admin-category-hierarchy-manager/admin-category-hierarchy-manager.component').then(m => m.AdminCategoryHierarchyManagerComponent),
     title: 'Categorías | Admin',
+    data: { catalogDomain: 'products' },
     canActivate: [AuthGuard]
   },
   {
     path: adminRoute('products/assemblies'),
+    redirectTo: adminRoute('assemblies/list'),
+    pathMatch: 'full'
+  },
+  {
+    path: adminRoute('products/assemblies/new'),
+    redirectTo: adminRoute('assemblies/new'),
+    pathMatch: 'full'
+  },
+  {
+    path: adminRoute('products/assemblies/:id/edit'),
+    redirectTo: adminRoute('assemblies/:id/edit'),
+    pathMatch: 'full'
+  },
+  {
+    path: adminRoute('assemblies'),
+    loadComponent: () => import('./features/products/admin/dashboard/admin-assemblies-dashboard/admin-assemblies-dashboard.component').then(m => m.AdminAssembliesDashboardComponent),
+    title: 'Admin Ensambles | PC Gamer CDMX',
+    canActivate: [AuthGuard]
+  },
+  {
+    path: adminRoute('assemblies/offers'),
+    loadComponent: () => import('./features/products/admin/offers/admin-offers-manager/admin-offers-manager.component').then(m => m.AdminOffersManagerComponent),
+    title: 'Ofertas de Ensambles | Admin',
+    data: { catalogDomain: 'assemblies' },
+    canActivate: [AuthGuard]
+  },
+  {
+    path: adminRoute('assemblies/categories'),
+    loadComponent: () => import('./features/products/admin/categories/admin-category-hierarchy-manager/admin-category-hierarchy-manager.component').then(m => m.AdminCategoryHierarchyManagerComponent),
+    title: 'Categorias de Ensambles | Admin',
+    data: { catalogDomain: 'assemblies' },
+    canActivate: [AuthGuard]
+  },
+  {
+    path: adminRoute('assemblies/list'),
     loadComponent: () => import('./features/products/admin/assemblies/admin-assemblies-list/admin-assemblies-list.component').then(m => m.AdminAssembliesListComponent),
     title: 'Ensambles | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: adminRoute('products/assemblies/new'),
+    path: adminRoute('assemblies/new'),
     loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
     title: 'Nuevo Ensamble | Admin',
     canActivate: [AuthGuard]
   },
   {
-    path: adminRoute('products/assemblies/:id/edit'),
+    path: adminRoute('assemblies/:id/edit'),
     loadComponent: () => import('./features/products/admin/assemblies/admin-assembly-editor/admin-assembly-editor.component').then(m => m.AdminAssemblyEditorComponent),
     title: 'Editar Ensamble | Admin',
     data: { renderMode: 'dynamic' },

@@ -1,19 +1,26 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { Product, ProductsAdminService } from '../../shared/products-admin.service';
+import {
+  CatalogStatusFilter,
+  filterAndSortCatalogItems,
+} from '../../shared/admin-catalog-flow.utils';
 
 @Component({
   selector: 'app-admin-assemblies-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, AdminHeaderComponent],
+  imports: [CommonModule, RouterModule, FormsModule, AdminHeaderComponent],
   templateUrl: './admin-assemblies-list.component.html',
 })
 export class AdminAssembliesListComponent implements OnInit, OnDestroy {
   assemblies: Product[] = [];
+  filteredAssemblies: Product[] = [];
+  selectedStatus: CatalogStatusFilter = 'all';
   loading = true;
   errorMessage = '';
 
@@ -22,8 +29,11 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
   constructor(
     private readonly productsAdminService: ProductsAdminService,
     private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
+    private readonly cdr: ChangeDetectorRef,
+    private readonly route: ActivatedRoute
+  ) {
+    this.selectedStatus = asCatalogStatusFilter(this.route.snapshot.queryParamMap.get('status'));
+  }
 
   ngOnInit(): void {
     this.loadAssemblies();
@@ -36,18 +46,27 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
       .getProductsByCategory('paquetes')
       .pipe(takeUntil(this.destroy$))
       .subscribe((assemblies) => {
-        this.assemblies = assemblies;
+        this.assemblies = filterAndSortCatalogItems(assemblies, 'assemblies', 'all');
+        this.filterAssemblies();
         this.loading = false;
         this.cdr.detectChanges();
       });
   }
 
+  filterAssemblies(): void {
+    this.filteredAssemblies = filterAndSortCatalogItems(
+      this.assemblies,
+      'assemblies',
+      this.selectedStatus
+    );
+  }
+
   createAssembly(): void {
-    this.router.navigate([adminUrl('products/assemblies/new')]);
+    this.router.navigate([adminUrl('assemblies/new')]);
   }
 
   editAssembly(id: string): void {
-    this.router.navigate([adminUrl('products/assemblies'), id, 'edit']);
+    this.router.navigate([adminUrl('assemblies'), id, 'edit']);
   }
 
   duplicateAssembly(id: string): void {
@@ -87,4 +106,18 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+}
+
+function asCatalogStatusFilter(value: string | null): CatalogStatusFilter {
+  const validStatuses: CatalogStatusFilter[] = [
+    'all',
+    'published',
+    'draft',
+    'low-stock',
+    'out-of-stock',
+  ];
+
+  return validStatuses.includes(value as CatalogStatusFilter)
+    ? value as CatalogStatusFilter
+    : 'all';
 }
