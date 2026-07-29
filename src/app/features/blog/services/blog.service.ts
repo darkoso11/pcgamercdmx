@@ -18,10 +18,75 @@ import { Article, Category, SubCategory } from '../models/types';
 @Injectable({ providedIn: 'root' })
 export class BlogService {
   private readonly postsCollection = 'pc_blog_posts';
-  private readonly categoriesCollection = 'pc_categories';
-  private readonly subcategoriesCollection = 'pc_subcategories';
+  private readonly categoriesCollection = 'pc_blog_categories';
+  private readonly subcategoriesCollection = 'pc_blog_subcategories';
 
   constructor(private readonly directus: DirectusApiService) {}
+
+  listPublished(
+    params: { limit?: number; page?: number; q?: string; categoryId?: string; tags?: string } = {}
+  ): Observable<{ data: Article[]; total: number }> {
+    if (!this.directus.isEnabled('blog')) {
+      return of({ data: [], total: 0 });
+    }
+
+    const limit = Number(params.limit ?? 12);
+    const page = Number(params.page ?? 0);
+    const query: Record<string, string | number | boolean> = {
+      'filter[published][_eq]': true,
+      'filter[published_at][_lte]': new Date().toISOString(),
+      fields: '*',
+      sort: '-published_at',
+      limit,
+      offset: page * limit,
+      'meta': 'filter_count',
+    };
+
+    if (params.categoryId) {
+      query['filter[category][_eq]'] = params.categoryId;
+    }
+    if (params.q?.trim()) {
+      query['search'] = params.q.trim();
+    }
+
+    return this.directus
+      .readItems<DirectusBlogPostRecord>(this.postsCollection, query)
+      .pipe(
+        map((response) => {
+          const articles = response.data.map(mapDirectusBlogPostToArticle);
+          const tag = params.tags?.trim().toLowerCase();
+          const filtered = tag
+            ? articles.filter((article) =>
+                (article.tags ?? []).some((value) => value.toLowerCase().includes(tag))
+              )
+            : articles;
+          return {
+            data: filtered,
+            total: response.meta?.filter_count ?? filtered.length,
+          };
+        })
+      );
+  }
+
+  getPublishedBySlug(slug: string): Observable<Article | null> {
+    if (!this.directus.isEnabled('blog')) {
+      return of(null);
+    }
+
+    return this.directus
+      .readItems<DirectusBlogPostRecord>(this.postsCollection, {
+        'filter[slug][_eq]': slug,
+        'filter[published][_eq]': true,
+        'filter[published_at][_lte]': new Date().toISOString(),
+        fields: '*',
+        limit: 1,
+      })
+      .pipe(
+        map((response) =>
+          response.data[0] ? mapDirectusBlogPostToArticle(response.data[0]) : null
+        )
+      );
+  }
 
   list(params: Record<string, any> = {}): Observable<{ data: Article[]; total: number }> {
     if (!this.directus.isEnabled('blog')) {

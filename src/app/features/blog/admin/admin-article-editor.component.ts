@@ -7,6 +7,7 @@ import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { adminUrl } from '../../admin/admin-route.config';
+import { localDateTimeToUtc, normalizeVideoUrl } from '../services/blog-content.utils';
 
 @Component({
   selector: 'app-admin-article-editor',
@@ -29,6 +30,10 @@ export class AdminArticleEditorComponent implements OnInit {
   categories: any[] = [];
   subcategories: any[] = [];
   filteredSubcategories: any[] = [];
+  showNewCategory = false;
+  showNewSubcategory = false;
+  newCategoryName = '';
+  newSubcategoryName = '';
 
   quillModules = {
     toolbar: [
@@ -58,6 +63,7 @@ export class AdminArticleEditorComponent implements OnInit {
       tags: [''],
       coverImage: [''],
       published: [false],
+      scheduledAt: [''],
       sections: this.fb.array([])
     });
   }
@@ -118,11 +124,21 @@ export class AdminArticleEditorComponent implements OnInit {
             order: [section.order || this.sectionsArray.length],
             images: this.fb.array((section.images || []).map((image: any) => this.fb.group({
               url: [image.url || ''],
+              fileId: [image.fileId || ''],
+              filename: [image.filename || ''],
+              mimeType: [image.mimeType || ''],
               alt: [image.alt || ''],
               preview: [image.url || ''],
               order: [image.order || 0]
             }))),
-            imageLayout: [section.imageLayout || '1']
+            imageLayout: [section.imageLayout || '1'],
+            existingMedia: [section.media || []],
+            videoUrl: [''],
+            videoTitle: [''],
+            videoFileId: [''],
+            videoFileUrl: [''],
+            videoFileName: [''],
+            videoFileType: ['']
           });
           this.sectionsArray.push(sectionForm);
         });
@@ -138,7 +154,7 @@ export class AdminArticleEditorComponent implements OnInit {
           categoryId: article.categoryId || '',
           subCategoryId: article.subCategoryId || '',
           tags: (article.tags || []).join(', '),
-          coverImage: article.coverImage?.url || '',
+          coverImage: article.coverImage || '',
           published: article.published
         });
         this.coverImagePreview = article.coverImage?.url || null;
@@ -158,7 +174,14 @@ export class AdminArticleEditorComponent implements OnInit {
       text: [''],
       order: [this.sectionsArray.length],
       images: this.fb.array([]),
-      imageLayout: ['1'] // 1, 2, 3, o 4 columnas
+      imageLayout: ['1'], // 1, 2, 3, o 4 columnas
+      existingMedia: [[]],
+      videoUrl: [''],
+      videoTitle: [''],
+      videoFileId: [''],
+      videoFileUrl: [''],
+      videoFileName: [''],
+      videoFileType: ['']
     });
     this.sectionsArray.push(sectionForm);
   }
@@ -171,6 +194,9 @@ export class AdminArticleEditorComponent implements OnInit {
     const imagesArray = this.getSectionImages(sectionIndex);
     const imageForm = this.fb.group({
       url: [''],
+      fileId: [''],
+      filename: [''],
+      mimeType: [''],
       alt: [''],
       preview: [''],
       order: [imagesArray.length]
@@ -211,8 +237,13 @@ export class AdminArticleEditorComponent implements OnInit {
     this.uploading = true;
     this.errorMsg = '';
     try {
-      const publicUrl = await this.uploadService.uploadFile(file);
-      imageForm.patchValue({ url: publicUrl });
+      const uploaded = await this.uploadService.uploadFile(file);
+      imageForm.patchValue({
+        url: uploaded.url,
+        fileId: uploaded.fileId,
+        filename: uploaded.filename,
+        mimeType: uploaded.mimeType,
+      });
       this.successMsg = 'Imagen subida correctamente';
       setTimeout(() => this.successMsg = '', 3000);
     } catch (e) {
@@ -268,8 +299,13 @@ export class AdminArticleEditorComponent implements OnInit {
     this.uploading = true;
     this.errorMsg = '';
     try {
-      const publicUrl = await this.uploadService.uploadFile(this.selectedCoverFile);
-      this.form.patchValue({ coverImage: publicUrl });
+      const uploaded = await this.uploadService.uploadFile(this.selectedCoverFile);
+      this.form.patchValue({
+        coverImage: {
+          ...uploaded,
+          alt: this.form.value.title || '',
+        },
+      });
       this.successMsg = 'Imagen subida correctamente';
       this.selectedCoverFile = null;
       setTimeout(() => this.successMsg = '', 3000);
@@ -280,7 +316,94 @@ export class AdminArticleEditorComponent implements OnInit {
     }
   }
 
-  async onSave() {
+  createCategoryInline() {
+    const name = this.newCategoryName.trim();
+    if (!name) return;
+    this.blogService.createCategory({ name }).subscribe({
+      next: (category) => {
+        this.categories = [...this.categories, category];
+        this.form.patchValue({ categoryId: category._id || '' });
+        this.newCategoryName = '';
+        this.showNewCategory = false;
+        this.updateFilteredSubcategories();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMsg = 'No se pudo crear la categoría. Verifica los permisos de Directus.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  createSubcategoryInline() {
+    const name = this.newSubcategoryName.trim();
+    const categoryId = this.form.value.categoryId;
+    if (!name || !categoryId) return;
+    this.blogService.createSubCategory({ name, categoryId }).subscribe({
+      next: (subcategory) => {
+        this.subcategories = [...this.subcategories, subcategory];
+        this.updateFilteredSubcategories();
+        this.form.patchValue({ subCategoryId: subcategory._id || '' });
+        this.newSubcategoryName = '';
+        this.showNewSubcategory = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMsg = 'No se pudo crear la subcategoría. Verifica los permisos de Directus.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  onSectionVideoSelect(event: Event, sectionIndex: number) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      this.errorMsg = 'Selecciona un archivo de video válido';
+      return;
+    }
+    const section = this.sectionsArray.at(sectionIndex) as FormGroup;
+    (section as any)._videoFile = file;
+    section.patchValue({
+      videoFileName: file.name,
+      videoFileType: file.type,
+      videoTitle: section.value.videoTitle || file.name,
+    });
+  }
+
+  async uploadSectionVideo(sectionIndex: number) {
+    const section = this.sectionsArray.at(sectionIndex) as FormGroup;
+    const file = (section as any)._videoFile as File | undefined;
+    if (!file) return;
+    this.uploading = true;
+    this.errorMsg = '';
+    try {
+      const uploaded = await this.uploadService.uploadFile(file);
+      section.patchValue({
+        videoFileId: uploaded.fileId,
+        videoFileUrl: uploaded.url,
+        videoFileName: uploaded.filename,
+        videoFileType: uploaded.mimeType,
+      });
+      this.successMsg = 'Video subido correctamente';
+    } catch (error) {
+      this.errorMsg = 'Error al subir el video: ' + (error as Error).message;
+    } finally {
+      this.uploading = false;
+    }
+  }
+
+  openPreview() {
+    const preview = this.form.getRawValue();
+    preview.tags = typeof preview.tags === 'string'
+      ? preview.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
+      : preview.tags;
+    sessionStorage.setItem('pcg_blog_preview', JSON.stringify(preview));
+    this.router.navigate([adminUrl('blog/preview')]);
+  }
+
+  async onSave(mode: 'draft' | 'publish' | 'schedule' = 'draft') {
     if (!this.form.valid) {
       this.errorMsg = 'Por favor completa todos los campos requeridos';
       return;
@@ -295,7 +418,7 @@ export class AdminArticleEditorComponent implements OnInit {
     this.errorMsg = '';
     
     try {
-      const formData = this.form.value;
+      const formData = this.form.getRawValue();
       
       if (typeof formData.tags === 'string') {
         formData.tags = formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
@@ -309,6 +432,51 @@ export class AdminArticleEditorComponent implements OnInit {
           .replace(/-+/g, '-')
           .substring(0, 50);
       }
+
+      if (mode === 'schedule' && !formData.scheduledAt) {
+        this.errorMsg = 'Selecciona la fecha y hora de publicación';
+        this.saving = false;
+        return;
+      }
+
+      formData.published = mode !== 'draft';
+      formData.publishedAt = mode === 'schedule'
+        ? localDateTimeToUtc(formData.scheduledAt)
+        : mode === 'publish'
+          ? new Date().toISOString()
+          : null;
+      formData.sections = formData.sections.map((section: any, index: number) => {
+        const media = [...(section.existingMedia || [])];
+        if (section.videoUrl?.trim()) {
+          const embed = normalizeVideoUrl(section.videoUrl);
+          media.push({
+            ...embed,
+            title: section.videoTitle?.trim() || `Video de ${formData.title}`,
+          });
+        }
+        if (section.videoFileId && section.videoFileUrl) {
+          media.push({
+            kind: 'video-file',
+            fileId: section.videoFileId,
+            url: section.videoFileUrl,
+            filename: section.videoFileName,
+            mimeType: section.videoFileType,
+            title: section.videoTitle?.trim() || `Video de ${formData.title}`,
+          });
+        }
+        const {
+          existingMedia,
+          videoUrl,
+          videoTitle,
+          videoFileId,
+          videoFileUrl,
+          videoFileName,
+          videoFileType,
+          ...persisted
+        } = section;
+        return { ...persisted, media, order: index };
+      });
+      delete formData.scheduledAt;
 
       if (this.isNew) {
         await this.blogService.create(formData).toPromise();

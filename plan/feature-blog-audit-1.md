@@ -49,9 +49,9 @@ Este plan implementa la especificación aprobada para corregir la publicación d
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Ampliar `src/app/features/blog/models/types.ts` con estados editoriales, `ArticleMedia` discriminado y metadatos de archivo. Crear primero pruebas del mapper en `src/app/core/services/directus-content.mapper.spec.ts`. | | |
-| TASK-002 | Crear `src/app/features/blog/services/blog-content.utils.ts` y `.spec.ts` para estado publicado/programado, normalización YouTube/Vimeo, slug y fecha CDMX/UTC. Verificar RED y después GREEN por comportamiento. | | |
-| TASK-003 | Extender `mapDirectusBlogPostToArticle` y `mapArticleToDirectusPayload` para portadas nulas, rutas heredadas, objetos con `fileId` y bloques multimedia. | | |
+| TASK-001 | Ampliar `src/app/features/blog/models/types.ts` con estados editoriales, `ArticleMedia` discriminado y metadatos de archivo. Crear primero pruebas del mapper en `src/app/core/services/directus-content.mapper.spec.ts`. | ✅ | 2026-07-28 |
+| TASK-002 | Crear `src/app/features/blog/services/blog-content.utils.ts` y `.spec.ts` para estado publicado/programado, normalización YouTube/Vimeo, slug y fecha CDMX/UTC. Verificar RED y después GREEN por comportamiento. | ✅ | 2026-07-28 |
+| TASK-003 | Extender `mapDirectusBlogPostToArticle` y `mapArticleToDirectusPayload` para portadas nulas, rutas heredadas, objetos con `fileId` y bloques multimedia. | ✅ | 2026-07-28 |
 
 ### Implementation Phase 2
 
@@ -59,10 +59,10 @@ Este plan implementa la especificación aprobada para corregir la publicación d
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-004 | Crear `src/app/features/blog/services/blog.service.spec.ts` con pruebas para consulta pública, fecha límite, detalle por slug, 404 y consultas administrativas autenticadas. | | |
-| TASK-005 | Refactorizar `src/app/features/blog/services/blog.service.ts`: añadir `listPublished`, `getPublishedBySlug`, usar taxonomía editorial y conservar CRUD autenticado. No ocultar errores públicos con mocks. | | |
-| TASK-006 | Reescribir `src/app/features/blog/blog-list.component.ts` para usar `BlogService`, estado explícito y filtros editoriales. | | |
-| TASK-007 | Reescribir `src/app/features/blog/article.component.ts` para usar `BlogService`, saneamiento Angular normal, bloques multimedia y 404/error accionable. | | |
+| TASK-004 | Crear `src/app/features/blog/services/blog.service.spec.ts` con pruebas para consulta pública, fecha límite, detalle por slug, 404 y consultas administrativas autenticadas. | ✅ | 2026-07-28 |
+| TASK-005 | Refactorizar `src/app/features/blog/services/blog.service.ts`: añadir `listPublished`, `getPublishedBySlug`, usar taxonomía editorial y conservar CRUD autenticado. No ocultar errores públicos con mocks. | ✅ | 2026-07-28 |
+| TASK-006 | Reescribir `src/app/features/blog/blog-list.component.ts` para usar `BlogService`, estado explícito y filtros editoriales. | ✅ | 2026-07-28 |
+| TASK-007 | Reescribir `src/app/features/blog/article.component.ts` para usar `BlogService`, saneamiento Angular normal, bloques multimedia y 404/error accionable. | ✅ | 2026-07-28 |
 
 ### Implementation Phase 3
 
@@ -70,11 +70,11 @@ Este plan implementa la especificación aprobada para corregir la publicación d
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-008 | Cambiar constantes de `BlogService` a `pc_blog_categories` y `pc_blog_subcategories`; cubrir CRUD y protección de categorías en uso con pruebas. | | |
-| TASK-009 | Crear `tools/configure-blog-schema.mjs` para crear/actualizar colecciones, campos y permisos públicos de lectura. El script debe ser idempotente y leer variables de entorno. | | |
-| TASK-010 | Crear `tools/migrate-blog-taxonomy.mjs` con `--dry-run`; normalizar categorías heredadas, mantener slugs de entradas y emitir resumen JSON. | | |
-| TASK-011 | Añadir scripts `configure:blog` y `migrate:blog-taxonomy` a `package.json`; documentar variables y secuencia en `docs/backend/directus-integration.md`. | | |
-| TASK-012 | Actualizar `src/app/features/blog/admin/admin-categories.component.ts` para trabajar sólo con la taxonomía editorial, validar duplicados y bloquear eliminación insegura. | | |
+| TASK-008 | Cambiar constantes de `BlogService` a `pc_blog_categories` y `pc_blog_subcategories`; cubrir CRUD y protección de categorías en uso con pruebas. | ✅ | 2026-07-28 |
+| TASK-009 | Crear `tools/configure-blog-schema.mjs` para crear/actualizar colecciones, campos y permisos públicos de lectura. El script debe ser idempotente y leer variables de entorno. | ✅ | 2026-07-28 |
+| TASK-010 | Crear `tools/migrate-blog-taxonomy.mjs` con `--dry-run`; normalizar categorías heredadas, mantener slugs de entradas y emitir resumen JSON. | ✅ | 2026-07-28 |
+| TASK-011 | Añadir scripts `configure:blog` y `migrate:blog-taxonomy` a `package.json`; documentar variables y secuencia en `docs/backend/directus-integration.md`. | ✅ | 2026-07-28 |
+| TASK-012 | Actualizar `src/app/features/blog/admin/admin-categories.component.ts` para trabajar sólo con la taxonomía editorial, validar duplicados y bloquear eliminación insegura. | ✅ | 2026-07-28 |
 
 ### Implementation Phase 4
 
@@ -82,11 +82,11 @@ Este plan implementa la especificación aprobada para corregir la publicación d
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-013 | Reemplazar `src/app/features/blog/services/upload.service.ts` por carga mediante `DirectusApiService.uploadFile`; devolver `fileId`, URL estable, MIME y nombre. Crear prueba RED antes del cambio. | | |
-| TASK-014 | Refactorizar `admin-article-editor.component.ts`, `.html` y `.css` para imagen/video, URL YouTube/Vimeo, texto alternativo, progreso, error, reintento y eliminación. | | |
-| TASK-015 | Añadir acciones `saveDraft`, `publishNow`, `schedulePublication` y `openPreview`; convertir fechas locales a UTC y prevenir doble envío. | | |
-| TASK-016 | Permitir creación contextual de categoría y subcategoría desde el editor con diálogo accesible o sección expandible que preserve el formulario. | | |
-| TASK-017 | Añadir ruta de vista previa autenticada en `src/app/app.routes.ts` y un modo de `ArticleComponent` que reciba el borrador por estado de navegación o almacenamiento temporal seguro del navegador. | | |
+| TASK-013 | Reemplazar `src/app/features/blog/services/upload.service.ts` por carga mediante `DirectusApiService.uploadFile`; devolver `fileId`, URL estable, MIME y nombre. Crear prueba RED antes del cambio. | ✅ | 2026-07-28 |
+| TASK-014 | Refactorizar `admin-article-editor.component.ts`, `.html` y `.css` para imagen/video, URL YouTube/Vimeo, texto alternativo, progreso, error, reintento y eliminación. | ✅ | 2026-07-28 |
+| TASK-015 | Añadir acciones `saveDraft`, `publishNow`, `schedulePublication` y `openPreview`; convertir fechas locales a UTC y prevenir doble envío. | ✅ | 2026-07-28 |
+| TASK-016 | Permitir creación contextual de categoría y subcategoría desde el editor con diálogo accesible o sección expandible que preserve el formulario. | ✅ | 2026-07-28 |
+| TASK-017 | Añadir ruta de vista previa autenticada en `src/app/app.routes.ts` y un modo de `ArticleComponent` que reciba el borrador por estado de navegación o almacenamiento temporal seguro del navegador. | ✅ | 2026-07-28 |
 
 ### Implementation Phase 5
 
@@ -94,10 +94,10 @@ Este plan implementa la especificación aprobada para corregir la publicación d
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-018 | Extraer plantillas y estilos del listado público a archivos separados si el tamaño lo requiere; aplicar jerarquía editorial, contraste AA, foco visible, estados y comportamiento responsive. | | |
-| TASK-019 | Aplicar estilos editoriales semánticos al detalle: encabezados, párrafos, listas, enlaces, citas, código, imágenes, video y transcripción. | | |
-| TASK-020 | Refactorizar `admin-article-list.component.ts` para contraste AA, tabla responsive, estados publicados/programados/borradores y acciones con nombres accesibles. | | |
-| TASK-021 | Refactorizar editor y categorías para etiquetas asociadas, mensajes `aria-live`, foco en errores, navegación por teclado y `prefers-reduced-motion`. | | |
+| TASK-018 | Extraer plantillas y estilos del listado público a archivos separados si el tamaño lo requiere; aplicar jerarquía editorial, contraste AA, foco visible, estados y comportamiento responsive. | ✅ | 2026-07-28 |
+| TASK-019 | Aplicar estilos editoriales semánticos al detalle: encabezados, párrafos, listas, enlaces, citas, código, imágenes, video y transcripción. | ✅ | 2026-07-28 |
+| TASK-020 | Refactorizar `admin-article-list.component.ts` para contraste AA, tabla responsive, estados publicados/programados/borradores y acciones con nombres accesibles. | ✅ | 2026-07-28 |
+| TASK-021 | Refactorizar editor y categorías para etiquetas asociadas, mensajes `aria-live`, foco en errores, navegación por teclado y `prefers-reduced-motion`. | ✅ | 2026-07-28 |
 
 ### Implementation Phase 6
 
@@ -105,11 +105,11 @@ Este plan implementa la especificación aprobada para corregir la publicación d
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-022 | Ejecutar pruebas unitarias específicas después de cada ciclo RED/GREEN y finalmente la suite Angular completa en modo no interactivo. | | |
-| TASK-023 | Ejecutar `npm run build` y corregir errores o advertencias introducidas por la tarea. | | |
-| TASK-024 | Levantar `npm start`, comprobar Directus público, capturar errores de consola y validar listado/detalle en escritorio y móvil mediante Playwright. | | |
+| TASK-022 | Ejecutar pruebas unitarias específicas después de cada ciclo RED/GREEN y finalmente la suite Angular completa en modo no interactivo. | ✅ | 2026-07-28 |
+| TASK-023 | Ejecutar `npm run build` y corregir errores o advertencias introducidas por la tarea. | ✅ | 2026-07-28 |
+| TASK-024 | Levantar `npm start`, comprobar Directus público, capturar errores de consola y validar listado/detalle en escritorio y móvil mediante Playwright. | ✅ | 2026-07-28 |
 | TASK-025 | Ejecutar el flujo administrativo posible con la sesión disponible; si faltan credenciales de esquema, validar scripts en `--dry-run` o con respuestas simuladas sin exponer secretos. | | |
-| TASK-026 | Completar `C:/Users/Oswaldo/Documents/Documentacion PCGAMERCDMX/Contexto y Arquitectura del Proyecto/AUDITORIA_BLOG_2026-07-28.md` con archivos, esquema, migración, pruebas, capturas y limitaciones reales. | | |
+| TASK-026 | Completar `C:/Users/Oswaldo/Documents/Documentacion PCGAMERCDMX/Contexto y Arquitectura del Proyecto/AUDITORIA_BLOG_2026-07-28.md` con archivos, esquema, migración, pruebas, capturas y limitaciones reales. | ✅ | 2026-07-28 |
 
 ## 3. Alternatives
 

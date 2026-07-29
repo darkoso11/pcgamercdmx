@@ -726,7 +726,14 @@ function defaultProductType(category?: AdminProduct['category'] | string): strin
   }
 }
 
-function normalizeCoverImage(value: unknown): { url: string; alt?: string } | undefined {
+function normalizeCoverImage(value: unknown): {
+  fileId?: string;
+  url: string;
+  alt?: string;
+  filename?: string;
+  mimeType?: string;
+  decorative?: boolean;
+} | undefined {
   if (typeof value === 'string') {
     return value ? { url: value } : undefined;
   }
@@ -737,9 +744,17 @@ function normalizeCoverImage(value: unknown): { url: string; alt?: string } | un
     return undefined;
   }
 
+  const fileId = text(record['fileId'] ?? record['id'], '');
+  const alt = text(record['alt'], '');
+  const filename = text(record['filename'], '');
+  const mimeType = text(record['mimeType'], '');
   return {
     url,
-    alt: text(record['alt'], '') || undefined,
+    ...(fileId ? { fileId } : {}),
+    ...(alt ? { alt } : {}),
+    ...(filename ? { filename } : {}),
+    ...(mimeType ? { mimeType } : {}),
+    ...(record['decorative'] === true ? { decorative: true } : {}),
   };
 }
 
