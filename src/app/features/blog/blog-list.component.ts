@@ -75,9 +75,10 @@ import { BlogService } from './services/blog.service';
             <a [routerLink]="['/blog', article.slug]" class="article-link">
               <div class="cover">
                 <img
-                  *ngIf="article.coverImage?.url; else coverFallback"
+                  *ngIf="hasWorkingCover(article); else coverFallback"
                   [src]="article.coverImage?.url"
                   [alt]="article.coverImage?.alt || ''"
+                  (error)="markCoverFailed(article)"
                   loading="lazy"
                 />
                 <ng-template #coverFallback>
@@ -108,7 +109,7 @@ import { BlogService } from './services/blog.service';
   styles: [`
     :host { display: block; background: #07111f; color: #f8fafc; }
     .blog-page { min-height: 100vh; }
-    .blog-hero { min-height: 520px; display: grid; align-items: end; padding: 7rem 1.5rem 4.5rem;
+    .blog-hero { min-height: 300px; display: grid; align-items: center; padding: 6rem 1.5rem 2rem;
       background: linear-gradient(90deg, rgba(4,14,28,.97) 0%, rgba(4,14,28,.78) 52%, rgba(4,14,28,.28) 100%),
         radial-gradient(circle at 82% 22%, rgba(34,211,238,.36), transparent 30%),
         linear-gradient(135deg, #0f766e, #07111f 62%); }
@@ -116,17 +117,17 @@ import { BlogService } from './services/blog.service';
     .hero-inner { animation: reveal .55s ease-out both; }
     .eyebrow { margin: 0 0 .85rem; color: #67e8f9; font-size: .76rem; font-weight: 800;
       letter-spacing: .16em; text-transform: uppercase; }
-    h1 { margin: 0; max-width: 780px; font-size: clamp(3.25rem, 8vw, 7rem); line-height: .88;
+    h1 { margin: 0; max-width: 780px; font-size: clamp(2.75rem, 5vw, 4.6rem); line-height: .92;
       letter-spacing: -.065em; color: #fff; }
     h1 span { color: #67e8f9; }
-    .hero-copy { max-width: 620px; margin: 1.75rem 0 0; color: #d7e2ef; font-size: 1.1rem; line-height: 1.7; }
-    .blog-content { padding: 5rem 1.5rem 6rem; }
+    .hero-copy { max-width: 620px; margin: 1rem 0 0; color: #d7e2ef; font-size: 1rem; line-height: 1.6; }
+    .blog-content { padding: 2rem 1.5rem 6rem; }
     .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem;
       padding-bottom: 1.5rem; border-bottom: 1px solid #263a55; }
     .section-heading h2 { margin: 0; font-size: clamp(2rem, 4vw, 3.25rem); letter-spacing: -.035em; color: #fff; }
     .section-heading > p { margin: 0; color: #a9bbcf; }
     .filters { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(210px, .45fr) auto;
-      gap: 1rem; align-items: end; padding: 1.75rem 0 2.5rem; }
+      gap: 1rem; align-items: end; padding: 1.25rem 0 2rem; }
     label span { display: block; margin-bottom: .55rem; color: #cbd5e1; font-size: .82rem; font-weight: 700; }
     input, select { width: 100%; min-height: 48px; padding: 0 .9rem; border: 1px solid #47627f; border-radius: 8px;
       background: #0b1a2d; color: #f8fafc; font: inherit; }
@@ -166,8 +167,8 @@ import { BlogService } from './services/blog.service';
       .filters button { grid-column: 1 / -1; }
     }
     @media (max-width: 580px) {
-      .blog-hero { min-height: 470px; padding-bottom: 3rem; }
-      .blog-content { padding-top: 3.5rem; }
+      .blog-hero { min-height: 0; padding-top: 6.5rem; padding-bottom: 2rem; }
+      .blog-content { padding-top: 2rem; }
       .section-heading { align-items: start; flex-direction: column; gap: .75rem; }
       .filters, .article-grid { grid-template-columns: 1fr; }
     }
@@ -186,6 +187,7 @@ export class BlogListComponent implements OnInit {
   total = 0;
   loading = true;
   error = false;
+  private readonly failedCovers = new Set<string>();
 
   constructor(
     private readonly blog: BlogService,
@@ -248,6 +250,17 @@ export class BlogListComponent implements OnInit {
 
   trackBySlug(_: number, article: Article): string {
     return article.slug ?? article._id ?? article.title;
+  }
+
+  hasWorkingCover(article: Article): boolean {
+    const url = article.coverImage?.url;
+    return Boolean(url && !this.failedCovers.has(url));
+  }
+
+  markCoverFailed(article: Article): void {
+    const url = article.coverImage?.url;
+    if (url) this.failedCovers.add(url);
+    this.cdr.markForCheck();
   }
 
   formatPublishedAt(value?: string): string {

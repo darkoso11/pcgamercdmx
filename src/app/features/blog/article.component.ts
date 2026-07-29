@@ -46,8 +46,12 @@ import { BlogService } from './services/blog.service';
             </time>
           </header>
 
-          <figure class="hero-media" *ngIf="article.coverImage?.url">
-            <img [src]="article.coverImage?.url" [alt]="article.coverImage?.alt || ''" />
+          <figure class="hero-media" *ngIf="article.coverImage?.url && !coverFailed">
+            <img
+              [src]="article.coverImage?.url"
+              [alt]="article.coverImage?.alt || ''"
+              (error)="handleCoverError()"
+            />
           </figure>
 
           <div class="article-body">
@@ -147,6 +151,7 @@ export class ArticleComponent implements OnInit {
   loading = true;
   error = false;
   notFound = false;
+  coverFailed = false;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -164,6 +169,7 @@ export class ArticleComponent implements OnInit {
     this.loading = true;
     this.error = false;
     this.notFound = false;
+    this.coverFailed = false;
     this.blog.getPublishedBySlug(slug).subscribe({
       next: (article) => {
         this.article = article;
@@ -184,6 +190,11 @@ export class ArticleComponent implements OnInit {
       ? `https://www.youtube-nocookie.com/embed/${media.externalId}`
       : `https://player.vimeo.com/video/${media.externalId}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  handleCoverError(): void {
+    this.coverFailed = true;
+    this.cdr.markForCheck();
   }
 
   formatPublishedAt(value?: string): string {
