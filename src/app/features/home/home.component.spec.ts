@@ -5,13 +5,51 @@ import { of } from 'rxjs';
 import { HomeComponent } from './home.component';
 import { CommunityService } from '../community/community.service';
 import { ProductsService } from '../products/services/products.service';
+import { BlogService } from '../blog/services/blog.service';
 import { HomeContentService } from './services/home-content.service';
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let component: HomeComponent;
+  let blogService: {
+    listPublished: jasmine.Spy;
+  };
 
   beforeEach(async () => {
+    blogService = {
+      listPublished: jasmine.createSpy().and.returnValue(
+        of({
+          data: [
+            {
+              _id: 'newest',
+              title: 'Entrada real más reciente',
+              slug: 'entrada-real-reciente',
+              summary: 'Resumen editorial reciente.',
+              coverImage: {
+                url: 'https://cms.test/assets/cover-new',
+                alt: 'Portada reciente',
+              },
+              published: true,
+              publishedAt: '2026-07-30T03:00:00.000Z',
+              sections: [],
+              tags: [],
+            },
+            {
+              _id: 'previous',
+              title: 'Entrada real anterior',
+              slug: 'entrada-real-anterior',
+              summary: 'Resumen editorial anterior.',
+              published: true,
+              publishedAt: '2026-07-29T03:00:00.000Z',
+              sections: [],
+              tags: [],
+            },
+          ],
+          total: 2,
+        })
+      ),
+    };
+
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
       providers: [
@@ -28,6 +66,10 @@ describe('HomeComponent', () => {
           useValue: {
             getFeaturedCollaborators: () => of([]),
           },
+        },
+        {
+          provide: BlogService,
+          useValue: blogService,
         },
         {
           provide: HomeContentService,
@@ -60,6 +102,17 @@ describe('HomeComponent', () => {
   it('keeps the assembly slider empty when the backend returns no assemblies', () => {
     expect(component.carruselProducts).toEqual([]);
     expect(component.filteredCarruselProducts).toEqual([]);
+  });
+
+  it('shows the most recent published Directus posts instead of sample posts', () => {
+    expect(blogService.listPublished).toHaveBeenCalledWith({ limit: 3 });
+    expect(component.latestPosts.map((post) => post.title)).toEqual([
+      'Entrada real más reciente',
+      'Entrada real anterior',
+    ]);
+    expect(component.latestPosts.map((post) => post.slug)).not.toContain(
+      'mejores-tarjetas-graficas-2024'
+    );
   });
 
   it('maps only the brand logos explicitly configured for the assembly', () => {

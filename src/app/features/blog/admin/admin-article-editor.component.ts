@@ -440,6 +440,7 @@ export class AdminArticleEditorComponent implements OnInit {
     this.errorMsg = '';
     
     try {
+      await this.uploadPendingSectionVideos();
       const formData = this.form.getRawValue();
       
       if (typeof formData.tags === 'string') {
@@ -532,5 +533,23 @@ export class AdminArticleEditorComponent implements OnInit {
     }
 
     return 'Directus no devolvió detalles del error.';
+  }
+
+  private async uploadPendingSectionVideos(): Promise<void> {
+    for (const control of this.sectionsArray.controls) {
+      const section = control as FormGroup;
+      const file = (section as any)._videoFile as File | undefined;
+      if (!file || section.value.videoFileId) {
+        continue;
+      }
+
+      const uploaded = await this.uploadService.uploadFile(file);
+      section.patchValue({
+        videoFileId: uploaded.fileId,
+        videoFileUrl: uploaded.url,
+        videoFileName: uploaded.filename,
+        videoFileType: uploaded.mimeType,
+      });
+    }
   }
 }

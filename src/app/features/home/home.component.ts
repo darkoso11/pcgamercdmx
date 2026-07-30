@@ -22,7 +22,11 @@ import { Product, ProductsService } from '../products/services/products.service'
 import { AssembledPC, PeripheralProduct } from '../../shared/models';
 import { CommunityCollaborator } from '../community/collaborators.data';
 import { CommunityService } from '../community/community.service';
-import { HomeBlogSectionComponent } from './components/home-blog-section.component';
+import { BlogService } from '../blog/services/blog.service';
+import {
+  HomeBlogPost,
+  HomeBlogSectionComponent,
+} from './components/home-blog-section.component';
 import { HomeCommunitySectionComponent } from './components/home-community-section.component';
 import { HomeCustomCasesSectionComponent } from './components/home-custom-cases-section.component';
 import { HomeProjectRequestSectionComponent } from './components/home-project-request-section.component';
@@ -201,32 +205,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   ];
 
-  latestPosts = [
-    {
-      title: 'Las mejores tarjetas gráficas para 2024',
-      excerpt:
-        'Analizamos las mejores opciones de Nvidia y AMD para cada presupuesto.',
-      image: 'https://picsum.photos/id/211/600/400',
-      date: new Date('2023-12-15'),
-      slug: 'mejores-tarjetas-graficas-2024',
-    },
-    {
-      title: 'Guía para overclock seguro de CPU',
-      excerpt:
-        'Todo lo que necesitas saber para aumentar el rendimiento de tu procesador sin riesgos.',
-      image: 'https://picsum.photos/id/212/600/400',
-      date: new Date('2023-12-10'),
-      slug: 'guia-overclock-seguro-cpu',
-    },
-    {
-      title: 'Cómo configurar tu PC para streaming',
-      excerpt:
-        'Ajustes de OBS, hardware recomendado y consejos de profesionales.',
-      image: 'https://picsum.photos/id/213/600/400',
-      date: new Date('2023-12-05'),
-      slug: 'configurar-pc-para-streaming',
-    },
-  ];
+  latestPosts: HomeBlogPost[] = [];
 
   // Variable para almacenar referencia al intervalo
   private rotationIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -332,7 +311,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private productsService: ProductsService,
     private communityService: CommunityService,
-    private homeContentService: HomeContentService
+    private homeContentService: HomeContentService,
+    private blogService: BlogService
   ) {}
 
   // Métodos para controlar la navegación de los banners
@@ -354,6 +334,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadRandomPeripherals();
     this.loadFeaturedCollaborators();
     this.loadHomeContent();
+    this.loadLatestPosts();
 
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
@@ -474,6 +455,30 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.influencers = collaborators;
       this.cdr.detectChanges();
     });
+  }
+
+  private loadLatestPosts(): void {
+    this.blogService.listPublished({ limit: 3 }).subscribe({
+      next: ({ data }) => {
+        this.latestPosts = data.map((article) => ({
+          title: article.title,
+          excerpt: article.summary || 'Lee la entrada completa en nuestro blog.',
+          image: article.coverImage?.url || '',
+          date: this.toValidDate(article.publishedAt),
+          slug: article.slug || article._id || '',
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.latestPosts = [];
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private toValidDate(value?: string): Date {
+    const date = value ? new Date(value) : new Date();
+    return Number.isNaN(date.getTime()) ? new Date() : date;
   }
 
   private toPeripheralSliderItem(product: PeripheralProduct, index: number) {
