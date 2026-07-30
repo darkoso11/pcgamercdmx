@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
+import { firstValueFrom } from 'rxjs';
 import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
@@ -85,17 +86,29 @@ export class AdminArticleEditorComponent implements OnInit {
   }
 
   loadCategories() {
-    this.blogService.getCategories().subscribe((res: any) => {
-      this.categories = Array.isArray(res) ? res : (res.data || res);
-      this.cdr.detectChanges();
+    this.blogService.getCategories().subscribe({
+      next: (res: any) => {
+        this.categories = Array.isArray(res) ? res : (res.data || res);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.errorMsg = `No se pudieron cargar las categorías del blog: ${this.requestErrorMessage(error)}`;
+        this.cdr.detectChanges();
+      },
     });
   }
 
   loadSubcategories() {
-    this.blogService.getSubCategories().subscribe((res: any) => {
-      this.subcategories = Array.isArray(res) ? res : (res.data || res);
-      this.updateFilteredSubcategories();
-      this.cdr.detectChanges();
+    this.blogService.getSubCategories().subscribe({
+      next: (res: any) => {
+        this.subcategories = Array.isArray(res) ? res : (res.data || res);
+        this.updateFilteredSubcategories();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.errorMsg = `No se pudieron cargar las subcategorías del blog: ${this.requestErrorMessage(error)}`;
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -245,11 +258,15 @@ export class AdminArticleEditorComponent implements OnInit {
         mimeType: uploaded.mimeType,
       });
       this.successMsg = 'Imagen subida correctamente';
-      setTimeout(() => this.successMsg = '', 3000);
+      setTimeout(() => {
+        this.successMsg = '';
+        this.cdr.markForCheck();
+      }, 3000);
     } catch (e) {
-      this.errorMsg = 'Error al subir la imagen: ' + (e as any).message;
+      this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
     } finally {
       this.uploading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -308,11 +325,15 @@ export class AdminArticleEditorComponent implements OnInit {
       });
       this.successMsg = 'Imagen subida correctamente';
       this.selectedCoverFile = null;
-      setTimeout(() => this.successMsg = '', 3000);
+      setTimeout(() => {
+        this.successMsg = '';
+        this.cdr.markForCheck();
+      }, 3000);
     } catch (e) {
-      this.errorMsg = 'Error al subir la imagen: ' + (e as any).message;
+      this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
     } finally {
       this.uploading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -388,9 +409,10 @@ export class AdminArticleEditorComponent implements OnInit {
       });
       this.successMsg = 'Video subido correctamente';
     } catch (error) {
-      this.errorMsg = 'Error al subir el video: ' + (error as Error).message;
+      this.errorMsg = `Error al subir el video: ${this.requestErrorMessage(error)}`;
     } finally {
       this.uploading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -479,19 +501,36 @@ export class AdminArticleEditorComponent implements OnInit {
       delete formData.scheduledAt;
 
       if (this.isNew) {
-        await this.blogService.create(formData).toPromise();
+        await firstValueFrom(this.blogService.create(formData));
         this.successMsg = 'Artículo creado exitosamente';
+        this.cdr.markForCheck();
         setTimeout(() => this.router.navigate([this.adminBlogUrl]), 1500);
       } else {
         const id = this.route.snapshot.params['id'];
-        await this.blogService.update(id, formData).toPromise();
+        await firstValueFrom(this.blogService.update(id, formData));
         this.successMsg = 'Artículo actualizado exitosamente';
+        this.cdr.markForCheck();
         setTimeout(() => this.router.navigate([this.adminBlogUrl]), 1500);
       }
     } catch (e) {
-      this.errorMsg = 'Error al guardar: ' + (e as any).message;
+      this.errorMsg = `Error al guardar: ${this.requestErrorMessage(e)}`;
     } finally {
       this.saving = false;
+      this.cdr.markForCheck();
     }
+  }
+
+  private requestErrorMessage(error: unknown): string {
+    const directusMessage = (error as any)?.error?.errors?.[0]?.message;
+    if (typeof directusMessage === 'string' && directusMessage.trim()) {
+      return directusMessage;
+    }
+
+    const message = (error as any)?.message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+
+    return 'Directus no devolvió detalles del error.';
   }
 }
