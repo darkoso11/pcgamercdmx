@@ -60,7 +60,7 @@ for (const post of posts) {
   }
 }
 
-console.log(JSON.stringify(summary, null, 2));
+process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 
 async function ensureCategory(name) {
   const slug = slugify(name);

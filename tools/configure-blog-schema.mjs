@@ -43,13 +43,13 @@ for (const definition of collections) {
         schema: definition.schema,
       },
     });
-    console.log(`created collection ${definition.collection}`);
+    process.stdout.write(`created collection ${definition.collection}\n`);
   } else {
     await request(`/collections/${definition.collection}`, {
       method: 'PATCH',
       body: { meta: definition.meta },
     });
-    console.log(`updated collection ${definition.collection}`);
+    process.stdout.write(`updated collection ${definition.collection}\n`);
   }
 
   for (const [field, type, meta] of definition.fields) {
@@ -69,11 +69,11 @@ for (const definition of collections) {
   }
 }
 
-console.log(JSON.stringify({
+process.stdout.write(`${JSON.stringify({
   ok: true,
   collections: collections.map((item) => item.collection),
   note: 'Configura en Directus lectura pública para elementos con published=true.',
-}, null, 2));
+}, null, 2)}\n`);
 
 async function request(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
