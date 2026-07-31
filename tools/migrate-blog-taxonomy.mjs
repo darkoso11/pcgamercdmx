@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { resolveTaxonomyReference } from './blog-taxonomy.mjs';
 
 const baseUrl = (process.env.DIRECTUS_URL || 'https://cms.test.pcgamercdmx.com').replace(/\/+$/, '');
 const token = process.env.DIRECTUS_TOKEN || await login();
@@ -28,18 +29,34 @@ const subcategoryByKey = new Map(
 );
 
 for (const post of posts) {
-  const categoryName = resolveName(post.category, legacyCategories);
-  if (!categoryName) {
+  const categoryReference = resolveTaxonomyReference(
+    post.category,
+    blogCategories,
+    legacyCategories
+  );
+  if (!categoryReference.name) {
     summary.unresolved.push({ post: post.id, field: 'category', value: post.category });
     continue;
   }
 
-  const category = await ensureCategory(categoryName);
+  const category = categoryReference.item ||
+    await ensureCategory(categoryReference.name);
   let subcategory = null;
   if (post.subcategory) {
-    const subcategoryName = resolveName(post.subcategory, legacySubcategories);
-    if (subcategoryName) {
-      subcategory = await ensureSubcategory(subcategoryName, String(category.id));
+    const categorySubcategories = blogSubcategories.filter(
+      (item) => String(item.category_id) === String(category.id)
+    );
+    const subcategoryReference = resolveTaxonomyReference(
+      post.subcategory,
+      categorySubcategories,
+      legacySubcategories
+    );
+    if (subcategoryReference.name) {
+      subcategory = subcategoryReference.item ||
+        await ensureSubcategory(
+          subcategoryReference.name,
+          String(category.id)
+        );
     } else {
       summary.unresolved.push({ post: post.id, field: 'subcategory', value: post.subcategory });
     }
@@ -97,16 +114,6 @@ async function ensureSubcategory(name, categoryId) {
   subcategoryByKey.set(key, created);
   summary.subcategoriesCreated += 1;
   return created;
-}
-
-function resolveName(value, legacyItems) {
-  if (value === null || value === undefined || value === '') {
-    return '';
-  }
-  const matched = legacyItems.find((item) =>
-    String(item.id) === String(value) || item.slug === value
-  );
-  return String(matched?.name || value).trim();
 }
 
 function slugify(value) {

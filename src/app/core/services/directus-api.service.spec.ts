@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { DirectusApiService } from './directus-api.service';
 import {
@@ -182,4 +182,31 @@ describe('DirectusApiService', () => {
     expect(getStoredDirectusAccessToken()).toBe('valid-access');
     expect(getStoredDirectusRefreshToken()).toBe('valid-refresh');
   });
+
+  it('allows large file uploads to run longer than one minute', fakeAsync(() => {
+    setStoredDirectusSession('valid-access', 'valid-refresh');
+    let timedOut = false;
+    let completed = false;
+
+    service.uploadFile(
+      new File(['video'], 'video.mp4', { type: 'video/mp4' }),
+      'video.mp4',
+      { auth: true }
+    ).subscribe({
+      next: () => {
+        completed = true;
+      },
+      error: () => {
+        timedOut = true;
+      },
+    });
+
+    const upload = httpMock.expectOne(`${baseUrl}/files`);
+    tick(61_000);
+
+    expect(timedOut).toBeFalse();
+
+    upload.flush({ data: { id: 'video-1', filename_download: 'video.mp4' } });
+    expect(completed).toBeTrue();
+  }));
 });

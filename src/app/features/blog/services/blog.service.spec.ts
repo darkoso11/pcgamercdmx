@@ -36,4 +36,17 @@ describe('BlogService', () => {
     expect(directus.readItems.calls.argsFor(0)[0]).toBe('pc_blog_categories');
     expect(directus.readItems.calls.argsFor(1)[0]).toBe('pc_blog_subcategories');
   });
+
+  it('filters published tags in Directus before pagination', () => {
+    service.listPublished({ tags: 'Intel', limit: 6, page: 1 }).subscribe();
+
+    expect(directus.readItems).toHaveBeenCalledWith(
+      'pc_blog_posts',
+      jasmine.objectContaining({
+        'filter[tags][_contains]': 'Intel',
+        limit: 6,
+        offset: 6,
+      })
+    );
+  });
 });

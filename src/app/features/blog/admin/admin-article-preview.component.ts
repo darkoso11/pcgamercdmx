@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { adminUrl } from '../../admin/admin-route.config';
+import { ArticleMediaComponent } from '../article-media.component';
 
 @Component({
   selector: 'app-admin-article-preview',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ArticleMediaComponent],
   template: `
     <main class="preview-page">
       <div class="preview-bar">
@@ -35,6 +36,12 @@ import { adminUrl } from '../../admin/admin-route.config';
                 <img [src]="image.preview || image.url" [alt]="image.alt || ''" />
                 <figcaption *ngIf="image.alt">{{ image.alt }}</figcaption>
               </figure>
+            </div>
+            <div class="media" *ngIf="section.media?.length">
+              <app-article-media
+                *ngFor="let media of section.media"
+                [media]="media"
+              ></app-article-media>
             </div>
           </section>
         </div>
@@ -67,22 +74,36 @@ import { adminUrl } from '../../admin/admin-route.config';
     .body { width:min(720px,100%); margin:4rem auto 0; color:#d7e2ef; font-size:1.08rem; line-height:1.82; }
     section + section { margin-top:3rem; padding-top:3rem; border-top:1px solid #263a55; }
     h2 { color:#fff; font-size:2rem; }
-    .images { display:grid; gap:1rem; margin-top:2rem; }
+    .images, .media { display:grid; gap:1rem; margin-top:2rem; }
     figcaption { color:#9db1c8; margin-top:.5rem; }
     .empty { width:min(720px,100%); margin:5rem auto; }
     :is(a):focus-visible { outline:3px solid #fff; outline-offset:3px; }
   `],
 })
 export class AdminArticlePreviewComponent {
-  readonly editorUrl = adminUrl('blog/new');
-  article: any = this.readPreview();
+  private readonly preview = this.readPreview();
+  readonly editorUrl = this.preview.returnUrl || adminUrl('blog/new');
+  readonly article = this.preview.article;
 
-  private readPreview(): any {
+  private readPreview(): { article: any; returnUrl: string } {
     try {
       const raw = sessionStorage.getItem('pcg_blog_preview');
-      return raw ? JSON.parse(raw) : null;
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed?.article) {
+        return {
+          article: parsed.article,
+          returnUrl: parsed.returnUrl || adminUrl('blog/new'),
+        };
+      }
+      return {
+        article: parsed,
+        returnUrl: adminUrl('blog/new'),
+      };
     } catch {
-      return null;
+      return {
+        article: null,
+        returnUrl: adminUrl('blog/new'),
+      };
     }
   }
 }

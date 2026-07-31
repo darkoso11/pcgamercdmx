@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -17,7 +17,8 @@ import { localDateTimeToUtc, normalizeVideoUrl } from '../services/blog-content.
   templateUrl: './admin-article-editor.component.html',
   styleUrls: ['./admin-article-editor.component.css']
 })
-export class AdminArticleEditorComponent implements OnInit {
+export class AdminArticleEditorComponent implements OnInit, OnDestroy {
+  readonly maxVideoSizeMb = 250;
   readonly adminBlogUrl = adminUrl('blog');
   form: FormGroup;
   isNew = true;
@@ -86,6 +87,12 @@ export class AdminArticleEditorComponent implements OnInit {
     this.loadSubcategories();
   }
 
+  ngOnDestroy(): void {
+    for (const control of this.sectionsArray.controls) {
+      this.releaseVideoPreview(control as FormGroup);
+    }
+  }
+
   loadCategories() {
     this.blogService.getCategories().subscribe({
       next: (res: any) => {
@@ -132,6 +139,9 @@ export class AdminArticleEditorComponent implements OnInit {
       next: (article) => {
         this.sectionsArray.clear();
         (article.sections || []).forEach((section: any) => {
+          const media = section.media || [];
+          const fileVideo = media.find((item: any) => item.kind === 'video-file');
+          const embedVideo = media.find((item: any) => item.kind === 'video-embed');
           const sectionForm = this.fb.group({
             title: [section.title || ''],
             text: [section.text || ''],
@@ -146,13 +156,16 @@ export class AdminArticleEditorComponent implements OnInit {
               order: [image.order || 0]
             }))),
             imageLayout: [section.imageLayout || '1'],
-            existingMedia: [section.media || []],
-            videoUrl: [''],
-            videoTitle: [''],
-            videoFileId: [''],
-            videoFileUrl: [''],
-            videoFileName: [''],
-            videoFileType: [''],
+            existingMedia: [media.filter(
+              (item: any) =>
+                item.kind !== 'video-file' && item.kind !== 'video-embed'
+            )],
+            videoUrl: [this.editableEmbedUrl(embedVideo)],
+            videoTitle: [fileVideo?.title || embedVideo?.title || ''],
+            videoFileId: [fileVideo?.fileId || ''],
+            videoFileUrl: [fileVideo?.url || ''],
+            videoFileName: [fileVideo?.filename || ''],
+            videoFileType: [fileVideo?.mimeType || ''],
             videoPreviewUrl: ['']
           });
           this.sectionsArray.push(sectionForm);
@@ -283,6 +296,7 @@ export class AdminArticleEditorComponent implements OnInit {
   }
 
   removeSection(index: number) {
+    this.releaseVideoPreview(this.sectionsArray.at(index) as FormGroup);
     this.sectionsArray.removeAt(index);
   }
 
@@ -400,16 +414,24 @@ export class AdminArticleEditorComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('video/')) {
+    if (!this.isVideoFile(file)) {
       this.errorMsg = 'Selecciona un archivo de video válido';
       return;
     }
+    if (file.size > this.maxVideoSizeMb * 1024 * 1024) {
+      this.errorMsg = `El video no puede ser mayor a ${this.maxVideoSizeMb} MB`;
+      input.value = '';
+      return;
+    }
     const section = this.sectionsArray.at(sectionIndex) as FormGroup;
+    this.releaseVideoPreview(section);
     (section as any)._videoFile = file;
     const videoPreviewUrl = typeof URL !== 'undefined' && URL.createObjectURL
       ? URL.createObjectURL(file)
       : '';
     section.patchValue({
+      videoFileId: '',
+      videoFileUrl: '',
       videoFileName: file.name,
       videoFileType: file.type,
       videoTitle: section.value.videoTitle || file.name,
@@ -420,8 +442,7 @@ export class AdminArticleEditorComponent implements OnInit {
 
   async uploadSectionVideo(sectionIndex: number) {
     const section = this.sectionsArray.at(sectionIndex) as FormGroup;
-    const file = (section as any)._videoFile as File | undefined;
-    if (!file) return;
+    if (!(section as any)._videoFile) return;
     const pendingUpload = (section as any)._videoUploadPromise as Promise<void> | undefined;
     if (pendingUpload) {
       return pendingUpload;
@@ -431,17 +452,30 @@ export class AdminArticleEditorComponent implements OnInit {
     this.errorMsg = '';
     const upload = (async () => {
       try {
-        const uploaded = await this.uploadService.uploadFile(file);
-        section.patchValue({
-          videoFileId: uploaded.fileId,
-          videoFileUrl: uploaded.url,
-          videoFileName: uploaded.filename,
-          videoFileType: uploaded.mimeType,
-        });
-        this.successMsg = 'Video listo para guardar';
-      } catch (error) {
-        this.errorMsg = `Error al subir el video: ${this.requestErrorMessage(error)}`;
-        throw error;
+        while (true) {
+          const file = (section as any)._videoFile as File | undefined;
+          if (!file) return;
+          try {
+            const uploaded = await this.uploadService.uploadFile(file);
+            if ((section as any)._videoFile !== file) {
+              continue;
+            }
+            section.patchValue({
+              videoFileId: uploaded.fileId,
+              videoFileUrl: uploaded.url,
+              videoFileName: uploaded.filename,
+              videoFileType: uploaded.mimeType,
+            });
+            this.successMsg = 'Video listo para guardar';
+            return;
+          } catch (error) {
+            if ((section as any)._videoFile !== file) {
+              continue;
+            }
+            this.errorMsg = `Error al subir el video: ${this.requestErrorMessage(error)}`;
+            throw error;
+          }
+        }
       } finally {
         delete (section as any)._videoUploadPromise;
         this.uploading = false;
@@ -453,12 +487,28 @@ export class AdminArticleEditorComponent implements OnInit {
   }
 
   openPreview() {
-    const preview = this.form.getRawValue();
-    preview.tags = typeof preview.tags === 'string'
-      ? preview.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
-      : preview.tags;
-    sessionStorage.setItem('pcg_blog_preview', JSON.stringify(preview));
-    this.router.navigate([adminUrl('blog/preview')]);
+    try {
+      const preview = this.form.getRawValue();
+      preview.tags = typeof preview.tags === 'string'
+        ? preview.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
+        : preview.tags;
+      preview.sections = this.buildPersistedSections(
+        preview.sections,
+        preview.title
+      );
+      const id = this.route.snapshot.params['id'];
+      const returnUrl = this.isNew || !id
+        ? adminUrl('blog/new')
+        : adminUrl(`blog/${id}/edit`);
+      sessionStorage.setItem('pcg_blog_preview', JSON.stringify({
+        article: preview,
+        returnUrl,
+      }));
+      this.router.navigate([adminUrl('blog/preview')]);
+    } catch (error) {
+      this.errorMsg = `No se pudo generar la vista previa: ${this.requestErrorMessage(error)}`;
+      this.cdr.markForCheck();
+    }
   }
 
   async onSave(mode: 'draft' | 'publish' | 'schedule' = 'draft') {
@@ -504,38 +554,10 @@ export class AdminArticleEditorComponent implements OnInit {
         : mode === 'publish'
           ? new Date().toISOString()
           : null;
-      formData.sections = formData.sections.map((section: any, index: number) => {
-        const media = [...(section.existingMedia || [])];
-        if (section.videoUrl?.trim()) {
-          const embed = normalizeVideoUrl(section.videoUrl);
-          media.push({
-            ...embed,
-            title: section.videoTitle?.trim() || `Video de ${formData.title}`,
-          });
-        }
-        if (section.videoFileId && section.videoFileUrl) {
-          media.push({
-            kind: 'video-file',
-            fileId: section.videoFileId,
-            url: section.videoFileUrl,
-            filename: section.videoFileName,
-            mimeType: section.videoFileType,
-            title: section.videoTitle?.trim() || `Video de ${formData.title}`,
-          });
-        }
-        const {
-          existingMedia,
-          videoUrl,
-          videoTitle,
-          videoFileId,
-          videoFileUrl,
-          videoFileName,
-          videoFileType,
-          videoPreviewUrl,
-          ...persisted
-        } = section;
-        return { ...persisted, media, order: index };
-      });
+      formData.sections = this.buildPersistedSections(
+        formData.sections,
+        formData.title
+      );
       delete formData.scheduledAt;
 
       if (this.isNew) {
@@ -570,6 +592,41 @@ export class AdminArticleEditorComponent implements OnInit {
     }
 
     return 'Directus no devolvió detalles del error.';
+  }
+
+  private buildPersistedSections(sections: any[], articleTitle: string): any[] {
+    return sections.map((section: any, index: number) => {
+      const media = [...(section.existingMedia || [])];
+      if (section.videoUrl?.trim()) {
+        const embed = normalizeVideoUrl(section.videoUrl);
+        media.push({
+          ...embed,
+          title: section.videoTitle?.trim() || `Video de ${articleTitle}`,
+        });
+      }
+      if (section.videoFileId && section.videoFileUrl) {
+        media.push({
+          kind: 'video-file',
+          fileId: section.videoFileId,
+          url: section.videoFileUrl,
+          filename: section.videoFileName,
+          mimeType: section.videoFileType,
+          title: section.videoTitle?.trim() || `Video de ${articleTitle}`,
+        });
+      }
+      const {
+        existingMedia,
+        videoUrl,
+        videoTitle,
+        videoFileId,
+        videoFileUrl,
+        videoFileName,
+        videoFileType,
+        videoPreviewUrl,
+        ...persisted
+      } = section;
+      return { ...persisted, media, order: index };
+    });
   }
 
   private async uploadPendingMedia(): Promise<void> {
@@ -616,6 +673,30 @@ export class AdminArticleEditorComponent implements OnInit {
         videoFileName: uploaded.filename,
         videoFileType: uploaded.mimeType,
       });
+    }
+  }
+
+  private isVideoFile(file: File): boolean {
+    if (file.type.startsWith('video/')) {
+      return true;
+    }
+    return /\.(avi|flv|m4v|mkv|mov|mp4|mpeg|mpg|webm|wmv)$/i.test(file.name);
+  }
+
+  private editableEmbedUrl(media: any): string {
+    if (!media?.externalId) {
+      return '';
+    }
+    return media.provider === 'youtube'
+      ? `https://youtu.be/${media.externalId}`
+      : `https://vimeo.com/${media.externalId}`;
+  }
+
+  private releaseVideoPreview(section: FormGroup): void {
+    const previewUrl = section.value.videoPreviewUrl;
+    if (typeof previewUrl === 'string' && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+      section.patchValue({ videoPreviewUrl: '' }, { emitEvent: false });
     }
   }
 }

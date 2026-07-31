@@ -297,11 +297,14 @@
                 <input
                   [id]="'video-file-' + i"
                   type="file"
-                  accept="video/*"
+                  accept="video/*,.avi,.flv,.m4v,.mkv,.mov,.mp4,.mpeg,.mpg,.webm,.wmv"
                   (change)="onSectionVideoSelect($event, i)"
                   class="block w-full text-sm text-slate-200 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:font-semibold file:bg-cyan-700 file:text-white"
                 />
               </div>
+              <p class="mt-2 text-xs text-slate-300">
+                Máximo {{ maxVideoSizeMb }} MB. La carga comienza automáticamente.
+              </p>
               <video
                 *ngIf="section.value.videoPreviewUrl || section.value.videoFileUrl"
                 class="mt-3 w-full max-w-xl rounded border border-cyan-300/30 bg-black"

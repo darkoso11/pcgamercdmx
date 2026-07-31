@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Article, ArticleVideoEmbed } from './models/types';
+import { Article } from './models/types';
+import { ArticleMediaComponent } from './article-media.component';
 import { BlogService } from './services/blog.service';
 
 @Component({
   selector: 'app-blog-article',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ArticleMediaComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="article-page">
@@ -70,28 +70,10 @@ import { BlogService } from './services/blog.service';
               </div>
 
               <div class="media-grid" *ngIf="section.media?.length">
-                <ng-container *ngFor="let media of section.media">
-                  <figure *ngIf="media.kind === 'image'">
-                    <img [src]="media.url" [alt]="media.alt || ''" loading="lazy" />
-                    <figcaption *ngIf="media.alt">{{ media.alt }}</figcaption>
-                  </figure>
-                  <figure *ngIf="media.kind === 'video-file'">
-                    <video controls preload="metadata" [attr.aria-label]="media.title">
-                      <source [src]="media.url" [type]="media.mimeType || 'video/mp4'" />
-                    </video>
-                    <figcaption>{{ media.title }}</figcaption>
-                  </figure>
-                  <figure *ngIf="media.kind === 'video-embed'" class="video-frame">
-                    <iframe
-                      [src]="embedUrl(media)"
-                      [title]="media.title"
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
-                    <figcaption>{{ media.title }}</figcaption>
-                  </figure>
-                </ng-container>
+                <app-article-media
+                  *ngFor="let media of section.media"
+                  [media]="media"
+                ></app-article-media>
               </div>
 
               <ul class="related-links" *ngIf="section.links?.length">
@@ -127,8 +109,6 @@ import { BlogService } from './services/blog.service';
     .rich-text :is(a) { color: #67e8f9; text-underline-offset: 3px; }
     .media-grid { display: grid; gap: 1rem; margin-top: 2rem; }
     figure { margin: 0; }
-    .media-grid img, .media-grid video { display: block; width: 100%; border-radius: 10px; }
-    .video-frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 10px; }
     figcaption { margin-top: .6rem; color: #9db1c8; font-size: .82rem; }
     .related-links { padding-left: 1.2rem; }
     .related-links a { color: #67e8f9; }
@@ -156,7 +136,6 @@ export class ArticleComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly blog: BlogService,
-    private readonly sanitizer: DomSanitizer,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -183,13 +162,6 @@ export class ArticleComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
-  }
-
-  embedUrl(media: ArticleVideoEmbed): SafeResourceUrl {
-    const url = media.provider === 'youtube'
-      ? `https://www.youtube-nocookie.com/embed/${media.externalId}`
-      : `https://player.vimeo.com/video/${media.externalId}`;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   handleCoverError(): void {

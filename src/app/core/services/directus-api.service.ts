@@ -221,7 +221,7 @@ export class DirectusApiService {
         { headers: this.toHeaders(options) }
       ),
       options
-    ).pipe(timeout(60000));
+    ).pipe(timeout(5 * 60 * 1000));
   }
 
   assetUrl(fileId: string): string {

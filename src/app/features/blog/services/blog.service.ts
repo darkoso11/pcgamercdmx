@@ -48,21 +48,18 @@ export class BlogService {
     if (params.q?.trim()) {
       query['search'] = params.q.trim();
     }
+    if (params.tags?.trim()) {
+      query['filter[tags][_contains]'] = params.tags.trim();
+    }
 
     return this.directus
       .readItems<DirectusBlogPostRecord>(this.postsCollection, query)
       .pipe(
         map((response) => {
           const articles = response.data.map(mapDirectusBlogPostToArticle);
-          const tag = params.tags?.trim().toLowerCase();
-          const filtered = tag
-            ? articles.filter((article) =>
-                (article.tags ?? []).some((value) => value.toLowerCase().includes(tag))
-              )
-            : articles;
           return {
-            data: filtered,
-            total: response.meta?.filter_count ?? filtered.length,
+            data: articles,
+            total: response.meta?.filter_count ?? articles.length,
           };
         })
       );

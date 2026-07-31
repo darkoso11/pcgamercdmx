@@ -1,7 +1,7 @@
 # Diseño de auditoría y renovación del blog
 
-Fecha: 28 de julio de 2026  
-Rama: `auditoria-de-blog`  
+Fecha: 28 de julio de 2026
+Rama: `auditoria-de-blog`
 Estado: aprobado para implementación
 
 ## Objetivo
