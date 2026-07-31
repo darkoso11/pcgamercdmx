@@ -2,7 +2,11 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from './services/auth.service';
+import { firstValueFrom } from 'rxjs';
+import {
+  AdminSessionDuration,
+  AuthService,
+} from './services/auth.service';
 import { adminUrl } from './admin-route.config';
 
 @Component({
@@ -22,8 +26,9 @@ import { adminUrl } from './admin-route.config';
 
         <form (ngSubmit)="onSubmit()" class="space-y-5">
           <div>
-            <label class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Correo</label>
+            <label for="admin-email" class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Correo</label>
             <input
+              id="admin-email"
               [(ngModel)]="email"
               name="email"
               type="email"
@@ -35,8 +40,9 @@ import { adminUrl } from './admin-route.config';
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Contraseña</label>
-            <input 
+            <label for="admin-password" class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Contraseña</label>
+            <input
+              id="admin-password"
               [(ngModel)]="password" 
               name="password" 
               type="password" 
@@ -45,6 +51,26 @@ import { adminUrl } from './admin-route.config';
               autocomplete="current-password"
               class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-400/20 transition"
             />
+          </div>
+
+          <div>
+            <label for="session-duration" class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">
+              Mantener sesión
+            </label>
+            <select
+              id="session-duration"
+              [(ngModel)]="sessionDuration"
+              name="sessionDuration"
+              class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white focus:outline-none focus:border-cyan-400 transition"
+            >
+              <option value="tab">Hasta cerrar esta pestaña</option>
+              <option value="8h">Durante 8 horas</option>
+              <option value="7d">Durante 7 días</option>
+              <option value="manual">Hasta cerrar sesión manualmente</option>
+            </select>
+            <p class="mt-2 text-xs leading-relaxed text-slate-300">
+              El panel renovará automáticamente el acceso mientras la sesión elegida siga vigente.
+            </p>
           </div>
 
           <div *ngIf="error" class="p-3 bg-red-500/20 border border-red-500 rounded text-sm text-red-300">
@@ -85,6 +111,7 @@ export class AdminLoginComponent {
   error = '';
   success = '';
   loading = false;
+  sessionDuration: AdminSessionDuration = 'manual';
 
   constructor(private auth: AuthService, private router: Router) {}
 
@@ -99,7 +126,13 @@ export class AdminLoginComponent {
     this.loading = true;
 
     try {
-      const result = await this.auth.login(this.email.trim(), this.password).toPromise();
+      const result = await firstValueFrom(
+        this.auth.login(
+          this.email.trim(),
+          this.password,
+          this.sessionDuration
+        )
+      );
       if (result?.token) {
         this.success = 'Autenticación exitosa, redirigiendo...';
         setTimeout(() => this.router.navigate([adminUrl()]), 500);

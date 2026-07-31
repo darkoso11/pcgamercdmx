@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { BlogService } from '../services/blog.service';
 import { adminUrl } from '../../admin/admin-route.config';
+import { getPublicationState } from '../services/blog-content.utils';
 
 @Component({
   selector: 'app-admin-article-list',
@@ -12,14 +13,14 @@ import { adminUrl } from '../../admin/admin-route.config';
   imports: [CommonModule, RouterModule, FormsModule, AdminHeaderComponent],
   template: `
     <app-admin-header></app-admin-header>
-    <div class="min-h-screen bg-[#071029] p-6">
+    <div class="min-h-screen bg-[#071029] p-6 text-slate-100">
       <div class="max-w-6xl mx-auto">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-3xl font-bold text-cyan-400">Artículos</h2>
           <a [routerLink]="adminNewArticleUrl" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded font-semibold transition">+ Nuevo</a>
         </div>
 
-        <div class="bg-[#0b1220] border border-cyan-400/30 p-4 rounded-lg mb-6">
+        <div class="bg-[#0b1220] border border-cyan-300/40 p-4 rounded-lg mb-6 overflow-x-auto">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
               <label class="block text-sm text-gray-400 mb-1">Buscar por título</label>
@@ -71,7 +72,7 @@ import { adminUrl } from '../../admin/admin-route.config';
             </button>
           </div>
 
-          <table class="w-full text-left text-sm">
+          <table class="w-full min-w-[760px] text-left text-sm text-slate-100">
             <thead>
               <tr class="text-gray-400 border-b border-white/5">
                 <th class="py-2">Título</th>
@@ -88,7 +89,12 @@ import { adminUrl } from '../../admin/admin-route.config';
                 <td class="py-3">{{ getCategoryName(a.categoryId) }}</td>
                 <td class="py-3">{{ a.subCategoryId ? getSubcategoryName(a.subCategoryId) : '-' }}</td>
                 <td class="py-3">{{ formatDate(a.createdAt) }}</td>
-                <td class="py-3">{{ a.published ? 'Sí' : 'No' }}</td>
+                <td class="py-3">
+                  <span class="inline-flex rounded-full px-2 py-1 text-xs font-bold"
+                    [class]="publicationLabel(a) === 'Programado' ? 'bg-amber-900 text-amber-100' : publicationLabel(a) === 'Publicado' ? 'bg-emerald-900 text-emerald-100' : 'bg-slate-700 text-slate-100'">
+                    {{ publicationLabel(a) }}
+                  </span>
+                </td>
                 <td class="py-3">
                   <a [routerLink]="[adminBlogUrl, a._id, 'edit']" class="text-cyan-300 mr-3">Editar</a>
                   <button (click)="deleteArticle(a._id)" class="text-red-400">Borrar</button>
@@ -224,6 +230,11 @@ export class AdminArticleListComponent {
       month: 'short',
       day: 'numeric'
     });
+  }
+
+  publicationLabel(article: any): string {
+    const state = getPublicationState(article.published, article.publishedAt);
+    return state === 'scheduled' ? 'Programado' : state === 'published' ? 'Publicado' : 'Borrador';
   }
 
   load() {

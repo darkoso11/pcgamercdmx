@@ -13,6 +13,9 @@ import { AdminHeaderComponent } from '../../admin/admin-header.component';
   <div class="min-h-screen bg-[#071029] text-white p-6">
     <div class="max-w-4xl mx-auto">
       <h2 class="text-2xl font-bold mb-4">Gestor de Categorías y Subcategorías</h2>
+      <div *ngIf="errorMessage" role="alert" aria-live="assertive" class="mb-4 rounded border border-red-400 bg-red-950 p-3 text-red-100">
+        {{ errorMessage }}
+      </div>
 
       <div class="mb-6 p-4 bg-[#081229] rounded border border-white/5">
         <h3 class="font-semibold mb-2">Nueva Categoría</h3>
@@ -131,6 +134,7 @@ export class AdminCategoriesComponent implements OnInit {
   subcategories: any[] = [];
   newName = '';
   newDescription = '';
+  errorMessage = '';
 
   editId: string | null = null;
   editNameVal = '';
@@ -176,6 +180,11 @@ export class AdminCategoriesComponent implements OnInit {
 
   create() {
     if (!this.newName.trim()) return;
+    if (this.categories.some(category => category.name.toLowerCase() === this.newName.trim().toLowerCase())) {
+      this.errorMessage = 'Ya existe una categoría con ese nombre.';
+      return;
+    }
+    this.errorMessage = '';
     this.blog.createCategory({ name: this.newName.trim(), description: this.newDescription.trim() }).subscribe(() => {
       this.newName = '';
       this.newDescription = '';
@@ -202,8 +211,21 @@ export class AdminCategoriesComponent implements OnInit {
 
   remove(id?: string) {
     if (!id) return;
-    if (!confirm('¿Borrar categoría? Esta acción no se puede deshacer.')) return;
-    this.blog.deleteCategory(id).subscribe(() => this.load());
+    this.blog.list({ categoryId: id, limit: 1 }).subscribe({
+      next: (response) => {
+        if (response.total > 0) {
+          this.errorMessage = 'Reasigna las entradas de esta categoría antes de eliminarla.';
+          this.cdr.detectChanges();
+          return;
+        }
+        if (!confirm('¿Borrar categoría? Esta acción no se puede deshacer.')) return;
+        this.blog.deleteCategory(id).subscribe(() => this.load());
+      },
+      error: () => {
+        this.errorMessage = 'No fue posible comprobar si la categoría está en uso.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   toggleSubcategories(categoryId: string) {
@@ -221,6 +243,11 @@ export class AdminCategoriesComponent implements OnInit {
     const name = this.newSubName[categoryId]?.trim();
     const desc = this.newSubDesc[categoryId]?.trim();
     if (!name) return;
+    if (this.getSubcategoriesFor(categoryId).some(subcategory => subcategory.name.toLowerCase() === name.toLowerCase())) {
+      this.errorMessage = 'Ya existe una subcategoría con ese nombre en esta categoría.';
+      return;
+    }
+    this.errorMessage = '';
     this.blog.createSubCategory({ name, categoryId, description: desc }).subscribe(() => {
       this.newSubName[categoryId] = '';
       this.newSubDesc[categoryId] = '';
@@ -247,7 +274,20 @@ export class AdminCategoriesComponent implements OnInit {
 
   removeSub(id?: string) {
     if (!id) return;
-    if (!confirm('¿Borrar subcategoría? Esta acción no se puede deshacer.')) return;
-    this.blog.deleteSubCategory(id).subscribe(() => this.loadSubs());
+    this.blog.list({ subCategoryId: id, limit: 1 }).subscribe({
+      next: (response) => {
+        if (response.total > 0) {
+          this.errorMessage = 'Reasigna las entradas de esta subcategoría antes de eliminarla.';
+          this.cdr.detectChanges();
+          return;
+        }
+        if (!confirm('¿Borrar subcategoría? Esta acción no se puede deshacer.')) return;
+        this.blog.deleteSubCategory(id).subscribe(() => this.loadSubs());
+      },
+      error: () => {
+        this.errorMessage = 'No fue posible comprobar si la subcategoría está en uso.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 }
