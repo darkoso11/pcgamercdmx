@@ -194,6 +194,34 @@ describe('Directus content mapper', () => {
     expect(payload.published_at).toBe('2026-05-22T12:00:00.000Z');
   });
 
+  it('preserves stable Directus file metadata in blog covers', () => {
+    const article = mapDirectusBlogPostToArticle({
+      id: 9,
+      title: 'Refrigeración',
+      slug: 'refrigeracion',
+      cover_image: {
+        fileId: 'file-123',
+        url: 'https://cms.test/assets/file-123',
+        alt: 'Ventiladores instalados en un gabinete',
+        filename: 'fans.webp',
+        mimeType: 'image/webp',
+      },
+      sections: [],
+      category: 'cooling',
+      published: false,
+    });
+
+    expect(article.coverImage?.fileId).toBe('file-123');
+    const payload = mapArticleToDirectusPayload(article);
+    expect(payload.cover_image).toEqual({
+      fileId: 'file-123',
+      url: 'https://cms.test/assets/file-123',
+      alt: 'Ventiladores instalados en un gabinete',
+      filename: 'fans.webp',
+      mimeType: 'image/webp',
+    });
+  });
+
   it('preserves catalog payloads stored inside Directus JSON', () => {
     const directusPayload = mapCatalogProductToDirectusPayload({
       _id: 'pc-001',

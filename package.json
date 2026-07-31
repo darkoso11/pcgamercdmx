@@ -10,6 +10,8 @@
     "import:legacy-catalog": "node tools/import-legacy-catalog-to-directus.mjs",
     "import:assembly-pdfs": "node tools/import-assembly-pdfs-to-directus.mjs",
     "configure:admin-commerce": "node tools/configure-admin-commerce-schema.mjs",
+    "configure:blog": "node tools/configure-blog-schema.mjs",
+    "migrate:blog-taxonomy": "node tools/migrate-blog-taxonomy.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:pcgamercdmx": "node dist/pcgamercdmx/server/server.mjs",

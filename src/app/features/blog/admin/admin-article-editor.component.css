@@ -16,3 +16,19 @@
 ::ng-deep .ql-toolbar button:focus {
   color: #06b6d4;
 }
+
+:host ::ng-deep :is(input, textarea, select, button, a):focus-visible {
+  outline: 3px solid #f8fafc;
+  outline-offset: 2px;
+}
+
+::ng-deep .ql-editor :is(p, li, blockquote) {
+  color: #e2e8f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host ::ng-deep * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

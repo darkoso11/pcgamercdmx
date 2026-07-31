@@ -1,13 +1,22 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map, switchMap, timeout } from 'rxjs/operators';
+import {
+  catchError,
+  finalize,
+  map,
+  shareReplay,
+  switchMap,
+  timeout,
+} from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   clearStoredDirectusSession,
   getStoredDirectusAccessToken,
   getStoredDirectusRefreshToken,
+  isStoredDirectusAccessExpired,
   setStoredDirectusSession,
+  updateStoredDirectusAccessExpiry,
 } from './directus-auth.storage';
 
 type DirectusFeature = keyof typeof environment.directus.features;
@@ -49,6 +58,7 @@ export interface DirectusFileResponse {
 })
 export class DirectusApiService {
   private readonly baseUrl = environment.directus.url.replace(/\/+$/, '');
+  private refreshInFlight$: Observable<DirectusAuthResponse> | null = null;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -69,13 +79,17 @@ export class DirectusApiService {
   }
 
   refreshSession(): Observable<DirectusAuthResponse> {
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
     const refreshToken = getStoredDirectusRefreshToken();
     if (!refreshToken) {
       clearStoredDirectusSession();
       return throwError(() => new Error('Missing Directus refresh token'));
     }
 
-    return this.http
+    this.refreshInFlight$ = this.http
       .post<DirectusAuthResponse>(`${this.baseUrl}/auth/refresh`, {
         refresh_token: refreshToken,
         mode: 'json',
@@ -91,13 +105,22 @@ export class DirectusApiService {
             response.data.access_token,
             response.data.refresh_token
           );
+          updateStoredDirectusAccessExpiry(
+            Date.now() + response.data.expires
+          );
           return response;
         }),
         catchError((error) => {
           clearStoredDirectusSession();
           return throwError(() => error);
-        })
+        }),
+        finalize(() => {
+          this.refreshInFlight$ = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
       );
+
+    return this.refreshInFlight$;
   }
 
   readItems<T>(
@@ -198,7 +221,7 @@ export class DirectusApiService {
         { headers: this.toHeaders(options) }
       ),
       options
-    ).pipe(timeout(60000));
+    ).pipe(timeout(5 * 60 * 1000));
   }
 
   assetUrl(fileId: string): string {
@@ -231,6 +254,13 @@ export class DirectusApiService {
       return request();
     }
 
+    if (
+      getStoredDirectusRefreshToken() &&
+      isStoredDirectusAccessExpired()
+    ) {
+      return this.refreshSession().pipe(switchMap(() => request()));
+    }
+
     return request().pipe(
       catchError((error) => {
         if (!this.isAuthError(error)) {
@@ -245,6 +275,6 @@ export class DirectusApiService {
   }
 
   private isAuthError(error: any): boolean {
-    return error?.status === 401 || error?.status === 403;
+    return error?.status === 401;
   }
 }
