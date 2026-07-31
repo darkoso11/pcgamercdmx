@@ -25,6 +25,7 @@ export class AdminArticleEditorComponent implements OnInit {
   uploading = false;
   selectedCoverFile: File | null = null;
   coverImagePreview: string | null = null;
+  private coverUploadPromise: Promise<void> | null = null;
   errorMsg = '';
   successMsg = '';
 
@@ -151,7 +152,8 @@ export class AdminArticleEditorComponent implements OnInit {
             videoFileId: [''],
             videoFileUrl: [''],
             videoFileName: [''],
-            videoFileType: ['']
+            videoFileType: [''],
+            videoPreviewUrl: ['']
           });
           this.sectionsArray.push(sectionForm);
         });
@@ -194,7 +196,8 @@ export class AdminArticleEditorComponent implements OnInit {
       videoFileId: [''],
       videoFileUrl: [''],
       videoFileName: [''],
-      videoFileType: ['']
+      videoFileType: [''],
+      videoPreviewUrl: ['']
     });
     this.sectionsArray.push(sectionForm);
   }
@@ -234,9 +237,11 @@ export class AdminArticleEditorComponent implements OnInit {
         const preview = e.target?.result as string;
         const imagesArray = this.getSectionImages(sectionIndex);
         (imagesArray.at(imageIndex) as FormGroup).patchValue({ preview });
-        (imagesArray.at(imageIndex) as any)._file = file;
       };
       reader.readAsDataURL(file);
+      const imageForm = this.getSectionImages(sectionIndex).at(imageIndex) as FormGroup;
+      (imageForm as any)._file = file;
+      void this.uploadSectionImage(sectionIndex, imageIndex).catch(() => undefined);
     }
   }
 
@@ -247,27 +252,34 @@ export class AdminArticleEditorComponent implements OnInit {
 
     if (!file) return;
 
+    const pendingUpload = (imageForm as any)._uploadPromise as Promise<void> | undefined;
+    if (pendingUpload) {
+      return pendingUpload;
+    }
+
     this.uploading = true;
     this.errorMsg = '';
-    try {
-      const uploaded = await this.uploadService.uploadFile(file);
-      imageForm.patchValue({
-        url: uploaded.url,
-        fileId: uploaded.fileId,
-        filename: uploaded.filename,
-        mimeType: uploaded.mimeType,
-      });
-      this.successMsg = 'Imagen subida correctamente';
-      setTimeout(() => {
-        this.successMsg = '';
+    const upload = (async () => {
+      try {
+        const uploaded = await this.uploadService.uploadFile(file);
+        imageForm.patchValue({
+          url: uploaded.url,
+          fileId: uploaded.fileId,
+          filename: uploaded.filename,
+          mimeType: uploaded.mimeType,
+        });
+        this.successMsg = 'Imagen lista para guardar';
+      } catch (e) {
+        this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
+        throw e;
+      } finally {
+        delete (imageForm as any)._uploadPromise;
+        this.uploading = false;
         this.cdr.markForCheck();
-      }, 3000);
-    } catch (e) {
-      this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
-    } finally {
-      this.uploading = false;
-      this.cdr.markForCheck();
-    }
+      }
+    })();
+    (imageForm as any)._uploadPromise = upload;
+    return upload;
   }
 
   removeSection(index: number) {
@@ -305,36 +317,44 @@ export class AdminArticleEditorComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = (e) => {
         this.coverImagePreview = e.target?.result as string;
+        this.cdr.markForCheck();
       };
       reader.readAsDataURL(file);
+      void this.uploadCoverImage().catch(() => undefined);
     }
   }
 
   async uploadCoverImage() {
     if (!this.selectedCoverFile) return;
     
+    if (this.coverUploadPromise) {
+      return this.coverUploadPromise;
+    }
+
     this.uploading = true;
     this.errorMsg = '';
-    try {
-      const uploaded = await this.uploadService.uploadFile(this.selectedCoverFile);
-      this.form.patchValue({
-        coverImage: {
-          ...uploaded,
-          alt: this.form.value.title || '',
-        },
-      });
-      this.successMsg = 'Imagen subida correctamente';
-      this.selectedCoverFile = null;
-      setTimeout(() => {
-        this.successMsg = '';
+    const file = this.selectedCoverFile;
+    this.coverUploadPromise = (async () => {
+      try {
+        const uploaded = await this.uploadService.uploadFile(file);
+        this.form.patchValue({
+          coverImage: {
+            ...uploaded,
+            alt: this.form.value.title || '',
+          },
+        });
+        this.successMsg = 'Portada lista para guardar';
+        this.selectedCoverFile = null;
+      } catch (e) {
+        this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
+        throw e;
+      } finally {
+        this.coverUploadPromise = null;
+        this.uploading = false;
         this.cdr.markForCheck();
-      }, 3000);
-    } catch (e) {
-      this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
-    } finally {
-      this.uploading = false;
-      this.cdr.markForCheck();
-    }
+      }
+    })();
+    return this.coverUploadPromise;
   }
 
   createCategoryInline() {
@@ -386,34 +406,50 @@ export class AdminArticleEditorComponent implements OnInit {
     }
     const section = this.sectionsArray.at(sectionIndex) as FormGroup;
     (section as any)._videoFile = file;
+    const videoPreviewUrl = typeof URL !== 'undefined' && URL.createObjectURL
+      ? URL.createObjectURL(file)
+      : '';
     section.patchValue({
       videoFileName: file.name,
       videoFileType: file.type,
       videoTitle: section.value.videoTitle || file.name,
+      videoPreviewUrl,
     });
+    void this.uploadSectionVideo(sectionIndex).catch(() => undefined);
   }
 
   async uploadSectionVideo(sectionIndex: number) {
     const section = this.sectionsArray.at(sectionIndex) as FormGroup;
     const file = (section as any)._videoFile as File | undefined;
     if (!file) return;
+    const pendingUpload = (section as any)._videoUploadPromise as Promise<void> | undefined;
+    if (pendingUpload) {
+      return pendingUpload;
+    }
+
     this.uploading = true;
     this.errorMsg = '';
-    try {
-      const uploaded = await this.uploadService.uploadFile(file);
-      section.patchValue({
-        videoFileId: uploaded.fileId,
-        videoFileUrl: uploaded.url,
-        videoFileName: uploaded.filename,
-        videoFileType: uploaded.mimeType,
-      });
-      this.successMsg = 'Video subido correctamente';
-    } catch (error) {
-      this.errorMsg = `Error al subir el video: ${this.requestErrorMessage(error)}`;
-    } finally {
-      this.uploading = false;
-      this.cdr.markForCheck();
-    }
+    const upload = (async () => {
+      try {
+        const uploaded = await this.uploadService.uploadFile(file);
+        section.patchValue({
+          videoFileId: uploaded.fileId,
+          videoFileUrl: uploaded.url,
+          videoFileName: uploaded.filename,
+          videoFileType: uploaded.mimeType,
+        });
+        this.successMsg = 'Video listo para guardar';
+      } catch (error) {
+        this.errorMsg = `Error al subir el video: ${this.requestErrorMessage(error)}`;
+        throw error;
+      } finally {
+        delete (section as any)._videoUploadPromise;
+        this.uploading = false;
+        this.cdr.markForCheck();
+      }
+    })();
+    (section as any)._videoUploadPromise = upload;
+    return upload;
   }
 
   openPreview() {
@@ -440,7 +476,7 @@ export class AdminArticleEditorComponent implements OnInit {
     this.errorMsg = '';
     
     try {
-      await this.uploadPendingSectionVideos();
+      await this.uploadPendingMedia();
       const formData = this.form.getRawValue();
       
       if (typeof formData.tags === 'string') {
@@ -495,6 +531,7 @@ export class AdminArticleEditorComponent implements OnInit {
           videoFileUrl,
           videoFileName,
           videoFileType,
+          videoPreviewUrl,
           ...persisted
         } = section;
         return { ...persisted, media, order: index };
@@ -535,9 +572,38 @@ export class AdminArticleEditorComponent implements OnInit {
     return 'Directus no devolvió detalles del error.';
   }
 
-  private async uploadPendingSectionVideos(): Promise<void> {
+  private async uploadPendingMedia(): Promise<void> {
+    if (this.coverUploadPromise) {
+      await this.coverUploadPromise;
+    }
+    if (
+      this.selectedCoverFile &&
+      !this.form.value.coverImage?.fileId
+    ) {
+      await this.uploadCoverImage();
+    }
+
     for (const control of this.sectionsArray.controls) {
       const section = control as FormGroup;
+      const images = section.get('images') as FormArray;
+      for (const imageControl of images.controls) {
+        const image = imageControl as FormGroup;
+        const pendingImageUpload = (image as any)._uploadPromise as Promise<void> | undefined;
+        if (pendingImageUpload) {
+          await pendingImageUpload;
+        }
+        if ((image as any)._file && !image.value.fileId) {
+          await this.uploadSectionImage(
+            this.sectionsArray.controls.indexOf(section),
+            images.controls.indexOf(image)
+          );
+        }
+      }
+
+      const pendingVideoUpload = (section as any)._videoUploadPromise as Promise<void> | undefined;
+      if (pendingVideoUpload) {
+        await pendingVideoUpload;
+      }
       const file = (section as any)._videoFile as File | undefined;
       if (!file || section.value.videoFileId) {
         continue;

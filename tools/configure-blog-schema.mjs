@@ -33,7 +33,9 @@ const collections = [
 ];
 
 for (const definition of collections) {
-  const exists = await request(`/collections/${definition.collection}`, { allow404: true });
+  const exists = await request(`/collections/${definition.collection}`, {
+    allowMissing: true,
+  });
   if (!exists) {
     await request('/collections', {
       method: 'POST',
@@ -53,7 +55,9 @@ for (const definition of collections) {
   }
 
   for (const [field, type, meta] of definition.fields) {
-    const current = await request(`/fields/${definition.collection}/${field}`, { allow404: true });
+    const current = await request(`/fields/${definition.collection}/${field}`, {
+      allowMissing: true,
+    });
     const payload = { field, type, meta };
     if (current) {
       await request(`/fields/${definition.collection}/${field}`, {
@@ -69,11 +73,54 @@ for (const definition of collections) {
   }
 }
 
+await ensurePublicReadPermissions();
+
 process.stdout.write(`${JSON.stringify({
   ok: true,
   collections: collections.map((item) => item.collection),
-  note: 'Configura en Directus lectura pública para elementos con published=true.',
+  publicRead: 'published=true',
 }, null, 2)}\n`);
+
+async function ensurePublicReadPermissions() {
+  const policies = await request('/policies?fields=id,name,admin_access,app_access&limit=100');
+  const publicPolicy = policies.data.find((policy) =>
+    policy.name === '$t:public_label' ||
+    (policy.admin_access === false && policy.app_access === false)
+  );
+
+  if (!publicPolicy) {
+    throw new Error('No se encontró la política pública de Directus');
+  }
+
+  for (const definition of collections) {
+    const existing = await request(
+      `/permissions?filter[policy][_eq]=${encodeURIComponent(publicPolicy.id)}` +
+      `&filter[collection][_eq]=${encodeURIComponent(definition.collection)}` +
+      '&filter[action][_eq]=read&fields=id&limit=1'
+    );
+    const payload = {
+      policy: publicPolicy.id,
+      collection: definition.collection,
+      action: 'read',
+      permissions: { published: { _eq: true } },
+      validation: {},
+      presets: null,
+      fields: ['*'],
+    };
+
+    if (existing.data[0]) {
+      await request(`/permissions/${existing.data[0].id}`, {
+        method: 'PATCH',
+        body: payload,
+      });
+    } else {
+      await request('/permissions', {
+        method: 'POST',
+        body: payload,
+      });
+    }
+  }
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -84,7 +131,10 @@ async function request(path, options = {}) {
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
-  if (options.allow404 && response.status === 404) {
+  if (
+    (options.allow404 && response.status === 404) ||
+    (options.allowMissing && (response.status === 403 || response.status === 404))
+  ) {
     return null;
   }
   if (!response.ok) {

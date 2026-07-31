@@ -139,4 +139,60 @@ describe('AdminArticleEditorComponent async state', () => {
       })
     );
   });
+
+  it('uploads selected cover and section images automatically before saving', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({
+      title: 'Artículo con imágenes',
+      summary: 'Resumen suficientemente largo',
+      categoryId: 'guias',
+    });
+    component.selectedCoverFile = new File(['cover'], 'cover.webp', {
+      type: 'image/webp',
+    });
+    const section = component.sectionsArray.at(0);
+    component.addImageToSection(0);
+    const image = component.getSectionImages(0).at(0);
+    (image as any)._file = new File(['section'], 'section.png', {
+      type: 'image/png',
+    });
+
+    uploadService.uploadFile.and.returnValues(
+      Promise.resolve({
+        fileId: 'cover-1',
+        url: 'https://cms.test.pcgamercdmx.com/assets/cover-1',
+        filename: 'cover.webp',
+        mimeType: 'image/webp',
+      }),
+      Promise.resolve({
+        fileId: 'image-1',
+        url: 'https://cms.test.pcgamercdmx.com/assets/image-1',
+        filename: 'section.png',
+        mimeType: 'image/png',
+      })
+    );
+    blogService.update.and.returnValue(of({}));
+
+    await component.onSave('draft');
+
+    expect(uploadService.uploadFile).toHaveBeenCalledTimes(2);
+    expect(blogService.update).toHaveBeenCalledWith(
+      '2',
+      jasmine.objectContaining({
+        coverImage: jasmine.objectContaining({ fileId: 'cover-1' }),
+        sections: [
+          jasmine.objectContaining({
+            images: [
+              jasmine.objectContaining({
+                fileId: 'image-1',
+                url: 'https://cms.test.pcgamercdmx.com/assets/image-1',
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+    expect(section.value.images[0].fileId).toBe('image-1');
+  });
 });

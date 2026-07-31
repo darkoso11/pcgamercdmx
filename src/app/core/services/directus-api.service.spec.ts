@@ -130,4 +130,56 @@ describe('DirectusApiService', () => {
     expect(getStoredDirectusAccessToken()).toBe('fresh-access');
     expect(getStoredDirectusRefreshToken()).toBe('fresh-refresh');
   });
+
+  it('shares one refresh request across concurrent authenticated requests', () => {
+    setStoredDirectusSession('expired-access', 'valid-refresh');
+    const results: unknown[] = [];
+
+    service.readItems('pc_blog_posts', {}, { auth: true }).subscribe((response) => {
+      results.push(response.data);
+    });
+    service.readItems('pc_blog_categories', {}, { auth: true }).subscribe((response) => {
+      results.push(response.data);
+    });
+
+    const posts = httpMock.expectOne(`${baseUrl}/items/pc_blog_posts`);
+    const categories = httpMock.expectOne(`${baseUrl}/items/pc_blog_categories`);
+    posts.flush({}, { status: 401, statusText: 'Unauthorized' });
+    categories.flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    const refresh = httpMock.expectOne(`${baseUrl}/auth/refresh`);
+    refresh.flush({
+      data: {
+        access_token: 'fresh-access',
+        refresh_token: 'fresh-refresh',
+        expires: 900000,
+      },
+    });
+
+    httpMock.expectOne(`${baseUrl}/items/pc_blog_posts`).flush({ data: [{ id: 1 }] });
+    httpMock.expectOne(`${baseUrl}/items/pc_blog_categories`).flush({ data: [{ id: 2 }] });
+
+    expect(results).toEqual([[{ id: 1 }], [{ id: 2 }]]);
+  });
+
+  it('does not refresh or clear the session after a permission error', () => {
+    setStoredDirectusSession('valid-access', 'valid-refresh');
+    let errorStatus = 0;
+
+    service.readItems('pc_blog_categories', {}, { auth: true }).subscribe({
+      error: (error) => {
+        errorStatus = error.status;
+      },
+    });
+
+    httpMock.expectOne(`${baseUrl}/items/pc_blog_categories`).flush(
+      { errors: [{ message: 'Forbidden' }] },
+      { status: 403, statusText: 'Forbidden' }
+    );
+
+    httpMock.expectNone(`${baseUrl}/auth/refresh`);
+    expect(errorStatus).toBe(403);
+    expect(getStoredDirectusAccessToken()).toBe('valid-access');
+    expect(getStoredDirectusRefreshToken()).toBe('valid-refresh');
+  });
 });
