@@ -264,6 +264,7 @@ p {
 
 .action-btn--mail {
   background: transparent;
+  border-color: var(--accent, var(--cyan));
   border-color: color-mix(in srgb, var(--accent, var(--cyan)), transparent 35%);
   color: var(--accent, var(--cyan));
 }

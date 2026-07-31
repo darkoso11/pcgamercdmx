@@ -14,6 +14,8 @@
     "migrate:blog-taxonomy": "node tools/migrate-blog-taxonomy.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "serve:browser:test": "node tools/serve-browser-build.mjs",
+    "test:browsers": "npm run build && playwright test",
     "serve:ssr:pcgamercdmx": "node dist/pcgamercdmx/server/server.mjs",
     "build:ssr": "npm run build:prod && ng run pcgamercdmx:server:production"
   },
