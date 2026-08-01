@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -45,6 +53,9 @@ interface DetailViewModel {
   styleUrls: ['./product-detail.component.css'],
 })
 export class ProductDetailComponent implements OnInit, OnDestroy {
+  @ViewChild('galleryLightbox') lightbox?: ElementRef<HTMLElement>;
+  @ViewChild('lightboxClose') private lightboxClose?: ElementRef<HTMLButtonElement>;
+
   product: CatalogProduct | null = null;
   detail: DetailViewModel | null = null;
   relatedProducts: ProductCardViewModel[] = [];
@@ -52,8 +63,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   notFound = false;
   notFoundRootLink = '/productos';
   notFoundRootLabel = 'Volver al catalogo';
+  selectedImageIndex = 0;
+  isGalleryOpen = false;
 
   private readonly destroy$ = new Subject<void>();
+  private previouslyFocusedElement: HTMLElement | null = null;
+  private previousBodyOverflow: string | null = null;
+  private focusTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -90,6 +106,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
         this.product = product;
         this.detail = this.buildDetailViewModel(product);
+        this.selectedImageIndex = 0;
+        this.resetGalleryState();
         this.updateMetaTags(product);
         this.loadRelatedProducts(product.slug);
         this.loading = false;
@@ -133,6 +151,137 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     window.open(buildWhatsAppUrl(message), '_blank');
   }
 
+  get selectedImage(): string {
+    return this.detail?.gallery[this.selectedImageIndex] ?? this.detail?.image ?? '';
+  }
+
+  selectImage(index: number): void {
+    if (!this.detail?.gallery[index]) {
+      return;
+    }
+
+    this.selectedImageIndex = index;
+  }
+
+  previousImage(): void {
+    const imageCount = this.detail?.gallery.length ?? 0;
+    if (imageCount < 2) {
+      return;
+    }
+
+    this.selectedImageIndex = (this.selectedImageIndex - 1 + imageCount) % imageCount;
+  }
+
+  nextImage(): void {
+    const imageCount = this.detail?.gallery.length ?? 0;
+    if (imageCount < 2) {
+      return;
+    }
+
+    this.selectedImageIndex = (this.selectedImageIndex + 1) % imageCount;
+  }
+
+  openGallery(): void {
+    if (this.selectedImage) {
+      if (typeof document !== 'undefined') {
+        this.previouslyFocusedElement = document.activeElement as HTMLElement | null;
+        this.lockPageScroll();
+      }
+
+      this.isGalleryOpen = true;
+      this.focusTimer = setTimeout(() => this.lightboxClose?.nativeElement.focus());
+    }
+  }
+
+  closeGallery(): void {
+    const focusTarget = this.previouslyFocusedElement;
+    this.resetGalleryState();
+    this.focusTimer = setTimeout(() => focusTarget?.focus());
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleGalleryKeydown(event: KeyboardEvent): void {
+    if (!this.isGalleryOpen) {
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeGallery();
+    } else if (event.key === 'Tab') {
+      this.trapGalleryFocus(event);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.previousImage();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.nextImage();
+    }
+  }
+
+  private trapGalleryFocus(event: KeyboardEvent): void {
+    const lightbox = this.lightbox?.nativeElement;
+    if (!lightbox) {
+      return;
+    }
+
+    const focusableElements = Array.from(
+      lightbox.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    );
+
+    if (!focusableElements.length) {
+      event.preventDefault();
+      lightbox.focus();
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    const activeElement = typeof document !== 'undefined' ? document.activeElement : null;
+
+    if (!activeElement || !lightbox.contains(activeElement)) {
+      event.preventDefault();
+      firstElement.focus();
+    } else if (event.shiftKey && activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+    } else if (!event.shiftKey && activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  }
+
+  private lockPageScroll(): void {
+    if (typeof document === 'undefined' || this.previousBodyOverflow !== null) {
+      return;
+    }
+
+    this.previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+
+  private unlockPageScroll(): void {
+    if (typeof document === 'undefined' || this.previousBodyOverflow === null) {
+      return;
+    }
+
+    document.body.style.overflow = this.previousBodyOverflow;
+    this.previousBodyOverflow = null;
+  }
+
+  private resetGalleryState(): void {
+    this.isGalleryOpen = false;
+    this.unlockPageScroll();
+    this.previouslyFocusedElement = null;
+
+    if (this.focusTimer) {
+      clearTimeout(this.focusTimer);
+      this.focusTimer = undefined;
+    }
+  }
+
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
@@ -150,6 +299,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const featureEntries = this.buildFeatureEntries(product);
     const infoChips = this.buildInfoChips(product);
 
+    const gallery = [product.image, ...(product.images ?? [])]
+      .filter((image): image is string => Boolean(image))
+      .filter((image, index, images) => images.indexOf(image) === index);
+
     return {
       rootLabel:
         product.category === ProductCategory.ASSEMBLED ? 'Ensambles' : 'Productos',
@@ -158,7 +311,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       title: product.title,
       description: product.fullDescription ?? product.description,
       image: product.image,
-      gallery: product.images?.length ? product.images : [product.image],
+      gallery,
       price: product.discountedPrice ?? product.price,
       originalPrice: product.discountedPrice ? product.price : undefined,
       priceLabel:
@@ -334,6 +487,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.resetGalleryState();
     this.destroy$.next();
     this.destroy$.complete();
   }
