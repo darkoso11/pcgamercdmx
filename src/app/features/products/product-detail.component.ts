@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -52,6 +52,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   notFound = false;
   notFoundRootLink = '/productos';
   notFoundRootLabel = 'Volver al catalogo';
+  selectedImageIndex = 0;
+  isGalleryOpen = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -90,6 +92,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
         this.product = product;
         this.detail = this.buildDetailViewModel(product);
+        this.selectedImageIndex = 0;
+        this.isGalleryOpen = false;
         this.updateMetaTags(product);
         this.loadRelatedProducts(product.slug);
         this.loading = false;
@@ -133,6 +137,63 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     window.open(buildWhatsAppUrl(message), '_blank');
   }
 
+  get selectedImage(): string {
+    return this.detail?.gallery[this.selectedImageIndex] ?? this.detail?.image ?? '';
+  }
+
+  selectImage(index: number): void {
+    if (!this.detail?.gallery[index]) {
+      return;
+    }
+
+    this.selectedImageIndex = index;
+  }
+
+  previousImage(): void {
+    const imageCount = this.detail?.gallery.length ?? 0;
+    if (imageCount < 2) {
+      return;
+    }
+
+    this.selectedImageIndex = (this.selectedImageIndex - 1 + imageCount) % imageCount;
+  }
+
+  nextImage(): void {
+    const imageCount = this.detail?.gallery.length ?? 0;
+    if (imageCount < 2) {
+      return;
+    }
+
+    this.selectedImageIndex = (this.selectedImageIndex + 1) % imageCount;
+  }
+
+  openGallery(): void {
+    if (this.selectedImage) {
+      this.isGalleryOpen = true;
+    }
+  }
+
+  closeGallery(): void {
+    this.isGalleryOpen = false;
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleGalleryKeydown(event: KeyboardEvent): void {
+    if (!this.isGalleryOpen) {
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      this.closeGallery();
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.previousImage();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.nextImage();
+    }
+  }
+
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
@@ -150,6 +211,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const featureEntries = this.buildFeatureEntries(product);
     const infoChips = this.buildInfoChips(product);
 
+    const gallery = [product.image, ...(product.images ?? [])]
+      .filter((image): image is string => Boolean(image))
+      .filter((image, index, images) => images.indexOf(image) === index);
+
     return {
       rootLabel:
         product.category === ProductCategory.ASSEMBLED ? 'Ensambles' : 'Productos',
@@ -158,7 +223,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       title: product.title,
       description: product.fullDescription ?? product.description,
       image: product.image,
-      gallery: product.images?.length ? product.images : [product.image],
+      gallery,
       price: product.discountedPrice ?? product.price,
       originalPrice: product.discountedPrice ? product.price : undefined,
       priceLabel:

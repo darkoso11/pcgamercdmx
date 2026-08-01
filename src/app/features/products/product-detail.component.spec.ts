@@ -137,4 +137,45 @@ describe('ProductDetailComponent', () => {
 
     expect(chips).toEqual([]);
   });
+
+  it('includes the main image and every unique gallery image', () => {
+    const component = createComponent();
+    const detail = (component as any).buildDetailViewModel({
+      category: ProductCategory.ASSEMBLED,
+      title: 'PC Gallery',
+      slug: 'pc-gallery',
+      description: 'Ensamble',
+      image: 'main.png',
+      images: ['side.png', 'main.png', 'rear.png'],
+      price: 1000,
+      stock: 2,
+      subcategory: 'gaming',
+      specifications: { storage: [] },
+      performance: { totalRam: '', storageCapacity: '' },
+      certifications: { certificate: '', wattage: 0 },
+      brandLogos: [],
+    });
+
+    expect(detail.gallery).toEqual(['main.png', 'side.png', 'rear.png']);
+  });
+
+  it('selects thumbnails and wraps arrow navigation around the gallery', () => {
+    const component = createComponent();
+    component.detail = {
+      image: 'main.png',
+      gallery: ['main.png', 'side.png', 'rear.png'],
+    } as any;
+
+    component.selectImage(1);
+    expect(component.selectedImage).toBe('side.png');
+
+    component.nextImage();
+    expect(component.selectedImage).toBe('rear.png');
+
+    component.nextImage();
+    expect(component.selectedImage).toBe('main.png');
+
+    component.previousImage();
+    expect(component.selectedImage).toBe('rear.png');
+  });
 });
