@@ -1,23 +1,24 @@
 <div class="font-orbitron min-h-screen bg-[#0a0d22]">
-  <div *ngIf="loading" class="flex min-h-screen items-center justify-center">
-    <div class="text-center">
-      <div class="spinner mx-auto mb-4"></div>
-      <p class="text-xl text-white">Cargando producto...</p>
+  <div class="product-detail-content" [attr.inert]="isGalleryOpen ? '' : null">
+    <div *ngIf="loading" class="flex min-h-screen items-center justify-center">
+      <div class="text-center">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-xl text-white">Cargando producto...</p>
+      </div>
     </div>
-  </div>
 
-  <div *ngIf="notFound && !loading" class="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-    <h2 class="text-3xl font-bold text-white">Producto no encontrado</h2>
-    <p class="mt-4 max-w-md text-slate-300">
-      No encontramos el producto solicitado dentro del catalogo actual. Puede haber cambiado de slug o no estar publicado.
-    </p>
-    <a
-      [routerLink]="notFoundRootLink"
-      class="mt-8 rounded-lg bg-gradient-to-r from-pink-600 to-fuchsia-500 px-6 py-3 font-semibold text-white"
-    >
-      {{ notFoundRootLabel }}
-    </a>
-  </div>
+    <div *ngIf="notFound && !loading" class="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+      <h2 class="text-3xl font-bold text-white">Producto no encontrado</h2>
+      <p class="mt-4 max-w-md text-slate-300">
+        No encontramos el producto solicitado dentro del catalogo actual. Puede haber cambiado de slug o no estar publicado.
+      </p>
+      <a
+        [routerLink]="notFoundRootLink"
+        class="mt-8 rounded-lg bg-gradient-to-r from-pink-600 to-fuchsia-500 px-6 py-3 font-semibold text-white"
+      >
+        {{ notFoundRootLabel }}
+      </a>
+    </div>
 
   <div *ngIf="product && detail && !loading" class="pb-12 pt-24 md:py-24">
     <div class="mx-auto max-w-7xl px-4">
@@ -37,6 +38,7 @@
         <section class="space-y-5">
           <div class="gallery-main border border-white/10">
             <button
+              #galleryImageButton
               type="button"
               class="gallery-image-button"
               (click)="openGallery()"
@@ -206,16 +208,20 @@
       </section>
     </div>
   </div>
+  </div>
 
   <div
     *ngIf="isGalleryOpen && detail"
+    #galleryLightbox
     class="gallery-lightbox"
     role="dialog"
     aria-modal="true"
-    [attr.aria-label]="'Galeria de ' + detail.title"
+    aria-labelledby="gallery-lightbox-title"
+    tabindex="-1"
     (click)="closeGallery()"
   >
-    <button type="button" class="lightbox-close" (click)="closeGallery()" aria-label="Cerrar galeria">
+    <h2 id="gallery-lightbox-title" class="sr-only">Galeria de {{ detail.title }}</h2>
+    <button #lightboxClose type="button" class="lightbox-close" (click)="closeGallery()" aria-label="Cerrar galeria">
       <span aria-hidden="true">&times;</span>
     </button>
 
