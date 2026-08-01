@@ -1,6 +1,11 @@
 import { of } from 'rxjs';
-import { convertToParamMap } from '@angular/router';
+import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { AuthService } from '../../../../admin/services/auth.service';
 import { Product } from '../../shared/products-admin.service';
+import { ProductsAdminService } from '../../shared/products-admin.service';
+import { AdminAssemblyCardComponent } from '../shared/admin-assembly-card/admin-assembly-card.component';
 import { AdminAssembliesListComponent } from './admin-assemblies-list.component';
 
 describe('AdminAssembliesListComponent', () => {
@@ -81,5 +86,34 @@ describe('AdminAssembliesListComponent', () => {
       'low',
       'out',
     ]);
+  });
+
+  it('renders the complete list with shared management cards', () => {
+    TestBed.configureTestingModule({
+      imports: [AdminAssembliesListComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: { logout: () => undefined } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+        {
+          provide: ProductsAdminService,
+          useValue: {
+            getProductsByCategory: () => of([assembly('robot', 6)]),
+            duplicateProduct: () => of(undefined),
+            deleteProduct: () => of(true),
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(AdminAssembliesListComponent);
+
+    fixture.detectChanges();
+
+    const card = fixture.debugElement.query(By.directive(AdminAssemblyCardComponent));
+    expect(card).not.toBeNull();
+    expect(card.componentInstance.managementMode).toBeTrue();
   });
 });

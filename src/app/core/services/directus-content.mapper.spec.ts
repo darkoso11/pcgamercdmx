@@ -30,6 +30,7 @@ describe('Directus content mapper', () => {
         powerSupply: '850W 80+ Gold',
         caseModel: 'NZXT H7 Flow RGB',
         cooling: 'Arctic Liquid 280mm',
+        fans: '6 x Lian Li UNI FAN SL-INF',
         admin: {
           productType: 'gabinete',
           brand: 'NZXT',
@@ -55,6 +56,7 @@ describe('Directus content mapper', () => {
     expect(product.category).toBe('paquetes');
     expect(product.discountedPrice).toBe(2200);
     expect(product.processor).toBe('Intel i7-13700K');
+    expect((product as any).fans).toBe('6 x Lian Li UNI FAN SL-INF');
     expect(product.productType).toBe('gabinete');
     expect(product.brand).toBe('NZXT');
     expect(product.categoryId).toBe('1');
@@ -123,6 +125,7 @@ describe('Directus content mapper', () => {
       operatingSystem: 'Windows 11 Pro',
       caseModel: 'Flow',
       cooling: 'Liquid 240',
+      fans: '4 x Corsair QX120',
     } as any);
 
     expect(payload.category).toBe(ProductCategory.ASSEMBLED);
@@ -134,6 +137,7 @@ describe('Directus content mapper', () => {
     expect(payload.specifications['powerCertificate']).toBe('80 Plus Gold');
     expect(payload.specifications['powerCertificateImage']).toBe('https://cms.test/assets/gold');
     expect(payload.specifications['operatingSystem']).toBe('Windows 11 Pro');
+    expect(payload.specifications['fans']).toBe('4 x Corsair QX120');
   });
 
   it('maps Directus assembly storage and case aliases back to the assembly editor', () => {
@@ -153,6 +157,7 @@ describe('Directus content mapper', () => {
         powerCertificate: '80 Plus Platinum',
         powerCertificateImage: 'https://cms.test/assets/platinum',
         operatingSystem: 'Windows 11 Pro',
+        fans: '3 x Noctua NF-A12x25',
       },
       stock: 1,
       published: false,
@@ -165,6 +170,70 @@ describe('Directus content mapper', () => {
     expect((product as any).powerCertificate).toBe('80 Plus Platinum');
     expect((product as any).powerCertificateImage).toBe('https://cms.test/assets/platinum');
     expect((product as any).operatingSystem).toBe('Windows 11 Pro');
+    expect((product as any).fans).toBe('3 x Noctua NF-A12x25');
+  });
+
+  it('maps a legacy Directus assembly without fans to an empty string', () => {
+    const product = mapDirectusProductToAdminProduct({
+      id: 21,
+      title: 'PC anterior',
+      category: 'assembled',
+      price: 10000,
+      image: 'legacy.png',
+      specifications: {},
+      stock: 1,
+      published: true,
+    });
+
+    expect((product as any).fans).toBe('');
+  });
+
+  it('overlays top-level assembly details on an existing nested catalog', () => {
+    const product = mapDirectusProductToCatalogProduct({
+      id: 22,
+      title: 'PC catalogada',
+      category: 'assembled',
+      price: 20000,
+      image: 'catalog.png',
+      stock: 1,
+      published: true,
+      specifications: {
+        fans: '5 x be quiet! Light Wings',
+        operatingSystem: 'Windows 11 Pro',
+        catalog: {
+          category: ProductCategory.ASSEMBLED,
+          specifications: {
+            processor: { title: 'Ryzen 7' },
+            motherboard: { title: 'B650' },
+            ram: { title: '32 GB' },
+            storage: [{ title: '1 TB' }],
+            graphicsCard: { title: 'RTX 4070' },
+            powerSupply: { title: '850 W' },
+            case: { title: 'Flow' },
+            cooling: { title: 'AIO' },
+          },
+        },
+      },
+    });
+
+    expect((product as any).specifications.fans).toBe('5 x be quiet! Light Wings');
+    expect((product as any).specifications.operatingSystem).toBe('Windows 11 Pro');
+  });
+
+  it('does not invent power specifications for a partial assembly', () => {
+    const product = mapDirectusProductToCatalogProduct({
+      id: 23,
+      title: 'PC parcial',
+      category: 'assembled',
+      price: 0,
+      image: 'partial.png',
+      stock: 0,
+      published: true,
+      specifications: {},
+    });
+
+    expect((product as any).certifications.wattage).toBe(0);
+    expect((product as any).certifications.certificate).toBe('');
   });
 
   it('maps Directus blog posts to articles and back', () => {

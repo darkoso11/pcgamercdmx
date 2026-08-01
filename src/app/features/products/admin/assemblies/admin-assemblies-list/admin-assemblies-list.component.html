@@ -46,69 +46,14 @@
     </section>
 
     <section *ngIf="!loading && filteredAssemblies.length" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      <article
+      <app-admin-assembly-card
         *ngFor="let assembly of filteredAssemblies"
-        class="overflow-hidden rounded-lg border border-white/10 bg-[#0b1220] transition hover:border-purple-400/50"
-      >
-        <div class="flex h-52 items-center justify-center bg-[#080d22] p-4">
-          <img
-            [src]="assembly.image"
-            [alt]="assembly.title"
-            class="h-full w-full object-contain"
-          />
-        </div>
-
-        <div class="space-y-4 p-5">
-          <div>
-            <div class="mb-2 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em]">
-              <span class="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1 text-purple-200">
-                Ensamble
-              </span>
-              <span
-                class="rounded-full px-3 py-1"
-                [ngClass]="assembly.published ? 'bg-green-500/15 text-green-300' : 'bg-yellow-500/15 text-yellow-300'"
-              >
-                {{ assembly.published ? 'Publicado' : 'Borrador' }}
-              </span>
-            </div>
-
-            <h2 class="line-clamp-2 min-h-[3.5rem] text-xl font-bold leading-tight">{{ assembly.title }}</h2>
-            <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">{{ assembly.description }}</p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 text-sm">
-            <div class="rounded-lg border border-white/10 bg-white/5 p-3">
-              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Precio</p>
-              <p class="mt-1 font-bold text-cyan-300">{{ formatPrice(assembly.price) }}</p>
-            </div>
-            <div class="rounded-lg border border-white/10 bg-white/5 p-3">
-              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Stock</p>
-              <p class="mt-1 font-bold text-white">{{ assembly.stock }}</p>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-            <button
-              (click)="editAssembly(assembly._id!)"
-              class="text-sm font-semibold text-cyan-300 transition hover:text-cyan-100"
-            >
-              <i class="fas fa-edit mr-1"></i>Editar
-            </button>
-            <button
-              (click)="duplicateAssembly(assembly._id!)"
-              class="text-sm font-semibold text-yellow-300 transition hover:text-yellow-100"
-            >
-              <i class="fas fa-copy mr-1"></i>Duplicar
-            </button>
-            <button
-              (click)="deleteAssembly(assembly._id!)"
-              class="text-sm font-semibold text-red-300 transition hover:text-red-100"
-            >
-              <i class="fas fa-trash mr-1"></i>Borrar
-            </button>
-          </div>
-        </div>
-      </article>
+        [assembly]="assembly"
+        [managementMode]="true"
+        (edit)="editAssembly($event)"
+        (duplicate)="duplicateAssembly($event)"
+        (delete)="deleteAssembly($event)"
+      ></app-admin-assembly-card>
     </section>
 
     <section *ngIf="!loading && !filteredAssemblies.length" class="rounded-lg border border-white/10 bg-[#0b1220] p-10 text-center">

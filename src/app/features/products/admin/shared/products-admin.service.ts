@@ -59,6 +59,7 @@ export interface Product {
   caseModel?: string;
   case?: string;
   cooling?: string;
+  fans?: string;
   image: string;
   images: string[];
   gallery?: string[];
@@ -103,6 +104,7 @@ export interface Package {
     powerSupply: string;
     caseModel: string;
     cooling: string;
+    fans?: string;
   };
   includedProducts: string[];
   stock: number;

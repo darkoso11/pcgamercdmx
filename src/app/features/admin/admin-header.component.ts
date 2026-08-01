@@ -9,17 +9,17 @@ import { adminUrl } from './admin-route.config';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="bg-[#0b1220] border-b border-cyan-400/30 px-6 py-4 sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <div class="bg-[#0b1220] border-b border-cyan-400/30 px-4 sm:px-6 py-4 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-3xl font-bold text-cyan-400">ADMIN</h1>
           <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Gestión de contenido</p>
         </div>
-        <div class="flex gap-2">
-          <a [routerLink]="adminHomeUrl" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
+        <div data-testid="admin-header-actions" class="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
+          <a [routerLink]="adminHomeUrl" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-center text-sm font-semibold transition">
             ← Volver al panel administrativo
           </a>
-          <a routerLink="/" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-sm font-semibold transition">
+          <a routerLink="/" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-center text-sm font-semibold transition">
             Ir a Sitio <i class="fas fa-external-link-alt ml-1"></i>
           </a>
           <button (click)="onLogout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm font-semibold transition">
