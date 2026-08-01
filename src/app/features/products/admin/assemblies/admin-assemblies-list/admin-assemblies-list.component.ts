@@ -6,6 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { Product, ProductsAdminService } from '../../shared/products-admin.service';
+import { AdminAssemblyCardComponent } from '../shared/admin-assembly-card/admin-assembly-card.component';
 import {
   CatalogStatusFilter,
   filterAndSortCatalogItems,
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-admin-assemblies-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, AdminHeaderComponent],
+  imports: [CommonModule, RouterModule, FormsModule, AdminHeaderComponent, AdminAssemblyCardComponent],
   templateUrl: './admin-assemblies-list.component.html',
 })
 export class AdminAssembliesListComponent implements OnInit, OnDestroy {
@@ -92,14 +93,6 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
 
         this.loadAssemblies();
       });
-  }
-
-  formatPrice(price: number): string {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      maximumFractionDigits: 0,
-    }).format(price);
   }
 
   ngOnDestroy(): void {

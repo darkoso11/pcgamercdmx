@@ -149,6 +149,7 @@ export function mapDirectusProductToAdminProduct(
     caseModel,
     case: caseModel,
     cooling: text(specs['cooling'] ?? readNested(catalog, ['specifications', 'cooling', 'title']), ''),
+    fans: text(specs['fans'] ?? readNested(catalog, ['specifications', 'fans']), ''),
     image: text(item.image ?? catalog['image'], DEFAULT_IMAGE),
     images,
     gallery,
@@ -247,6 +248,7 @@ export function mapAdminProductToDirectusPayload(
       operatingSystem: product.operatingSystem ?? '',
       caseModel,
       cooling: product.cooling ?? '',
+      fans: product.fans ?? '',
       powerCertificate: product.powerCertificate ?? '',
       powerCertificationId: product.powerCertificationId ?? '',
       powerCertificateImage: product.powerCertificateImage ?? '',
@@ -303,6 +305,16 @@ export function mapDirectusProductToCatalogProduct(
   const catalog = toRecord(specs['catalog']);
 
   if (Object.keys(catalog).length > 0) {
+    const category = normalizeProductCategory(item.category ?? catalog['category']);
+    const catalogSpecifications = toRecord(catalog['specifications']);
+    const specifications = category === ProductCategory.ASSEMBLED
+      ? {
+          ...catalogSpecifications,
+          operatingSystem: text(specs['operatingSystem'] ?? catalogSpecifications['operatingSystem'], ''),
+          fans: text(specs['fans'] ?? catalogSpecifications['fans'], ''),
+        }
+      : catalog['specifications'];
+
     return {
       ...catalog,
       _id: idToString(item.id) || text(catalog['_id'], ''),
@@ -310,7 +322,7 @@ export function mapDirectusProductToCatalogProduct(
       title: text(item.title ?? catalog['title'], 'Producto sin titulo'),
       slug: text(item.slug ?? catalog['slug'], ''),
       description: text(item.description ?? catalog['description'], ''),
-      category: normalizeProductCategory(item.category ?? catalog['category']),
+      category,
       subcategory: text(item.subcategory ?? catalog['subcategory'], ''),
       image: text(item.image ?? catalog['image'], DEFAULT_IMAGE),
       images: normalizeStringArray(item.images ?? catalog['images']),
@@ -326,6 +338,7 @@ export function mapDirectusProductToCatalogProduct(
       keywords: normalizeStringArray(item.keywords ?? catalog['keywords']),
       createdAt: toDate(catalog['createdAt']),
       updatedAt: toDate(catalog['updatedAt']),
+      specifications,
     } as CatalogProduct;
   }
 
@@ -543,7 +556,7 @@ function buildFallbackAssembledProduct(
   const ram = componentRef('ram', specs['ram']);
   const storage = componentRef('storage', specs['storage']);
   const powerSupply = componentRef('psu', specs['powerSupply']);
-  const wattage = optionalNumber(specs['watts']) ?? extractWattage(powerSupply.title) ?? 650;
+  const wattage = optionalNumber(specs['watts']) ?? extractWattage(powerSupply.title) ?? 0;
 
   return {
     _id: idToString(item.id),
@@ -582,6 +595,8 @@ function buildFallbackAssembledProduct(
       powerSupply,
       case: componentRef('case', specs['caseModel']),
       cooling: componentRef('cooling', specs['cooling']),
+      operatingSystem: text(specs['operatingSystem'], ''),
+      fans: text(specs['fans'], ''),
     },
     performance: {
       gpuBrand: guessGpuBrand(graphicsCard.title),
@@ -593,7 +608,7 @@ function buildFallbackAssembledProduct(
     },
     certifications: {
       id: text(specs['powerCertificationId'], '') || undefined,
-      certificate: text(specs['powerCertificate'], '80+ Gold') as any,
+      certificate: text(specs['powerCertificate'], '') as any,
       image: text(specs['powerCertificateImage'], '') || undefined,
       wattage,
     },
@@ -683,6 +698,8 @@ function buildCatalogSpecSummary(product: CatalogProduct): Record<string, unknow
       powerSupply: product.specifications.powerSupply.title,
       caseModel: product.specifications.case.title,
       cooling: product.specifications.cooling.title,
+      operatingSystem: product.specifications.operatingSystem ?? '',
+      fans: product.specifications.fans ?? '',
       powerCertificate: product.certifications.certificate,
       watts: product.certifications.wattage,
     };

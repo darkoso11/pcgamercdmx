@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { CatalogStatusFilter } from '../../shared/admin-catalog-flow.utils';
+import { AdminAssemblyCardComponent } from '../../assemblies/shared/admin-assembly-card/admin-assembly-card.component';
 import {
   CatalogDashboardStats,
   Product,
@@ -13,7 +14,7 @@ import {
 @Component({
   selector: 'app-admin-assemblies-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AdminAssemblyCardComponent],
   templateUrl: './admin-assemblies-dashboard.component.html',
 })
 export class AdminAssembliesDashboardComponent implements OnInit, OnDestroy {
@@ -74,15 +75,4 @@ export class AdminAssembliesDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate([adminUrl('assemblies'), id, 'edit']);
   }
 
-  getStockLabel(assembly: Product): string {
-    if (assembly.stock <= 0) {
-      return 'Sin stock';
-    }
-
-    if (assembly.stock <= assembly.lowStockAlert) {
-      return `${assembly.stock} bajo stock`;
-    }
-
-    return `${assembly.stock} en stock`;
-  }
 }

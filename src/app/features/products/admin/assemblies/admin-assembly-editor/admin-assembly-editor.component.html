@@ -34,7 +34,7 @@
           </div>
 
           <div>
-            <label for="assembly-slug" class="block text-sm text-gray-400 mb-2">Slug *</label>
+            <label for="assembly-slug" class="block text-sm text-gray-400 mb-2">Slug</label>
             <input
               id="assembly-slug"
               type="text"
@@ -46,7 +46,7 @@
         </div>
 
         <div class="mt-6">
-          <label for="assembly-description" class="block text-sm text-gray-400 mb-2">Descripción *</label>
+          <label for="assembly-description" class="block text-sm text-gray-400 mb-2">Descripción</label>
           <textarea
             id="assembly-description"
             formControlName="description"
@@ -66,7 +66,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Procesador -->
           <div>
-            <label for="assembly-processor" class="block text-sm text-gray-400 mb-2">Procesador *</label>
+            <label for="assembly-processor" class="block text-sm text-gray-400 mb-2">Procesador</label>
             <input
               id="assembly-processor"
               type="text"
@@ -78,7 +78,7 @@
 
           <!-- Tarjeta Madre -->
           <div>
-            <label for="assembly-motherboard" class="block text-sm text-gray-400 mb-2">Tarjeta Madre *</label>
+            <label for="assembly-motherboard" class="block text-sm text-gray-400 mb-2">Tarjeta Madre</label>
             <input
               id="assembly-motherboard"
               type="text"
@@ -90,7 +90,7 @@
 
           <!-- Tarjeta Gráfica -->
           <div>
-            <label for="assembly-graphics-card" class="block text-sm text-gray-400 mb-2">Tarjeta Gráfica *</label>
+            <label for="assembly-graphics-card" class="block text-sm text-gray-400 mb-2">Tarjeta Gráfica</label>
             <input
               id="assembly-graphics-card"
               type="text"
@@ -102,7 +102,7 @@
 
           <!-- Memoria RAM -->
           <div>
-            <label for="assembly-ram" class="block text-sm text-gray-400 mb-2">Memoria RAM *</label>
+            <label for="assembly-ram" class="block text-sm text-gray-400 mb-2">Memoria RAM</label>
             <input
               id="assembly-ram"
               type="text"
@@ -114,7 +114,7 @@
 
           <!-- Almacenamiento NVMe -->
           <div>
-            <label for="assembly-storage" class="block text-sm text-gray-400 mb-2">Almacenamiento NVMe *</label>
+            <label for="assembly-storage" class="block text-sm text-gray-400 mb-2">Almacenamiento NVMe</label>
             <input
               id="assembly-storage"
               type="text"
@@ -126,7 +126,7 @@
 
           <!-- Fuente de Poder -->
           <div>
-            <label for="assembly-power-supply" class="block text-sm text-gray-400 mb-2">Fuente de Poder *</label>
+            <label for="assembly-power-supply" class="block text-sm text-gray-400 mb-2">Fuente de Poder</label>
             <input
               id="assembly-power-supply"
               type="text"
@@ -137,24 +137,21 @@
           </div>
 
           <div>
-            <label for="assembly-watts" class="block text-sm text-gray-400 mb-2">Potencia de la fuente (W) *</label>
+            <label for="assembly-watts" class="block text-sm text-gray-400 mb-2">Potencia de la fuente (W)</label>
             <input
               id="assembly-watts"
               type="number"
               formControlName="watts"
-              min="1"
+              min="0"
               step="1"
               placeholder="Ej: 750"
               class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
             />
-            <p *ngIf="getControl('watts')?.invalid && getControl('watts')?.touched" class="mt-1 text-xs text-red-300">
-              Escribe una potencia mayor que cero.
-            </p>
           </div>
 
           <div class="md:col-span-2">
             <label for="assembly-power-certification" class="block text-sm text-gray-400 mb-2">
-              Certificación de la fuente *
+              Certificación de la fuente
             </label>
             <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
               <select
@@ -175,13 +172,6 @@
                 Registrar nueva
               </button>
             </div>
-            <p
-              *ngIf="getControl('powerCertificationId')?.invalid && getControl('powerCertificationId')?.touched"
-              class="mt-1 text-xs text-red-300"
-            >
-              Selecciona una certificación.
-            </p>
-
             <div
               *ngIf="showCertificationCreator"
               class="mt-4 grid gap-4 rounded-lg border border-white/10 bg-[#071029] p-4 md:grid-cols-2"
@@ -242,7 +232,7 @@
 
           <!-- Enfriamiento -->
           <div>
-            <label for="assembly-cooling" class="block text-sm text-gray-400 mb-2">Sistema de Enfriamiento *</label>
+            <label for="assembly-cooling" class="block text-sm text-gray-400 mb-2">Sistema de Enfriamiento</label>
             <input
               id="assembly-cooling"
               type="text"
@@ -254,7 +244,7 @@
 
           <!-- Gabinete -->
           <div>
-            <label for="assembly-case" class="block text-sm text-gray-400 mb-2">Gabinete *</label>
+            <label for="assembly-case" class="block text-sm text-gray-400 mb-2">Gabinete</label>
             <input
               id="assembly-case"
               type="text"
@@ -272,6 +262,17 @@
               type="text"
               formControlName="operatingSystem"
               placeholder="Ej: Windows 11 Pro"
+              class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            />
+          </div>
+
+          <div>
+            <label for="assembly-fans" class="block text-sm text-gray-400 mb-2">Ventiladores</label>
+            <input
+              id="assembly-fans"
+              type="text"
+              formControlName="fans"
+              placeholder="Ej: 6 × Lian Li UNI FAN SL-INF"
               class="w-full px-4 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
             />
           </div>
@@ -343,7 +344,7 @@
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label for="assembly-stock" class="block text-sm text-gray-400 mb-2">Cantidad en Stock *</label>
+            <label for="assembly-stock" class="block text-sm text-gray-400 mb-2">Cantidad en Stock</label>
             <input
               id="assembly-stock"
               type="number"

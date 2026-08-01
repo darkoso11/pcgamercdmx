@@ -70,6 +70,8 @@ export interface AssembledPC extends BaseProduct {
     powerSupply: ComponentReference;     // Fuente de poder
     case: ComponentReference;            // Gabinete/caja
     cooling: ComponentReference;         // Sistema de refrigeración
+    operatingSystem?: string;            // Sistema operativo instalado
+    fans?: string;                       // Cantidad, marca y modelo de ventiladores
     additionalComponents?: ComponentReference[];  // Otros (ventiladores, filtros, etc.)
   };
 
