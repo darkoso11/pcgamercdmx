@@ -1,5 +1,10 @@
 import { of } from 'rxjs';
+import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
 import { adminUrl } from '../../../../admin/admin-route.config';
+import { AdminAssemblyCardComponent } from '../../assemblies/shared/admin-assembly-card/admin-assembly-card.component';
+import { ProductsAdminService } from '../../shared/products-admin.service';
 import { AdminAssembliesDashboardComponent } from './admin-assemblies-dashboard.component';
 
 describe('AdminAssembliesDashboardComponent', () => {
@@ -46,5 +51,31 @@ describe('AdminAssembliesDashboardComponent', () => {
       [adminUrl('assemblies/list')],
       { queryParams: { status: 'out-of-stock' } }
     );
+  });
+
+  it('renders recent assemblies with the shared visual card', () => {
+    TestBed.configureTestingModule({
+      imports: [AdminAssembliesDashboardComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ProductsAdminService,
+          useValue: {
+            getCatalogDashboardStats: () => of({ total: 1 }),
+            getRecentCatalogItems: () => of([{
+              _id: 'robot', title: 'ROBOT', slug: 'robot', description: '', category: 'paquetes',
+              price: 100, image: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
+              images: [], brandLogos: [], stock: 1, lowStockAlert: 2, published: true,
+              createdAt: new Date(), updatedAt: new Date(),
+            }]),
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(AdminAssembliesDashboardComponent);
+
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.directive(AdminAssemblyCardComponent))).not.toBeNull();
   });
 });

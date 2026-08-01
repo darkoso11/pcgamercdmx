@@ -1,0 +1,69 @@
+name: Browser compatibility
+
+on:
+  push:
+    branches: [main, test, dev]
+  pull_request:
+    branches: [main, test, dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cross-browser:
+    name: Chromium, Firefox and WebKit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.1
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm test -- --watch=false --progress=false
+      - run: npm run build
+      - name: Run browser matrix against production bundle
+        run: >-
+          npx playwright test
+          --project=chromium
+          --project=firefox
+          --project=webkit
+          --project=mobile-chrome
+          --project=mobile-safari
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-browser-traces
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  microsoft-edge:
+    name: Microsoft Edge on Windows
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.1
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Run tests in installed Microsoft Edge
+        run: npx playwright test --project=edge
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-traces
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

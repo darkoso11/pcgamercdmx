@@ -45,7 +45,6 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   errorMessage = '';
   productId: string | null = null;
   galleryImages: string[] = [];
-  newGalleryImage = '';
   powerCertifications: PowerCertification[] = [];
   showCertificationCreator = false;
   newCertificationName = '';
@@ -70,22 +69,23 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   initializeForm(): void {
     this.form = this.fb.group({
       // Sección 1: Información Básica
-      title: ['', [Validators.required, Validators.minLength(3)]],
-      slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
-      category: ['Ensambles de Computadoras', Validators.required],
+      title: ['', Validators.required],
+      slug: [''],
+      description: [''],
+      category: ['Ensambles de Computadoras'],
 
       // Sección 2: Especificaciones Técnicas Completas
-      processor: ['', Validators.required],
-      motherboard: ['', Validators.required],
-      graphicsCard: ['', Validators.required],
-      ram: ['', Validators.required],
-      nvmeSsd: ['', Validators.required],
-      powerSupply: ['', Validators.required],
-      watts: [0, [Validators.required, Validators.min(1)]],
-      powerCertificationId: ['', Validators.required],
-      cooling: ['', Validators.required],
-      case: ['', Validators.required],
+      processor: [''],
+      motherboard: [''],
+      graphicsCard: [''],
+      ram: [''],
+      nvmeSsd: [''],
+      powerSupply: [''],
+      watts: [0],
+      powerCertificationId: [''],
+      cooling: [''],
+      fans: [''],
+      case: [''],
       operatingSystem: [''],
 
       // Sección 3: Marcas visibles
@@ -96,7 +96,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       currency: ['MXN'],
 
       // Sección 5: Stock
-      stock: [0, [Validators.required, Validators.min(0)]],
+      stock: [0],
       sku: [''],
 
       // Sección 6: Imagen
@@ -142,6 +142,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
               watts: assembly.watts || 0,
               powerCertificationId: assembly.powerCertificationId || '',
               cooling: assembly.cooling || '',
+              fans: assembly.fans || '',
               case: assembly.case || '',
               operatingSystem: assembly.operatingSystem || '',
               brandLogos: this.normalizeBrandLogos(assembly.brandLogos),
@@ -230,11 +231,6 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   saveDraft(): void {
-    if (this.form.get('title')?.invalid || this.form.get('slug')?.invalid) {
-      alert('Por favor, completa al menos el título y el slug');
-      return;
-    }
-
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -276,13 +272,6 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  addGalleryImage(): void {
-    if (this.newGalleryImage.trim()) {
-      this.galleryImages.push(this.newGalleryImage);
-      this.newGalleryImage = '';
-    }
   }
 
   onMainImageSelected(event: Event): void {
@@ -472,6 +461,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       powerCertificateImage: selectedCertification?.image ?? '',
       operatingSystem: asTrimmedText(rawValue.operatingSystem),
       cooling: asTrimmedText(rawValue.cooling),
+      fans: asTrimmedText(rawValue.fans),
       case: asTrimmedText(rawValue.case),
       brandLogos: this.normalizeBrandLogos(rawValue.brandLogos),
       image: asTrimmedText(rawValue.image) || 'https://via.placeholder.com/600x400?text=Ensamble',

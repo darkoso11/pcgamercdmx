@@ -55,16 +55,11 @@
         <button type="button" (click)="goToSection('assemblies')" class="text-sm font-bold text-violet-300 hover:text-violet-100">Ver todos</button>
       </div>
       <div *ngIf="recentAssemblies.length; else noAssemblies" class="grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3">
-        <article *ngFor="let assembly of recentAssemblies" class="rounded-xl border border-white/10 bg-[#080f23] p-4 transition hover:border-violet-400/50">
-          <div class="flex items-start justify-between gap-4">
-            <div><span class="text-xs uppercase tracking-[0.16em] text-violet-300">Ensamble</span><h3 class="mt-2 line-clamp-2 font-black">{{ assembly.title }}</h3></div>
-            <span class="rounded-full px-3 py-1 text-xs font-bold" [ngClass]="assembly.published ? 'bg-green-500/15 text-green-300' : 'bg-amber-500/15 text-amber-300'">{{ assembly.published ? 'Publicado' : 'Borrador' }}</span>
-          </div>
-          <div class="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
-            <span class="text-sm text-slate-300">{{ getStockLabel(assembly) }}</span>
-            <button type="button" (click)="editAssembly(assembly._id!)" class="text-sm font-bold text-violet-300 hover:text-violet-100">Editar</button>
-          </div>
-        </article>
+        <app-admin-assembly-card
+          *ngFor="let assembly of recentAssemblies"
+          [assembly]="assembly"
+          (edit)="editAssembly($event)"
+        ></app-admin-assembly-card>
       </div>
       <ng-template #noAssemblies><div class="px-6 py-12 text-center text-slate-400">Aun no hay ensambles en este catalogo.</div></ng-template>
     </section>

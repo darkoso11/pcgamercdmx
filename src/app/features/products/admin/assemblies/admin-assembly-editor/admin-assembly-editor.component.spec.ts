@@ -52,6 +52,7 @@ describe('AdminAssemblyEditorComponent', () => {
       watts: 750,
       powerCertificationId: 'cert-gold',
       cooling: 'Liquid 240',
+      fans: '6 x Lian Li UNI FAN SL-INF',
       case: 'Flow RGB',
       operatingSystem: 'Windows 11 Pro',
       price: 20000,
@@ -103,6 +104,47 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(component.form.contains('brandLogos')).toBeTrue();
   });
 
+  it('provides an optional text control for assembly fans', () => {
+    const { component } = createComponent();
+
+    expect(component.form.contains('fans')).toBeTrue();
+    expect(component.form.get('fans')?.validator).toBeNull();
+  });
+
+  it('keeps technical specifications optional when publishing', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.patchValue({
+      description: '',
+      processor: '',
+      motherboard: '',
+      graphicsCard: '',
+      ram: '',
+      nvmeSsd: '',
+      powerSupply: '',
+      watts: 0,
+      powerCertificationId: '',
+      cooling: '',
+      fans: '',
+      case: '',
+      operatingSystem: '',
+    });
+
+    component.saveAssembly();
+
+    expect(productsAdminService.createProduct).toHaveBeenCalled();
+  });
+
+  it('allows an incomplete assembly to be saved as a draft', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.reset();
+
+    component.saveDraft();
+
+    expect(productsAdminService.createProduct).toHaveBeenCalled();
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.published).toBeFalse();
+  });
+
   it('leaves promotional pricing and publication state to their explicit admin actions', () => {
     const { component } = createComponent();
 
@@ -143,6 +185,31 @@ describe('AdminAssemblyEditorComponent', () => {
     component.loadAssembly('pc-amd');
 
     expect(component.form.get('brandLogos')?.value).toEqual(savedLogos);
+  });
+
+  it('restores saved fans when editing an assembly', () => {
+    const { component, productsAdminService } = createComponent();
+    productsAdminService.getProductById.and.returnValue(of({
+      title: 'PC con ventiladores',
+      price: 18000,
+      image: 'fans.png',
+      fans: '  4 x Corsair QX120  ',
+      brandLogos: [],
+    }));
+
+    component.loadAssembly('pc-fans');
+
+    expect(component.form.get('fans')?.value).toBe('  4 x Corsair QX120  ');
+  });
+
+  it('trims fans in the published payload', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.patchValue({ fans: '  4 x Corsair QX120  ' });
+
+    component.saveAssembly();
+
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.fans).toBe('4 x Corsair QX120');
   });
 
   it('recognizes and replaces a legacy AMD Ryzen logo without duplicating the brand', () => {

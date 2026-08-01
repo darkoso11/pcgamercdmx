@@ -188,22 +188,29 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const shared = this.productsService.toSpecHighlights(product, 8);
 
     if (product.category === ProductCategory.ASSEMBLED) {
+      const specs = product.specifications;
+      const storage = (specs.storage ?? [])
+        .map((item) => item.title)
+        .filter(Boolean)
+        .join(' + ');
+      const certification = [
+        product.certifications.wattage > 0 ? `${product.certifications.wattage}W` : '',
+        product.certifications.certificate,
+      ].filter(Boolean).join(' ');
+
       return [
-        ...shared,
-        { label: 'Motherboard', value: product.specifications.motherboard.title },
-        {
-          label: 'Uso recomendado',
-          value: product.useCase.charAt(0).toUpperCase() + product.useCase.slice(1),
-        },
-      ];
-    }
-
-    if (product.category === ProductCategory.COMPONENT) {
-      return shared;
-    }
-
-    if (product.category === ProductCategory.PERIPHERAL) {
-      return shared;
+        { label: 'CPU', value: specs.processor?.title ?? '' },
+        { label: 'Motherboard', value: specs.motherboard?.title ?? '' },
+        { label: 'GPU', value: specs.graphicsCard?.title ?? '' },
+        { label: 'RAM', value: specs.ram?.title ?? '' },
+        { label: 'Almacenamiento', value: storage },
+        { label: 'Fuente', value: specs.powerSupply?.title ?? '' },
+        { label: 'Potencia y certificación', value: certification },
+        { label: 'Enfriamiento', value: specs.cooling?.title ?? '' },
+        { label: 'Gabinete', value: specs.case?.title ?? '' },
+        { label: 'Sistema operativo', value: specs.operatingSystem ?? '' },
+        { label: 'Ventiladores', value: specs.fans ?? '' },
+      ].filter((entry) => entry.value.trim().length > 0);
     }
 
     return shared;
@@ -230,8 +237,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       return [
         product.performance.totalRam,
         product.performance.storageCapacity,
-        `${product.certifications.wattage}W`,
-      ];
+        product.certifications.wattage > 0 ? `${product.certifications.wattage}W` : '',
+      ].filter(Boolean);
     }
 
     if (product.category === ProductCategory.COMPONENT) {

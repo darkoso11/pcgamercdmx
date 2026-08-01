@@ -1,0 +1,9 @@
+# Angular 20 Baseline (2025-04-30). Keep this aligned with Angular's
+# documented support policy instead of the time-varying Browserslist defaults.
+Chrome >= 121
+ChromeAndroid >= 121
+Edge >= 121
+Firefox >= 122
+FirefoxAndroid >= 122
+Safari >= 17.2
+iOS >= 17.2

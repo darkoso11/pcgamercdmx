@@ -25,7 +25,7 @@ export function isStoredDirectusAccessExpired(
   skewMs = 30_000
 ): boolean {
   const storage = getActiveStorage();
-  const expiresAt = Number(storage?.getItem(DIRECTUS_ACCESS_EXPIRES_AT_KEY) || 0);
+  const expiresAt = Number(safeGetItem(storage, DIRECTUS_ACCESS_EXPIRES_AT_KEY) || 0);
   return Boolean(expiresAt && expiresAt <= now + skewMs);
 }
 
@@ -47,33 +47,36 @@ export function setStoredDirectusSession(
     clearStoredDirectusSession();
   }
 
-  storage.setItem(DIRECTUS_ACCESS_TOKEN_KEY, accessToken);
-
+  const sessionEntries: Array<[string, string]> = [
+    [DIRECTUS_ACCESS_TOKEN_KEY, accessToken],
+  ];
   if (refreshToken) {
-    storage.setItem(DIRECTUS_REFRESH_TOKEN_KEY, refreshToken);
+    sessionEntries.push([DIRECTUS_REFRESH_TOKEN_KEY, refreshToken]);
   }
-
   if (email) {
-    storage.setItem(DIRECTUS_ADMIN_EMAIL_KEY, email);
+    sessionEntries.push([DIRECTUS_ADMIN_EMAIL_KEY, email]);
   }
-
   if (options?.accessExpiresAt) {
-    storage.setItem(
+    sessionEntries.push([
       DIRECTUS_ACCESS_EXPIRES_AT_KEY,
-      String(options.accessExpiresAt)
-    );
+      String(options.accessExpiresAt),
+    ]);
+  }
+  if (options?.sessionExpiresAt) {
+    sessionEntries.push([
+      DIRECTUS_SESSION_EXPIRES_AT_KEY,
+      String(options.sessionExpiresAt),
+    ]);
   }
 
-  if (options?.sessionExpiresAt) {
-    storage.setItem(
-      DIRECTUS_SESSION_EXPIRES_AT_KEY,
-      String(options.sessionExpiresAt)
-    );
+  if (sessionEntries.some(([key, value]) => !safeSetItem(storage, key, value))) {
+    clearStoredDirectusSession();
   }
 }
 
 export function updateStoredDirectusAccessExpiry(accessExpiresAt: number): void {
-  getActiveStorage()?.setItem(
+  safeSetItem(
+    getActiveStorage(),
     DIRECTUS_ACCESS_EXPIRES_AT_KEY,
     String(accessExpiresAt)
   );
@@ -81,11 +84,11 @@ export function updateStoredDirectusAccessExpiry(accessExpiresAt: number): void 
 
 export function clearStoredDirectusSession(): void {
   for (const storage of [getStorage('local'), getStorage('tab')]) {
-    storage?.removeItem(DIRECTUS_ACCESS_TOKEN_KEY);
-    storage?.removeItem(DIRECTUS_REFRESH_TOKEN_KEY);
-    storage?.removeItem(DIRECTUS_ADMIN_EMAIL_KEY);
-    storage?.removeItem(DIRECTUS_ACCESS_EXPIRES_AT_KEY);
-    storage?.removeItem(DIRECTUS_SESSION_EXPIRES_AT_KEY);
+    safeRemoveItem(storage, DIRECTUS_ACCESS_TOKEN_KEY);
+    safeRemoveItem(storage, DIRECTUS_REFRESH_TOKEN_KEY);
+    safeRemoveItem(storage, DIRECTUS_ADMIN_EMAIL_KEY);
+    safeRemoveItem(storage, DIRECTUS_ACCESS_EXPIRES_AT_KEY);
+    safeRemoveItem(storage, DIRECTUS_SESSION_EXPIRES_AT_KEY);
   }
 }
 
@@ -96,29 +99,29 @@ function getSessionValue(key: string): string | null {
   }
 
   const sessionExpiresAt = Number(
-    storage.getItem(DIRECTUS_SESSION_EXPIRES_AT_KEY) || 0
+    safeGetItem(storage, DIRECTUS_SESSION_EXPIRES_AT_KEY) || 0
   );
   if (sessionExpiresAt && sessionExpiresAt <= Date.now()) {
     clearStoredDirectusSession();
     return null;
   }
 
-  return storage.getItem(key);
+  return safeGetItem(storage, key);
 }
 
 function getActiveStorage(): Storage | null {
   const tabStorage = getStorage('tab');
   if (
-    tabStorage?.getItem(DIRECTUS_ACCESS_TOKEN_KEY) ||
-    tabStorage?.getItem(DIRECTUS_REFRESH_TOKEN_KEY)
+    safeGetItem(tabStorage, DIRECTUS_ACCESS_TOKEN_KEY) ||
+    safeGetItem(tabStorage, DIRECTUS_REFRESH_TOKEN_KEY)
   ) {
     return tabStorage;
   }
 
   const localStorage = getStorage('local');
   if (
-    localStorage?.getItem(DIRECTUS_ACCESS_TOKEN_KEY) ||
-    localStorage?.getItem(DIRECTUS_REFRESH_TOKEN_KEY)
+    safeGetItem(localStorage, DIRECTUS_ACCESS_TOKEN_KEY) ||
+    safeGetItem(localStorage, DIRECTUS_REFRESH_TOKEN_KEY)
   ) {
     return localStorage;
   }
@@ -134,5 +137,30 @@ function getStorage(persistence: DirectusSessionPersistence): Storage | null {
     return typeof localStorage === 'undefined' ? null : localStorage;
   } catch {
     return null;
+  }
+}
+
+function safeGetItem(storage: Storage | null, key: string): string | null {
+  try {
+    return storage?.getItem(key) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function safeSetItem(storage: Storage | null, key: string, value: string): boolean {
+  try {
+    storage?.setItem(key, value);
+    return storage !== null;
+  } catch {
+    return false;
+  }
+}
+
+function safeRemoveItem(storage: Storage | null, key: string): void {
+  try {
+    storage?.removeItem(key);
+  } catch {
+    // Storage can be exposed but blocked by privacy settings or browser policy.
   }
 }
