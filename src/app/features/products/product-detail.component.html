@@ -1,23 +1,24 @@
 <div class="font-orbitron min-h-screen bg-[#0a0d22]">
-  <div *ngIf="loading" class="flex min-h-screen items-center justify-center">
-    <div class="text-center">
-      <div class="spinner mx-auto mb-4"></div>
-      <p class="text-xl text-white">Cargando producto...</p>
+  <div class="product-detail-content" [attr.inert]="isGalleryOpen ? '' : null">
+    <div *ngIf="loading" class="flex min-h-screen items-center justify-center">
+      <div class="text-center">
+        <div class="spinner mx-auto mb-4"></div>
+        <p class="text-xl text-white">Cargando producto...</p>
+      </div>
     </div>
-  </div>
 
-  <div *ngIf="notFound && !loading" class="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-    <h2 class="text-3xl font-bold text-white">Producto no encontrado</h2>
-    <p class="mt-4 max-w-md text-slate-300">
-      No encontramos el producto solicitado dentro del catalogo actual. Puede haber cambiado de slug o no estar publicado.
-    </p>
-    <a
-      [routerLink]="notFoundRootLink"
-      class="mt-8 rounded-lg bg-gradient-to-r from-pink-600 to-fuchsia-500 px-6 py-3 font-semibold text-white"
-    >
-      {{ notFoundRootLabel }}
-    </a>
-  </div>
+    <div *ngIf="notFound && !loading" class="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+      <h2 class="text-3xl font-bold text-white">Producto no encontrado</h2>
+      <p class="mt-4 max-w-md text-slate-300">
+        No encontramos el producto solicitado dentro del catalogo actual. Puede haber cambiado de slug o no estar publicado.
+      </p>
+      <a
+        [routerLink]="notFoundRootLink"
+        class="mt-8 rounded-lg bg-gradient-to-r from-pink-600 to-fuchsia-500 px-6 py-3 font-semibold text-white"
+      >
+        {{ notFoundRootLabel }}
+      </a>
+    </div>
 
   <div *ngIf="product && detail && !loading" class="pb-12 pt-24 md:py-24">
     <div class="mx-auto max-w-7xl px-4">
@@ -36,21 +37,57 @@
       <div class="grid gap-8 lg:grid-cols-[0.92fr_1.08fr]">
         <section class="space-y-5">
           <div class="gallery-main border border-white/10">
-            <img
-              [src]="detail.image"
-              [alt]="detail.title"
-              class="max-h-full max-w-full object-contain"
-              (error)="handleImageError($event)"
-            />
+            <button
+              #galleryImageButton
+              type="button"
+              class="gallery-image-button"
+              (click)="openGallery()"
+              [attr.aria-label]="'Ampliar imagen de ' + detail.title"
+            >
+              <img
+                [src]="selectedImage"
+                [alt]="detail.title + ', imagen ' + (selectedImageIndex + 1)"
+                class="gallery-selected-image max-h-full max-w-full object-contain"
+                (error)="handleImageError($event)"
+              />
+            </button>
+
+            <button
+              *ngIf="detail.gallery.length > 1"
+              type="button"
+              class="gallery-arrow gallery-arrow-previous"
+              (click)="previousImage()"
+              aria-label="Ver imagen anterior"
+            >
+              <span aria-hidden="true">&#10094;</span>
+            </button>
+            <button
+              *ngIf="detail.gallery.length > 1"
+              type="button"
+              class="gallery-arrow gallery-arrow-next"
+              (click)="nextImage()"
+              aria-label="Ver imagen siguiente"
+            >
+              <span aria-hidden="true">&#10095;</span>
+            </button>
+
+            <span *ngIf="detail.gallery.length > 1" class="gallery-counter">
+              {{ selectedImageIndex + 1 }} / {{ detail.gallery.length }}
+            </span>
           </div>
 
           <div class="gallery-thumbnails" *ngIf="detail.gallery.length > 1">
-            <div
-              *ngFor="let image of detail.gallery"
-              class="gallery-thumbnail active"
+            <button
+              *ngFor="let image of detail.gallery; let imageIndex = index"
+              type="button"
+              class="gallery-thumbnail"
+              [class.active]="imageIndex === selectedImageIndex"
+              [attr.aria-current]="imageIndex === selectedImageIndex ? 'true' : null"
+              [attr.aria-label]="'Ver imagen ' + (imageIndex + 1) + ' de ' + detail.gallery.length"
+              (click)="selectImage(imageIndex)"
             >
-              <img [src]="image" [alt]="detail.title" class="max-h-full max-w-full object-contain" />
-            </div>
+              <img [src]="image" [alt]="detail.title + ', miniatura ' + (imageIndex + 1)" class="max-h-full max-w-full object-contain" />
+            </button>
           </div>
 
           <div class="flex flex-wrap gap-3" *ngIf="detail.brandLogos.length">
@@ -170,5 +207,53 @@
         </div>
       </section>
     </div>
+  </div>
+  </div>
+
+  <div
+    *ngIf="isGalleryOpen && detail"
+    #galleryLightbox
+    class="gallery-lightbox"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="gallery-lightbox-title"
+    tabindex="-1"
+    (click)="closeGallery()"
+  >
+    <h2 id="gallery-lightbox-title" class="sr-only">Galeria de {{ detail.title }}</h2>
+    <button #lightboxClose type="button" class="lightbox-close" (click)="closeGallery()" aria-label="Cerrar galeria">
+      <span aria-hidden="true">&times;</span>
+    </button>
+
+    <button
+      *ngIf="detail.gallery.length > 1"
+      type="button"
+      class="lightbox-arrow lightbox-arrow-previous"
+      (click)="$event.stopPropagation(); previousImage()"
+      aria-label="Ver imagen anterior"
+    >
+      <span aria-hidden="true">&#10094;</span>
+    </button>
+
+    <img
+      [src]="selectedImage"
+      [alt]="detail.title + ', imagen ampliada ' + (selectedImageIndex + 1)"
+      class="lightbox-image"
+      (click)="$event.stopPropagation()"
+    />
+
+    <button
+      *ngIf="detail.gallery.length > 1"
+      type="button"
+      class="lightbox-arrow lightbox-arrow-next"
+      (click)="$event.stopPropagation(); nextImage()"
+      aria-label="Ver imagen siguiente"
+    >
+      <span aria-hidden="true">&#10095;</span>
+    </button>
+
+    <span class="lightbox-counter" (click)="$event.stopPropagation()">
+      {{ selectedImageIndex + 1 }} / {{ detail.gallery.length }}
+    </span>
   </div>
 </div>
