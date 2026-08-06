@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { DirectusApiService } from '../../../core/services/directus-api.service';
 import {
@@ -18,8 +18,11 @@ import {
   ProductStatus,
   SearchResult,
 } from '../../../shared/models';
-import { PerformanceTier, UseCase } from '../../../shared/models/product.model';
-
+import {
+  getOfferDomain,
+  resolveOfferPresentation,
+} from '../admin/shared/admin-catalog-flow.utils';
+import type { Offer } from '../admin/shared/products-admin.service';
 export type CatalogProduct =
   | AssembledPC
   | ComponentProduct
@@ -32,6 +35,7 @@ export interface ProductCardViewModel {
   image: string;
   price: number;
   discountedPrice?: number;
+  offerBadgeVisible?: boolean;
   description: string;
   category: ProductCategory;
   categoryLabel: string;
@@ -56,7 +60,10 @@ export interface Product {
   slug: string;
   brandLogos: Array<{ src: string; alt: string; position?: string }>;
   powerCertificate: string;
+  powerCertificateName?: string;
   watts: number;
+  originalPrice?: number;
+  showOfferBadge?: boolean;
   category?: 'paquete' | 'periferico' | 'componente';
   description?: string;
   specifications?: { [key: string]: string };
@@ -66,7 +73,7 @@ export interface Product {
   providedIn: 'root',
 })
 export class ProductsService {
-  private readonly assembledPCs = this.buildAssembledPCs();
+  private readonly assembledPCs: AssembledPC[] = [];
   private readonly components = this.buildComponents();
   private readonly peripherals = this.buildPeripherals();
   private readonly accessories = this.buildAccessories();
@@ -255,6 +262,7 @@ export class ProductsService {
       image: product.image,
       price: product.price,
       discountedPrice: product.discountedPrice,
+      offerBadgeVisible: product.offerBadgeVisible,
       description: product.description,
       category: product.category,
       categoryLabel: this.getCategoryLabel(product.category),
@@ -506,20 +514,75 @@ export class ProductsService {
       return of(fallback);
     }
 
-    return this.directus
-      .readItems<DirectusProductRecord>('pc_products', {
-        'filter[published][_eq]': true,
-        fields: '*',
-        sort: 'sort,title',
-        limit: 1000,
-      })
+    return forkJoin({
+      products: this.directus.readItems<DirectusProductRecord>('pc_products', {
+          'filter[published][_eq]': true,
+          fields: '*',
+          sort: 'sort,title',
+          limit: 1000,
+        }),
+      offers: this.directus.readItems<Record<string, unknown>>('pc_offers', {
+          fields: '*',
+          limit: 1000,
+        }).pipe(catchError(() => of({ data: [] }))),
+    })
       .pipe(
-        map((response) => {
-          const products = response.data.map(mapDirectusProductToCatalogProduct);
-          return products.length ? products : fallback;
+        map(({ products: productResponse, offers: offerResponse }) => {
+          const products = productResponse.data.map(mapDirectusProductToCatalogProduct);
+          const offers = offerResponse.data.map((record) => this.mapPublicOffer(record));
+          return products.length ? this.applyEffectiveOffers(products, offers) : fallback;
         }),
         catchError(() => of(fallback))
       );
+  }
+
+  private applyEffectiveOffers(products: CatalogProduct[], offers: Offer[]): CatalogProduct[] {
+    const now = new Date();
+    return products.map((product) => {
+      const domain = product.category === ProductCategory.ASSEMBLED ? 'assemblies' : 'products';
+      const effectiveOffer = offers.find((offer) => {
+        if ((offer.catalogDomain ?? getOfferDomain(offer)) !== domain) return false;
+        const ids = domain === 'assemblies'
+          ? offer.applicableTo.packages ?? []
+          : offer.applicableTo.products ?? [];
+        const categoryMatch = (offer.applicableTo.categories ?? []).includes(product.subcategory);
+        const presentation = resolveOfferPresentation(product.price, offer, now);
+        return presentation.hasEffectiveOffer && (ids.includes(product._id ?? '') || categoryMatch);
+      });
+      const presentation = resolveOfferPresentation(product.price, effectiveOffer ?? null, now);
+
+      return {
+        ...product,
+        discountedPrice: presentation.hasEffectiveOffer ? presentation.effectivePrice : undefined,
+        offerBadgeVisible: presentation.showOfferBadge,
+        activeOfferId: effectiveOffer?._id,
+      };
+    });
+  }
+
+  private mapPublicOffer(record: Record<string, unknown>): Offer {
+    const normalizeIds = (value: unknown) =>
+      Array.isArray(value) ? value.map((item) => String(item ?? '')).filter(Boolean) : [];
+
+    return {
+      _id: record['id'] === undefined ? undefined : String(record['id']),
+      title: String(record['title'] ?? ''),
+      description: String(record['description'] ?? ''),
+      catalogDomain: record['catalog_domain'] === 'assemblies' ? 'assemblies' : 'products',
+      type: record['discount_type'] === 'fixed' ? 'fixed' : 'percentage',
+      discountValue: Number(record['discount_value']) || 0,
+      applicableTo: {
+        products: normalizeIds(record['applicable_products']),
+        packages: normalizeIds(record['applicable_assemblies']),
+        categories: normalizeIds(record['applicable_categories']),
+      },
+      startDate: new Date(String(record['starts_at'] ?? '')),
+      endDate: new Date(String(record['ends_at'] ?? '')),
+      active: Boolean(record['active']),
+      showBadge: record['show_badge'] !== false,
+      createdAt: new Date(String(record['date_created'] ?? Date.now())),
+      updatedAt: new Date(String(record['date_updated'] ?? Date.now())),
+    };
   }
 
   private applyFilters<T extends CatalogProduct>(
@@ -625,7 +688,7 @@ export class ProductsService {
       badges.push('Destacado');
     }
 
-    if (product.discountedPrice) {
+    if (product.discountedPrice && product.offerBadgeVisible !== false) {
       badges.push('Promocion');
     }
 
@@ -693,7 +756,8 @@ export class ProductsService {
       id,
       title: product.title,
       image: product.image,
-      price: product.price,
+      price: product.discountedPrice ?? product.price,
+      originalPrice: product.discountedPrice ? product.price : undefined,
       processor: product.specifications.processor.title,
       motherboard: product.specifications.motherboard.title,
       ram: product.specifications.ram.title,
@@ -701,8 +765,10 @@ export class ProductsService {
       graphicsCard: product.specifications.graphicsCard.title,
       slug: product.slug,
       brandLogos: product.brandLogos.map((logo) => ({ src: logo.logo, alt: logo.name })),
-      powerCertificate: this.getCertificationImage(product.certifications.certificate),
+      powerCertificate: product.certifications.image || this.getCertificationImage(product.certifications.certificate),
+      powerCertificateName: product.certifications.certificate,
       watts: product.certifications.wattage,
+      showOfferBadge: Boolean(product.discountedPrice && product.offerBadgeVisible),
       category: 'paquete',
       description: product.description,
       specifications: Object.fromEntries(
@@ -778,349 +844,6 @@ export class ProductsService {
       default:
         return 'assets/img/certificaciones/80plusgold.png';
     }
-  }
-
-  private buildAssembledPCs(): AssembledPC[] {
-    const baseDate = new Date('2026-04-01T10:00:00');
-
-    return [
-      {
-        _id: 'pc-001',
-        id: 1,
-        sku: 'PCG-ENTRY-1080',
-        category: ProductCategory.ASSEMBLED,
-        subcategory: 'pc-gaming',
-        status: ProductStatus.ACTIVE,
-        title: 'Apex Starter 1080p',
-        slug: 'apex-starter-1080p',
-        image: 'assets/img/gabinetes/BR-938686_1.png',
-        images: ['assets/img/gabinetes/BR-938686_1.png'],
-        price: 18999,
-        currency: 'MXN',
-        description:
-          'Equipo equilibrado para shooters, eSports y gaming 1080p con excelente margen de actualizacion.',
-        fullDescription:
-          'Pensada para quienes quieren entrar al mundo del PC gaming con una base solida, buena ventilacion y componentes faciles de escalar.',
-        metaTitle: 'Apex Starter 1080p | Ensamble Gaming',
-        metaDescription:
-          'PC armada para gaming 1080p con Ryzen 5, RTX 4060 y almacenamiento NVMe.',
-        keywords: ['pc gaming 1080p', 'ensamble ryzen', 'rtx 4060'],
-        stock: 4,
-        lowStockThreshold: 2,
-        status_text: 'Disponible',
-        featured: true,
-        position: 1,
-        published: true,
-        createdAt: baseDate,
-        updatedAt: baseDate,
-        useCase: UseCase.GAMING,
-        performanceTier: PerformanceTier.ENTRY,
-        targetAudience: 'Jugadores competitivos y primer ensamble gaming.',
-        specifications: {
-          processor: { _id: 'cpu-001', title: 'AMD Ryzen 5 7600', specs: '6 nucleos / 12 hilos' },
-          motherboard: { _id: 'mb-001', title: 'B650M WiFi', specs: 'AM5, DDR5' },
-          ram: { _id: 'ram-001', title: '32GB DDR5 6000MHz', specs: '2x16GB' },
-          storage: [{ _id: 'sto-001', title: '1TB NVMe Gen4', specs: 'Hasta 5000 MB/s' }],
-          graphicsCard: { _id: 'gpu-001', title: 'NVIDIA GeForce RTX 4060', specs: '8GB GDDR6' },
-          powerSupply: { _id: 'psu-001', title: '650W 80+ Bronze', specs: 'Semi modular' },
-          case: { _id: 'case-001', title: 'Airflow Mid Tower', specs: 'Panel frontal mesh' },
-          cooling: { _id: 'cool-001', title: 'Torre de aire 120mm', specs: 'PWM RGB' },
-        },
-        performance: {
-          gpuBrand: 'NVIDIA',
-          gpuMemory: '8GB GDDR6',
-          cpuBrand: 'AMD',
-          cpuCores: 6,
-          cpuThreads: 12,
-          totalRam: '32GB DDR5',
-          storageCapacity: '1TB NVMe',
-        },
-        certifications: {
-          certificate: '80+ Bronze',
-          wattage: 650,
-          manufacturer: 'Corsair',
-          modular: 'Semi',
-        },
-        brandLogos: [
-          { name: 'AMD', logo: 'assets/img/marcas/AMD-Ryzen.png' },
-          { name: 'NVIDIA', logo: 'assets/img/marcas/Nvidia-qe15uqyz4tjnw0jnylr2lzteyll6r14yttmbqndasi.png' },
-          { name: 'Corsair', logo: 'assets/img/marcas/corsairbrand.png' },
-        ],
-        customizable: true,
-        customizationOptions: {
-          ram: ['32GB DDR5', '64GB DDR5'],
-          storage: ['1TB NVMe', '2TB NVMe'],
-          graphicsCard: ['RTX 4060', 'RTX 4060 Ti'],
-        },
-        warranty: {
-          duration: 12,
-          type: 'Parts & Labor',
-          provider: 'PC Gamer CDMX',
-        },
-        readyToShip: true,
-        estimatedDelivery: { min: 2, max: 5 },
-        preBuilt: true,
-        freeShipping: true,
-        highlights: [
-          'Ideal para gaming 1080p alto',
-          'Plataforma AM5 lista para crecer',
-          '32GB DDR5 de base',
-        ],
-      },
-      {
-        _id: 'pc-002',
-        id: 2,
-        sku: 'PCG-STREAM-1440',
-        category: ProductCategory.ASSEMBLED,
-        subcategory: 'pc-streaming',
-        status: ProductStatus.ACTIVE,
-        title: 'Creator Stream 1440',
-        slug: 'creator-stream-1440',
-        image: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
-        images: ['assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png'],
-        price: 28999,
-        currency: 'MXN',
-        description:
-          'Configuracion orientada a streaming y multitarea con potencia suficiente para jugar y producir contenido.',
-        fullDescription:
-          'Equilibrio entre CPU multinucleo, GPU moderna y refrigeracion liquida para sesiones largas de streaming.',
-        metaTitle: 'Creator Stream 1440 | PC Streaming',
-        metaDescription:
-          'PC para streaming, gaming y contenido con Ryzen 7, RTX 4070 y 32GB DDR5.',
-        keywords: ['pc streaming', 'pc para editar video', 'rtx 4070'],
-        stock: 3,
-        lowStockThreshold: 1,
-        status_text: 'Disponible',
-        featured: true,
-        position: 2,
-        published: true,
-        createdAt: baseDate,
-        updatedAt: baseDate,
-        useCase: UseCase.STREAMING,
-        performanceTier: PerformanceTier.MID,
-        targetAudience: 'Creadores que juegan y transmiten desde un solo equipo.',
-        specifications: {
-          processor: { _id: 'cpu-002', title: 'AMD Ryzen 7 7700X', specs: '8 nucleos / 16 hilos' },
-          motherboard: { _id: 'mb-002', title: 'X670 Gaming WiFi', specs: 'AM5, PCIe 5.0' },
-          ram: { _id: 'ram-002', title: '32GB DDR5 6400MHz', specs: '2x16GB' },
-          storage: [
-            { _id: 'sto-002', title: '1TB NVMe Gen4', specs: 'SO principal' },
-            { _id: 'sto-003', title: '2TB SSD SATA', specs: 'Biblioteca multimedia' },
-          ],
-          graphicsCard: { _id: 'gpu-002', title: 'NVIDIA GeForce RTX 4070 Super', specs: '12GB GDDR6X' },
-          powerSupply: { _id: 'psu-002', title: '750W 80+ Gold', specs: 'Full modular' },
-          case: { _id: 'case-002', title: 'NZXT H9 Flow', specs: 'Dual chamber airflow' },
-          cooling: { _id: 'cool-002', title: 'AIO 360mm', specs: 'ARGB' },
-        },
-        performance: {
-          gpuBrand: 'NVIDIA',
-          gpuMemory: '12GB GDDR6X',
-          cpuBrand: 'AMD',
-          cpuCores: 8,
-          cpuThreads: 16,
-          totalRam: '32GB DDR5',
-          storageCapacity: '1TB NVMe + 2TB SSD',
-        },
-        certifications: {
-          certificate: '80+ Gold',
-          wattage: 750,
-          manufacturer: 'Thermaltake',
-          modular: 'Full',
-        },
-        brandLogos: [
-          { name: 'AMD', logo: 'assets/img/marcas/AMD-Ryzen.png' },
-          { name: 'NVIDIA', logo: 'assets/img/marcas/Nvidia-qe15uqyz4tjnw0jnylr2lzteyll6r14yttmbqndasi.png' },
-          { name: 'Thermaltake', logo: 'assets/img/marcas/thermaltake.png' },
-        ],
-        customizable: true,
-        customizationOptions: {
-          ram: ['32GB DDR5', '64GB DDR5'],
-          storage: ['1TB + 2TB', '2TB + 2TB'],
-        },
-        warranty: {
-          duration: 12,
-          type: 'Parts & Labor',
-        },
-        readyToShip: false,
-        estimatedDelivery: { min: 4, max: 7 },
-        preBuilt: true,
-        freeShipping: true,
-        highlights: [
-          'Preparada para streaming simultaneo',
-          'GPU con codificador moderno',
-          'Sistema de flujo de aire premium',
-        ],
-      },
-      {
-        _id: 'pc-003',
-        id: 3,
-        sku: 'PCG-EDIT-4K',
-        category: ProductCategory.ASSEMBLED,
-        subcategory: 'pc-editing',
-        status: ProductStatus.ACTIVE,
-        title: 'Render Forge Studio',
-        slug: 'render-forge-studio',
-        image: 'assets/img/gabinetes/rog-hyperion-gr701.png',
-        images: ['assets/img/gabinetes/rog-hyperion-gr701.png'],
-        price: 42999,
-        currency: 'MXN',
-        description:
-          'Workhorse pensada para edicion, motion graphics y cargas pesadas de productividad creativa.',
-        fullDescription:
-          'Configuracion con mas memoria, almacenamiento dual y margen termico para flujos de trabajo profesionales.',
-        metaTitle: 'Render Forge Studio | PC Edicion',
-        metaDescription:
-          'PC para edicion y trabajo creativo con Intel Core i7, RTX 4070 Ti Super y 64GB DDR5.',
-        keywords: ['pc para editar', 'workstation creativa', 'pc 64gb ram'],
-        stock: 2,
-        lowStockThreshold: 1,
-        status_text: 'Bajo pedido',
-        featured: true,
-        position: 3,
-        published: true,
-        createdAt: baseDate,
-        updatedAt: baseDate,
-        useCase: UseCase.EDITING,
-        performanceTier: PerformanceTier.HIGH,
-        targetAudience: 'Editores de video, motion y fotografia avanzada.',
-        specifications: {
-          processor: { _id: 'cpu-003', title: 'Intel Core i7-14700K', specs: '20 nucleos / 28 hilos' },
-          motherboard: { _id: 'mb-003', title: 'Z790 Creator', specs: 'Thunderbolt, DDR5' },
-          ram: { _id: 'ram-003', title: '64GB DDR5 6000MHz', specs: '2x32GB' },
-          storage: [
-            { _id: 'sto-004', title: '2TB NVMe Gen4', specs: 'Scratch disk' },
-            { _id: 'sto-005', title: '4TB HDD', specs: 'Archivo de proyectos' },
-          ],
-          graphicsCard: { _id: 'gpu-003', title: 'NVIDIA GeForce RTX 4070 Ti Super', specs: '16GB GDDR6X' },
-          powerSupply: { _id: 'psu-003', title: '850W 80+ Gold', specs: 'Full modular' },
-          case: { _id: 'case-003', title: 'ROG Hyperion', specs: 'E-ATX ready' },
-          cooling: { _id: 'cool-003', title: 'AIO 360mm Premium', specs: 'Low noise' },
-        },
-        performance: {
-          gpuBrand: 'NVIDIA',
-          gpuMemory: '16GB GDDR6X',
-          cpuBrand: 'Intel',
-          cpuCores: 20,
-          cpuThreads: 28,
-          totalRam: '64GB DDR5',
-          storageCapacity: '2TB NVMe + 4TB HDD',
-        },
-        certifications: {
-          certificate: '80+ Gold',
-          wattage: 850,
-          manufacturer: 'ASUS',
-          modular: 'Full',
-        },
-        brandLogos: [
-          { name: 'Intel', logo: 'assets/img/marcas/Intel-qe15un7mdheilkp4kk4kc0rkl23pw8q1hb0dtjivj2.png' },
-          { name: 'NVIDIA', logo: 'assets/img/marcas/Nvidia-qe15uqyz4tjnw0jnylr2lzteyll6r14yttmbqndasi.png' },
-          { name: 'ASUS', logo: 'assets/img/marcas/asuspng.png' },
-        ],
-        customizable: true,
-        customizationOptions: {
-          ram: ['64GB DDR5', '96GB DDR5'],
-          storage: ['2TB NVMe + 4TB HDD', '4TB NVMe + 4TB HDD'],
-        },
-        warranty: {
-          duration: 18,
-          type: 'Parts & Labor',
-        },
-        readyToShip: false,
-        estimatedDelivery: { min: 5, max: 9 },
-        preBuilt: true,
-        freeShipping: true,
-        highlights: [
-          'Ideal para Premiere, DaVinci y After Effects',
-          '64GB DDR5 desde configuracion base',
-          'Gabinete premium con gran expansion',
-        ],
-      },
-      {
-        _id: 'pc-004',
-        id: 4,
-        sku: 'PCG-ULTRA-4K',
-        category: ProductCategory.ASSEMBLED,
-        subcategory: 'pc-workstation',
-        status: ProductStatus.ACTIVE,
-        title: 'Titan Ultra 4K',
-        slug: 'titan-ultra-4k',
-        image: 'assets/img/gabinetes/product-section-01.png',
-        images: ['assets/img/gabinetes/product-section-01.png'],
-        price: 56999,
-        currency: 'MXN',
-        description:
-          'Configuracion premium para 4K, workloads mixtos y sesiones largas con enfoque enthusiast.',
-        fullDescription:
-          'Pensada para quien quiere una sola maquina para jugar, crear y escalar sin compromisos de plataforma.',
-        metaTitle: 'Titan Ultra 4K | Ensamble High-End',
-        metaDescription:
-          'PC premium con Ryzen 9, RTX 4080 Super y refrigeracion avanzada para gaming y productividad.',
-        keywords: ['pc high end', 'rtx 4080 super', 'ryzen 9 gaming'],
-        stock: 1,
-        lowStockThreshold: 1,
-        status_text: 'Ultima unidad',
-        featured: true,
-        position: 4,
-        published: true,
-        createdAt: baseDate,
-        updatedAt: baseDate,
-        useCase: UseCase.MIXED,
-        performanceTier: PerformanceTier.ULTRA,
-        targetAudience: 'Usuarios entusiastas que buscan una maquina tope de gama.',
-        specifications: {
-          processor: { _id: 'cpu-004', title: 'AMD Ryzen 9 7900X', specs: '12 nucleos / 24 hilos' },
-          motherboard: { _id: 'mb-004', title: 'X670E AORUS Elite', specs: 'AM5, PCIe 5.0' },
-          ram: { _id: 'ram-004', title: '64GB DDR5 6000MHz', specs: '2x32GB' },
-          storage: [
-            { _id: 'sto-006', title: '2TB NVMe Gen4', specs: 'Sistema y apps' },
-            { _id: 'sto-007', title: '2TB NVMe Gen4', specs: 'Juegos y proyectos' },
-          ],
-          graphicsCard: { _id: 'gpu-004', title: 'NVIDIA GeForce RTX 4080 Super', specs: '16GB GDDR6X' },
-          powerSupply: { _id: 'psu-004', title: '1000W 80+ Gold', specs: 'Full modular' },
-          case: { _id: 'case-004', title: 'Premium Showcase Tower', specs: 'Tempered glass' },
-          cooling: { _id: 'cool-004', title: 'AIO 360mm push-pull', specs: 'ARGB' },
-        },
-        performance: {
-          gpuBrand: 'NVIDIA',
-          gpuMemory: '16GB GDDR6X',
-          cpuBrand: 'AMD',
-          cpuCores: 12,
-          cpuThreads: 24,
-          totalRam: '64GB DDR5',
-          storageCapacity: '4TB NVMe total',
-        },
-        certifications: {
-          certificate: '80+ Gold',
-          wattage: 1000,
-          manufacturer: 'Gigabyte',
-          modular: 'Full',
-        },
-        brandLogos: [
-          { name: 'AMD', logo: 'assets/img/marcas/AMD-Ryzen.png' },
-          { name: 'NVIDIA', logo: 'assets/img/marcas/Nvidia-qe15uqyz4tjnw0jnylr2lzteyll6r14yttmbqndasi.png' },
-          { name: 'Gigabyte', logo: 'assets/img/marcas/gigabyte.png' },
-        ],
-        customizable: true,
-        customizationOptions: {
-          ram: ['64GB DDR5', '128GB DDR5'],
-          storage: ['4TB NVMe', '6TB NVMe'],
-          graphicsCard: ['RTX 4080 Super', 'RTX 4090'],
-        },
-        warranty: {
-          duration: 24,
-          type: 'Parts & Labor',
-        },
-        readyToShip: false,
-        estimatedDelivery: { min: 7, max: 10 },
-        preBuilt: true,
-        freeShipping: true,
-        highlights: [
-          'Pensada para 4K y tareas mixtas',
-          '1000W con margen de actualizacion',
-          'Configuracion flagship de exhibicion',
-        ],
-      },
-    ];
   }
 
   private buildComponents(): ComponentProduct[] {

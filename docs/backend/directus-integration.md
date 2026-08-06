@@ -15,14 +15,17 @@ Move to the production CMS/API domain after DNS and TLS are configured.
 ## Collections
 
 - `pc_categories`: editable category tree for the catalog.
-- `pc_subcategories`: editable subcategory tree for catalog/blog admin forms.
+- `pc_subcategories`: editable subcategory tree for the catalog.
 - `pc_products`: product and assembled PC content.
 - `pc_blog_posts`: blog/SEO posts.
+- `pc_blog_categories`: user-managed blog categories.
+- `pc_blog_subcategories`: user-managed blog subcategories.
 - `pc_quote_requests`: contact and quotation submissions from Angular.
 
 Public access is intentionally narrow:
 
-- Public read is enabled only for `published = true` items in `pc_categories`, `pc_products`, and `pc_blog_posts`.
+- Public read is enabled only for `published = true` items in `pc_categories`, `pc_products`, `pc_blog_categories`, `pc_blog_subcategories`, and `pc_blog_posts`.
+- Public blog post queries also require `published_at <= now`.
 - Public create is enabled only for `pc_quote_requests`.
 - Product/blog/catalog writes can happen from the Angular admin after Directus login. This is a temporary CMS-admin flow; keep the app free of any hardcoded tokens or passwords.
 
@@ -33,7 +36,7 @@ Development and production Angular builds point to `https://cms.test.pcgamercdmx
 Enabled now:
 
 - Admin login uses Directus `/auth/login` and stores the session token in browser storage.
-- Admin blog articles/categories use Directus CRUD.
+- Admin blog articles and their dedicated taxonomy use Directus CRUD.
 - Admin product list/editor/category manager use Directus CRUD.
 - Blog list/detail reads from Directus, with mock JSON fallback.
 - Catalog/product pages read `pc_products` from Directus, with hardcoded Angular catalog fallback.
@@ -50,8 +53,13 @@ The migration/verification scripts are:
 
 - `node tools/directus-seed-from-mocks.mjs`
 - `node tools/verify-directus-local.mjs`
+- `npm run configure:blog`
+- `npm run migrate:blog-taxonomy` (dry-run)
+- `npm run migrate:blog-taxonomy -- --write` (write after reviewing dry-run)
 
 Both scripts read Directus credentials from environment variables or the local credentials file. Do not commit secrets.
+
+`configure:blog` requires a Directus role with schema-management permissions. The content-editor credentials used by the Angular admin are intentionally insufficient. `migrate:blog-taxonomy` requires create/update access to blog collections and posts.
 
 Security note: browser storage tokens are acceptable only for this temporary admin CMS workflow. Before moving to the Django backend, switch to a backend-owned session strategy with CSRF/session hardening or short-lived token refresh through the server.
 

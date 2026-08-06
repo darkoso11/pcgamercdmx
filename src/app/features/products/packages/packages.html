@@ -24,6 +24,7 @@
         [attr.aria-pressed]="selectedPcType === type.value"
       >
         <img
+          *ngIf="pcTypeImages[type.value]"
           [src]="pcTypeImages[type.value]"
           [alt]="type.title"
           width="208"
@@ -183,7 +184,12 @@
           <div class="flex items-center justify-between gap-4">
             <div>
               <p class="pc-text-subtle text-xs uppercase tracking-[0.2em]">Precio referencial</p>
-              <p class="pc-text-pink mt-1 text-2xl font-semibold">${{ item.card.price | number }}</p>
+              <p *ngIf="item.card.discountedPrice" class="mt-1 text-xs text-slate-400 line-through">
+                ${{ item.card.price | number }}
+              </p>
+              <p class="pc-text-pink mt-1 text-2xl font-semibold">
+                ${{ (item.card.discountedPrice ?? item.card.price) | number }}
+              </p>
             </div>
             <a
               [routerLink]="['/ensambles', item.card.slug]"

@@ -10,6 +10,22 @@ describe('AdminAssemblyEditorComponent', () => {
       createProduct: jasmine.createSpy('createProduct').and.returnValue(createResult),
       updateProduct: jasmine.createSpy('updateProduct').and.returnValue(createResult),
       uploadProductImage: jasmine.createSpy('uploadProductImage').and.returnValue(of('https://cms.test.pcgamercdmx.com/assets/file-1')),
+      getPowerCertifications: jasmine.createSpy('getPowerCertifications').and.returnValue(of([
+        {
+          _id: 'cert-gold',
+          name: '80 Plus Gold',
+          image: 'https://cms.test.pcgamercdmx.com/assets/gold',
+          active: true,
+          sort: 1,
+        },
+      ])),
+      createPowerCertification: jasmine.createSpy('createPowerCertification').and.returnValue(of({
+        _id: 'cert-platinum',
+        name: '80 Plus Platinum',
+        image: 'https://cms.test.pcgamercdmx.com/assets/platinum',
+        active: true,
+        sort: 2,
+      })),
     };
     const route = { params: of({}) };
     const router = { navigate: jasmine.createSpy('navigate') };
@@ -33,8 +49,12 @@ describe('AdminAssemblyEditorComponent', () => {
       ram: '32GB DDR5',
       nvmeSsd: '1TB NVMe',
       powerSupply: '750W Gold',
+      watts: 750,
+      powerCertificationId: 'cert-gold',
       cooling: 'Liquid 240',
+      fans: '6 x Lian Li UNI FAN SL-INF',
       case: 'Flow RGB',
+      operatingSystem: 'Windows 11 Pro',
       price: 20000,
       stock: 2,
       image: 'pc.png',
@@ -53,7 +73,7 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(productsAdminService.createProduct).toHaveBeenCalled();
     expect(component.loading).toBeFalse();
     expect(component.successMessage).toBe('Ensamble creado y publicado correctamente');
-    expect(router.navigate).toHaveBeenCalledWith([component.adminProductsUrl]);
+    expect(router.navigate).toHaveBeenCalledWith([component.adminAssembliesUrl]);
   }));
 
   it('forces published true when using the publish action', () => {
@@ -64,6 +84,148 @@ describe('AdminAssemblyEditorComponent', () => {
 
     const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
     expect(payload.published).toBeTrue();
+  });
+
+  it('keeps an edited assembly in the assemblies category', () => {
+    const { component, productsAdminService } = createComponent();
+    component.isEditMode = true;
+    component.productId = '871';
+    component.form.patchValue({ category: 'componentes' });
+
+    component.saveAssembly();
+
+    const payload = productsAdminService.updateProduct.calls.mostRecent().args[1];
+    expect(payload.category).toBe('paquetes');
+  });
+
+  it('provides a form control for selecting assembly brand logos', () => {
+    const { component } = createComponent();
+
+    expect(component.form.contains('brandLogos')).toBeTrue();
+  });
+
+  it('provides an optional text control for assembly fans', () => {
+    const { component } = createComponent();
+
+    expect(component.form.contains('fans')).toBeTrue();
+    expect(component.form.get('fans')?.validator).toBeNull();
+  });
+
+  it('keeps technical specifications optional when publishing', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.patchValue({
+      description: '',
+      processor: '',
+      motherboard: '',
+      graphicsCard: '',
+      ram: '',
+      nvmeSsd: '',
+      powerSupply: '',
+      watts: 0,
+      powerCertificationId: '',
+      cooling: '',
+      fans: '',
+      case: '',
+      operatingSystem: '',
+    });
+
+    component.saveAssembly();
+
+    expect(productsAdminService.createProduct).toHaveBeenCalled();
+  });
+
+  it('allows an incomplete assembly to be saved as a draft', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.reset();
+
+    component.saveDraft();
+
+    expect(productsAdminService.createProduct).toHaveBeenCalled();
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.published).toBeFalse();
+  });
+
+  it('leaves promotional pricing and publication state to their explicit admin actions', () => {
+    const { component } = createComponent();
+
+    expect(component.form.contains('discountPrice')).toBeFalse();
+    expect(component.form.contains('discountPercent')).toBeFalse();
+    expect(component.form.contains('published')).toBeFalse();
+  });
+
+  it('includes the selected brand logos in the published payload', () => {
+    const { component, productsAdminService } = createComponent();
+    const selectedLogos = [
+      { src: 'assets/img/marcas/nvidia_tag.svg', alt: 'NVIDIA' },
+      { src: 'assets/img/marcas/intel_tag.svg', alt: 'Intel' },
+    ];
+    component.form.patchValue({ brandLogos: selectedLogos });
+
+    component.saveAssembly();
+
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.brandLogos).toEqual(selectedLogos);
+  });
+
+  it('restores saved brand logos when editing an assembly', () => {
+    const { component, productsAdminService } = createComponent();
+    const savedLogos = [{ src: 'assets/img/marcas/ryzen_tag.svg', alt: 'AMD' }];
+    productsAdminService.getProductById.and.returnValue(
+      of({
+        title: 'PC AMD',
+        slug: 'pc-amd',
+        description: 'Ensamble AMD listo para jugar',
+        price: 18000,
+        stock: 1,
+        image: 'amd.png',
+        brandLogos: savedLogos,
+      })
+    );
+
+    component.loadAssembly('pc-amd');
+
+    expect(component.form.get('brandLogos')?.value).toEqual(savedLogos);
+  });
+
+  it('restores saved fans when editing an assembly', () => {
+    const { component, productsAdminService } = createComponent();
+    productsAdminService.getProductById.and.returnValue(of({
+      title: 'PC con ventiladores',
+      price: 18000,
+      image: 'fans.png',
+      fans: '  4 x Corsair QX120  ',
+      brandLogos: [],
+    }));
+
+    component.loadAssembly('pc-fans');
+
+    expect(component.form.get('fans')?.value).toBe('  4 x Corsair QX120  ');
+  });
+
+  it('trims fans in the published payload', () => {
+    const { component, productsAdminService } = createComponent();
+    component.form.patchValue({ fans: '  4 x Corsair QX120  ' });
+
+    component.saveAssembly();
+
+    const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
+    expect(payload.fans).toBe('4 x Corsair QX120');
+  });
+
+  it('recognizes and replaces a legacy AMD Ryzen logo without duplicating the brand', () => {
+    const { component } = createComponent();
+    const amdOption = component.brandOptions.find((brand) => brand.alt === 'AMD')!;
+    component.form.patchValue({
+      brandLogos: [
+        { src: 'assets/img/marcas/AMD-Ryzen.png', alt: 'AMD Ryzen' },
+      ],
+    });
+
+    expect(component.isBrandSelected(amdOption)).toBeTrue();
+
+    component.toggleBrandLogo(amdOption, true);
+
+    expect(component.form.get('brandLogos')?.value).toEqual([amdOption]);
   });
 
   it('uploads selected images before creating an assembly record', () => {
@@ -79,7 +241,7 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(payload.image).toBe('https://cms.test.pcgamercdmx.com/assets/file-1');
   });
 
-  it('publishes an assembly even when optional catalog fields are incomplete', () => {
+  it('blocks publication when required public catalog fields are incomplete', () => {
     const { component, productsAdminService } = createComponent();
     component.form.reset({
       title: 'Ensamble Rapido',
@@ -89,9 +251,37 @@ describe('AdminAssemblyEditorComponent', () => {
 
     component.saveAssembly();
 
-    expect(productsAdminService.createProduct).toHaveBeenCalled();
+    expect(productsAdminService.createProduct).not.toHaveBeenCalled();
+    expect(component.errorMessage).toBe('Completa los campos obligatorios antes de publicar el ensamble.');
+  });
+
+  it('persists watts, selected certification and operating system in the assembly payload', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+
+    component.saveAssembly();
+
     const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
-    expect(payload.published).toBeTrue();
+    expect(payload).toEqual(jasmine.objectContaining({
+      watts: 750,
+      powerCertificationId: 'cert-gold',
+      powerCertificate: '80 Plus Gold',
+      powerCertificateImage: 'https://cms.test.pcgamercdmx.com/assets/gold',
+      operatingSystem: 'Windows 11 Pro',
+    }));
+  });
+
+  it('registers a new reusable certification and selects it for the assembly', () => {
+    const { component, productsAdminService } = createComponent();
+    const file = new File(['platinum'], 'platinum.png', { type: 'image/png' });
+    (component as any).newCertificationName = '80 Plus Platinum';
+    (component as any).selectedCertificationImageFile = file;
+
+    (component as any).saveNewCertification();
+
+    expect(productsAdminService.createPowerCertification)
+      .toHaveBeenCalledWith('80 Plus Platinum', file);
+    expect(component.form.get('powerCertificationId')?.value).toBe('cert-platinum');
   });
 
   it('stops loading and shows an error when assembly creation fails', () => {

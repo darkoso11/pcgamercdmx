@@ -1,124 +1,181 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { firstValueFrom } from 'rxjs';
-import { DirectusApiService } from '../../core/services/directus-api.service';
+import { Article } from './models/types';
+import { ArticleMediaComponent } from './article-media.component';
+import { BlogService } from './services/blog.service';
 
 @Component({
   selector: 'app-blog-article',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ArticleMediaComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-[#071029] min-h-screen py-12">
-      <!-- Espaciador para navbar superior -->
-      <div class="h-20"></div>
-      
-      <div class="max-w-4xl mx-auto px-4">
-        <!-- Botón regresar mejorado -->
-        <div class="mb-8 flex items-center">
-          <a routerLink="/blog" class="inline-flex items-center gap-2 px-4 py-2 bg-cyan-400/10 border border-cyan-400 rounded-lg text-cyan-300 hover:bg-cyan-400/20 hover:text-cyan-200 transition font-semibold">
-            <span>←</span>
-            <span>Volver al Blog</span>
-          </a>
+    <main class="article-page">
+      <div class="article-shell">
+        <a routerLink="/blog" class="back-link">
+          <span aria-hidden="true">←</span> Volver al blog
+        </a>
+
+        <div class="state" *ngIf="loading" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          Cargando artículo…
         </div>
 
-        <div *ngIf="!article" class="p-6 bg-[#0b1220] rounded-xl text-gray-300">Cargando artículo...</div>
+        <section class="state error" *ngIf="error" role="alert">
+          <p class="eyebrow">Error de conexión</p>
+          <h1>No pudimos abrir esta publicación.</h1>
+          <p>Revisa tu conexión e inténtalo nuevamente.</p>
+          <button type="button" (click)="load()">Reintentar</button>
+        </section>
 
-        <article *ngIf="article" class="bg-[#071229] rounded-xl overflow-hidden border border-white/5">
-          <div class="h-64 md:h-96 bg-black/40 overflow-hidden">
-            <img [src]="article.coverImage?.url || '/assets/img/custom/sample-cover.jpg'" [alt]="article.coverImage?.alt || article.title" class="w-full h-full object-cover" />
-          </div>
+        <section class="state" *ngIf="notFound">
+          <p class="eyebrow">404 · Publicación no encontrada</p>
+          <h1>Esta entrada no está disponible.</h1>
+          <p>Puede seguir como borrador, estar programada o haber cambiado de dirección.</p>
+          <a routerLink="/blog" class="button-link">Explorar publicaciones</a>
+        </section>
 
-          <div class="p-6">
-            <h1 class="text-3xl md:text-4xl font-bold text-white">{{ article.title }}</h1>
-            <div class="mt-2 text-sm text-cyan-300">{{ article.publishedAt | date:'longDate' }}</div>
+        <article *ngIf="article">
+          <header class="article-header">
+            <p class="eyebrow">{{ article.tags?.[0] || 'Guía PC Gamer CDMX' }}</p>
+            <h1>{{ article.title }}</h1>
+            <p class="summary">{{ article.summary }}</p>
+            <time [attr.datetime]="article.publishedAt">
+              {{ formatPublishedAt(article.publishedAt) }}
+            </time>
+          </header>
 
-            <div class="mt-6 prose prose-invert max-w-none">
-              <div [innerHTML]="articleHtml"></div>
-            </div>
+          <figure class="hero-media" *ngIf="article.coverImage?.url && !coverFailed">
+            <img
+              [src]="article.coverImage?.url"
+              [alt]="article.coverImage?.alt || ''"
+              (error)="handleCoverError()"
+            />
+          </figure>
+
+          <div class="article-body">
+            <section
+              *ngFor="let section of article.sections"
+              [attr.aria-labelledby]="section.title ? 'section-' + section.id : null"
+            >
+              <h2 *ngIf="section.title" [id]="'section-' + section.id">{{ section.title }}</h2>
+              <div class="rich-text" [innerHTML]="section.text || ''"></div>
+
+              <div class="media-grid" *ngIf="section.images?.length">
+                <figure *ngFor="let image of section.images">
+                  <img [src]="image.url" [alt]="image.alt || ''" loading="lazy" />
+                  <figcaption *ngIf="image.alt">{{ image.alt }}</figcaption>
+                </figure>
+              </div>
+
+              <div class="media-grid" *ngIf="section.media?.length">
+                <app-article-media
+                  *ngFor="let media of section.media"
+                  [media]="media"
+                ></app-article-media>
+              </div>
+
+              <ul class="related-links" *ngIf="section.links?.length">
+                <li *ngFor="let link of section.links">
+                  <a [href]="link.link">{{ link.title }}</a>
+                </li>
+              </ul>
+            </section>
           </div>
         </article>
       </div>
-    </div>
-  `
+    </main>
+  `,
+  styles: [`
+    :host { display: block; background: #07111f; color: #f8fafc; }
+    .article-page { min-height: 100vh; padding: 8rem 1.5rem 6rem; }
+    .article-shell { width: min(940px, 100%); margin: 0 auto; }
+    .back-link { display: inline-flex; gap: .55rem; align-items: center; margin-bottom: 3.5rem;
+      color: #8ee9f5; font-weight: 800; text-decoration: none; }
+    .article-header { max-width: 820px; }
+    .eyebrow { margin: 0 0 1rem; color: #67e8f9; font-size: .76rem; font-weight: 850;
+      letter-spacing: .15em; text-transform: uppercase; }
+    h1 { margin: 0; color: #fff; font-size: clamp(2.8rem, 7vw, 5.6rem); line-height: .98; letter-spacing: -.055em; }
+    .summary { max-width: 720px; margin: 1.5rem 0; color: #c5d2e1; font-size: 1.18rem; line-height: 1.7; }
+    time { color: #9db1c8; font-size: .9rem; }
+    .hero-media { margin: 3.25rem 0 0; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 14px; background: #0b1a2d; }
+    .hero-media img { width: 100%; height: 100%; object-fit: cover; }
+    .article-body { width: min(720px, 100%); margin: 4rem auto 0; }
+    .article-body section + section { margin-top: 3.5rem; padding-top: 3.5rem; border-top: 1px solid #263a55; }
+    .article-body h2 { margin: 0 0 1.2rem; color: #fff; font-size: clamp(1.7rem, 4vw, 2.5rem); letter-spacing: -.025em; }
+    .rich-text { color: #d7e2ef; font-size: 1.08rem; line-height: 1.82; }
+    .rich-text :is(p, ul, ol, blockquote, pre) { margin: 0 0 1.35rem; }
+    .rich-text :is(a) { color: #67e8f9; text-underline-offset: 3px; }
+    .media-grid { display: grid; gap: 1rem; margin-top: 2rem; }
+    figure { margin: 0; }
+    figcaption { margin-top: .6rem; color: #9db1c8; font-size: .82rem; }
+    .related-links { padding-left: 1.2rem; }
+    .related-links a { color: #67e8f9; }
+    .state { min-height: 400px; display: flex; flex-direction: column; align-items: flex-start;
+      justify-content: center; color: #c5d2e1; }
+    .state h1 { max-width: 760px; font-size: clamp(2.4rem, 6vw, 4.5rem); }
+    .state p:not(.eyebrow) { max-width: 640px; line-height: 1.7; }
+    button, .button-link { min-height: 48px; display: inline-flex; align-items: center; justify-content: center;
+      margin-top: 1rem; padding: 0 1.2rem; border: 0; border-radius: 8px; background: #22d3ee;
+      color: #05242c; font: inherit; font-weight: 850; text-decoration: none; cursor: pointer; }
+    .spinner { width: 28px; height: 28px; margin-bottom: 1rem; border: 3px solid #47627f;
+      border-top-color: #67e8f9; border-radius: 50%; animation: spin .8s linear infinite; }
+    a:focus-visible, button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; } }
+  `],
 })
 export class ArticleComponent implements OnInit {
-  article: any = null;
-  articleHtml: SafeHtml = '' as SafeHtml;
+  article: Article | null = null;
+  loading = true;
+  error = false;
+  notFound = false;
+  coverFailed = false;
+
   constructor(
-    private route: ActivatedRoute,
-    private sanitizer: DomSanitizer,
-    private directus: DirectusApiService,
-    private cdr: ChangeDetectorRef
+    private readonly route: ActivatedRoute,
+    private readonly blog: BlogService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
-  async ngOnInit() {
-    const slug = this.route.snapshot.params['slug'];
-    if (await this.loadFromDirectus(slug)) {
-      return;
-    }
-
-    // Try backend first; fallback to mock
-    try {
-      const res = await fetch(`/api/blog/articles/${slug}`);
-      if (res.ok) {
-        this.article = await res.json();
-        const raw = (this.article.sections || []).map((s: any) => s.text || '').join('\n');
-        this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
-        this.cdr.detectChanges();
-        return;
-      }
-    } catch (e) {}
-
-    try {
-      const res = await fetch('/assets/mock/blog-sample.json');
-      if (!res.ok) return;
-      const data = await res.json();
-      const found = (Array.isArray(data) ? data : data.articles || []).find((a: any) => a.slug === slug);
-      if (found) {
-        this.article = found;
-        const raw = (found.sections || []).map((s: any) => s.text || '').join('\n');
-        this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
-        this.cdr.detectChanges();
-      }
-    } catch (e) {}
+  ngOnInit(): void {
+    this.load();
   }
 
-  private async loadFromDirectus(slug: string): Promise<boolean> {
-    if (!this.directus.isEnabled('blog')) {
-      return false;
-    }
+  load(): void {
+    const slug = this.route.snapshot.paramMap.get('slug') ?? '';
+    this.loading = true;
+    this.error = false;
+    this.notFound = false;
+    this.coverFailed = false;
+    this.blog.getPublishedBySlug(slug).subscribe({
+      next: (article) => {
+        this.article = article;
+        this.loading = false;
+        this.notFound = !article;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.error = true;
+        this.cdr.markForCheck();
+      },
+    });
+  }
 
-    try {
-      const response = await firstValueFrom(
-        this.directus.readItems<any>('pc_blog_posts', {
-          'filter[slug][_eq]': slug,
-          'filter[published][_eq]': true,
-          fields: 'title,slug,summary,cover_image,sections,tags,published_at',
-          limit: 1,
-        })
-      );
-      const item = response.data[0];
-      if (!item) {
-        return false;
-      }
+  handleCoverError(): void {
+    this.coverFailed = true;
+    this.cdr.markForCheck();
+  }
 
-      this.article = {
-        title: item.title,
-        slug: item.slug,
-        summary: item.summary,
-        coverImage: item.cover_image,
-        sections: item.sections || [],
-        tags: item.tags || [],
-        publishedAt: item.published_at,
-      };
-      const raw = (this.article.sections || []).map((s: any) => s.text || '').join('\n');
-      this.articleHtml = this.sanitizer.bypassSecurityTrustHtml(raw);
-      this.cdr.detectChanges();
-      return true;
-    } catch {
-      return false;
-    }
+  formatPublishedAt(value?: string): string {
+    return value
+      ? new Intl.DateTimeFormat('es-MX', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(new Date(value))
+      : '';
   }
 }

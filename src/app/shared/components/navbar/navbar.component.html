@@ -48,8 +48,12 @@
 <!-- Navbar para móvil con botón hamburguesa -->
 <div class="min-[890px]:hidden fixed top-4 left-4 z-50">
   <button
+    type="button"
     (click)="toggleMobileMenu()"
     class="bg-black/50 p-3 rounded-md border border-white/50"
+    aria-label="Abrir menú de navegación"
+    aria-controls="mobile-navigation"
+    [attr.aria-expanded]="mobileMenuOpen"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -59,9 +63,9 @@
       stroke="currentColor"
     >
       <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="{2}"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
         d="M4 6h16M4 12h16M4 18h16"
       />
     </svg>
@@ -71,6 +75,7 @@
 
 <!-- Menú móvil desplegable -->
 <div
+  id="mobile-navigation"
   [ngClass]="{
     'translate-x-0 opacity-100 pointer-events-auto': mobileMenuOpen,
     'hidden -translate-x-full opacity-0 pointer-events-none': !mobileMenuOpen
@@ -80,7 +85,12 @@
   <div class="flex flex-col h-full">
     <!-- Botón de cerrar -->
     <div class="flex justify-end p-4">
-      <button (click)="toggleMobileMenu()" class="text-white p-2">
+      <button
+        type="button"
+        (click)="toggleMobileMenu()"
+        class="text-white p-2"
+        aria-label="Cerrar menú de navegación"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-6 w-6"
@@ -89,9 +99,9 @@
           stroke="currentColor"
         >
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="{2}"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
             d="M6 18L18 6M6 6l12 12"
           />
         </svg>
@@ -218,13 +228,13 @@
     <!-- Redes sociales + Botón comprar -->
     <div class="p-4 border-t border-white/30">
       <div class="flex justify-center gap-6 py-4">
-        <a [href]="business.social.tiktok" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"
+        <a [href]="business.social.tiktok" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="TikTok"
           ><i class="fab fa-tiktok"></i
         ></a>
-        <a [href]="business.social.facebook" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"
+        <a [href]="business.social.facebook" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="Facebook"
           ><i class="fab fa-facebook-f"></i
         ></a>
-        <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer" class="social-btn-cyber"
+        <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="Instagram"
           ><i class="fab fa-instagram"></i
         ></a>
         <a
@@ -232,6 +242,7 @@
           target="_blank"
           rel="noopener noreferrer"
           class="social-btn-cyber"
+          aria-label="WhatsApp"
           ><i class="fab fa-whatsapp"></i
         ></a>
       </div>

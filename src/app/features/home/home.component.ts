@@ -22,7 +22,11 @@ import { Product, ProductsService } from '../products/services/products.service'
 import { AssembledPC, PeripheralProduct } from '../../shared/models';
 import { CommunityCollaborator } from '../community/collaborators.data';
 import { CommunityService } from '../community/community.service';
-import { HomeBlogSectionComponent } from './components/home-blog-section.component';
+import { BlogService } from '../blog/services/blog.service';
+import {
+  HomeBlogPost,
+  HomeBlogSectionComponent,
+} from './components/home-blog-section.component';
 import { HomeCommunitySectionComponent } from './components/home-community-section.component';
 import { HomeCustomCasesSectionComponent } from './components/home-custom-cases-section.component';
 import { HomeProjectRequestSectionComponent } from './components/home-project-request-section.component';
@@ -42,8 +46,6 @@ interface HomePeripheralItem {
   inStock: boolean;
   inventoryLabel: string;
 }
-
-type HomeCarouselProduct = Omit<Product, 'image'> & { image?: string };
 
 @Component({
   selector: 'app-home',
@@ -203,189 +205,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   ];
 
-  latestPosts = [
-    {
-      title: 'Las mejores tarjetas gráficas para 2024',
-      excerpt:
-        'Analizamos las mejores opciones de Nvidia y AMD para cada presupuesto.',
-      image: 'https://picsum.photos/id/211/600/400',
-      date: new Date('2023-12-15'),
-      slug: 'mejores-tarjetas-graficas-2024',
-    },
-    {
-      title: 'Guía para overclock seguro de CPU',
-      excerpt:
-        'Todo lo que necesitas saber para aumentar el rendimiento de tu procesador sin riesgos.',
-      image: 'https://picsum.photos/id/212/600/400',
-      date: new Date('2023-12-10'),
-      slug: 'guia-overclock-seguro-cpu',
-    },
-    {
-      title: 'Cómo configurar tu PC para streaming',
-      excerpt:
-        'Ajustes de OBS, hardware recomendado y consejos de profesionales.',
-      image: 'https://picsum.photos/id/213/600/400',
-      date: new Date('2023-12-05'),
-      slug: 'configurar-pc-para-streaming',
-    },
-  ];
+  latestPosts: HomeBlogPost[] = [];
 
   // Variable para almacenar referencia al intervalo
   private rotationIntervalId: ReturnType<typeof setInterval> | null = null;
 
   // Productos para el carrusel de ensambles
-  carruselProducts: HomeCarouselProduct[] = [
-    {
-      id: 1,
-      title: 'CPU PRE ARMADO 1',
-      price: 11999,
-      processor: 'AMD RYZEN 7 5700',
-      motherboard: 'ASUS ROG STRIX B550-F',
-      ram: '16 GB DDR4',
-      storage: 'SSD M.2 NVME 1TB',
-      graphicsCard: 'NVIDIA RTX 3060',
-      slug: 'cpu-pre-armado-1',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 2,
-      title: 'CPU PRE ARMADO 2',
-      price: 15999,
-      processor: 'INTEL CORE i5-12400F',
-      motherboard: 'ASUS PRIME B660M-A',
-      ram: '32 GB DDR4',
-      storage: 'SSD M.2 NVME 1TB',
-      graphicsCard: 'NVIDIA RTX 3070',
-      slug: 'cpu-pre-armado-2',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 3,
-      title: 'CPU PRE ARMADO 3',
-      price: 21999,
-      processor: 'AMD RYZEN 9 5900X',
-      motherboard: 'ASUS ROG STRIX X570-E',
-      ram: '32 GB DDR4',
-      storage: 'SSD M.2 NVME 2TB',
-      graphicsCard: 'NVIDIA RTX 3080',
-      slug: 'cpu-pre-armado-3',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 4,
-      title: 'CPU PRE ARMADO 4',
-      price: 29999,
-      processor: 'INTEL CORE i9-12900K',
-      motherboard: 'ASUS ROG MAXIMUS Z690 HERO',
-      ram: '64 GB DDR5',
-      storage: 'SSD M.2 NVME 2TB',
-      graphicsCard: 'NVIDIA RTX 4080',
-      slug: 'cpu-pre-armado-4',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-    {
-      id: 5,
-      title: 'CPU PRE ARMADO 5',
-      price: 34999,
-      processor: 'AMD RYZEN 9 5950X',
-      motherboard: 'ASUS ROG CROSSHAIR VIII HERO',
-      ram: '64 GB DDR4',
-      storage: 'SSD M.2 NVME 2TB',
-      graphicsCard: 'NVIDIA RTX 4090',
-      slug: 'cpu-pre-armado-5',
-      brandLogos: [
-        {
-          src: 'assets/img/marcas/nvidia_tag.svg',
-          alt: 'NVIDIA',
-          position: 'top-left',
-        },
-        {
-          src: 'assets/img/marcas/ryzen_tag.svg',
-          alt: 'AMD Ryzen',
-          position: 'top-right',
-        },
-        {
-          src: 'assets/img/marcas/corsairbrand.png',
-          alt: 'Corsair',
-          position: 'bottom-left',
-        },
-      ],
-      powerCertificate: 'assets/img/certificaciones/80plusgold.png',
-      watts: 650,
-    },
-  ];
+  carruselProducts: Product[] = [];
 
   public filteredCarruselProducts = [...this.carruselProducts];
   public searchTerm: string = '';
@@ -485,7 +311,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private productsService: ProductsService,
     private communityService: CommunityService,
-    private homeContentService: HomeContentService
+    private homeContentService: HomeContentService,
+    private blogService: BlogService
   ) {}
 
   // Métodos para controlar la navegación de los banners
@@ -507,6 +334,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadRandomPeripherals();
     this.loadFeaturedCollaborators();
     this.loadHomeContent();
+    this.loadLatestPosts();
 
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
@@ -565,15 +393,13 @@ export class HomeComponent implements OnInit, OnDestroy {
           .slice(0, 12)
           .map((product, index) => this.toPackageSliderItem(product, index));
 
-        if (items.length) {
-          this.carruselProducts = items;
-          this.filteredCarruselProducts = [...items];
-          this.cdr.detectChanges();
-        }
+        this.carruselProducts = items;
+        this.filteredCarruselProducts = [...items];
+        this.cdr.detectChanges();
       },
       error: () => {
-        this.carruselProducts = this.shuffleItems(this.carruselProducts);
-        this.filteredCarruselProducts = [...this.carruselProducts];
+        this.carruselProducts = [];
+        this.filteredCarruselProducts = [];
         this.cdr.detectChanges();
       },
     });
@@ -596,63 +422,26 @@ export class HomeComponent implements OnInit, OnDestroy {
       storage: product.specifications.storage.map((item) => item.title).join(' + '),
       graphicsCard,
       slug: product.slug,
-      brandLogos: this.getPackageBrandLogos(product, processor, graphicsCard, motherboard),
-      powerCertificate: this.getPowerCertificateImage(product.certifications.certificate),
+      brandLogos: this.getPackageBrandLogos(product),
+      powerCertificate:
+        product.certifications.image ||
+        this.getPowerCertificateImage(product.certifications.certificate),
+      powerCertificateName: product.certifications.certificate,
       watts: product.certifications.wattage,
+      originalPrice: product.discountedPrice ? product.price : undefined,
+      showOfferBadge: Boolean(
+        product.discountedPrice && product.offerBadgeVisible
+      ),
       category: 'paquete',
       description: product.description,
     };
   }
 
-  private getPackageBrandLogos(
-    product: AssembledPC,
-    processor: string,
-    graphicsCard: string,
-    motherboard: string
-  ): Array<{ src: string; alt: string }> {
-    const logos = product.brandLogos
+  private getPackageBrandLogos(product: AssembledPC): Array<{ src: string; alt: string }> {
+    return product.brandLogos
       .map((logo) => ({ src: logo.logo, alt: logo.name }))
-      .filter((logo) => logo.src && logo.alt);
-
-    const componentText = `${processor} ${graphicsCard} ${motherboard}`.toLowerCase();
-    const derivedLogos = [
-      {
-        match: componentText.includes('nvidia') || componentText.includes('rtx') || componentText.includes('gtx'),
-        src: 'assets/img/marcas/nvidia_tag.svg',
-        alt: 'NVIDIA',
-      },
-      {
-        match: componentText.includes('amd') || componentText.includes('ryzen') || componentText.includes('radeon'),
-        src: 'assets/img/marcas/ryzen_tag.svg',
-        alt: 'AMD Ryzen',
-      },
-      {
-        match: componentText.includes('intel') || componentText.includes('core ultra') || componentText.includes('core i'),
-        src: 'assets/img/marcas/intel_tag.svg',
-        alt: 'Intel',
-      },
-      {
-        match: componentText.includes('asus') || componentText.includes('rog'),
-        src: 'assets/img/marcas/asuspng.png',
-        alt: 'ASUS',
-      },
-      {
-        match: componentText.includes('gigabyte') || componentText.includes('aorus'),
-        src: 'assets/img/marcas/gigabyte.png',
-        alt: 'Gigabyte',
-      },
-      {
-        match: componentText.includes('corsair'),
-        src: 'assets/img/marcas/corsairbrand.png',
-        alt: 'Corsair',
-      },
-    ]
-      .filter((logo) => logo.match)
-      .map(({ src, alt }) => ({ src, alt }));
-
-    return [...logos, ...derivedLogos]
-      .filter((logo, index, all) => all.findIndex((item) => item.alt === logo.alt) === index)
-      .slice(0, 4);
+      .filter((logo) => logo.src && logo.alt)
+      .filter((logo, index, all) => all.findIndex((item) => item.alt === logo.alt) === index);
   }
 
   private getPowerCertificateImage(certificate: string): string {
@@ -666,6 +455,30 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.influencers = collaborators;
       this.cdr.detectChanges();
     });
+  }
+
+  private loadLatestPosts(): void {
+    this.blogService.listPublished({ limit: 3 }).subscribe({
+      next: ({ data }) => {
+        this.latestPosts = data.map((article) => ({
+          title: article.title,
+          excerpt: article.summary || 'Lee la entrada completa en nuestro blog.',
+          image: article.coverImage?.url || '',
+          date: this.toValidDate(article.publishedAt),
+          slug: article.slug || article._id || '',
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.latestPosts = [];
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private toValidDate(value?: string): Date {
+    const date = value ? new Date(value) : new Date();
+    return Number.isNaN(date.getTime()) ? new Date() : date;
   }
 
   private toPeripheralSliderItem(product: PeripheralProduct, index: number) {

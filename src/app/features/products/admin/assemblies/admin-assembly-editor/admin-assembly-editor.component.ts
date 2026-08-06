@@ -6,13 +6,21 @@ import { Subject } from 'rxjs';
 import { finalize, switchMap, takeUntil, timeout } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
-import { ProductsAdminService } from '../../shared/products-admin.service';
+import {
+  PowerCertification,
+  ProductsAdminService,
+} from '../../shared/products-admin.service';
 import {
   getCatalogSaveErrorMessage,
   isSupportedCatalogImageFile,
   prepareCatalogImagesForSave
 } from '../../shared/catalog-image-save.utils';
 import { asTrimmedText, normalizeCatalogSlug } from '../../shared/catalog-form.utils';
+
+interface AssemblyBrandLogo {
+  src: string;
+  alt: string;
+}
 
 @Component({
   selector: 'app-admin-assembly-editor',
@@ -21,7 +29,15 @@ import { asTrimmedText, normalizeCatalogSlug } from '../../shared/catalog-form.u
   templateUrl: './admin-assembly-editor.component.html'
 })
 export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
-  readonly adminProductsUrl = adminUrl('products');
+  readonly adminAssembliesUrl = adminUrl('assemblies');
+  readonly brandOptions: ReadonlyArray<AssemblyBrandLogo> = [
+    { src: 'assets/img/marcas/nvidia_tag.svg', alt: 'NVIDIA' },
+    { src: 'assets/img/marcas/intel_tag.svg', alt: 'Intel' },
+    { src: 'assets/img/marcas/ryzen_tag.svg', alt: 'AMD' },
+    { src: 'assets/img/marcas/asuspng.png', alt: 'ASUS' },
+    { src: 'assets/img/marcas/corsairbrand.png', alt: 'Corsair' },
+    { src: 'assets/img/marcas/gigabyte.png', alt: 'Gigabyte' },
+  ];
   form!: FormGroup;
   isEditMode = false;
   loading = false;
@@ -29,9 +45,14 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   errorMessage = '';
   productId: string | null = null;
   galleryImages: string[] = [];
-  newGalleryImage = '';
+  powerCertifications: PowerCertification[] = [];
+  showCertificationCreator = false;
+  newCertificationName = '';
+  newCertificationImagePreview = '';
+  savingCertification = false;
   private selectedMainImageFile: File | null = null;
   private selectedGalleryImageFiles = new Map<string, File>();
+  private selectedCertificationImageFile: File | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -48,43 +69,47 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   initializeForm(): void {
     this.form = this.fb.group({
       // Sección 1: Información Básica
-      title: ['', [Validators.required, Validators.minLength(3)]],
-      slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
-      category: ['Ensambles de Computadoras', Validators.required],
+      title: ['', Validators.required],
+      slug: [''],
+      description: [''],
+      category: ['Ensambles de Computadoras'],
 
       // Sección 2: Especificaciones Técnicas Completas
-      processor: ['', Validators.required],
-      motherboard: ['', Validators.required],
-      graphicsCard: ['', Validators.required],
-      ram: ['', Validators.required],
-      nvmeSsd: ['', Validators.required],
-      powerSupply: ['', Validators.required],
-      cooling: ['', Validators.required],
-      case: ['', Validators.required],
+      processor: [''],
+      motherboard: [''],
+      graphicsCard: [''],
+      ram: [''],
+      nvmeSsd: [''],
+      powerSupply: [''],
+      watts: [0],
+      powerCertificationId: [''],
+      cooling: [''],
+      fans: [''],
+      case: [''],
       operatingSystem: [''],
 
-      // Sección 3: Precios
+      // Sección 3: Marcas visibles
+      brandLogos: [[]],
+
+      // Sección 4: Precios
       price: [0, [Validators.required, Validators.min(0)]],
-      discountPrice: [0],
-      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       currency: ['MXN'],
 
-      // Sección 4: Stock
-      stock: [0, [Validators.required, Validators.min(0)]],
+      // Sección 5: Stock
+      stock: [0],
       sku: [''],
 
-      // Sección 5: Imagen
+      // Sección 6: Imagen
       image: ['', Validators.required],
       gallery: [[]],
 
-      // Sección 6: Publicación
-      published: [false],
+      // Sección 7: Publicación
       featured: [false]
     });
   }
 
   ngOnInit(): void {
+    this.loadPowerCertifications();
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
@@ -114,18 +139,19 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
               ram: assembly.ram || '',
               nvmeSsd: assembly.nvmeSsd || '',
               powerSupply: assembly.powerSupply || '',
+              watts: assembly.watts || 0,
+              powerCertificationId: assembly.powerCertificationId || '',
               cooling: assembly.cooling || '',
+              fans: assembly.fans || '',
               case: assembly.case || '',
               operatingSystem: assembly.operatingSystem || '',
+              brandLogos: this.normalizeBrandLogos(assembly.brandLogos),
               price: assembly.price,
-              discountPrice: assembly.discountPrice || 0,
-              discountPercent: assembly.discountPercent || 0,
               currency: assembly.currency || 'MXN',
               stock: assembly.stock,
               sku: assembly.sku || '',
               image: assembly.image,
               gallery: assembly.gallery || [],
-              published: assembly.published || false,
               featured: assembly.featured || false
             });
           }
@@ -152,6 +178,13 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   saveAssembly(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.errorMessage = 'Completa los campos obligatorios antes de publicar el ensamble.';
+      this.focusFirstInvalidControl();
+      return;
+    }
+
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -187,7 +220,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
           : 'Ensamble creado y publicado correctamente';
         this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate([this.adminProductsUrl]);
+          this.router.navigate([this.adminAssembliesUrl]);
         }, 1500);
       },
       error: (err: any) => {
@@ -198,11 +231,6 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   saveDraft(): void {
-    if (this.form.get('title')?.invalid || this.form.get('slug')?.invalid) {
-      alert('Por favor, completa al menos el título y el slug');
-      return;
-    }
-
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -236,7 +264,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         this.successMessage = 'Ensamble guardado como borrador';
         this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate([this.adminProductsUrl]);
+          this.router.navigate([this.adminAssembliesUrl]);
         }, 1500);
       },
       error: (err: any) => {
@@ -244,13 +272,6 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  addGalleryImage(): void {
-    if (this.newGalleryImage.trim()) {
-      this.galleryImages.push(this.newGalleryImage);
-      this.newGalleryImage = '';
-    }
   }
 
   onMainImageSelected(event: Event): void {
@@ -304,6 +325,67 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  onCertificationImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!isSupportedCatalogImageFile(file)) {
+      this.errorMessage = 'Formato no permitido para la certificación. Usa JPG, JPEG, PNG, GIF o WebP.';
+      input.value = '';
+      return;
+    }
+
+    this.selectedCertificationImageFile = file;
+    const reader = new FileReader();
+    reader.onload = (loadEvent) => {
+      this.newCertificationImagePreview = String(loadEvent.target?.result ?? '');
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  saveNewCertification(): void {
+    const name = this.newCertificationName.trim();
+    if (!name || !this.selectedCertificationImageFile) {
+      this.errorMessage = 'Escribe el nombre y selecciona la imagen de la certificación.';
+      return;
+    }
+
+    this.savingCertification = true;
+    this.errorMessage = '';
+    this.productsAdminService
+      .createPowerCertification(name, this.selectedCertificationImageFile)
+      .pipe(
+        finalize(() => {
+          this.savingCertification = false;
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (certification) => {
+          this.powerCertifications = [
+            ...this.powerCertifications.filter((item) => item._id !== certification._id),
+            certification,
+          ].sort((left, right) => left.sort - right.sort || left.name.localeCompare(right.name));
+          this.form.get('powerCertificationId')?.setValue(certification._id ?? '');
+          this.form.get('powerCertificationId')?.markAsDirty();
+          this.cancelCertificationCreator();
+        },
+        error: () => {
+          this.errorMessage = 'No se pudo registrar la certificación. El ensamble conserva sus datos.';
+        },
+      });
+  }
+
+  cancelCertificationCreator(): void {
+    this.showCertificationCreator = false;
+    this.newCertificationName = '';
+    this.newCertificationImagePreview = '';
+    this.selectedCertificationImageFile = null;
+  }
+
   removeGalleryImage(index: number): void {
     const removedImage = this.galleryImages[index];
     if (removedImage) {
@@ -314,6 +396,25 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
 
   getControl(controlName: string) {
     return this.form.get(controlName);
+  }
+
+  isBrandSelected(brand: AssemblyBrandLogo): boolean {
+    const selectedBrandKey = this.getBrandKey(brand);
+
+    return this.normalizeBrandLogos(this.form.get('brandLogos')?.value)
+      .some((logo) => this.getBrandKey(logo) === selectedBrandKey);
+  }
+
+  toggleBrandLogo(brand: AssemblyBrandLogo, selected: boolean): void {
+    const control = this.form.get('brandLogos');
+    const selectedBrandKey = this.getBrandKey(brand);
+    const current = this.normalizeBrandLogos(control?.value)
+      .filter((logo) => this.getBrandKey(logo) !== selectedBrandKey);
+    const next = selected ? [...current, { ...brand }] : current;
+
+    control?.setValue(next);
+    control?.markAsDirty();
+    control?.markAsTouched();
   }
 
   onImageError(event: Event): void {
@@ -338,24 +439,98 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
     const title = asTrimmedText(rawValue.title) || fallbackName;
     const slug = normalizeCatalogSlug(asTrimmedText(rawValue.slug) || title) || `ensamble-${Date.now()}`;
 
+    const selectedCertification = this.powerCertifications.find(
+      (certification) => certification._id === rawValue.powerCertificationId
+    );
+
     return {
       ...rawValue,
       title,
       slug,
       description: asTrimmedText(rawValue.description),
-      category: asTrimmedText(rawValue.category) || 'Ensambles de Computadoras',
+      category: 'paquetes',
       processor: asTrimmedText(rawValue.processor),
       motherboard: asTrimmedText(rawValue.motherboard),
       graphicsCard: asTrimmedText(rawValue.graphicsCard),
       ram: asTrimmedText(rawValue.ram),
       nvmeSsd: asTrimmedText(rawValue.nvmeSsd),
       powerSupply: asTrimmedText(rawValue.powerSupply),
+      watts: Number(rawValue.watts) || 0,
+      powerCertificationId: asTrimmedText(rawValue.powerCertificationId),
+      powerCertificate: selectedCertification?.name ?? '',
+      powerCertificateImage: selectedCertification?.image ?? '',
+      operatingSystem: asTrimmedText(rawValue.operatingSystem),
       cooling: asTrimmedText(rawValue.cooling),
+      fans: asTrimmedText(rawValue.fans),
       case: asTrimmedText(rawValue.case),
+      brandLogos: this.normalizeBrandLogos(rawValue.brandLogos),
       image: asTrimmedText(rawValue.image) || 'https://via.placeholder.com/600x400?text=Ensamble',
       published,
       gallery: this.galleryImages,
     };
+  }
+
+  private loadPowerCertifications(): void {
+    this.productsAdminService
+      .getPowerCertifications()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (certifications) => {
+          this.powerCertifications = certifications;
+          const currentId = asTrimmedText(this.form.get('powerCertificationId')?.value);
+          if (!currentId && certifications.length === 1) {
+            this.form.get('powerCertificationId')?.setValue(certifications[0]._id ?? '');
+          }
+        },
+        error: () => {
+          this.errorMessage = 'No se pudo cargar la biblioteca de certificaciones.';
+        },
+      });
+  }
+
+  private focusFirstInvalidControl(): void {
+    const firstInvalidName = Object.keys(this.form.controls).find(
+      (controlName) => this.form.get(controlName)?.invalid
+    );
+    if (!firstInvalidName || typeof document === 'undefined') return;
+
+    setTimeout(() => {
+      const element = document.querySelector<HTMLElement>(`[formControlName="${firstInvalidName}"]`);
+      element?.focus();
+    });
+  }
+
+  private normalizeBrandLogos(value: unknown): AssemblyBrandLogo[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((logo) => {
+        const item = logo as Partial<AssemblyBrandLogo> & { logo?: unknown; name?: unknown };
+        return {
+          src: asTrimmedText(item.src ?? item.logo),
+          alt: asTrimmedText(item.alt ?? item.name),
+        };
+      })
+      .filter((logo) => logo.src && logo.alt)
+      .filter(
+        (logo, index, logos) =>
+          logos.findIndex((item) => this.getBrandKey(item) === this.getBrandKey(logo)) === index
+      );
+  }
+
+  private getBrandKey(brand: AssemblyBrandLogo): string {
+    const identity = `${brand.alt} ${brand.src}`.toLowerCase();
+
+    if (identity.includes('nvidia')) return 'nvidia';
+    if (identity.includes('intel')) return 'intel';
+    if (identity.includes('amd') || identity.includes('ryzen')) return 'amd';
+    if (identity.includes('asus')) return 'asus';
+    if (identity.includes('corsair')) return 'corsair';
+    if (identity.includes('gigabyte')) return 'gigabyte';
+
+    return brand.alt.toLowerCase();
   }
 
   ngOnDestroy(): void {

@@ -44,7 +44,9 @@ export interface PerformanceSpec {
  * Power supply certification and specifications
  */
 export interface PowerCertification {
-  certificate: '80+ Bronze' | '80+ Silver' | '80+ Gold' | '80+ Platinum' | 'Non-certified';
+  id?: string;
+  certificate: string;
+  image?: string;
   wattage: number;                  // 550W, 650W, 750W, 1000W
   manufacturer?: string;            // "Corsair", "EVGA", etc.
   modular?: 'Full' | 'Semi' | 'Non';
@@ -68,6 +70,8 @@ export interface AssembledPC extends BaseProduct {
     powerSupply: ComponentReference;     // Fuente de poder
     case: ComponentReference;            // Gabinete/caja
     cooling: ComponentReference;         // Sistema de refrigeración
+    operatingSystem?: string;            // Sistema operativo instalado
+    fans?: string;                       // Cantidad, marca y modelo de ventiladores
     additionalComponents?: ComponentReference[];  // Otros (ventiladores, filtros, etc.)
   };
 

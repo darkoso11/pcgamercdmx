@@ -1,5 +1,6 @@
 // Imagen usada dentro de una sección o como portada
 export type ArticleImage = {
+    fileId?: string;
     // URL pública accesible (S3) de la imagen
     url: string;
     // Posición sugerida para el layout dentro de la sección
@@ -10,7 +11,35 @@ export type ArticleImage = {
     alt?: string;
     // Tamaño o variante (p.e. 'small','medium','large') opcional
     variant?: string;
+    filename?: string;
+    mimeType?: string;
+    decorative?: boolean;
 }
+
+export type ArticleVideoFile = {
+    kind: 'video-file';
+    fileId: string;
+    url: string;
+    title: string;
+    filename?: string;
+    mimeType?: string;
+    captionsUrl?: string;
+    transcript?: string;
+}
+
+export type ArticleVideoEmbed = {
+    kind: 'video-embed';
+    provider: 'youtube' | 'vimeo';
+    externalId: string;
+    title: string;
+    captionsUrl?: string;
+    transcript?: string;
+}
+
+export type ArticleMedia =
+    | ({ kind: 'image' } & ArticleImage)
+    | ArticleVideoFile
+    | ArticleVideoEmbed;
 
 // Link simple usado dentro de secciones
 export type ArticleLink = {
@@ -34,6 +63,7 @@ export type ArticleSection = {
     images?: ArticleImage[];
     // Links relacionados con la sección
     links?: ArticleLink[];
+    media?: ArticleMedia[];
     // Orden de la sección dentro del artículo (0..n)
     order?: number;
 }

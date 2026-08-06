@@ -106,17 +106,21 @@
   display: flex;
   max-width: 46%;
   flex-wrap: wrap;
+  align-items: center;
   gap: 7px;
 }
 
 .package-card__logo {
-  max-width: 62px;
-  height: 24px;
+  box-sizing: border-box;
+  width: 66px;
+  height: 26px;
+  flex: 0 0 66px;
   object-fit: contain;
   border-radius: 4px;
-  background: rgba(2, 6, 23, 0.68);
-  padding: 2px 4px;
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(248, 250, 252, 0.96);
+  padding: 3px 5px;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.18);
 }
 
 .package-card__power {
@@ -255,6 +259,15 @@
   font-weight: 950;
   line-height: 1;
   text-shadow: 0 0 16px rgba(34, 211, 238, 0.42);
+}
+
+.package-card__original-price {
+  margin: 0 0 5px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: line-through;
 }
 
 .package-card__cta {

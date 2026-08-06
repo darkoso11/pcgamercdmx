@@ -30,7 +30,7 @@ export class HomeCustomCasesSectionComponent {
 
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.src = 'assets/img/gabinetes/BR-938686_1.png';
+    img.style.display = 'none';
     img.onerror = null;
   }
 }

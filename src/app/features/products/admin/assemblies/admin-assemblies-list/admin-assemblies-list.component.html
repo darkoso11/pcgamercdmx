@@ -16,6 +16,27 @@
       </button>
     </div>
 
+    <section class="mb-6 flex flex-col gap-3 rounded-xl border border-white/10 bg-[#0b1220] p-5 sm:flex-row sm:items-end sm:justify-between">
+      <label class="block w-full sm:max-w-xs">
+        <span class="mb-2 block text-sm text-slate-400">Estado del ensamble</span>
+        <select
+          [(ngModel)]="selectedStatus"
+          (ngModelChange)="filterAssemblies()"
+          class="w-full rounded-lg border border-white/20 bg-[#071029] px-3 py-2 text-white outline-none transition focus:border-violet-400"
+        >
+          <option value="all">Todos los estados</option>
+          <option value="published">Publicados</option>
+          <option value="draft">Borradores</option>
+          <option value="low-stock">Bajo stock</option>
+          <option value="out-of-stock">Sin stock</option>
+        </select>
+      </label>
+      <p class="text-sm text-slate-400">
+        Mostrando <strong class="text-violet-300">{{ filteredAssemblies.length }}</strong> de
+        <strong class="text-violet-300">{{ assemblies.length }}</strong> ensambles
+      </p>
+    </section>
+
     <section *ngIf="loading" class="rounded-lg border border-white/10 bg-[#0b1220] p-10 text-center text-slate-400">
       Cargando ensambles...
     </section>
@@ -24,78 +45,21 @@
       {{ errorMessage }}
     </section>
 
-    <section *ngIf="!loading && assemblies.length" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      <article
-        *ngFor="let assembly of assemblies"
-        class="overflow-hidden rounded-lg border border-white/10 bg-[#0b1220] transition hover:border-purple-400/50"
-      >
-        <div class="flex h-52 items-center justify-center bg-[#080d22] p-4">
-          <img
-            [src]="assembly.image"
-            [alt]="assembly.title"
-            class="h-full w-full object-contain"
-          />
-        </div>
-
-        <div class="space-y-4 p-5">
-          <div>
-            <div class="mb-2 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em]">
-              <span class="rounded-full border border-purple-400/30 bg-purple-400/10 px-3 py-1 text-purple-200">
-                Ensamble
-              </span>
-              <span
-                class="rounded-full px-3 py-1"
-                [ngClass]="assembly.published ? 'bg-green-500/15 text-green-300' : 'bg-yellow-500/15 text-yellow-300'"
-              >
-                {{ assembly.published ? 'Publicado' : 'Borrador' }}
-              </span>
-            </div>
-
-            <h2 class="line-clamp-2 min-h-[3.5rem] text-xl font-bold leading-tight">{{ assembly.title }}</h2>
-            <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">{{ assembly.description }}</p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 text-sm">
-            <div class="rounded-lg border border-white/10 bg-white/5 p-3">
-              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Precio</p>
-              <p class="mt-1 font-bold text-cyan-300">{{ formatPrice(assembly.price) }}</p>
-            </div>
-            <div class="rounded-lg border border-white/10 bg-white/5 p-3">
-              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Stock</p>
-              <p class="mt-1 font-bold text-white">{{ assembly.stock }}</p>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-            <button
-              (click)="editAssembly(assembly._id!)"
-              class="text-sm font-semibold text-cyan-300 transition hover:text-cyan-100"
-            >
-              <i class="fas fa-edit mr-1"></i>Editar
-            </button>
-            <button
-              (click)="duplicateAssembly(assembly._id!)"
-              class="text-sm font-semibold text-yellow-300 transition hover:text-yellow-100"
-            >
-              <i class="fas fa-copy mr-1"></i>Duplicar
-            </button>
-            <button
-              (click)="deleteAssembly(assembly._id!)"
-              class="text-sm font-semibold text-red-300 transition hover:text-red-100"
-            >
-              <i class="fas fa-trash mr-1"></i>Borrar
-            </button>
-          </div>
-        </div>
-      </article>
+    <section *ngIf="!loading && filteredAssemblies.length" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <app-admin-assembly-card
+        *ngFor="let assembly of filteredAssemblies"
+        [assembly]="assembly"
+        [managementMode]="true"
+        (edit)="editAssembly($event)"
+        (duplicate)="duplicateAssembly($event)"
+        (delete)="deleteAssembly($event)"
+      ></app-admin-assembly-card>
     </section>
 
-    <section *ngIf="!loading && !assemblies.length" class="rounded-lg border border-white/10 bg-[#0b1220] p-10 text-center">
+    <section *ngIf="!loading && !filteredAssemblies.length" class="rounded-lg border border-white/10 bg-[#0b1220] p-10 text-center">
       <i class="fas fa-desktop mb-4 block text-4xl text-slate-500"></i>
-      <p class="text-slate-400">Aun no hay ensambles.</p>
-      <button (click)="createAssembly()" class="mt-4 text-sm font-bold text-cyan-300 hover:text-cyan-100">
-        Crear primer ensamble
-      </button>
+      <p class="text-slate-400">{{ assemblies.length ? 'No hay ensambles con este filtro.' : 'Aun no hay ensambles.' }}</p>
+      <button *ngIf="!assemblies.length" (click)="createAssembly()" class="mt-4 text-sm font-bold text-cyan-300 hover:text-cyan-100">Crear primer ensamble</button>
     </section>
   </main>
 </div>
