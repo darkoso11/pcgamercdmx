@@ -59,6 +59,20 @@ export function localDateTimeToUtc(
   return new Date(candidate).toISOString();
 }
 
+export function utcDateTimeToLocal(
+  utcDateTime: string,
+  timeZone = BLOG_TIME_ZONE
+): string {
+  const date = new Date(utcDateTime);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const parts = getZonedParts(date, timeZone);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}T${pad(parts.hour)}:${pad(parts.minute)}`;
+}
+
 export function normalizeVideoUrl(rawUrl: string): NormalizedVideoEmbed {
   let url: URL;
   try {

@@ -2,6 +2,7 @@ import {
   getPublicationState,
   localDateTimeToUtc,
   normalizeVideoUrl,
+  utcDateTimeToLocal,
 } from './blog-content.utils';
 
 describe('Blog content utilities', () => {
@@ -15,6 +16,10 @@ describe('Blog content utilities', () => {
 
   it('converts a Mexico City local date and time to UTC', () => {
     expect(localDateTimeToUtc('2026-07-30T10:00')).toBe('2026-07-30T16:00:00.000Z');
+  });
+
+  it('returns an empty local date for an invalid stored publication time', () => {
+    expect(utcDateTimeToLocal('not-a-date')).toBe('');
   });
 
   it('normalizes supported YouTube and Vimeo URLs', () => {
