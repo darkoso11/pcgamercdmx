@@ -75,6 +75,43 @@ describe('ProductDetailComponent', () => {
     expect(image).toBe('https://cms.test/assets/platinum');
   });
 
+  it('infers a missing certification from the captured power supply name', () => {
+    const component = createComponent();
+    const product = {
+      category: ProductCategory.ASSEMBLED,
+      specifications: {
+        powerSupply: { title: 'COOLER MASTER MWE GOLD 750W' },
+      },
+      certifications: {
+        certificate: '',
+        image: '',
+        wattage: 0,
+      },
+    };
+
+    expect((component as any).buildCertificationText(product)).toBe('80 Plus Gold · 750W');
+    expect((component as any).buildCertificationImage(product))
+      .toBe('assets/img/certificaciones/80plusgold.png');
+  });
+
+  it('does not invent a certification or announce zero watts when data is missing', () => {
+    const component = createComponent();
+    const product = {
+      category: ProductCategory.ASSEMBLED,
+      specifications: {
+        powerSupply: { title: 'Fuente modular' },
+      },
+      certifications: {
+        certificate: '',
+        image: '',
+        wattage: 0,
+      },
+    };
+
+    expect((component as any).buildCertificationText(product)).toBeUndefined();
+    expect((component as any).buildCertificationImage(product)).toBeUndefined();
+  });
+
   it('shows every captured assembly specification including fans', () => {
     const component = createComponent();
     const entries = (component as any).buildSpecEntries({
@@ -101,6 +138,7 @@ describe('ProductDetailComponent', () => {
     expect(entries).toContain(jasmine.objectContaining({ label: 'Gabinete', value: 'O11 Dynamic' }));
     expect(entries).toContain(jasmine.objectContaining({ label: 'Enfriamiento', value: 'AIO 360 mm' }));
     expect(entries).toContain(jasmine.objectContaining({ label: 'Fuente', value: '850 W' }));
+    expect(entries.some((entry: { label: string }) => entry.label === 'Potencia y certificación')).toBeFalse();
   });
 
   it('omits empty assembly specifications from the detail', () => {
