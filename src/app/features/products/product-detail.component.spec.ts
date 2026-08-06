@@ -179,6 +179,16 @@ describe('ProductDetailComponent', () => {
     expect(component.selectedImage).toBe('rear.png');
   });
 
+  it('shows a replacement image after the previous image failed to load', () => {
+    const component = createComponent();
+    const image = document.createElement('img');
+
+    component.handleImageError({ target: image } as unknown as Event);
+    component.handleImageLoad({ target: image } as unknown as Event);
+
+    expect(image.style.display).toBe('');
+  });
+
   it('locks page scrolling while the expanded gallery is open and restores it on close', () => {
     const component = createComponent();
     component.detail = {
