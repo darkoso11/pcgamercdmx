@@ -9,6 +9,12 @@
   --gallery-overlay: rgba(3, 5, 18, 0.94);
   --gallery-active-ring: rgba(236, 72, 153, 0.28);
   --gallery-active-shadow: rgba(236, 72, 153, 0.2);
+  --spec-surface: #161a3c;
+  --spec-surface-hover: #1a1f45;
+  --spec-border: rgba(255, 255, 255, 0.1);
+  --spec-border-hover: rgba(236, 72, 153, 0.5);
+  --spec-label: #9ca3af;
+  --spec-value: #f8fafc;
   display: block;
   overflow-x: hidden;
 }
@@ -255,29 +261,44 @@
 }
 
 .spec-item {
-  background: #161a3c;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--spec-surface);
+  border: 1px solid var(--spec-border);
   border-radius: 0.5rem;
   padding: 0.8rem 0.9rem;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease-out, background-color 0.2s ease-out;
+}
+
+.spec-item-with-certification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.spec-certification-image {
+  width: auto;
+  height: 3.5rem;
+  max-width: 4.5rem;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .spec-item:hover {
-  border-color: rgba(236, 72, 153, 0.5);
-  background: #1a1f45;
+  border-color: var(--spec-border-hover);
+  background: var(--spec-surface-hover);
 }
 
 .spec-label {
   display: block;
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--spec-label);
   margin-bottom: 0.25rem;
 }
 
 .spec-value {
   display: block;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--spec-value);
 }
 
 /* Product Grid */
@@ -467,6 +488,13 @@
     padding-top: 0.5rem;
   }
 
+  .breadcrumb a {
+    display: inline-flex;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    align-items: center;
+  }
+
   .breadcrumb > span:nth-last-child(2),
   .breadcrumb > span:last-child {
     display: none;
@@ -485,18 +513,4 @@
   .lightbox-close {
     transition: none;
   }
-}
-
-/* Info Box styling */
-.info-box {
-  background: rgba(168, 85, 247, 0.1);
-  border: 1px solid rgba(168, 85, 247, 0.5);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  color: #e9d5ff;
-}
-
-.info-box i {
-  color: #c084fc;
-  margin-right: 0.5rem;
 }
