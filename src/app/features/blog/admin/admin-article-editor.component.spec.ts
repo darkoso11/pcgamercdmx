@@ -103,6 +103,24 @@ describe('AdminArticleEditorComponent async state', () => {
     expect(section.value.existingMedia).toEqual([]);
   });
 
+  it('loads the local publication time when editing a scheduled article', () => {
+    blogService.getById.and.returnValue(of({
+      _id: '1',
+      title: 'Artículo programado',
+      slug: 'articulo-programado',
+      summary: 'Resumen suficientemente largo',
+      categoryId: 'guias',
+      tags: [],
+      published: true,
+      publishedAt: '2026-08-10T15:30:00.000Z',
+      sections: [],
+    }));
+
+    component.loadArticle('1');
+
+    expect(component.form.value.scheduledAt).toBe('2026-08-10T09:30');
+  });
+
   it('renders the Directus error and unlocks saving after an update fails', async () => {
     component.isNew = false;
     component.addSection();

@@ -8,7 +8,7 @@ import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { adminUrl } from '../../admin/admin-route.config';
-import { localDateTimeToUtc, normalizeVideoUrl } from '../services/blog-content.utils';
+import { localDateTimeToUtc, normalizeVideoUrl, utcDateTimeToLocal } from '../services/blog-content.utils';
 
 @Component({
   selector: 'app-admin-article-editor',
@@ -183,7 +183,10 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
           subCategoryId: article.subCategoryId || '',
           tags: (article.tags || []).join(', '),
           coverImage: article.coverImage || '',
-          published: article.published
+          published: article.published,
+          scheduledAt: article.publishedAt
+            ? utcDateTimeToLocal(article.publishedAt)
+            : ''
         });
         this.coverImagePreview = article.coverImage?.url || null;
         this.updateFilteredSubcategories();

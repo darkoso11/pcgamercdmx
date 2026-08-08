@@ -49,6 +49,7 @@
                 [alt]="detail.title + ', imagen ' + (selectedImageIndex + 1)"
                 class="gallery-selected-image max-h-full max-w-full object-contain"
                 (error)="handleImageError($event)"
+                (load)="handleImageLoad($event)"
               />
             </button>
 

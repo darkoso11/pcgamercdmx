@@ -288,6 +288,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     img.onerror = null;
   }
 
+  handleImageLoad(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = '';
+  }
+
   trackByLabel(_: number, item: { label: string }): string {
     return item.label;
   }
