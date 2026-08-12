@@ -1,6 +1,6 @@
 <app-admin-header></app-admin-header>
 
-<main class="min-h-screen bg-[#071029] px-6 py-8 text-white">
+<main class="min-h-screen bg-pc-admin-bg px-6 py-8 text-white">
   <div class="mx-auto max-w-7xl">
     <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div>
@@ -17,7 +17,7 @@
         type="button"
         (click)="activeTab = 'profiles'"
         class="rounded-lg px-4 py-2 font-bold transition"
-        [ngClass]="activeTab === 'profiles' ? 'bg-cyan-400 text-[#071029]' : 'border border-white/10 text-slate-300 hover:border-cyan-300/40'"
+        [ngClass]="activeTab === 'profiles' ? 'bg-cyan-400 text-pc-admin-bg' : 'border border-white/10 text-slate-300 hover:border-cyan-300/40'"
       >
         Perfiles
       </button>
@@ -25,14 +25,14 @@
         type="button"
         (click)="activeTab = 'page'"
         class="rounded-lg px-4 py-2 font-bold transition"
-        [ngClass]="activeTab === 'page' ? 'bg-pink-400 text-[#071029]' : 'border border-white/10 text-slate-300 hover:border-pink-300/40'"
+        [ngClass]="activeTab === 'page' ? 'bg-pink-400 text-pc-admin-bg' : 'border border-white/10 text-slate-300 hover:border-pink-300/40'"
       >
         Aspectos de pagina
       </button>
     </div>
 
     <section *ngIf="activeTab === 'profiles'" class="grid gap-6 lg:grid-cols-[1fr_1.35fr]">
-      <form class="rounded-xl border border-cyan-300/15 bg-[#0b1220] p-5" (ngSubmit)="saveProfile()">
+      <form class="rounded-xl border border-cyan-300/15 bg-pc-admin-panel p-5" (ngSubmit)="saveProfile()">
         <div class="mb-5 flex items-center justify-between">
           <h2 class="text-xl font-black">{{ editingId ? 'Editar perfil' : 'Agregar perfil' }}</h2>
           <button type="button" (click)="newProfile()" class="text-sm font-bold text-cyan-300 hover:text-white">Nuevo</button>
@@ -41,48 +41,48 @@
         <div class="grid gap-4">
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Nombre</span>
-            <input [(ngModel)]="editor.name" name="name" required class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300" />
+            <input [(ngModel)]="editor.name" name="name" required class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
           </label>
 
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Slug</span>
-            <input [(ngModel)]="editor.slug" name="slug" placeholder="se genera si se deja vacio" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300" />
+            <input [(ngModel)]="editor.slug" name="slug" placeholder="se genera si se deja vacio" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
           </label>
 
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Imagen URL o asset</span>
-            <input [(ngModel)]="editor.image" name="image" required placeholder="assets/img/colaboradores/nombre.jpg" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300" />
+            <input [(ngModel)]="editor.image" name="image" required placeholder="assets/img/colaboradores/nombre.jpg" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
           </label>
 
-          <div *ngIf="editor.image" class="overflow-hidden rounded-lg border border-white/10 bg-[#071029] p-3">
+          <div *ngIf="editor.image" class="overflow-hidden rounded-lg border border-white/10 bg-pc-admin-bg p-3">
             <img [src]="editor.image" [alt]="editor.name || 'Preview'" class="mx-auto aspect-square max-h-72 w-full object-cover" />
           </div>
 
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Rol</span>
-            <input [(ngModel)]="editor.role" name="role" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300" />
+            <input [(ngModel)]="editor.role" name="role" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
           </label>
 
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Descripcion</span>
-            <textarea [(ngModel)]="editor.bio" name="bio" rows="5" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300"></textarea>
+            <textarea [(ngModel)]="editor.bio" name="bio" rows="5" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300"></textarea>
           </label>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="space-y-2">
               <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Instagram</span>
-              <input [(ngModel)]="editor.instagram" name="instagram" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300" />
+              <input [(ngModel)]="editor.instagram" name="instagram" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
             </label>
             <label class="space-y-2">
               <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Twitch</span>
-              <input [(ngModel)]="editor.twitch" name="twitch" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300" />
+              <input [(ngModel)]="editor.twitch" name="twitch" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
             </label>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <label class="space-y-2">
               <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Orden</span>
-              <input [(ngModel)]="editor.sortOrder" name="sortOrder" type="number" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-cyan-300" />
+              <input [(ngModel)]="editor.sortOrder" name="sortOrder" type="number" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
             </label>
             <div class="flex items-center gap-5 pt-6">
               <label class="flex items-center gap-2 text-sm text-slate-300">
@@ -96,13 +96,13 @@
             </div>
           </div>
 
-          <button type="submit" class="rounded-lg bg-gradient-to-r from-cyan-400 to-pink-500 px-5 py-3 font-black text-[#071029]">
+          <button type="submit" class="rounded-lg bg-gradient-to-r from-cyan-400 to-pink-500 px-5 py-3 font-black text-pc-admin-bg">
             Guardar perfil
           </button>
         </div>
       </form>
 
-      <section class="rounded-xl border border-white/10 bg-[#0b1220] p-5">
+      <section class="rounded-xl border border-white/10 bg-pc-admin-panel p-5">
         <div class="mb-5 flex items-center justify-between gap-4">
           <div>
             <h2 class="text-xl font-black">Perfiles registrados</h2>
@@ -112,7 +112,7 @@
         </div>
 
         <div class="grid gap-4 md:grid-cols-2">
-          <article *ngFor="let item of collaborators" class="grid grid-cols-[76px_1fr] gap-3 rounded-lg border border-white/10 bg-[#071029] p-3">
+          <article *ngFor="let item of collaborators" class="grid grid-cols-[76px_1fr] gap-3 rounded-lg border border-white/10 bg-pc-admin-bg p-3">
             <img [src]="item.image" [alt]="item.name" class="h-20 w-20 rounded-lg object-cover" />
             <div class="min-w-0">
               <div class="flex items-start justify-between gap-2">
@@ -134,28 +134,28 @@
       </section>
     </section>
 
-    <section *ngIf="activeTab === 'page'" class="rounded-xl border border-pink-300/20 bg-[#0b1220] p-5">
+    <section *ngIf="activeTab === 'page'" class="rounded-xl border border-pink-300/20 bg-pc-admin-panel p-5">
       <form class="grid gap-4" (ngSubmit)="saveSettings()">
         <label class="space-y-2">
           <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Eyebrow</span>
-          <input [(ngModel)]="settings.eyebrow" name="eyebrow" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-pink-300" />
+          <input [(ngModel)]="settings.eyebrow" name="eyebrow" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-pink-300" />
         </label>
         <label class="space-y-2">
           <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Titulo</span>
-          <input [(ngModel)]="settings.title" name="title" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-pink-300" />
+          <input [(ngModel)]="settings.title" name="title" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-pink-300" />
         </label>
         <label class="space-y-2">
           <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Descripcion</span>
-          <textarea [(ngModel)]="settings.subtitle" name="subtitle" rows="4" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-pink-300"></textarea>
+          <textarea [(ngModel)]="settings.subtitle" name="subtitle" rows="4" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-pink-300"></textarea>
         </label>
         <div class="grid gap-4 md:grid-cols-2">
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Texto CTA detalle</span>
-            <input [(ngModel)]="settings.detailCtaLabel" name="detailCtaLabel" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-pink-300" />
+            <input [(ngModel)]="settings.detailCtaLabel" name="detailCtaLabel" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-pink-300" />
           </label>
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">URL CTA detalle</span>
-            <input [(ngModel)]="settings.detailCtaUrl" name="detailCtaUrl" class="w-full rounded-lg border border-white/10 bg-[#071029] px-4 py-3 outline-none focus:border-pink-300" />
+            <input [(ngModel)]="settings.detailCtaUrl" name="detailCtaUrl" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-pink-300" />
           </label>
         </div>
         <button type="submit" class="w-fit rounded-lg bg-pink-500 px-5 py-3 font-black text-white hover:bg-pink-400">

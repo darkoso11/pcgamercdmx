@@ -23,7 +23,7 @@
             (ngModelChange)="onSearchChange()"
             type="text"
             placeholder="Nombre, slug o descripción..."
-            class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
+            class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none transition"
           />
         </div>
 
@@ -34,7 +34,7 @@
             id="product-category-filter"
             [(ngModel)]="selectedCategory"
             (ngModelChange)="filterProducts()"
-            class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
+            class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
           >
             <option value="">Todas las categorías</option>
             <option value="componentes">Componentes</option>
@@ -49,7 +49,7 @@
             id="product-status-filter"
             [(ngModel)]="selectedStatus"
             (ngModelChange)="filterProducts()"
-            class="w-full px-3 py-2 bg-[#071029] border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
+            class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
           >
             <option value="all">Todos los estados</option>
             <option value="published">Publicados</option>
@@ -82,7 +82,7 @@
       <div *ngIf="filteredProducts.length > 0; else noProducts">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-[#081229] border-b border-white/10">
+            <thead class="bg-pc-surface-deep border-b border-white/10">
               <tr class="text-left">
                 <th class="px-4 py-3 text-gray-400 font-semibold">
                   <input
@@ -170,7 +170,7 @@
         </div>
 
         <!-- Paginación -->
-        <div class="bg-[#081229] border-t border-white/10 px-6 py-4 flex items-center justify-between">
+        <div class="bg-pc-surface-deep border-t border-white/10 px-6 py-4 flex items-center justify-between">
           <div class="text-sm text-gray-400">
             Página <span class="text-cyan-400 font-semibold">{{ currentPage + 1 }}</span> de
             <span class="text-cyan-400 font-semibold">{{ totalPages }}</span>

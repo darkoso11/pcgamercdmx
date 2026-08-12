@@ -18,7 +18,7 @@
 }
 
 :host ::ng-deep :is(input, textarea, select, button, a):focus-visible {
-  outline: 3px solid #f8fafc;
+  outline: 3px solid var(--pc-text-primary);
   outline-offset: 2px;
 }
 

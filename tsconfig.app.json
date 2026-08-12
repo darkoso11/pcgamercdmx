@@ -4,6 +4,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "types": [
       "node"
     ]

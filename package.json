@@ -48,7 +48,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "20.19.43",
+    "@types/node": "22.20.1",
     "autoprefixer": "10.5.4",
     "jasmine-core": "6.3.0",
     "karma": "^6.4.4",
@@ -57,7 +57,7 @@
     "karma-jasmine": "^5.1.0",
     "postcss": "8.5.26",
     "tailwindcss": "4.3.3",
-    "typescript": "~5.8.2"
+    "typescript": "5.9.3"
   },
   "overrides": {
     "@modelcontextprotocol/sdk": "1.30.0"

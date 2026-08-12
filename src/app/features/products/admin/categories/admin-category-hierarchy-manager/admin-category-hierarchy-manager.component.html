@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[#071029] text-white">
+<div class="min-h-screen bg-pc-admin-bg text-white">
   <!-- Header -->
   <app-admin-header></app-admin-header>
 
@@ -19,7 +19,7 @@
     <div class="space-y-4">
       <div
         *ngFor="let categoria of categorias"
-        class="bg-[#0b1220] border border-white/10 rounded-lg overflow-hidden"
+        class="bg-pc-admin-panel border border-white/10 rounded-lg overflow-hidden"
       >
         <!-- Encabezado de Categoría -->
         <div class="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 px-6 py-4">
@@ -45,19 +45,19 @@
                   <input
                     [(ngModel)]="editingCategoryData.name"
                     type="text"
-                    class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                    class="px-3 py-2 bg-pc-admin-bg border border-cyan-400/50 rounded text-white text-sm"
                   />
                   <input
                     [(ngModel)]="editingCategoryData.description"
                     type="text"
                     placeholder="Descripción"
-                    class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                    class="px-3 py-2 bg-pc-admin-bg border border-cyan-400/50 rounded text-white text-sm"
                   />
                   <input
                     [(ngModel)]="editingCategoryData.icon"
                     type="text"
                     placeholder="Icono"
-                    class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                    class="px-3 py-2 bg-pc-admin-bg border border-cyan-400/50 rounded text-white text-sm"
                   />
                 </div>
 
@@ -83,7 +83,7 @@
         <!-- Lista de Subcategorías (Expandible) -->
         <div *ngIf="expandedCategories.has(categoria._id!)" class="border-t border-white/10">
           <!-- Encabezado de Subcategorías -->
-          <div class="bg-[#071029] px-6 py-3 border-b border-white/10">
+          <div class="bg-pc-admin-bg px-6 py-3 border-b border-white/10">
             <h4 class="text-sm font-semibold text-gray-300">
               <i class="fas fa-list mr-2"></i>Subcategorías
             </h4>
@@ -92,7 +92,7 @@
           <!-- Formulario para Nueva Subcategoría -->
           <div
             *ngIf="showNewSubcategoryForm[categoria._id!]"
-            class="bg-[#0b1220] px-6 py-4 border-b border-white/10"
+            class="bg-pc-admin-panel px-6 py-4 border-b border-white/10"
           >
             <h5 class="text-sm font-bold text-cyan-400 mb-4">Agregar Nueva Subcategoría</h5>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -100,19 +100,19 @@
                 [(ngModel)]="newSubcategoryData[categoria._id!].name"
                 type="text"
                 placeholder="Nombre"
-                class="px-3 py-2 bg-[#071029] border border-white/20 rounded text-white text-sm placeholder-gray-500"
+                class="px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white text-sm placeholder-gray-500"
               />
               <input
                 [(ngModel)]="newSubcategoryData[categoria._id!].description"
                 type="text"
                 placeholder="Descripción"
-                class="px-3 py-2 bg-[#071029] border border-white/20 rounded text-white text-sm placeholder-gray-500"
+                class="px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white text-sm placeholder-gray-500"
               />
               <input
                 [(ngModel)]="newSubcategoryData[categoria._id!].icon"
                 type="text"
                 placeholder="Icono (fa-...)"
-                class="px-3 py-2 bg-[#071029] border border-white/20 rounded text-white text-sm placeholder-gray-500"
+                class="px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white text-sm placeholder-gray-500"
               />
               <div class="flex gap-2">
                 <button
@@ -132,7 +132,7 @@
           </div>
 
           <!-- Botón para Mostrar Formulario (si no está abierto) -->
-          <div *ngIf="!showNewSubcategoryForm[categoria._id!]" class="bg-[#0b1220] px-6 py-3 border-b border-white/10">
+          <div *ngIf="!showNewSubcategoryForm[categoria._id!]" class="bg-pc-admin-panel px-6 py-3 border-b border-white/10">
             <button
               (click)="mostrarFormularioNuevaSubcategoria(categoria._id!)"
               class="text-sm text-cyan-400 hover:text-cyan-300 transition font-semibold"
@@ -145,7 +145,7 @@
           <div class="divide-y divide-white/10">
             <div
               *ngFor="let subcategoria of categoria.subcategories"
-              class="px-6 py-4 bg-[#0b1220] hover:bg-[#0d1428] transition"
+              class="px-6 py-4 bg-pc-admin-panel hover:bg-[#0d1428] transition"
             >
               <!-- Edición de Subcategoría -->
               <div
@@ -155,19 +155,19 @@
                 <input
                   [(ngModel)]="editingSubcategoryData[categoria._id! + '-' + subcategoria._id!].name"
                   type="text"
-                  class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                  class="px-3 py-2 bg-pc-admin-bg border border-cyan-400/50 rounded text-white text-sm"
                 />
                 <input
                   [(ngModel)]="editingSubcategoryData[categoria._id! + '-' + subcategoria._id!].description"
                   type="text"
                   placeholder="Descripción"
-                  class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                  class="px-3 py-2 bg-pc-admin-bg border border-cyan-400/50 rounded text-white text-sm"
                 />
                 <input
                   [(ngModel)]="editingSubcategoryData[categoria._id! + '-' + subcategoria._id!].icon"
                   type="text"
                   placeholder="Icono"
-                  class="px-3 py-2 bg-[#071029] border border-cyan-400/50 rounded text-white text-sm"
+                  class="px-3 py-2 bg-pc-admin-bg border border-cyan-400/50 rounded text-white text-sm"
                 />
                 <div class="flex gap-2">
                   <button
@@ -227,7 +227,7 @@
       </div>
 
       <!-- Mensaje si no hay categorías -->
-      <div *ngIf="categorias.length === 0" class="bg-[#0b1220] border border-white/10 rounded-lg p-12 text-center">
+      <div *ngIf="categorias.length === 0" class="bg-pc-admin-panel border border-white/10 rounded-lg p-12 text-center">
         <i class="fas fa-inbox text-6xl text-gray-500 mb-4 block opacity-30"></i>
         <p class="text-gray-400 text-lg">No hay categorías aún. Crea la primera categoría arriba.</p>
       </div>

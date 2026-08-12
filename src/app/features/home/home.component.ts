@@ -74,7 +74,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   sliderImages: HomeHeroBanner[] = [
     {
       id: 'hero-nzxt-h9',
-      src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
+      src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
       link: '/ensambles',
       alt: 'Slider 1',
       active: true,
@@ -99,7 +99,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
   // Imagen de PCs para el slider inferior derecho
   pcBuilds = [
-    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png', link: '/ensambles/cpu-pre-armado-1' },
+    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp', link: '/ensambles/cpu-pre-armado-1' },
     { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/ensambles/cpu-pre-armado-2' },
     { img: 'assets/img/gabinetes/product-section-01.png', link: '/ensambles/cpu-pre-armado-3' },
   ];
@@ -152,7 +152,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       id: 'streaming',
       title: 'Streaming Profesional',
       description: 'PC para transmisiones en vivo de alta calidad.',
-      bgImage: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
+      bgImage: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
     },
     {
       id: 'gaming',
@@ -218,8 +218,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   public wasFiltered: boolean = false;
   public filterProducts(): void {
     const term = this.searchTerm.toLowerCase().trim();
-    const wasFilteredBefore = this.wasFiltered;
-    
     if (term === '') {
       // No filter term, show all products
       this.filteredCarruselProducts = [...this.carruselProducts];
@@ -274,7 +272,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       title: 'Ensambles Personalizados',
       description:
         'Construimos la PC de tus sueños con los mejores componentes y la máxima calidad.',
-      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
+      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
       link: '/cotiza-tu-pc',
       ctaText: 'Personaliza tu PC',
       badgeText: 'POPULAR',
