@@ -7,7 +7,7 @@
         (ngModelChange)="resetVisibleLimit()"
         type="text"
         placeholder="Wireless, monitor, headset..."
-        class="w-full rounded-xl border border-white/10 bg-[#090d22] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50"
+        class="w-full rounded-xl border border-white/10 bg-pc-surface-field px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50"
       />
     </label>
 
@@ -16,7 +16,7 @@
       <select
         [(ngModel)]="selectedType"
         (ngModelChange)="resetVisibleLimit()"
-        class="w-full rounded-xl border border-white/10 bg-[#090d22] px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
+        class="w-full rounded-xl border border-white/10 bg-pc-surface-field px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
       >
         <option *ngFor="let option of typeOptions" [value]="option.value">{{ option.label }}</option>
       </select>
@@ -34,7 +34,7 @@
     <section class="grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
       <article
         *ngFor="let item of visibleProducts"
-        class="group rounded-xl border border-cyan-300/10 bg-[#090d22] p-3 shadow-[0_18px_40px_rgba(0,0,0,0.28)] transition hover:-translate-y-1 hover:border-cyan-300/45"
+        class="group rounded-xl border border-cyan-300/10 bg-pc-surface-field p-3 shadow-[0_18px_40px_rgba(0,0,0,0.28)] transition hover:-translate-y-1 hover:border-cyan-300/45"
       >
         <a [routerLink]="['/productos', item.card.slug]" class="block">
           <div class="relative flex aspect-square items-center justify-center rounded-lg border border-white/10 bg-[#070b1c] p-4">

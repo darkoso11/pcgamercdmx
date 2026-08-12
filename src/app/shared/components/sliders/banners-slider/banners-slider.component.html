@@ -22,13 +22,13 @@
               <a *ngIf="isExternalLink(banner.link)" 
                  [href]="banner.link" 
                  target="_blank"
-                 class="bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all inline-block">
+                 class="bg-gradient-to-r from-pc-pink to-pc-violet text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all inline-block">
                 {{ banner.ctaText }}
               </a>
               
               <a *ngIf="!isExternalLink(banner.link)" 
                  [routerLink]="banner.link" 
-                 class="bg-gradient-to-r from-[#ec4899] to-[#8b5cf6] text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all inline-block">
+                 class="bg-gradient-to-r from-pc-pink to-pc-violet text-white py-3 px-8 rounded-lg font-bold hover:shadow-lg hover:shadow-pink-500/30 transition-all inline-block">
                 {{ banner.ctaText }}
               </a>
             </div>
@@ -36,7 +36,7 @@
           
           <!-- Efecto de esquina -->
           <div class="absolute top-0 right-0 w-16 h-16 overflow-hidden">
-            <div class="absolute transform rotate-45 bg-[#ec4899] text-white font-bold py-1 px-16 text-xs top-6 right-[-60px] shadow-lg">
+            <div class="absolute transform rotate-45 bg-pc-pink text-white font-bold py-1 px-16 text-xs top-6 right-[-60px] shadow-lg">
               {{ banner.badgeText }}
             </div>
           </div>
@@ -47,11 +47,11 @@
   
   <!-- Navegación -->
   <button *ngIf="showArrows" (click)="prev()" 
-          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#ec4899]/70 p-3 rounded-full text-white z-10 transition">
+          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-pc-pink/70 p-3 rounded-full text-white z-10 transition">
     <i class="fas fa-chevron-left"></i>
   </button>
   <button *ngIf="showArrows" (click)="next()" 
-          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#ec4899]/70 p-3 rounded-full text-white z-10 transition">
+          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-pc-pink/70 p-3 rounded-full text-white z-10 transition">
     <i class="fas fa-chevron-right"></i>
   </button>
   

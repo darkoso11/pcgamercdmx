@@ -4,7 +4,6 @@
     "title": "Artículo de ejemplo",
     "slug": "sample-article",
     "summary": "Resumen corto del artículo de ejemplo.",
-    "coverImage": { "url": "/assets/img/custom/sample-cover.jpg", "alt": "Cover" },
     "sections": [
       { "id": "s1", "title": "Introducción", "text": "<p>Este es un artículo de ejemplo. Usa este JSON para desarrollo local.</p>", "order": 0 }
     ],

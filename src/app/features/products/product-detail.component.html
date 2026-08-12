@@ -1,4 +1,4 @@
-<div class="font-orbitron min-h-screen bg-[#0a0d22]">
+<div class="font-orbitron min-h-screen bg-pc-image-bg">
   <div class="product-detail-content" [attr.inert]="isGalleryOpen ? '' : null">
     <div *ngIf="loading" class="flex min-h-screen items-center justify-center">
       <div class="text-center">
@@ -192,10 +192,11 @@
       <section *ngIf="relatedProducts.length" class="mt-14">
         <h2 class="section-header">Relacionados</h2>
         <div class="product-grid">
-          <article
+          <a
             *ngFor="let card of relatedProducts"
             class="product-card"
-            (click)="goToProduct(card.slug)"
+            [routerLink]="getProductLink(card)"
+            [attr.aria-label]="'Ver detalle de ' + card.title"
           >
             <div class="product-card-image">
               <img
@@ -213,7 +214,7 @@
               </span>
               <span class="text-sm font-semibold text-cyan-300">Ver detalle</span>
             </div>
-          </article>
+          </a>
         </div>
       </section>
     </div>

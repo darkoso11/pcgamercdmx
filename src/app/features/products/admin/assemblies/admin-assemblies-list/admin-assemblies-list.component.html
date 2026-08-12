@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[#071029] text-white">
+<div class="min-h-screen bg-pc-admin-bg text-white">
   <app-admin-header></app-admin-header>
 
   <main class="mx-auto max-w-7xl px-6 py-8">
@@ -16,13 +16,13 @@
       </button>
     </div>
 
-    <section class="mb-6 flex flex-col gap-3 rounded-xl border border-white/10 bg-[#0b1220] p-5 sm:flex-row sm:items-end sm:justify-between">
+    <section class="mb-6 flex flex-col gap-3 rounded-xl border border-white/10 bg-pc-admin-panel p-5 sm:flex-row sm:items-end sm:justify-between">
       <label class="block w-full sm:max-w-xs">
         <span class="mb-2 block text-sm text-slate-400">Estado del ensamble</span>
         <select
           [(ngModel)]="selectedStatus"
           (ngModelChange)="filterAssemblies()"
-          class="w-full rounded-lg border border-white/20 bg-[#071029] px-3 py-2 text-white outline-none transition focus:border-violet-400"
+          class="w-full rounded-lg border border-white/20 bg-pc-admin-bg px-3 py-2 text-white outline-none transition focus:border-violet-400"
         >
           <option value="all">Todos los estados</option>
           <option value="published">Publicados</option>
@@ -37,7 +37,7 @@
       </p>
     </section>
 
-    <section *ngIf="loading" class="rounded-lg border border-white/10 bg-[#0b1220] p-10 text-center text-slate-400">
+    <section *ngIf="loading" class="rounded-lg border border-white/10 bg-pc-admin-panel p-10 text-center text-slate-400">
       Cargando ensambles...
     </section>
 
@@ -56,7 +56,7 @@
       ></app-admin-assembly-card>
     </section>
 
-    <section *ngIf="!loading && !filteredAssemblies.length" class="rounded-lg border border-white/10 bg-[#0b1220] p-10 text-center">
+    <section *ngIf="!loading && !filteredAssemblies.length" class="rounded-lg border border-white/10 bg-pc-admin-panel p-10 text-center">
       <i class="fas fa-desktop mb-4 block text-4xl text-slate-500"></i>
       <p class="text-slate-400">{{ assemblies.length ? 'No hay ensambles con este filtro.' : 'Aun no hay ensambles.' }}</p>
       <button *ngIf="!assemblies.length" (click)="createAssembly()" class="mt-4 text-sm font-bold text-cyan-300 hover:text-cyan-100">Crear primer ensamble</button>

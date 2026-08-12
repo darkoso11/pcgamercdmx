@@ -1,11 +1,11 @@
 <app-admin-header></app-admin-header>
-<div class="min-h-screen bg-[#071029] p-6 text-slate-100">
+<div class="min-h-screen bg-pc-admin-bg p-6 text-slate-100">
   <div class="max-w-5xl mx-auto">
   <h1 class="text-3xl font-bold text-cyan-400 mb-8">{{ isNew ? 'Nuevo Artículo' : 'Editar Artículo' }}</h1>
   
   <form [formGroup]="form" (ngSubmit)="onSave()" class="space-y-8">
     <!-- Sección: Información General -->
-    <div class="bg-[#0b1220] border border-cyan-400/30 p-6 rounded-lg">
+    <div class="bg-pc-admin-panel border border-cyan-400/30 p-6 rounded-lg">
       <h2 class="text-xl font-bold text-cyan-400 mb-4">Información General</h2>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -15,7 +15,7 @@
             type="text" 
             formControlName="title" 
             placeholder="Ej: Mi primer artículo"
-            class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
+            class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
             required
           />
           <div *ngIf="form.get('title')?.hasError('required') && form.get('title')?.touched" 
@@ -28,7 +28,7 @@
             type="text" 
             formControlName="slug" 
             placeholder="mi-primer-articulo"
-            class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
+            class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
           />
           <div class="text-xs text-gray-400 mt-1">Se genera automáticamente si dejas vacío</div>
         </div>
@@ -40,7 +40,7 @@
           formControlName="summary" 
           placeholder="Breve descripción del artículo para listados y SEO"
           rows="3"
-          class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
+          class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
           required
         ></textarea>
       </div>
@@ -51,7 +51,7 @@
           <select 
             formControlName="categoryId" 
             (change)="onCategoryChange()"
-            class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white focus:border-cyan-400 transition"
+            class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white focus:border-cyan-400 transition"
             required
           >
             <option value="">-- Seleccionar --</option>
@@ -76,7 +76,7 @@
           <label class="block text-sm font-semibold text-cyan-400 mb-2 uppercase">Subcategoría</label>
           <select 
             formControlName="subCategoryId" 
-            class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white focus:border-cyan-400 transition"
+            class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white focus:border-cyan-400 transition"
           >
             <option value="">-- Ninguna --</option>
             <option *ngFor="let sub of filteredSubcategories" [value]="sub._id">{{ sub.name }}</option>
@@ -102,14 +102,14 @@
             type="text" 
             formControlName="tags" 
             placeholder="ej: gaming, pc, hardware (separados por comas)"
-            class="w-full p-3 rounded bg-[#081229] border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
+            class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
           />
         </div>
       </div>
     </div>
 
     <!-- Sección: Imagen de Portada -->
-    <div class="bg-[#0b1220] border border-cyan-400/30 p-6 rounded-lg">
+    <div class="bg-pc-admin-panel border border-cyan-400/30 p-6 rounded-lg">
       <h2 class="text-xl font-bold text-cyan-400 mb-4">Imagen de Portada</h2>
       
       <div class="max-w-2xl">
@@ -139,7 +139,7 @@
     </div>
 
     <!-- Sección: Secciones de Contenido -->
-    <div class="bg-[#0b1220] border border-cyan-400/30 p-6 rounded-lg">
+    <div class="bg-pc-admin-panel border border-cyan-400/30 p-6 rounded-lg">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-cyan-400">Secciones de Contenido</h2>
         <button 
@@ -154,7 +154,7 @@
       <div formArrayName="sections" class="space-y-6">
         <div *ngFor="let section of sectionsArray.controls; let i = index" 
           [formGroupName]="i"
-          class="bg-[#081229] border border-cyan-400/20 p-4 rounded">
+          class="bg-pc-surface-deep border border-cyan-400/20 p-4 rounded">
           
           <!-- Header de sección -->
           <div class="flex justify-between items-start mb-4">
@@ -175,7 +175,7 @@
               type="text" 
               formControlName="title" 
               placeholder="Ej: Introducción, Especificaciones, etc."
-              class="w-full p-2 rounded bg-[#0b1220] border border-cyan-400/20 text-white placeholder-gray-500 focus:border-cyan-400 transition"
+              class="w-full p-2 rounded bg-pc-admin-panel border border-cyan-400/20 text-white placeholder-gray-500 focus:border-cyan-400 transition"
             />
           </div>
 
@@ -208,7 +208,7 @@
               <label class="text-xs text-cyan-300 mr-3">Columnas:</label>
               <select 
                 formControlName="imageLayout"
-                class="inline p-1 rounded bg-[#0b1220] border border-cyan-400/20 text-white text-xs"
+                class="inline p-1 rounded bg-pc-admin-panel border border-cyan-400/20 text-white text-xs"
               >
                 <option value="1">1 columna</option>
                 <option value="2">2 columnas</option>
@@ -220,7 +220,7 @@
             <!-- Grid de imágenes -->
             <div [formArrayName]="'images'" class="space-y-3">
               <ng-container *ngFor="let imgCtrl of getSectionImages(i).controls; let imgIdx = index">
-                <div [formGroupName]="imgIdx" class="bg-[#0b1220] border border-cyan-400/20 p-3 rounded">
+                <div [formGroupName]="imgIdx" class="bg-pc-admin-panel border border-cyan-400/20 p-3 rounded">
                   <div class="flex justify-between items-start mb-2">
                     <span class="text-xs text-cyan-300">Imagen {{ imgIdx + 1 }}</span>
                     <button 
@@ -249,7 +249,7 @@
                     type="text" 
                     formControlName="alt" 
                     placeholder="Texto alternativo"
-                    class="w-full p-1 rounded bg-[#081229] border border-cyan-400/20 text-white text-xs placeholder-gray-500 focus:border-cyan-400"
+                    class="w-full p-1 rounded bg-pc-surface-deep border border-cyan-400/20 text-white text-xs placeholder-gray-500 focus:border-cyan-400"
                   />
 
                   <div *ngIf="(imgCtrl.value)?.url" class="mt-1 text-xs text-green-300">
@@ -328,7 +328,7 @@
               <input 
                 type="number" 
                 formControlName="order" 
-                class="w-full p-2 rounded bg-[#0b1220] border border-cyan-400/20 text-white"
+                class="w-full p-2 rounded bg-pc-admin-panel border border-cyan-400/20 text-white"
               />
             </div>
             <button 
@@ -357,7 +357,7 @@
     </div>
 
     <!-- Sección: Publicación -->
-    <div class="bg-[#0b1220] border border-cyan-400/30 p-6 rounded-lg">
+    <div class="bg-pc-admin-panel border border-cyan-400/30 p-6 rounded-lg">
       <h2 class="text-xl font-bold text-cyan-400 mb-4">Publicación</h2>
       
       <label class="block text-sm font-semibold text-cyan-100 mb-2" for="scheduled-at">

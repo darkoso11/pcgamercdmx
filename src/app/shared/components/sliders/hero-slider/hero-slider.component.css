@@ -42,7 +42,7 @@
 }
 
 .slider-arrow:hover {
-  background-color: rgba(236, 72, 153, 0.8); /* Valor similar al tema */
+  background-color: var(--pc-pink-glow-strong); /* Valor similar al tema */
 }
 
 .slider-arrow-prev {
