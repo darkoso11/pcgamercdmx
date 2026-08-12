@@ -791,14 +791,6 @@ export class ProductsAdminService {
     );
   }
 
-  deleteProductImage(imageUrl: string): Observable<void> {
-    return of(undefined);
-  }
-
-  optimizeImage(file: File, width: number, height: number): Observable<Blob> {
-    return of(file);
-  }
-
   getDashboardStats(): Observable<AdminDashboardStats> {
     return forkJoin({
       products: this.getAllProducts(),

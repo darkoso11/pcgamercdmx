@@ -127,12 +127,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  goToProduct(slug: string): void {
-    if (!this.product) {
-      return;
-    }
-
-    this.router.navigate(this.productsService.getDetailLink(this.product.category, slug));
+  getProductLink(product: ProductCardViewModel): string[] {
+    return this.productsService.getDetailLink(product.category, product.slug);
   }
 
   requestQuote(): void {
@@ -411,12 +407,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   private buildBrandLogos(product: CatalogProduct): Array<{ src: string; alt: string }> {
     if (product.category === ProductCategory.ASSEMBLED) {
       return product.brandLogos.map((logo) => ({ src: logo.logo, alt: logo.name }));
-    }
-
-    const highlights = this.productsService.toSpecHighlights(product, 1);
-    const brand = highlights[0]?.value;
-    if (!brand) {
-      return [];
     }
 
     return [];

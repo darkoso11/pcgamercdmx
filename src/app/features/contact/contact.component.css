@@ -4,8 +4,8 @@
   --panel-strong: rgba(7, 10, 28, 0.94);
   --text: #f8fbff;
   --muted: #aeb8d4;
-  --cyan: #22d3ee;
-  --pink: #ec4899;
+  --cyan: var(--pc-accent-cyan-strong);
+  --pink: var(--pc-accent-pink-strong);
   --blue: #2563eb;
   --green: #25d366;
   --line: rgba(255, 255, 255, 0.14);
@@ -30,7 +30,7 @@ a {
   background:
     linear-gradient(90deg, rgba(34, 211, 238, 0.08) 1px, transparent 1px),
     linear-gradient(rgba(236, 72, 153, 0.06) 1px, transparent 1px),
-    radial-gradient(circle at 12% 10%, rgba(236, 72, 153, 0.2), transparent 28rem),
+    radial-gradient(circle at 12% 10%, var(--pc-pink-shadow), transparent 28rem),
     radial-gradient(circle at 88% 18%, rgba(34, 211, 238, 0.18), transparent 26rem),
     linear-gradient(135deg, #080a1e 0%, #111936 48%, #07111f 100%);
   background-size: 42px 42px, 42px 42px, auto, auto, auto;
@@ -171,7 +171,7 @@ p {
   gap: 12px;
   align-items: center;
   padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--pc-border-subtle);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.2);
 }

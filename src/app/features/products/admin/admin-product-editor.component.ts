@@ -273,7 +273,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       : this.productsAdminService.createProduct(productData);
 
     operation.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (result: any) => {
+      next: () => {
         this.successMessage = this.isEditMode 
           ? 'Producto actualizado y publicado correctamente'
           : 'Producto creado y publicado correctamente';
@@ -312,7 +312,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       : this.productsAdminService.createProduct(productData);
 
     operation.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (result: any) => {
+      next: () => {
         this.successMessage = 'Producto guardado como borrador';
         this.loading = false;
         setTimeout(() => {

@@ -109,7 +109,6 @@ export class MockBackendInterceptor implements HttpInterceptor {
   static resetMockData() {
     const CATEGORIES_KEY = 'mock_blog_categories_v2';
     const SUBCATEGORIES_KEY = 'mock_blog_subcategories_v2';
-    const ARTICLES_KEY = 'mock_blog_articles_v1';
 
     const initialCategories = [
       { _id: 'cat1', name: 'Tarjeta Gráfica', description: 'Tarjetas gráficas y GPUs' },
@@ -283,7 +282,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const id = req.url.split('/').pop();
       const idx = mockArticles.findIndex(a => a._id === id);
       if (idx >= 0) {
-        const deleted = mockArticles.splice(idx, 1)[0];
+        mockArticles.splice(idx, 1);
         try { localStorage.setItem(ARTICLES_KEY, JSON.stringify(mockArticles)); } catch (e) {}
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }
@@ -332,7 +331,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const id = req.url.split('/').pop();
       const idx = mockCategories.findIndex(c => c._id === id);
       if (idx >= 0) {
-        const deleted = mockCategories.splice(idx, 1)[0];
+        mockCategories.splice(idx, 1);
         try { localStorage.setItem(CATEGORIES_KEY, JSON.stringify(mockCategories)); } catch (e) {}
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }
@@ -376,7 +375,7 @@ export class MockBackendInterceptor implements HttpInterceptor {
       const id = req.url.split('/').pop();
       const idx = mockSubCategories.findIndex(s => s._id === id);
       if (idx >= 0) {
-        const deleted = mockSubCategories.splice(idx, 1)[0];
+        mockSubCategories.splice(idx, 1);
         try { localStorage.setItem(SUBCATEGORIES_KEY, JSON.stringify(mockSubCategories)); } catch (e) {}
         return of(new HttpResponse({ status: 200, body: { success: true } }));
       }

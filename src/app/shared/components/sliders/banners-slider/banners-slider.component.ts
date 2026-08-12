@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, ElementRef, HostListener, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, HostListener, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -26,7 +26,6 @@ export class BannersSliderComponent implements OnInit, OnDestroy {
   transform: string = 'translateX(0%)';
   
   constructor(
-    private elementRef: ElementRef,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
   ) {}

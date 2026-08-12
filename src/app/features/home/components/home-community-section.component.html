@@ -1,4 +1,4 @@
-<section class="py-16 relative bg-[#0d1127]">
+<section class="py-16 relative bg-pc-surface-muted">
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
     <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
     <div class="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
@@ -18,7 +18,7 @@
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
       <ng-container *ngFor="let influencer of influencers">
-        <a [routerLink]="['/colaboradores', influencer.slug]" class="bg-[#161a3c] border border-violet-500/20 rounded-xl p-4 transition-all duration-300 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/20 group">
+        <a [routerLink]="['/colaboradores', influencer.slug]" class="bg-pc-surface-card border border-violet-500/20 rounded-xl p-4 transition-all duration-300 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/20 group">
           <div class="relative overflow-hidden rounded-lg mb-3 aspect-square">
             <img [src]="influencer.image" [alt]="influencer.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
           </div>
