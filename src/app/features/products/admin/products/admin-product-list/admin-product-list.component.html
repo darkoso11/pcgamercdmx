@@ -33,7 +33,7 @@
           <select
             id="product-category-filter"
             [(ngModel)]="selectedCategory"
-            (ngModelChange)="filterProducts()"
+            (ngModelChange)="onFilterChange()"
             class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
           >
             <option value="">Todas las categorías</option>
@@ -48,7 +48,7 @@
           <select
             id="product-status-filter"
             [(ngModel)]="selectedStatus"
-            (ngModelChange)="filterProducts()"
+            (ngModelChange)="onFilterChange()"
             class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded text-white focus:border-cyan-400 focus:outline-none transition"
           >
             <option value="all">Todos los estados</option>
@@ -77,6 +77,195 @@
       </div>
     </div>
 
+    <!-- Acciones masivas contextuales -->
+    <section
+      *ngIf="selectedCount > 0"
+      class="pc-panel border border-cyan-400/40 rounded-lg mb-4 overflow-visible"
+      aria-label="Acciones para productos seleccionados"
+    >
+      <div class="bg-cyan-950/60 px-4 py-3 flex flex-wrap items-center gap-3">
+        <strong class="text-cyan-200">
+          <i class="fas fa-check-square mr-2"></i>{{ selectedCount }}
+          {{ selectedCount === 1 ? 'producto seleccionado' : 'productos seleccionados' }}
+        </strong>
+
+        <button
+          type="button"
+          (click)="openBulkConfirmation('publish')"
+          [disabled]="bulkActionInProgress"
+          class="px-3 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 rounded font-semibold transition"
+        >
+          <i class="fas fa-eye mr-2"></i>Publicar
+        </button>
+        <button
+          type="button"
+          (click)="openBulkConfirmation('deactivate')"
+          [disabled]="bulkActionInProgress"
+          class="px-3 py-2 bg-amber-700 hover:bg-amber-600 disabled:opacity-50 rounded font-semibold transition"
+        >
+          <i class="fas fa-eye-slash mr-2"></i>Desactivar
+        </button>
+        <button
+          type="button"
+          (click)="openBulkConfirmation('duplicate')"
+          [disabled]="bulkActionInProgress"
+          class="px-3 py-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 rounded font-semibold transition"
+        >
+          <i class="fas fa-copy mr-2"></i>Duplicar
+        </button>
+
+        <div class="relative">
+          <button
+            type="button"
+            (click)="bulkEditMenuOpen = !bulkEditMenuOpen"
+            [disabled]="bulkActionInProgress"
+            class="px-3 py-2 bg-slate-600 hover:bg-slate-500 disabled:opacity-50 rounded font-semibold transition"
+            [attr.aria-expanded]="bulkEditMenuOpen"
+          >
+            <i class="fas fa-pen mr-2"></i>Editar <i class="fas fa-chevron-down ml-1"></i>
+          </button>
+          <div
+            *ngIf="bulkEditMenuOpen"
+            class="absolute z-20 mt-2 min-w-56 bg-slate-900 border border-white/20 rounded-lg shadow-2xl p-2"
+          >
+            <button type="button" (click)="openBulkEdit('category')" class="w-full text-left px-3 py-2 hover:bg-white/10 rounded">Categoría y subcategoría</button>
+            <button type="button" (click)="openBulkEdit('price')" class="w-full text-left px-3 py-2 hover:bg-white/10 rounded">Precio</button>
+            <button type="button" (click)="openBulkEdit('stock')" class="w-full text-left px-3 py-2 hover:bg-white/10 rounded">Stock</button>
+            <button type="button" (click)="openBulkEdit('low-stock')" class="w-full text-left px-3 py-2 hover:bg-white/10 rounded">Alerta de bajo stock</button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="openBulkConfirmation('delete')"
+          [disabled]="bulkActionInProgress"
+          class="px-3 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 rounded font-semibold transition"
+        >
+          <i class="fas fa-trash mr-2"></i>Eliminar
+        </button>
+        <button
+          type="button"
+          (click)="clearSelection()"
+          [disabled]="bulkActionInProgress"
+          class="ml-auto px-3 py-2 text-gray-300 hover:text-white disabled:opacity-50 transition"
+          aria-label="Limpiar selección"
+        >
+          <i class="fas fa-times mr-2"></i>Limpiar
+        </button>
+      </div>
+
+      <div
+        *ngIf="pageSelectionState === 'all' && selectedCount < filteredProducts.length"
+        class="px-4 py-3 border-t border-cyan-400/20 text-sm text-cyan-100 flex flex-wrap items-center gap-3"
+      >
+        <span>Seleccionaste los {{ paginatedProducts.length }} productos de esta página.</span>
+        <button
+          type="button"
+          (click)="selectAllFilteredResults()"
+          class="font-semibold text-cyan-300 hover:text-cyan-200 underline"
+        >
+          Seleccionar los {{ filteredProducts.length }} resultados filtrados
+        </button>
+      </div>
+
+      <div *ngIf="pendingBulkAction" class="px-4 py-4 border-t border-white/10">
+        <p class="font-semibold" [class.text-red-300]="pendingBulkAction === 'delete'">
+          ¿Confirmas que deseas {{ pendingBulkActionLabel }} {{ selectedCount }}
+          {{ selectedCount === 1 ? 'producto' : 'productos' }}?
+        </p>
+        <p *ngIf="pendingBulkAction === 'delete'" class="text-sm text-red-300 mt-1">
+          Esta operación es permanente y no se puede deshacer.
+        </p>
+        <div class="flex gap-2 mt-4">
+          <button
+            type="button"
+            (click)="confirmBulkAction()"
+            [disabled]="bulkActionInProgress"
+            class="px-4 py-2 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-50 rounded font-semibold"
+          >
+            {{ bulkActionInProgress ? 'Procesando…' : 'Confirmar' }}
+          </button>
+          <button type="button" (click)="cancelBulkAction()" [disabled]="bulkActionInProgress" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded">Cancelar</button>
+        </div>
+      </div>
+
+      <div *ngIf="bulkEditMode" class="px-4 py-4 border-t border-white/10">
+        <div *ngIf="bulkEditMode === 'category'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label>
+            <span class="block text-sm text-gray-300 mb-1">Categoría</span>
+            <select [(ngModel)]="bulkCategory" (ngModelChange)="bulkSubcategoryId = ''" class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded">
+              <option value="">Selecciona una categoría</option>
+              <ng-container *ngFor="let category of categories">
+                <option *ngIf="category.slug !== 'ensambles'" [value]="category.slug">{{ category.name }}</option>
+              </ng-container>
+            </select>
+          </label>
+          <label>
+            <span class="block text-sm text-gray-300 mb-1">Subcategoría</span>
+            <select [(ngModel)]="bulkSubcategoryId" class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded">
+              <option value="">Selecciona una subcategoría</option>
+              <option *ngFor="let subcategory of bulkSubcategories" [value]="subcategory._id">{{ subcategory.name }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div *ngIf="bulkEditMode === 'price'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label>
+            <span class="block text-sm text-gray-300 mb-1">Operación de precio</span>
+            <select [(ngModel)]="bulkPriceMode" class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded">
+              <option value="set">Establecer precio</option>
+              <option value="percentage">Aplicar porcentaje (+ aumento, − descuento)</option>
+            </select>
+          </label>
+          <label>
+            <span class="block text-sm text-gray-300 mb-1">{{ bulkPriceMode === 'set' ? 'Precio' : 'Porcentaje' }}</span>
+            <input type="number" [(ngModel)]="bulkPriceValue" step="0.01" class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded" />
+          </label>
+        </div>
+
+        <div *ngIf="bulkEditMode === 'stock'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label>
+            <span class="block text-sm text-gray-300 mb-1">Operación de stock</span>
+            <select [(ngModel)]="bulkStockMode" class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded">
+              <option value="set">Establecer</option>
+              <option value="increase">Aumentar</option>
+              <option value="decrease">Reducir</option>
+            </select>
+          </label>
+          <label>
+            <span class="block text-sm text-gray-300 mb-1">Cantidad</span>
+            <input type="number" [(ngModel)]="bulkStockValue" min="0" step="1" class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded" />
+          </label>
+        </div>
+
+        <label *ngIf="bulkEditMode === 'low-stock'" class="block max-w-md">
+          <span class="block text-sm text-gray-300 mb-1">Nueva alerta de bajo stock</span>
+          <input type="number" [(ngModel)]="bulkLowStockAlert" min="0" step="1" class="w-full px-3 py-2 bg-pc-admin-bg border border-white/20 rounded" />
+        </label>
+
+        <div class="flex gap-2 mt-4">
+          <button
+            type="button"
+            (click)="applyBulkEdit()"
+            [disabled]="bulkActionInProgress"
+            class="px-4 py-2 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-50 rounded font-semibold"
+          >
+            {{ bulkActionInProgress ? 'Procesando…' : 'Aplicar cambios' }}
+          </button>
+          <button type="button" (click)="cancelBulkEdit()" [disabled]="bulkActionInProgress" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded">Cancelar</button>
+        </div>
+      </div>
+    </section>
+
+    <div
+      *ngIf="bulkMessage"
+      aria-live="polite"
+      class="mb-4 px-4 py-3 rounded border"
+      [ngClass]="bulkMessageType === 'success' ? 'bg-emerald-900/50 border-emerald-500/50 text-emerald-200' : bulkMessageType === 'error' ? 'bg-red-900/50 border-red-500/50 text-red-200' : 'bg-cyan-900/50 border-cyan-500/50 text-cyan-100'"
+    >
+      {{ bulkMessage }}
+    </div>
+
     <!-- Tabla de Productos -->
     <div class="pc-panel border border-white/10 rounded-lg overflow-hidden">
       <div *ngIf="filteredProducts.length > 0; else noProducts">
@@ -87,8 +276,9 @@
                 <th class="px-4 py-3 text-gray-400 font-semibold">
                   <input
                     type="checkbox"
-                    [(ngModel)]="selectAll"
-                    (ngModelChange)="toggleSelectAll()"
+                    [ngModel]="pageSelectionState === 'all'"
+                    (ngModelChange)="toggleCurrentPage($event)"
+                    [indeterminate]="pageSelectionState === 'some'"
                     class="w-4 h-4 cursor-pointer"
                     aria-label="Seleccionar todos los productos de esta página"
                   />
@@ -109,7 +299,8 @@
                 <td class="px-4 py-3">
                   <input
                     type="checkbox"
-                    [(ngModel)]="product.selected"
+                    [ngModel]="isProductSelected(product._id!)"
+                    (ngModelChange)="toggleProductSelection(product._id!, $event)"
                     class="w-4 h-4 cursor-pointer"
                     [attr.aria-label]="'Seleccionar ' + product.title"
                   />

@@ -1,10 +1,11 @@
 import { FormBuilder } from '@angular/forms';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { throwError, of } from 'rxjs';
+import { adminUrl } from '../../../../admin/admin-route.config';
 import { AdminAssemblyEditorComponent } from './admin-assembly-editor.component';
 
 describe('AdminAssemblyEditorComponent', () => {
-  function createComponent(createResult = of({ title: 'PC Lista' })) {
+  function createComponent(createResult = of({ _id: 'assembly-123', title: 'PC Lista' })) {
     const productsAdminService = {
       getProductById: jasmine.createSpy('getProductById').and.returnValue(of(undefined)),
       createProduct: jasmine.createSpy('createProduct').and.returnValue(createResult),
@@ -64,17 +65,33 @@ describe('AdminAssemblyEditorComponent', () => {
     return { component, productsAdminService, router };
   }
 
-  it('stops loading and navigates after creating an assembly', fakeAsync(() => {
+  it('stops loading and keeps a created assembly open on its canonical edit route', fakeAsync(() => {
     const { component, productsAdminService, router } = createComponent();
 
     component.saveAssembly();
-    tick(1500);
+    tick();
 
     expect(productsAdminService.createProduct).toHaveBeenCalled();
     expect(component.loading).toBeFalse();
     expect(component.successMessage).toBe('Ensamble creado y publicado correctamente');
-    expect(router.navigate).toHaveBeenCalledWith([component.adminAssembliesUrl]);
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      adminUrl('assemblies'),
+      'assembly-123',
+      'edit',
+    ]);
+    expect(component.isEditMode).toBeTrue();
+    expect(component.productId).toBe('assembly-123');
   }));
+
+  it('does not navigate after updating an existing assembly', () => {
+    const { component, router } = createComponent();
+    component.isEditMode = true;
+    component.productId = 'assembly-123';
+
+    component.saveAssembly();
+
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
 
   it('forces published true when using the publish action', () => {
     const { component, productsAdminService } = createComponent();
@@ -143,6 +160,18 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(productsAdminService.createProduct).toHaveBeenCalled();
     const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
     expect(payload.published).toBeFalse();
+  });
+
+  it('keeps a newly created assembly draft open on its canonical edit route', () => {
+    const { component, router } = createComponent();
+
+    component.saveDraft();
+
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      adminUrl('assemblies'),
+      'assembly-123',
+      'edit',
+    ]);
   });
 
   it('leaves promotional pricing and publication state to their explicit admin actions', () => {

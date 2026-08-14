@@ -185,6 +185,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const wasEditMode = this.isEditMode;
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -215,13 +216,20 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
           return;
         }
 
+        const savedId = String(result._id ?? '').trim();
+        if (!wasEditMode && !savedId) {
+          this.errorMessage = 'No se pudo crear el ensamble. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.successMessage = this.isEditMode 
           ? 'Ensamble actualizado y publicado correctamente'
           : 'Ensamble creado y publicado correctamente';
+        if (!wasEditMode) {
+          this.keepCreatedAssemblyOpen(savedId);
+        }
         this.cdr.detectChanges();
-        setTimeout(() => {
-          this.router.navigate([this.adminAssembliesUrl]);
-        }, 1500);
       },
       error: (err: any) => {
         this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al publicar el ensamble');
@@ -231,6 +239,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   saveDraft(): void {
+    const wasEditMode = this.isEditMode;
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -261,17 +270,30 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
           return;
         }
 
+        const savedId = String(result._id ?? '').trim();
+        if (!wasEditMode && !savedId) {
+          this.errorMessage = 'No se pudo crear el ensamble. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.successMessage = 'Ensamble guardado como borrador';
+        if (!wasEditMode) {
+          this.keepCreatedAssemblyOpen(savedId);
+        }
         this.cdr.detectChanges();
-        setTimeout(() => {
-          this.router.navigate([this.adminAssembliesUrl]);
-        }, 1500);
       },
       error: (err: any) => {
         this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al guardar el borrador');
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private keepCreatedAssemblyOpen(savedId: string): void {
+    this.productId = savedId;
+    this.isEditMode = true;
+    this.router.navigate([adminUrl('assemblies'), savedId, 'edit']);
   }
 
   onMainImageSelected(event: Event): void {
