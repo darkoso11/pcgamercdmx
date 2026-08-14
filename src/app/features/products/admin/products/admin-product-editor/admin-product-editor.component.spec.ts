@@ -1,6 +1,10 @@
+import { TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
+import { AuthService } from '../../../../admin/services/auth.service';
+import { ProductsAdminService } from '../../shared/products-admin.service';
 import { AdminProductEditorComponent } from './admin-product-editor.component';
 
 describe('AdminProductEditorComponent', () => {
@@ -271,5 +275,53 @@ describe('AdminProductEditorComponent', () => {
     component.saveProduct();
 
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  describe('feedback placement', () => {
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [AdminProductEditorComponent],
+        providers: [
+          provideRouter([]),
+          { provide: ActivatedRoute, useValue: { params: of({}) } },
+          {
+            provide: ProductsAdminService,
+            useValue: {
+              getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
+            },
+          },
+          { provide: AuthService, useValue: { logout: jasmine.createSpy('logout') } },
+        ],
+      }).compileComponents();
+    });
+
+    it('shows the success message above and below the product form', () => {
+      const fixture = TestBed.createComponent(AdminProductEditorComponent);
+      fixture.componentInstance.successMessage = 'Producto actualizado en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Producto actualizado en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('shows the error message above and below the product form', () => {
+      const fixture = TestBed.createComponent(AdminProductEditorComponent);
+      fixture.componentInstance.errorMessage = 'Error de producto en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Error de producto en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('uses only the upper product feedback as an accessible announcer', () => {
+      const fixture = TestBed.createComponent(AdminProductEditorComponent);
+      fixture.componentInstance.successMessage = 'Producto actualizado';
+
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelectorAll('[data-editor-feedback-announcer="true"]').length).toBe(1);
+    });
   });
 });

@@ -1,7 +1,10 @@
 import { FormBuilder } from '@angular/forms';
-import { fakeAsync, tick } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { throwError, of } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
+import { AuthService } from '../../../../admin/services/auth.service';
+import { ProductsAdminService } from '../../shared/products-admin.service';
 import { AdminAssemblyEditorComponent } from './admin-assembly-editor.component';
 
 describe('AdminAssemblyEditorComponent', () => {
@@ -333,5 +336,53 @@ describe('AdminAssemblyEditorComponent', () => {
 
     expect(component.successMessage).toBe('');
     expect(component.errorMessage).toBe('No se pudo actualizar el ensamble. Verifica tu sesion y vuelve a intentar.');
+  });
+
+  describe('feedback placement', () => {
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [AdminAssemblyEditorComponent],
+        providers: [
+          provideRouter([]),
+          { provide: ActivatedRoute, useValue: { params: of({}) } },
+          {
+            provide: ProductsAdminService,
+            useValue: {
+              getPowerCertifications: jasmine.createSpy('getPowerCertifications').and.returnValue(of([])),
+            },
+          },
+          { provide: AuthService, useValue: { logout: jasmine.createSpy('logout') } },
+        ],
+      }).compileComponents();
+    });
+
+    it('shows the success message above and below the assembly form', () => {
+      const fixture = TestBed.createComponent(AdminAssemblyEditorComponent);
+      fixture.componentInstance.successMessage = 'Ensamble actualizado en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Ensamble actualizado en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('shows the error message above and below the assembly form', () => {
+      const fixture = TestBed.createComponent(AdminAssemblyEditorComponent);
+      fixture.componentInstance.errorMessage = 'Error de ensamble en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Error de ensamble en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('uses only the upper assembly feedback as an accessible announcer', () => {
+      const fixture = TestBed.createComponent(AdminAssemblyEditorComponent);
+      fixture.componentInstance.successMessage = 'Ensamble actualizado';
+
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelectorAll('[data-editor-feedback-announcer="true"]').length).toBe(1);
+    });
   });
 });
