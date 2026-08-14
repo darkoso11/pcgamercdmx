@@ -1,14 +1,19 @@
+import { TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { adminUrl } from '../../../../admin/admin-route.config';
+import { AuthService } from '../../../../admin/services/auth.service';
+import { ProductsAdminService } from '../../shared/products-admin.service';
 import { AdminProductEditorComponent } from './admin-product-editor.component';
 
 describe('AdminProductEditorComponent', () => {
-  function createComponent() {
+  function createComponent(createResult: any = of({ _id: 'product-123', title: 'Mouse Gamer' })) {
     const productsAdminService = {
       getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
       getProductById: jasmine.createSpy('getProductById').and.returnValue(of(undefined)),
-      createProduct: jasmine.createSpy('createProduct').and.returnValue(of({ title: 'Mouse Gamer' })),
-      updateProduct: jasmine.createSpy('updateProduct').and.returnValue(of({ title: 'Mouse Gamer' })),
+      createProduct: jasmine.createSpy('createProduct').and.returnValue(createResult),
+      updateProduct: jasmine.createSpy('updateProduct').and.returnValue(of({ _id: 'product-123', title: 'Mouse Gamer' })),
       uploadProductImage: jasmine.createSpy('uploadProductImage').and.returnValue(of('https://cms.test.pcgamercdmx.com/assets/file-1')),
     };
     const route = { params: of({}) };
@@ -23,7 +28,7 @@ describe('AdminProductEditorComponent', () => {
       cdr as any
     );
 
-    return { component, productsAdminService };
+    return { component, productsAdminService, router };
   }
 
   it('sends the selected category slug when creating a product', () => {
@@ -199,7 +204,7 @@ describe('AdminProductEditorComponent', () => {
   });
 
   it('shows an error instead of success when an update returns no saved product', () => {
-    const { component, productsAdminService } = createComponent();
+    const { component, productsAdminService, router } = createComponent();
     productsAdminService.updateProduct.and.returnValue(of(undefined));
     component.isEditMode = true;
     component.productId = '123';
@@ -221,5 +226,102 @@ describe('AdminProductEditorComponent', () => {
 
     expect(component.successMessage).toBe('');
     expect(component.errorMessage).toBe('No se pudo actualizar el producto. Verifica tu sesion y vuelve a intentar.');
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('keeps a newly created product open on its canonical edit route', () => {
+    const { component, router } = createComponent();
+    component.form.patchValue({ title: 'Mouse Gamer', slug: 'mouse-gamer' });
+
+    component.saveProduct();
+
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      adminUrl('products'),
+      'product-123',
+      'edit',
+    ]);
+    expect(component.isEditMode).toBeTrue();
+    expect(component.productId).toBe('product-123');
+  });
+
+  it('does not navigate after updating an existing product', () => {
+    const { component, router } = createComponent();
+    component.isEditMode = true;
+    component.productId = 'product-123';
+    component.form.patchValue({ title: 'Mouse Gamer', slug: 'mouse-gamer' });
+
+    component.saveProduct();
+
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('keeps a newly created product draft open on its canonical edit route', () => {
+    const { component, router } = createComponent();
+    component.form.patchValue({ title: 'Mouse Gamer', slug: 'mouse-gamer' });
+
+    component.saveDraft();
+
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      adminUrl('products'),
+      'product-123',
+      'edit',
+    ]);
+  });
+
+  it('does not navigate when product creation returns no saved record', () => {
+    const { component, router } = createComponent(of(undefined));
+    component.form.patchValue({ title: 'Mouse Gamer', slug: 'mouse-gamer' });
+
+    component.saveProduct();
+
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  describe('feedback placement', () => {
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [AdminProductEditorComponent],
+        providers: [
+          provideRouter([]),
+          { provide: ActivatedRoute, useValue: { params: of({}) } },
+          {
+            provide: ProductsAdminService,
+            useValue: {
+              getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
+            },
+          },
+          { provide: AuthService, useValue: { logout: jasmine.createSpy('logout') } },
+        ],
+      }).compileComponents();
+    });
+
+    it('shows the success message above and below the product form', () => {
+      const fixture = TestBed.createComponent(AdminProductEditorComponent);
+      fixture.componentInstance.successMessage = 'Producto actualizado en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Producto actualizado en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('shows the error message above and below the product form', () => {
+      const fixture = TestBed.createComponent(AdminProductEditorComponent);
+      fixture.componentInstance.errorMessage = 'Error de producto en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Error de producto en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('uses only the upper product feedback as an accessible announcer', () => {
+      const fixture = TestBed.createComponent(AdminProductEditorComponent);
+      fixture.componentInstance.successMessage = 'Producto actualizado';
+
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelectorAll('[data-editor-feedback-announcer="true"]').length).toBe(1);
+    });
   });
 });

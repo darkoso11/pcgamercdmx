@@ -285,6 +285,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
   }
 
   saveProduct(): void {
+    const wasEditMode = this.isEditMode;
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -315,14 +316,21 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
           return;
         }
 
+        const savedId = String(result._id ?? '').trim();
+        if (!wasEditMode && !savedId) {
+          this.errorMessage = 'No se pudo crear el producto. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         const visibility = productData.published ? 'publico' : 'privado';
-        this.successMessage = this.isEditMode
+        this.successMessage = wasEditMode
           ? `Producto actualizado como ${visibility}`
           : `Producto creado como ${visibility}`;
+        if (!wasEditMode) {
+          this.keepCreatedProductOpen(savedId);
+        }
         this.cdr.detectChanges();
-        setTimeout(() => {
-          this.router.navigate([this.adminProductsUrl]);
-        }, 1500);
       },
       error: (err: any) => {
         this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al guardar el producto');
@@ -337,6 +345,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const wasEditMode = this.isEditMode;
     this.loading = true;
     this.successMessage = '';
     this.errorMessage = '';
@@ -367,17 +376,30 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
           return;
         }
 
+        const savedId = String(result._id ?? '').trim();
+        if (!wasEditMode && !savedId) {
+          this.errorMessage = 'No se pudo crear el producto. Verifica tu sesion y vuelve a intentar.';
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.successMessage = 'Producto guardado como privado';
+        if (!wasEditMode) {
+          this.keepCreatedProductOpen(savedId);
+        }
         this.cdr.detectChanges();
-        setTimeout(() => {
-          this.router.navigate([this.adminProductsUrl]);
-        }, 1500);
       },
       error: (err: any) => {
         this.errorMessage = getCatalogSaveErrorMessage(err, 'Error al guardar el producto privado');
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private keepCreatedProductOpen(savedId: string): void {
+    this.productId = savedId;
+    this.isEditMode = true;
+    this.router.navigate([adminUrl('products'), savedId, 'edit']);
   }
 
   addGalleryImage(): void {

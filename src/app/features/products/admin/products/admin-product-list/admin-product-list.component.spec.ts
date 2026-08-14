@@ -42,6 +42,18 @@ describe('AdminProductListComponent', () => {
       getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
       duplicateProduct: jasmine.createSpy('duplicateProduct').and.returnValue(of(undefined)),
       deleteProduct: jasmine.createSpy('deleteProduct').and.returnValue(deleteResult),
+      bulkUpdateProducts: jasmine.createSpy('bulkUpdateProducts').and.callFake((ids: string[]) => of({
+        successfulIds: ids,
+        failedIds: [],
+      })),
+      bulkDuplicateProducts: jasmine.createSpy('bulkDuplicateProducts').and.callFake((ids: string[]) => of({
+        successfulIds: ids,
+        failedIds: [],
+      })),
+      bulkDeleteProducts: jasmine.createSpy('bulkDeleteProducts').and.callFake((ids: string[]) => of({
+        successfulIds: ids,
+        failedIds: [],
+      })),
     };
     const router = { navigate: jasmine.createSpy('navigate') };
     const cdr = { detectChanges: jasmine.createSpy('detectChanges') };
@@ -112,6 +124,285 @@ describe('AdminProductListComponent', () => {
     const { component } = createComponent();
 
     expect(component.getCategoryLabel({ category: 'componentes' } as any)).toBe('Componentes');
+  });
+
+  it('tracks individual product selection by id', () => {
+    const { component } = createComponent();
+    component.ngOnInit();
+
+    component.toggleProductSelection('healthy', true);
+
+    expect(component.selectedCount).toBe(1);
+    expect(component.isProductSelected('healthy')).toBeTrue();
+    expect(component.pageSelectionState).toBe('some');
+  });
+
+  it('selects only the current page and keeps that selection while paginating', () => {
+    const { component } = createComponent();
+    component.ngOnInit();
+    component.pageSize = 2;
+    component.filterProducts();
+
+    component.toggleCurrentPage(true);
+    component.nextPage();
+
+    expect(Array.from(component.selectedProductIds)).toEqual(['draft', 'healthy']);
+    expect(component.pageSelectionState).toBe('none');
+  });
+
+  it('selects every filtered result explicitly', () => {
+    const { component } = createComponent();
+    component.ngOnInit();
+    component.pageSize = 2;
+    component.filterProducts();
+
+    component.selectAllFilteredResults();
+
+    expect(Array.from(component.selectedProductIds)).toEqual(['draft', 'healthy', 'low', 'out']);
+  });
+
+  it('clears hidden selections when a filter changes', () => {
+    const { component } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('draft', true);
+    component.selectedCategory = 'componentes';
+
+    component.onFilterChange();
+
+    expect(component.selectedCount).toBe(0);
+    expect(component.filteredProducts.map((item) => item._id)).toEqual(['healthy', 'low', 'out']);
+  });
+
+  it('publishes the selected products after confirmation', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('draft', true);
+
+    component.openBulkConfirmation('publish');
+    component.confirmBulkAction();
+
+    expect(productsAdminService.bulkUpdateProducts).toHaveBeenCalledOnceWith(
+      ['draft'],
+      { published: true }
+    );
+    expect(component.selectedCount).toBe(0);
+    expect(component.bulkMessage).toContain('1 producto publicado');
+  });
+
+  it('deactivates selected products by changing them to drafts', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+
+    component.openBulkConfirmation('deactivate');
+    component.confirmBulkAction();
+
+    expect(productsAdminService.bulkUpdateProducts).toHaveBeenCalledOnceWith(
+      ['healthy'],
+      { published: false }
+    );
+  });
+
+  it('duplicates selected products through the bulk service', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+
+    component.openBulkConfirmation('duplicate');
+    component.confirmBulkAction();
+
+    expect(productsAdminService.bulkDuplicateProducts).toHaveBeenCalledOnceWith(['healthy']);
+  });
+
+  it('applies a percentage price change without producing negative prices', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.bulkPriceMode = 'percentage';
+    component.bulkPriceValue = -150;
+
+    component.applyBulkPrice();
+
+    const changesForProduct = productsAdminService.bulkUpdateProducts.calls.mostRecent().args[1];
+    expect(changesForProduct('healthy')).toEqual({ price: 0 });
+  });
+
+  it('sets the same fixed price on every selected product', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.bulkPriceMode = 'set';
+    component.bulkPriceValue = 249.99;
+
+    component.applyBulkPrice();
+
+    const changesForProduct = productsAdminService.bulkUpdateProducts.calls.mostRecent().args[1];
+    expect(changesForProduct('healthy')).toEqual({ price: 249.99 });
+  });
+
+  it('reduces stock without producing a negative quantity', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.bulkStockMode = 'decrease';
+    component.bulkStockValue = 25;
+
+    component.applyBulkStock();
+
+    const changesForProduct = productsAdminService.bulkUpdateProducts.calls.mostRecent().args[1];
+    expect(changesForProduct('healthy')).toEqual({ stock: 0 });
+  });
+
+  it('rejects fractional stock quantities', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.bulkStockValue = 2.5;
+
+    component.applyBulkStock();
+
+    expect(productsAdminService.bulkUpdateProducts).not.toHaveBeenCalled();
+    expect(component.bulkMessage).toContain('entera');
+  });
+
+  it('updates the low-stock alert with a non-negative integer', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.bulkLowStockAlert = 7;
+
+    component.applyBulkLowStockAlert();
+
+    expect(productsAdminService.bulkUpdateProducts).toHaveBeenCalledOnceWith(
+      ['healthy'],
+      { lowStockAlert: 7 }
+    );
+  });
+
+  it('rejects a fractional low-stock alert', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.bulkLowStockAlert = 1.5;
+
+    component.applyBulkLowStockAlert();
+
+    expect(productsAdminService.bulkUpdateProducts).not.toHaveBeenCalled();
+    expect(component.bulkMessage).toContain('entera');
+  });
+
+  it('rejects a subcategory that does not belong to the selected category', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.categories = [{
+      _id: '2',
+      name: 'Componentes',
+      slug: 'componentes',
+      order: 2,
+      subcategories: [{ _id: 'cpu', name: 'Procesadores', slug: 'procesadores' }],
+    }];
+    component.toggleProductSelection('healthy', true);
+    component.bulkCategory = 'componentes';
+    component.bulkSubcategoryId = 'keyboard';
+
+    component.applyBulkCategory();
+
+    expect(productsAdminService.bulkUpdateProducts).not.toHaveBeenCalled();
+    expect(component.bulkMessage).toContain('subcategoría válida');
+  });
+
+  it('updates category and a compatible subcategory together', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.categories = [{
+      _id: '2',
+      name: 'Componentes',
+      slug: 'componentes',
+      order: 2,
+      subcategories: [{ _id: 'cpu', name: 'Procesadores', slug: 'procesadores' }],
+    }];
+    component.toggleProductSelection('healthy', true);
+    component.bulkCategory = 'componentes';
+    component.bulkSubcategoryId = 'cpu';
+
+    component.applyBulkCategory();
+
+    expect(productsAdminService.bulkUpdateProducts).toHaveBeenCalledOnceWith(
+      ['healthy'],
+      { category: 'componentes', categoryId: '2', subcategoryId: 'cpu' }
+    );
+  });
+
+  it('rejects moving catalog products into the assemblies category', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.categories = [{
+      _id: '1',
+      name: 'Ensambles',
+      slug: 'ensambles',
+      order: 1,
+      subcategories: [{ _id: 'gaming', name: 'Gaming', slug: 'gaming' }],
+    }];
+    component.toggleProductSelection('healthy', true);
+    component.bulkCategory = 'paquetes';
+    component.bulkSubcategoryId = 'gaming';
+
+    component.applyBulkCategory();
+
+    expect(productsAdminService.bulkUpdateProducts).not.toHaveBeenCalled();
+    expect(component.bulkMessage).toContain('categoría válida');
+  });
+
+  it('does not delete products when the controlled confirmation is cancelled', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+
+    component.openBulkConfirmation('delete');
+    component.cancelBulkAction();
+
+    expect(productsAdminService.bulkDeleteProducts).not.toHaveBeenCalled();
+    expect(component.pendingBulkAction).toBeNull();
+  });
+
+  it('deletes selected products after controlled confirmation', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+
+    component.openBulkConfirmation('delete');
+    component.confirmBulkAction();
+
+    expect(productsAdminService.bulkDeleteProducts).toHaveBeenCalledOnceWith(['healthy']);
+  });
+
+  it('keeps failed products selected after a partial bulk result', () => {
+    const { component, productsAdminService } = createComponent();
+    productsAdminService.bulkUpdateProducts.and.returnValue(of({
+      successfulIds: ['healthy'],
+      failedIds: ['low'],
+    }));
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.toggleProductSelection('low', true);
+
+    component.openBulkConfirmation('deactivate');
+    component.confirmBulkAction();
+
+    expect(Array.from(component.selectedProductIds)).toEqual(['low']);
+    expect(component.bulkMessage).toContain('1 correcto y 1 con error');
+  });
+
+  it('blocks another confirmation while a bulk action is in progress', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.toggleProductSelection('healthy', true);
+    component.openBulkConfirmation('publish');
+    component.bulkActionInProgress = true;
+
+    component.confirmBulkAction();
+
+    expect(productsAdminService.bulkUpdateProducts).not.toHaveBeenCalled();
   });
 
   it('does not reload products or show success when deletion fails', () => {
