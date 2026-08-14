@@ -2,7 +2,7 @@ name: Browser compatibility
 
 on:
   push:
-    branches: [main, test, dev]
+    branches: [main]
   pull_request:
     branches: [main, test, dev]
 
@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20.19.1
+          node-version: 22.x
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
@@ -38,7 +38,7 @@ jobs:
           --project=mobile-safari
       - name: Upload failure traces
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cross-browser-traces
           path: test-results/
@@ -50,10 +50,10 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20.19.1
+          node-version: 22.x
           cache: npm
       - run: npm ci
       - run: npm run build
@@ -61,7 +61,7 @@ jobs:
         run: npx playwright test --project=edge
       - name: Upload failure traces
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: edge-traces
           path: test-results/

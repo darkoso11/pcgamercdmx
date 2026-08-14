@@ -47,7 +47,7 @@ export const DEFAULT_HOME_CONTENT_SETTINGS: HomeContentSettings = {
   heroBanners: [
     {
       id: 'hero-nzxt-h9',
-      src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
+      src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
       link: '/ensambles',
       alt: 'Gabinete NZXT H9 Flow',
       active: true,
@@ -76,7 +76,7 @@ export const DEFAULT_HOME_CONTENT_SETTINGS: HomeContentSettings = {
       title: 'Ensambles Personalizados',
       description:
         'Construimos la PC de tus suenos con los mejores componentes y la maxima calidad.',
-      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.png',
+      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
       link: '/cotiza-tu-pc',
       ctaText: 'Personaliza tu PC',
       badgeText: 'POPULAR',

@@ -1,4 +1,4 @@
-<div class="font-orbitron min-h-screen bg-[#0a0d22]">
+<div class="font-orbitron min-h-screen bg-pc-image-bg">
   <div class="product-detail-content" [attr.inert]="isGalleryOpen ? '' : null">
     <div *ngIf="loading" class="flex min-h-screen items-center justify-center">
       <div class="text-center">
@@ -144,23 +144,26 @@
           </div>
 
           <div class="spec-grid">
-            <div *ngFor="let spec of detail.specEntries; trackBy: trackByLabel" class="spec-item">
-              <span class="spec-label">{{ spec.label }}</span>
-              <span class="spec-value">{{ spec.value }}</span>
+            <div
+              *ngFor="let spec of detail.specEntries; trackBy: trackByLabel"
+              class="spec-item"
+              [class.spec-item-with-certification]="spec.label === 'Fuente' && detail.certificationImage"
+            >
+              <div>
+                <span class="spec-label">{{ spec.label }}</span>
+                <span class="spec-value">{{ spec.value }}</span>
+              </div>
+              <img
+                *ngIf="spec.label === 'Fuente' && detail.certificationImage"
+                [src]="detail.certificationImage"
+                [alt]="detail.certificationText || 'Certificación de la fuente de poder'"
+                class="spec-certification-image"
+                width="42"
+                height="56"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
-          </div>
-
-          <div *ngIf="detail.certificationText" class="info-box flex items-center justify-between gap-4">
-            <div>
-              <p class="font-semibold">{{ detail.certificationText }}</p>
-              <p class="mt-1 text-sm text-purple-100">Fuente seleccionada para dar margen y estabilidad al ensamble.</p>
-            </div>
-            <img
-              *ngIf="detail.certificationImage"
-              [src]="detail.certificationImage"
-              [alt]="detail.certificationText"
-              class="h-14 w-auto"
-            />
           </div>
 
           <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -189,13 +192,20 @@
       <section *ngIf="relatedProducts.length" class="mt-14">
         <h2 class="section-header">Relacionados</h2>
         <div class="product-grid">
-          <article
+          <a
             *ngFor="let card of relatedProducts"
             class="product-card"
-            (click)="goToProduct(card.slug)"
+            [routerLink]="getProductLink(card)"
+            [attr.aria-label]="'Ver detalle de ' + card.title"
           >
             <div class="product-card-image">
-              <img [src]="card.image" [alt]="card.title" (error)="handleImageError($event)" />
+              <img
+                [src]="card.image"
+                [alt]="card.title"
+                loading="lazy"
+                decoding="async"
+                (error)="handleImageError($event)"
+              />
             </div>
             <h3 class="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-white">{{ card.title }}</h3>
             <div class="mt-5 flex items-center justify-between gap-3">
@@ -204,7 +214,7 @@
               </span>
               <span class="text-sm font-semibold text-cyan-300">Ver detalle</span>
             </div>
-          </article>
+          </a>
         </div>
       </section>
     </div>

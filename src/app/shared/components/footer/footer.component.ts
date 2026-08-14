@@ -6,7 +6,8 @@ import { BUSINESS_INFO } from '../../config/business-info';
 @Component({
   selector: 'app-footer',
   imports: [CommonModule, RouterModule],
-  templateUrl: './footer.component.html'
+  templateUrl: './footer.component.html',
+  styleUrl: './footer.component.css',
 })
 export class FooterComponent {
   readonly business = BUSINESS_INFO;

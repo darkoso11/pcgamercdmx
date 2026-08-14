@@ -127,12 +127,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  goToProduct(slug: string): void {
-    if (!this.product) {
-      return;
-    }
-
-    this.router.navigate(this.productsService.getDetailLink(this.product.category, slug));
+  getProductLink(product: ProductCardViewModel): string[] {
+    return this.productsService.getDetailLink(product.category, product.slug);
   }
 
   requestQuote(): void {
@@ -351,10 +347,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         .map((item) => item.title)
         .filter(Boolean)
         .join(' + ');
-      const certification = [
-        product.certifications.wattage > 0 ? `${product.certifications.wattage}W` : '',
-        product.certifications.certificate,
-      ].filter(Boolean).join(' ');
 
       return [
         { label: 'CPU', value: specs.processor?.title ?? '' },
@@ -363,7 +355,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         { label: 'RAM', value: specs.ram?.title ?? '' },
         { label: 'Almacenamiento', value: storage },
         { label: 'Fuente', value: specs.powerSupply?.title ?? '' },
-        { label: 'Potencia y certificación', value: certification },
         { label: 'Enfriamiento', value: specs.cooling?.title ?? '' },
         { label: 'Gabinete', value: specs.case?.title ?? '' },
         { label: 'Sistema operativo', value: specs.operatingSystem ?? '' },
@@ -418,12 +409,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       return product.brandLogos.map((logo) => ({ src: logo.logo, alt: logo.name }));
     }
 
-    const highlights = this.productsService.toSpecHighlights(product, 1);
-    const brand = highlights[0]?.value;
-    if (!brand) {
-      return [];
-    }
-
     return [];
   }
 
@@ -432,10 +417,21 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       return undefined;
     }
 
-    return product.certifications.image ||
-      (product.certifications.certificate === '80+ Bronze'
-        ? 'assets/img/certificaciones/80_Plus_Bronze.svg.png'
-        : 'assets/img/certificaciones/80plusgold.png');
+    const selectedImage = product.certifications.image?.trim();
+    if (selectedImage) {
+      return selectedImage;
+    }
+
+    const certificate = this.resolvePowerCertification(product).certificate.toLowerCase();
+    if (certificate.includes('bronze')) {
+      return 'assets/img/certificaciones/80_Plus_Bronze.svg.png';
+    }
+
+    if (certificate.includes('gold')) {
+      return 'assets/img/certificaciones/80plusgold.png';
+    }
+
+    return undefined;
   }
 
   private buildCertificationText(product: CatalogProduct): string | undefined {
@@ -443,7 +439,31 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       return undefined;
     }
 
-    return `${product.certifications.certificate} · ${product.certifications.wattage}W`;
+    const certification = this.resolvePowerCertification(product);
+    const text = [
+      certification.certificate,
+      certification.wattage > 0 ? `${certification.wattage}W` : '',
+    ].filter(Boolean).join(' · ');
+
+    return text || undefined;
+  }
+
+  private resolvePowerCertification(product: CatalogProduct & {
+    category: ProductCategory.ASSEMBLED;
+  }): { certificate: string; wattage: number } {
+    const powerSupplyName = product.specifications.powerSupply?.title?.trim() ?? '';
+    const explicitCertificate = product.certifications.certificate?.trim() ?? '';
+    const inferredTier = powerSupplyName.match(/\b(bronze|silver|gold|platinum|titanium)\b/i)?.[1];
+    const inferredWattage = Number(powerSupplyName.match(/\b(\d{3,4})\s*w\b/i)?.[1] ?? 0);
+
+    return {
+      certificate: explicitCertificate || (inferredTier
+        ? `80 Plus ${inferredTier.charAt(0).toUpperCase()}${inferredTier.slice(1).toLowerCase()}`
+        : ''),
+      wattage: product.certifications.wattage > 0
+        ? product.certifications.wattage
+        : inferredWattage,
+    };
   }
 
   private buildInventoryLabel(product: CatalogProduct): string {
