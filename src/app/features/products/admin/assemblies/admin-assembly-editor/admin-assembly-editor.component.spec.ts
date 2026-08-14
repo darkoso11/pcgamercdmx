@@ -1,10 +1,14 @@
 import { FormBuilder } from '@angular/forms';
-import { fakeAsync, tick } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { throwError, of } from 'rxjs';
+import { adminUrl } from '../../../../admin/admin-route.config';
+import { AuthService } from '../../../../admin/services/auth.service';
+import { ProductsAdminService } from '../../shared/products-admin.service';
 import { AdminAssemblyEditorComponent } from './admin-assembly-editor.component';
 
 describe('AdminAssemblyEditorComponent', () => {
-  function createComponent(createResult = of({ title: 'PC Lista' })) {
+  function createComponent(createResult = of({ _id: 'assembly-123', title: 'PC Lista' })) {
     const productsAdminService = {
       getProductById: jasmine.createSpy('getProductById').and.returnValue(of(undefined)),
       createProduct: jasmine.createSpy('createProduct').and.returnValue(createResult),
@@ -64,17 +68,33 @@ describe('AdminAssemblyEditorComponent', () => {
     return { component, productsAdminService, router };
   }
 
-  it('stops loading and navigates after creating an assembly', fakeAsync(() => {
+  it('stops loading and keeps a created assembly open on its canonical edit route', fakeAsync(() => {
     const { component, productsAdminService, router } = createComponent();
 
     component.saveAssembly();
-    tick(1500);
+    tick();
 
     expect(productsAdminService.createProduct).toHaveBeenCalled();
     expect(component.loading).toBeFalse();
     expect(component.successMessage).toBe('Ensamble creado y publicado correctamente');
-    expect(router.navigate).toHaveBeenCalledWith([component.adminAssembliesUrl]);
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      adminUrl('assemblies'),
+      'assembly-123',
+      'edit',
+    ]);
+    expect(component.isEditMode).toBeTrue();
+    expect(component.productId).toBe('assembly-123');
   }));
+
+  it('does not navigate after updating an existing assembly', () => {
+    const { component, router } = createComponent();
+    component.isEditMode = true;
+    component.productId = 'assembly-123';
+
+    component.saveAssembly();
+
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
 
   it('forces published true when using the publish action', () => {
     const { component, productsAdminService } = createComponent();
@@ -143,6 +163,18 @@ describe('AdminAssemblyEditorComponent', () => {
     expect(productsAdminService.createProduct).toHaveBeenCalled();
     const payload = productsAdminService.createProduct.calls.mostRecent().args[0];
     expect(payload.published).toBeFalse();
+  });
+
+  it('keeps a newly created assembly draft open on its canonical edit route', () => {
+    const { component, router } = createComponent();
+
+    component.saveDraft();
+
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      adminUrl('assemblies'),
+      'assembly-123',
+      'edit',
+    ]);
   });
 
   it('leaves promotional pricing and publication state to their explicit admin actions', () => {
@@ -304,5 +336,53 @@ describe('AdminAssemblyEditorComponent', () => {
 
     expect(component.successMessage).toBe('');
     expect(component.errorMessage).toBe('No se pudo actualizar el ensamble. Verifica tu sesion y vuelve a intentar.');
+  });
+
+  describe('feedback placement', () => {
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [AdminAssemblyEditorComponent],
+        providers: [
+          provideRouter([]),
+          { provide: ActivatedRoute, useValue: { params: of({}) } },
+          {
+            provide: ProductsAdminService,
+            useValue: {
+              getPowerCertifications: jasmine.createSpy('getPowerCertifications').and.returnValue(of([])),
+            },
+          },
+          { provide: AuthService, useValue: { logout: jasmine.createSpy('logout') } },
+        ],
+      }).compileComponents();
+    });
+
+    it('shows the success message above and below the assembly form', () => {
+      const fixture = TestBed.createComponent(AdminAssemblyEditorComponent);
+      fixture.componentInstance.successMessage = 'Ensamble actualizado en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Ensamble actualizado en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('shows the error message above and below the assembly form', () => {
+      const fixture = TestBed.createComponent(AdminAssemblyEditorComponent);
+      fixture.componentInstance.errorMessage = 'Error de ensamble en ambas posiciones';
+
+      fixture.detectChanges();
+
+      const text = fixture.nativeElement.textContent as string;
+      expect(text.split('Error de ensamble en ambas posiciones').length - 1).toBe(2);
+    });
+
+    it('uses only the upper assembly feedback as an accessible announcer', () => {
+      const fixture = TestBed.createComponent(AdminAssemblyEditorComponent);
+      fixture.componentInstance.successMessage = 'Ensamble actualizado';
+
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelectorAll('[data-editor-feedback-announcer="true"]').length).toBe(1);
+    });
   });
 });

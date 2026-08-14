@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { Observable, defer, forkJoin, from, of } from 'rxjs';
+import { catchError, map, mergeMap, switchMap, toArray } from 'rxjs/operators';
 import { DirectusApiService } from '../../../../core/services/directus-api.service';
 import {
   DirectusCategoryRecord,
@@ -85,6 +85,11 @@ export interface Product {
   internalNotes?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface BulkProductResult {
+  successfulIds: string[];
+  failedIds: string[];
 }
 
 export interface Package {
@@ -371,6 +376,27 @@ export class ProductsAdminService {
     );
   }
 
+  bulkUpdateProducts(
+    ids: string[],
+    changes: Partial<Product> | ((id: string) => Partial<Product>)
+  ): Observable<BulkProductResult> {
+    return this.runBulkProductOperation(ids, (id) =>
+      this.updateProduct(id, typeof changes === 'function' ? changes(id) : changes).pipe(
+        map((savedProduct) => Boolean(savedProduct))
+      )
+    );
+  }
+
+  bulkDuplicateProducts(ids: string[]): Observable<BulkProductResult> {
+    return this.runBulkProductOperation(ids, (id) =>
+      this.duplicateProduct(id).pipe(map((duplicatedProduct) => Boolean(duplicatedProduct)))
+    );
+  }
+
+  bulkDeleteProducts(ids: string[]): Observable<BulkProductResult> {
+    return this.runBulkProductOperation(ids, (id) => this.deleteProduct(id));
+  }
+
   searchProducts(term: string, category?: string): Observable<Product[]> {
     const normalized = term.trim().toLowerCase();
     return this.getAllProducts().pipe(
@@ -386,6 +412,29 @@ export class ProductsAdminService {
   getProductsByCategory(category: string): Observable<Product[]> {
     return this.getAllProducts().pipe(
       map((response) => response.data.filter((product) => product.category === category))
+    );
+  }
+
+  private runBulkProductOperation(
+    ids: string[],
+    operation: (id: string) => Observable<boolean>
+  ): Observable<BulkProductResult> {
+    return from(ids).pipe(
+      mergeMap(
+        (id) => defer(() => operation(id)).pipe(
+          map((successful) => ({ id, successful })),
+          catchError(() => of({ id, successful: false }))
+        ),
+        5
+      ),
+      toArray(),
+      map((results) => {
+        const resultById = new Map(results.map((result) => [result.id, result.successful]));
+        return {
+          successfulIds: ids.filter((id) => resultById.get(id) === true),
+          failedIds: ids.filter((id) => resultById.get(id) !== true),
+        };
+      })
     );
   }
 
