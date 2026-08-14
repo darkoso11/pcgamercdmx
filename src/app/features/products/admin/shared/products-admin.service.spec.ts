@@ -117,6 +117,90 @@ describe('ProductsAdminService catalog scopes', () => {
   });
 });
 
+describe('ProductsAdminService bulk product operations', () => {
+  const product = (id: string): Product => ({
+    _id: id,
+    title: id,
+    slug: id,
+    description: id,
+    category: 'componentes',
+    price: 100,
+    image: '',
+    images: [],
+    brandLogos: [],
+    stock: 10,
+    lowStockAlert: 3,
+    published: true,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+  });
+
+  function createService(): ProductsAdminService {
+    const service = new ProductsAdminService({ isEnabled: () => false } as any);
+    (service as any).mockProducts = [product('one'), product('two')];
+    return service;
+  }
+
+  it('updates every requested product and returns their successful ids', async () => {
+    const service = createService();
+
+    const result = await firstValueFrom(
+      service.bulkUpdateProducts(['one', 'two'], { published: false })
+    );
+
+    expect(result).toEqual({ successfulIds: ['one', 'two'], failedIds: [] });
+    expect((service as any).mockProducts.map((item: Product) => item.published)).toEqual([false, false]);
+  });
+
+  it('continues a bulk update after an item returns no saved product', async () => {
+    const service = createService();
+
+    const result = await firstValueFrom(
+      service.bulkUpdateProducts(['one', 'missing', 'two'], { published: false })
+    );
+
+    expect(result).toEqual({ successfulIds: ['one', 'two'], failedIds: ['missing'] });
+  });
+
+  it('aggregates successful and failed deletes without aborting the batch', async () => {
+    const service = createService();
+
+    const result = await firstValueFrom(
+      service.bulkDeleteProducts(['one', 'missing', 'two'])
+    );
+
+    expect(result).toEqual({ successfulIds: ['one', 'two'], failedIds: ['missing'] });
+  });
+
+  it('duplicates every selected product as an unpublished copy', async () => {
+    const service = createService();
+
+    const result = await firstValueFrom(service.bulkDuplicateProducts(['one', 'two']));
+    const copies = (service as any).mockProducts.slice(2) as Product[];
+
+    expect(result).toEqual({ successfulIds: ['one', 'two'], failedIds: [] });
+    expect(copies.map((item) => item.published)).toEqual([false, false]);
+    expect(copies.map((item) => item.title)).toEqual(['one (Copia)', 'two (Copia)']);
+    expect(new Set(copies.map((item) => item.slug)).size).toBe(2);
+  });
+
+  it('converts a synchronous item preparation error into a partial failure', async () => {
+    const service = createService();
+
+    const result = await firstValueFrom(service.bulkUpdateProducts(
+      ['one', 'two'],
+      (id) => {
+        if (id === 'two') {
+          throw new Error('Invalid update preparation');
+        }
+        return { published: false };
+      }
+    ));
+
+    expect(result).toEqual({ successfulIds: ['one'], failedIds: ['two'] });
+  });
+});
+
 describe('ProductsAdminService offer persistence', () => {
   function createDirectusService() {
     const directus = {
