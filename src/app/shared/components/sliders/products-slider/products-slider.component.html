@@ -1,4 +1,10 @@
-<div class="relative w-full">
+<div class="relative w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pink-400"
+     tabindex="0"
+     role="region"
+     aria-roledescription="carrusel"
+     aria-label="Ensambles destacados"
+     (keydown)="onCarouselKeydown($event)"
+     (pointerdown)="focusCarousel($event)">
   <div *ngIf="products.length === 0" class="text-center py-12">
     <div class="text-gray-400 text-lg">
       <i class="fas fa-search mb-4 text-3xl block"></i>
@@ -28,8 +34,10 @@
 
           <div class="package-card__media">
             <img
-              [src]="product.image"
+              [src]="optimizeImage(product.image, 320)"
               [alt]="product.title"
+              loading="lazy"
+              decoding="async"
               class="package-card__image"
               (error)="handleImageError($event)"
             />
@@ -37,8 +45,10 @@
             <div *ngIf="product.brandLogos?.length" class="package-card__logos">
               <img
                 *ngFor="let logo of product.brandLogos"
-                [src]="logo.src"
+                [src]="optimizeImage(logo.src, 96)"
                 [alt]="logo.alt"
+                loading="lazy"
+                decoding="async"
                 class="package-card__logo"
                 (error)="handleLogoError($event)"
               />
@@ -46,8 +56,12 @@
 
             <div *ngIf="product.powerCertificate" class="package-card__power">
               <img
-                [src]="product.powerCertificate"
+                [src]="optimizeImage(product.powerCertificate, 80)"
                 [alt]="getCertificationAlt(product)"
+                width="36"
+                height="38"
+                loading="lazy"
+                decoding="async"
                 (error)="handleLogoError($event)"
               />
             </div>
@@ -103,6 +117,8 @@
   </div>
 
   <button
+    type="button"
+    aria-label="Ver ensamble anterior"
     *ngIf="showArrows && canNavigatePrev()"
     (click)="prevProduct()"
     class="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition"
@@ -111,6 +127,8 @@
   </button>
 
   <button
+    type="button"
+    aria-label="Ver ensamble siguiente"
     *ngIf="showArrows && canNavigateNext()"
     (click)="nextProduct()"
     class="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full text-white z-10 hover:bg-pink-500/80 transition"

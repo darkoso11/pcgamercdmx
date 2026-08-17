@@ -44,6 +44,8 @@ interface Brand {
                           transition-all duration-300 cursor-pointer group">
                 <img [src]="brand.logo"
                      [alt]="brand.name"
+                     loading="lazy"
+                     decoding="async"
                      class="max-h-full max-w-full transition-all duration-300 
                             group-hover:scale-110 group-hover:filter group-hover:brightness-110"
                      (error)="handleImageError($event)" />
@@ -58,6 +60,8 @@ interface Brand {
                           transition-all duration-300 cursor-pointer group">
                 <img [src]="brand.logo"
                      [alt]="brand.name"
+                     loading="lazy"
+                     decoding="async"
                      class="max-h-full max-w-full transition-all duration-300 
                             group-hover:scale-110 group-hover:filter group-hover:brightness-110"
                      (error)="handleImageError($event)" />

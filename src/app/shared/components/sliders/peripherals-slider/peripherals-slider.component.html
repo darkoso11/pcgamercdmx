@@ -1,4 +1,10 @@
-<div class="peripherals-slider">
+<div class="peripherals-slider focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
+     tabindex="0"
+     role="region"
+     aria-roledescription="carrusel"
+     aria-label="Periféricos"
+     (keydown)="onCarouselKeydown($event)"
+     (pointerdown)="focusCarousel($event)">
   <!-- Categorías de periféricos -->
   <div *ngIf="showFilters" class="flex justify-center flex-wrap gap-4 mb-12">
     <button *ngFor="let category of categories; let i = index" 
@@ -21,8 +27,10 @@
                [class.last-peripheral]="last">
             <!-- Imagen -->
             <div class="relative h-44 overflow-hidden bg-pc-image-bg">
-              <img [src]="item.image" 
+              <img [src]="optimizeImage(item.image, 320)"
                    [alt]="item.name"
+                   loading="lazy"
+                   decoding="async"
                    class="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
                    (error)="handleImageError($event)" />
               
@@ -70,11 +78,13 @@
     </div>
     
     <!-- Controles de navegación -->
-    <button *ngIf="showArrows" (click)="scrollLeft()" 
+    <button *ngIf="showArrows" type="button" (click)="scrollLeft()"
+        aria-label="Ver periféricos anteriores"
         class="absolute -left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:flex items-center justify-center shadow-lg shadow-black/30 w-10 h-10">
       <i class="fas fa-chevron-left"></i>
     </button>
-    <button *ngIf="showArrows" (click)="scrollRight()" 
+    <button *ngIf="showArrows" type="button" (click)="scrollRight()"
+        aria-label="Ver periféricos siguientes"
         class="absolute -right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-red-500/70 p-3 rounded-full text-white z-10 transition-colors hidden md:flex items-center justify-center shadow-lg shadow-black/30 w-10 h-10">
       <i class="fas fa-chevron-right"></i>
     </button>

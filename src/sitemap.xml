@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://pcgamercdmx.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://pcgamercdmx.com/ensambles</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pcgamercdmx.com/productos/perifericos</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pcgamercdmx.com/productos/hardware-accesorios</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pcgamercdmx.com/cotiza-tu-pc</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pcgamercdmx.com/servicios</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pcgamercdmx.com/contacto</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pcgamercdmx.com/colaboradores</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pcgamercdmx.com/galeria</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pcgamercdmx.com/sorteos</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pcgamercdmx.com/blog</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pcgamercdmx.com/nosotros</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pcgamercdmx.com/politica-privacidad</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://pcgamercdmx.com/terminos</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+</urlset>

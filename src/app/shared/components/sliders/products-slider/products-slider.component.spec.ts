@@ -28,4 +28,18 @@ describe('ProductsSliderComponent', () => {
     expect(image.src).not.toContain('BR-938686_1.png');
     expect(image.onerror).toBeNull();
   });
+
+  it('moves only when an arrow key is handled by its own carousel', () => {
+    const component = new ProductsSliderComponent();
+    component.products = [{}, {}, {}];
+    component.cardsPerView = 1;
+    component.maxVisibleIndex = 2;
+    const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+    spyOn(event, 'preventDefault');
+
+    component.onCarouselKeydown(event);
+
+    expect(component.currentIndex).toBe(1);
+    expect(event.preventDefault).toHaveBeenCalled();
+  });
 });
