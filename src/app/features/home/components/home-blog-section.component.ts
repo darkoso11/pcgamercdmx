@@ -42,6 +42,8 @@ export interface HomeBlogPost {
                 *ngIf="hasWorkingImage(post); else coverFallback"
                 [src]="post.image"
                 [alt]="post.title"
+                loading="lazy"
+                decoding="async"
                 (error)="markImageFailed(post)"
                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />

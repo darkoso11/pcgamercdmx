@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
@@ -57,8 +57,7 @@ describe('HomeComponent', () => {
         {
           provide: ProductsService,
           useValue: {
-            getAssembledPCs: () => of([]),
-            getPeripherals: () => of([]),
+            getHomeSliderProducts: () => of({ assemblies: [], peripherals: [] }),
           },
         },
         {
@@ -99,21 +98,68 @@ describe('HomeComponent', () => {
     expect(notice.textContent).toContain('Gracias por tu paciencia');
   });
 
+  it('keeps slider ordering deterministic between prerender and hydration', () => {
+    spyOn(Math, 'random').and.returnValues(0, 0, 0, 0.99, 0.99, 0.99);
+    const items = [{ slug: 'one' }, { slug: 'two' }, { slug: 'three' }];
+
+    const serverOrder = (component as any).orderSliderItems(items);
+    const browserOrder = (component as any).orderSliderItems(items);
+
+    expect(browserOrder).toEqual(serverOrder);
+  });
+
+  it('keeps the above-the-fold assembly image stable instead of rotating the LCP', fakeAsync(() => {
+    const isolatedFixture = TestBed.createComponent(HomeComponent);
+    isolatedFixture.detectChanges();
+    const isolatedComponent = isolatedFixture.componentInstance;
+    const initialIndex = isolatedComponent.pcIndex;
+
+    tick(8_000);
+
+    expect(isolatedComponent.pcIndex).toBe(initialIndex);
+    isolatedFixture.destroy();
+  }));
+
+  it('prioritizes and reserves space for the above-the-fold assembly image', () => {
+    const images = Array.from(
+      fixture.nativeElement.querySelectorAll('.pc-ensamble-img')
+    ) as HTMLImageElement[];
+
+    expect(images.length).toBe(2);
+    for (const image of images) {
+      expect(image.getAttribute('fetchpriority')).toBe('high');
+      expect(image.getAttribute('loading')).toBe('eager');
+      expect(image.getAttribute('decoding')).toBe('sync');
+      expect(image.getAttribute('width')).toBe('1100');
+      expect(image.getAttribute('height')).toBe('1200');
+      expect(image.getAttribute('sizes')).toBe(
+        '(max-width: 767px) calc(100vw - 32px), 50vw'
+      );
+    }
+  });
+
   it('keeps the assembly slider empty when the backend returns no assemblies', () => {
     expect(component.carruselProducts).toEqual([]);
     expect(component.filteredCarruselProducts).toEqual([]);
   });
 
-  it('shows the most recent published Directus posts instead of sample posts', () => {
+  it('shows the most recent published Directus posts instead of sample posts', fakeAsync(() => {
+    blogService.listPublished.calls.reset();
+    const isolatedFixture = TestBed.createComponent(HomeComponent);
+    isolatedFixture.detectChanges();
+
+    tick(3_500);
+
     expect(blogService.listPublished).toHaveBeenCalledWith({ limit: 3 });
-    expect(component.latestPosts.map((post) => post.title)).toEqual([
+    expect(isolatedFixture.componentInstance.latestPosts.map((post) => post.title)).toEqual([
       'Entrada real más reciente',
       'Entrada real anterior',
     ]);
-    expect(component.latestPosts.map((post) => post.slug)).not.toContain(
+    expect(isolatedFixture.componentInstance.latestPosts.map((post) => post.slug)).not.toContain(
       'mejores-tarjetas-graficas-2024'
     );
-  });
+    isolatedFixture.destroy();
+  }));
 
   it('maps only the brand logos explicitly configured for the assembly', () => {
     const sliderItem = (component as any).toPackageSliderItem(

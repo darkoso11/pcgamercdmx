@@ -207,9 +207,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   latestPosts: HomeBlogPost[] = [];
 
-  // Variable para almacenar referencia al intervalo
-  private rotationIntervalId: ReturnType<typeof setInterval> | null = null;
-
   // Productos para el carrusel de ensambles
   carruselProducts: Product[] = [];
 
@@ -272,7 +269,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       title: 'Ensambles Personalizados',
       description:
         'Construimos la PC de tus sueños con los mejores componentes y la máxima calidad.',
-      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
+      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp',
       link: '/cotiza-tu-pc',
       ctaText: 'Personaliza tu PC',
       badgeText: 'POPULAR',
@@ -303,6 +300,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   upcomingEvents: HomeEvent[] = [];
   @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
   private homeContentSubscription?: Subscription;
+  private deferredContentTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private ngZone: NgZone,
@@ -327,26 +325,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.peripherals = this.shuffleItems(this.peripherals);
-    this.loadRandomAssemblies();
-    this.loadRandomPeripherals();
-    this.loadFeaturedCollaborators();
-    this.loadHomeContent();
-    this.loadLatestPosts();
+    this.peripherals = this.orderSliderItems(this.peripherals);
 
     // Encapsulamos las operaciones del navegador para evitar problemas con SSR
     if (typeof window !== 'undefined') {
+      this.deferredContentTimer = setTimeout(() => {
+        this.loadHomeSliderProducts();
+        this.loadFeaturedCollaborators();
+        this.loadHomeContent();
+        this.loadLatestPosts();
+      }, 3500);
+
       setTimeout(() => {
         this.startTypingWithObservable();
       }, 500);
-
-      // Añade la rotación de imágenes de PC
-      this.rotationIntervalId = setInterval(() => {
-        this.ngZone.run(() => {
-          this.pcIndex = (this.pcIndex + 1) % this.pcBuilds.length;
-          this.cdr.detectChanges();
-        });
-      }, 4000);
 
     }
   }
@@ -365,39 +357,27 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadRandomPeripherals(): void {
-    this.productsService.getPeripherals().subscribe({
-      next: (products) => {
-        const items = this.shuffleItems(products)
+  private loadHomeSliderProducts(): void {
+    this.productsService.getHomeSliderProducts().subscribe({
+      next: ({ assemblies, peripherals }) => {
+        const assemblyItems = this.orderSliderItems(assemblies)
+          .slice(0, 12)
+          .map((product, index) => this.toPackageSliderItem(product, index));
+        const peripheralItems = this.orderSliderItems(peripherals)
           .slice(0, 18)
           .map((product, index) => this.toPeripheralSliderItem(product, index));
 
-        if (items.length) {
-          this.peripherals = items;
-          this.cdr.detectChanges();
+        this.carruselProducts = assemblyItems;
+        this.filteredCarruselProducts = [...assemblyItems];
+        if (peripheralItems.length) {
+          this.peripherals = peripheralItems;
         }
-      },
-      error: () => {
-        this.peripherals = [];
-        this.cdr.detectChanges();
-      },
-    });
-  }
-
-  private loadRandomAssemblies(): void {
-    this.productsService.getAssembledPCs().subscribe({
-      next: (products) => {
-        const items = this.shuffleItems(products)
-          .slice(0, 12)
-          .map((product, index) => this.toPackageSliderItem(product, index));
-
-        this.carruselProducts = items;
-        this.filteredCarruselProducts = [...items];
         this.cdr.detectChanges();
       },
       error: () => {
         this.carruselProducts = [];
         this.filteredCarruselProducts = [];
+        this.peripherals = [];
         this.cdr.detectChanges();
       },
     });
@@ -444,8 +424,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private getPowerCertificateImage(certificate: string): string {
     return certificate === '80+ Bronze'
-      ? 'assets/img/certificaciones/80_Plus_Bronze.svg.png'
-      : 'assets/img/certificaciones/80plusgold.png';
+      ? 'assets/img/certificaciones/80_Plus_Bronze.svg-80.webp'
+      : 'assets/img/certificaciones/80plusgold-80.webp';
   }
 
   private loadFeaturedCollaborators(): void {
@@ -520,13 +500,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     return Math.round(((originalPrice - price) / originalPrice) * 100);
   }
 
-  private shuffleItems<T>(items: T[]): T[] {
-    const shuffled = [...items];
-    for (let index = shuffled.length - 1; index > 0; index--) {
-      const randomIndex = Math.floor(Math.random() * (index + 1));
-      [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
-    }
-    return shuffled;
+  private orderSliderItems<T>(items: T[]): T[] {
+    return [...items];
   }
 
 
@@ -584,10 +559,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.homeContentSubscription = undefined;
     }
 
-    if (this.rotationIntervalId) {
-      clearInterval(this.rotationIntervalId);
-      this.rotationIntervalId = null;
+    if (this.deferredContentTimer) {
+      clearTimeout(this.deferredContentTimer);
+      this.deferredContentTimer = undefined;
     }
+
   }
 
   // Velocidad de escritura en milisegundos
@@ -598,7 +574,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 'case001',
       title: 'CyberShadow V3',
-      imageUrl: 'assets/img/custom/IMG-20250208-WA0075.jpg',
+      imageUrl: 'assets/img/custom/IMG-20250208-WA0075.webp',
       description:
         'Gabinete con panel de vidrio templado, refrigeración líquida y luces RGB direccionables.',
       tags: ['RGB', 'Vidrio', 'Refrigeración Líquida'],
@@ -606,7 +582,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 'case002',
       title: 'Neon Pulse',
-      imageUrl: 'assets/img/custom/IMG-20250208-WA0059.jpg',
+      imageUrl: 'assets/img/custom/IMG-20250208-WA0059.webp',
       description:
         'Compacto pero potente, con sistema de iluminación personalizado y cable management optimizado.',
       tags: ['Compacto', 'RGB', 'Silencioso'],
@@ -614,7 +590,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 'case003',
       title: 'Arctic Frost',
-      imageUrl: 'assets/img/custom/IMG-20250208-WA0066.jpg',
+      imageUrl: 'assets/img/custom/IMG-20250208-WA0066.webp',
       description:
         'Diseño blanco minimalista con acentos LED azules y excelente flujo de aire.',
       tags: ['Blanco', 'Airflow', 'Minimalista'],
@@ -622,7 +598,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 'case004',
       title: 'Dragon Fire',
-      imageUrl: 'assets/img/custom/IMG-20250208-WA0071.jpg',
+      imageUrl: 'assets/img/custom/IMG-20250208-WA0071.webp',
       description:
         'Gabinete gaming agresivo con panel lateral de vidrio templado y soporte para múltiples radiadores.',
       tags: ['Gaming', 'RGB', 'ATX'],
@@ -630,7 +606,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 'case005',
       title: 'Phantom Stealth',
-      imageUrl: 'assets/img/custom/IMG-20250208-WA0072.jpg',
+      imageUrl: 'assets/img/custom/IMG-20250208-WA0072.webp',
       description:
         'Diseño negro mate con detalles sutiles y configuración silenciosa.',
       tags: ['Silencioso', 'Negro', 'Minimalista'],
@@ -638,7 +614,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 'case006',
       title: 'Quantum Flux',
-      imageUrl: 'assets/img/custom/IMG-20250208-WA0056.jpg',
+      imageUrl: 'assets/img/custom/IMG-20250208-WA0056.webp',
       description:
         'Gabinete premium con iluminación RGB integrada y soporte para hardware de alta gama.',
       tags: ['Premium', 'E-ATX', 'RGB'],
@@ -646,7 +622,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       id: 'case007',
       title: 'Vortex Core',
-      imageUrl: 'assets/img/custom/IMG-20250208-WA0078.jpg',
+      imageUrl: 'assets/img/custom/IMG-20250208-WA0078.webp',
       description:
         'Diseño compacto optimizado para máximo rendimiento térmico.',
       tags: ['Compacto', 'Airflow', 'Mini-ITX'],

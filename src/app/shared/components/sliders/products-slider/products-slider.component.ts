@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { optimizedImageUrl } from '../../../utils/image-url.util';
 
 @Component({
   selector: 'app-products-slider',
@@ -22,6 +23,7 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./products-slider.component.css'],
 })
 export class ProductsSliderComponent implements AfterViewInit, OnChanges {
+  readonly optimizeImage = optimizedImageUrl;
   @Input() products: any[] = [];
   @Input() showArrows: boolean = true;
   @Input() showMobileIndicator: boolean = true;
@@ -135,6 +137,17 @@ export class ProductsSliderComponent implements AfterViewInit, OnChanges {
     if (index >= 0 && index <= this.maxVisibleIndex) {
       this.currentIndex = index;
     }
+  }
+
+  onCarouselKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    event.preventDefault();
+    event.key === 'ArrowLeft' ? this.prevProduct() : this.nextProduct();
+  }
+
+  focusCarousel(event: Event): void {
+    (event.currentTarget as HTMLElement).focus({ preventScroll: true });
   }
 
   getSlideTransform(): number {

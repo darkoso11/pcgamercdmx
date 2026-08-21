@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /control-pcg-cdmx-2026/
+
+Sitemap: https://pcgamercdmx.com/sitemap.xml
