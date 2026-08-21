@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, OnDestroy, HostListener, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { optimizedImageUrl } from '../../../utils/image-url.util';
 
 @Component({
   selector: 'app-banners-slider',
@@ -10,6 +11,7 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./banners-slider.component.css']
 })
 export class BannersSliderComponent implements OnInit, OnDestroy {
+  readonly optimizeImage = optimizedImageUrl;
   @Input() banners: any[] = [];
   @Input() autoPlay: boolean = true;
   @Input() autoPlayDelay: number = 5000;
@@ -121,6 +123,18 @@ export class BannersSliderComponent implements OnInit, OnDestroy {
       this.currentIndex = index;
       this.updateTransform();
     }
+  }
+
+  onCarouselKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    event.preventDefault();
+    this.stopAutoPlay();
+    event.key === 'ArrowLeft' ? this.prev() : this.next();
+  }
+
+  focusCarousel(event: Event): void {
+    (event.currentTarget as HTMLElement).focus({ preventScroll: true });
   }
   
   isExternalLink(url: string): boolean {

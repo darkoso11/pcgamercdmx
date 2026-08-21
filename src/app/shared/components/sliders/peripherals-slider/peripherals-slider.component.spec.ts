@@ -24,4 +24,15 @@ describe('PeripheralsSliderComponent', () => {
 
     expect(component.filteredItems.map((item) => item.name)).toEqual(['Mouse disponible']);
   });
+
+  it('handles arrow keys locally and prevents page scrolling', () => {
+    spyOn(component, 'scrollRight');
+    const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
+    spyOn(event, 'preventDefault');
+
+    component.onCarouselKeydown(event);
+
+    expect(component.scrollRight).toHaveBeenCalled();
+    expect(event.preventDefault).toHaveBeenCalled();
+  });
 });

@@ -37,7 +37,7 @@
     <div class="flex-1 flex flex-col md:flex-row items-center justify-center z-10">
       <div class="flex flex-col items-center justify-center gap-1 w-full md:w-1/2 max-h-80 py-2 md:py-4">
         <div class="w-16 h-16 md:w-20 md:h-20 mx-auto z-30 relative -mt-6 md:mt-0">
-          <img src="assets/img/leon.png" alt="PC Gamer CDMX" class="w-full h-full object-contain" />
+          <img src="assets/img/leon-160.webp" alt="PC Gamer CDMX" width="160" height="160" class="w-full h-full object-contain" />
         </div>
 
         <h1 class="text-xl md:text-2xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
@@ -51,12 +51,12 @@
       </div>
 
       <a [routerLink]="pcBuilds[pcIndex].link" class="hero-assembly-stage hidden md:flex" aria-label="Ver paquete de ensamble">
-        <img [src]="pcBuilds[pcIndex].img" alt="PC gamer ensamblada" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
+        <img [src]="pcBuilds[pcIndex].img" srcset="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp 480w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-768.webp 768w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp 1100w" sizes="(max-width: 767px) calc(100vw - 32px), 50vw" alt="PC gamer ensamblada" width="1100" height="1200" loading="eager" decoding="sync" fetchpriority="high" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
       </a>
 
       <a [routerLink]="pcBuilds[pcIndex].link" class="flex flex-col items-center w-full md:hidden mt-2 mb-5 px-4" aria-label="Ver paquete de ensamble">
         <div class="w-full max-w-[420px] h-[42vh] min-h-[280px] max-h-[420px] flex items-end justify-center">
-          <img [src]="pcBuilds[pcIndex].img" alt="PC gamer ensamblada" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
+          <img [src]="pcBuilds[pcIndex].img" srcset="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp 480w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-768.webp 768w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp 1100w" sizes="(max-width: 767px) calc(100vw - 32px), 50vw" alt="PC gamer ensamblada" width="1100" height="1200" loading="eager" decoding="sync" fetchpriority="high" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
         </div>
       </a>
 
@@ -80,6 +80,7 @@
     </div>
   </section>
 
+  @defer (on viewport) {
   <section class="min-h-screen flex flex-col relative items-center justify-center py-16 bg-[#090b20]">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
@@ -162,4 +163,15 @@
   <app-home-blog-section [posts]="latestPosts"></app-home-blog-section>
 
   <app-home-project-request-section></app-home-project-request-section>
+  } @placeholder {
+    <section
+      data-home-deferred-placeholder
+      class="min-h-[70vh] flex items-center justify-center bg-[#090b20] px-4 text-center"
+    >
+      <div>
+        <h2 class="text-3xl font-bold text-white">Explora nuestros ensambles</h2>
+        <p class="mt-3 text-gray-300">Paquetes, periféricos y proyectos personalizados para tu próxima PC.</p>
+      </div>
+    </section>
+  }
 </div>

@@ -1,4 +1,11 @@
-<div class="relative">
+<div class="relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pink-400"
+     tabindex="0"
+     role="region"
+     aria-roledescription="carrusel"
+     aria-label="Banners promocionales"
+     (keydown)="onCarouselKeydown($event)"
+     (pointerdown)="focusCarousel($event)"
+     (focusin)="stopAutoPlay()">
   <!-- Banner Principal -->
   <div class="overflow-hidden rounded-xl touch-pan-x">
     <div class="relative flex transition-transform duration-700 ease-in-out will-change-transform" 
@@ -6,9 +13,11 @@
       <ng-container *ngFor="let banner of banners">
         <div class="min-w-full h-80 md:h-96 relative">
           <!-- Usamos la imagen del banner si existe, si no, usamos una imagen de Lorem Picsum -->
-          <img [src]="banner.imageUrl || 'https://picsum.photos/id/' + (240 + banner.id) + '/1200/600'" 
+          <img [src]="optimizeImage(banner.imageUrl || 'https://picsum.photos/id/' + (240 + banner.id) + '/1200/600', 768)"
                [attr.data-id]="banner.id"
                [alt]="banner.title"
+               loading="lazy"
+               decoding="async"
                class="w-full h-full object-cover"
                (error)="handleImageError($event)" />
           
@@ -36,7 +45,7 @@
           
           <!-- Efecto de esquina -->
           <div class="absolute top-0 right-0 w-16 h-16 overflow-hidden">
-            <div class="absolute transform rotate-45 bg-pc-pink text-white font-bold py-1 px-16 text-xs top-6 right-[-60px] shadow-lg">
+            <div class="absolute transform rotate-45 bg-pink-700 text-white font-bold py-1 px-16 text-xs top-6 right-[-60px] shadow-lg">
               {{ banner.badgeText }}
             </div>
           </div>
@@ -46,22 +55,27 @@
   </div>
   
   <!-- Navegación -->
-  <button *ngIf="showArrows" (click)="prev()" 
-          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-pc-pink/70 p-3 rounded-full text-white z-10 transition">
+  <button *ngIf="showArrows" type="button" (click)="prev()"
+          aria-label="Banner anterior"
+          class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-pc-pink/70 p-3 rounded-full text-white z-10 transition min-w-11 min-h-11">
     <i class="fas fa-chevron-left"></i>
   </button>
-  <button *ngIf="showArrows" (click)="next()" 
-          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-pc-pink/70 p-3 rounded-full text-white z-10 transition">
+  <button *ngIf="showArrows" type="button" (click)="next()"
+          aria-label="Banner siguiente"
+          class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-pc-pink/70 p-3 rounded-full text-white z-10 transition min-w-11 min-h-11">
     <i class="fas fa-chevron-right"></i>
   </button>
   
   <!-- Indicadores -->
   <div *ngIf="showIndicators" class="flex justify-center gap-3 mt-6">
     <ng-container *ngFor="let banner of banners; let i = index">
-      <button (click)="goToSlide(i)" 
-              [class.bg-pink-500]="i === currentIndex"
-              [class.bg-gray-500]="i !== currentIndex"
-              class="w-3 h-3 rounded-full transition-colors"></button>
+      <button type="button"
+              (click)="goToSlide(i)"
+              [attr.aria-label]="'Ir al banner ' + (i + 1)"
+              [attr.aria-current]="i === currentIndex ? 'true' : null"
+              class="w-11 h-11 rounded-full transition-colors flex items-center justify-center bg-transparent">
+        <span class="block w-3 h-3 rounded-full" [class.bg-pink-500]="i === currentIndex" [class.bg-gray-500]="i !== currentIndex"></span>
+      </button>
     </ng-container>
   </div>
 </div>

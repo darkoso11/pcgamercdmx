@@ -76,7 +76,7 @@ export const DEFAULT_HOME_CONTENT_SETTINGS: HomeContentSettings = {
       title: 'Ensambles Personalizados',
       description:
         'Construimos la PC de tus suenos con los mejores componentes y la maxima calidad.',
-      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
+      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp',
       link: '/cotiza-tu-pc',
       ctaText: 'Personaliza tu PC',
       badgeText: 'POPULAR',
@@ -116,7 +116,7 @@ export const DEFAULT_HOME_CONTENT_SETTINGS: HomeContentSettings = {
       title: 'Torneo de Valorant',
       description: 'Compite con los mejores jugadores de CDMX.',
       link: '/contacto',
-      ctaText: 'Mas informacion',
+      ctaText: 'Ver información de contacto',
       active: true,
     },
     {
