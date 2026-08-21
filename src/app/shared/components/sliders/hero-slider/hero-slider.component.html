@@ -1,4 +1,11 @@
-<div class="hero-slider relative">
+<div class="hero-slider relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pink-400"
+     tabindex="0"
+     role="region"
+     aria-roledescription="carrusel"
+     aria-label="Promociones destacadas"
+     (keydown)="onCarouselKeydown($event)"
+     (pointerdown)="focusCarousel($event)"
+     (focusin)="stopAutoplay()">
   <div class="slider-container">
     <ng-container *ngFor="let itemData of itemsWithLinkType; let i = index">
       <ng-container *ngIf="i === currentIndex">
@@ -7,7 +14,9 @@
            [href]="itemData.item.link" 
            target="_blank"
            class="slide-item">
-          <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
+          <img [src]="optimizeImage(itemData.item.src || itemData.item.image || itemData.item.imageUrl || '', 1200)"
+               loading="lazy"
+               decoding="async"
                [alt]="itemData.item.alt || 'Slider image'" 
                class="hero-slider-image rounded-lg border border-white shadow-neon object-cover bg-[#222] transition hover:scale-105" />
         </a>
@@ -16,14 +25,18 @@
         <a *ngIf="itemData.item.link && !itemData.isExternal" 
            [routerLink]="itemData.item.link"
            class="slide-item">
-          <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
+          <img [src]="optimizeImage(itemData.item.src || itemData.item.image || itemData.item.imageUrl || '', 1200)"
+               loading="lazy"
+               decoding="async"
                [alt]="itemData.item.alt || 'Slider image'"
                class="hero-slider-image rounded-lg border border-white shadow-neon object-cover bg-[#222] transition hover:scale-105" />
         </a>
         
         <!-- Si no hay enlace, solo muestra la imagen -->
         <div *ngIf="!itemData.item.link" class="slide-item">
-          <img [src]="itemData.item.src || itemData.item.image || itemData.item.imageUrl" 
+          <img [src]="optimizeImage(itemData.item.src || itemData.item.image || itemData.item.imageUrl || '', 1200)"
+               loading="lazy"
+               decoding="async"
                [alt]="itemData.item.alt || 'Slider image'"
                class="hero-slider-image rounded-lg border border-white shadow-neon object-cover bg-[#222]" />
         </div>
@@ -33,19 +46,24 @@
   
   <!-- Controles de navegación -->
   <div *ngIf="options.showArrows" class="slider-controls">
-    <button (click)="prev()" 
-            class="slider-arrow slider-arrow-prev">
+    <button type="button" (click)="prev()"
+            aria-label="Promoción anterior"
+            class="slider-arrow slider-arrow-prev min-w-11 min-h-11">
       <i class="fas fa-chevron-left"></i>
     </button>
-    <button (click)="next()" 
-            class="slider-arrow slider-arrow-next">
+    <button type="button" (click)="next()"
+            aria-label="Promoción siguiente"
+            class="slider-arrow slider-arrow-next min-w-11 min-h-11">
       <i class="fas fa-chevron-right"></i>
     </button>
   </div>
   
   <!-- Indicadores -->
   <div *ngIf="options.showIndicators" class="slider-indicators">
-    <button *ngFor="let item of items; let i = index" 
+    <button *ngFor="let item of items; let i = index"
+            type="button"
+            [attr.aria-label]="'Ir a promoción ' + (i + 1)"
+            [attr.aria-current]="i === currentIndex ? 'true' : null"
             [class.active]="i === currentIndex"
             (click)="goToSlide(i)"
             class="slider-indicator">

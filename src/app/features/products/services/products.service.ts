@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, shareReplay } from 'rxjs/operators';
 import { DirectusApiService } from '../../../core/services/directus-api.service';
 import {
   DirectusProductRecord,
@@ -69,6 +69,11 @@ export interface Product {
   specifications?: { [key: string]: string };
 }
 
+export interface HomeSliderProducts {
+  assemblies: AssembledPC[];
+  peripherals: PeripheralProduct[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -77,8 +82,57 @@ export class ProductsService {
   private readonly components = this.buildComponents();
   private readonly peripherals = this.buildPeripherals();
   private readonly accessories = this.buildAccessories();
+  private catalogProducts$?: Observable<CatalogProduct[]>;
+  private homeSliderProducts$?: Observable<HomeSliderProducts>;
 
   constructor(private readonly directus: DirectusApiService) {}
+
+  getHomeSliderProducts(): Observable<HomeSliderProducts> {
+    const fallbackProducts = this.getAllCatalogProducts().filter((product) =>
+      product.category === ProductCategory.ASSEMBLED ||
+      product.category === ProductCategory.PERIPHERAL
+    );
+
+    if (!this.directus.isEnabled('catalog')) {
+      return of(this.groupHomeSliderProducts(fallbackProducts));
+    }
+
+    if (!this.homeSliderProducts$) {
+      this.homeSliderProducts$ = forkJoin({
+        products: this.directus.readItems<DirectusProductRecord>('pc_products', {
+          'filter[published][_eq]': true,
+          'filter[category][_in]': 'assembled,peripheral',
+          fields: [
+            'id', 'title', 'slug', 'description', 'category', 'subcategory',
+            'price', 'discounted_price', 'image', 'specifications', 'brand_logos',
+            'stock', 'low_stock_alert', 'featured', 'sort',
+          ].join(','),
+          sort: 'sort,title',
+          limit: 1000,
+        }),
+        offers: this.directus.readItems<Record<string, unknown>>('pc_offers', {
+          fields: '*',
+          limit: 1000,
+        }).pipe(catchError(() => of({ data: [] }))),
+      }).pipe(
+        map(({ products, offers }) => {
+          const catalog = products.data.map(mapDirectusProductToCatalogProduct);
+          const effective = this.applyEffectiveOffers(
+            catalog.length ? catalog : fallbackProducts,
+            offers.data.map((record) => this.mapPublicOffer(record))
+          );
+          return this.groupHomeSliderProducts(effective);
+        }),
+        catchError(() => {
+          this.homeSliderProducts$ = undefined;
+          return of(this.groupHomeSliderProducts(fallbackProducts));
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+
+    return this.homeSliderProducts$;
+  }
 
   getAssembledPCs(filters?: FilterCriteria): Observable<AssembledPC[]> {
     return this.getCatalogProducts({
@@ -514,7 +568,11 @@ export class ProductsService {
       return of(fallback);
     }
 
-    return forkJoin({
+    if (this.catalogProducts$) {
+      return this.catalogProducts$;
+    }
+
+    this.catalogProducts$ = forkJoin({
       products: this.directus.readItems<DirectusProductRecord>('pc_products', {
           'filter[published][_eq]': true,
           fields: '*',
@@ -532,8 +590,25 @@ export class ProductsService {
           const offers = offerResponse.data.map((record) => this.mapPublicOffer(record));
           return products.length ? this.applyEffectiveOffers(products, offers) : fallback;
         }),
-        catchError(() => of(fallback))
+        catchError(() => {
+          this.catalogProducts$ = undefined;
+          return of(fallback);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
       );
+
+    return this.catalogProducts$;
+  }
+
+  private groupHomeSliderProducts(products: CatalogProduct[]): HomeSliderProducts {
+    return {
+      assemblies: products.filter(
+        (product): product is AssembledPC => product.category === ProductCategory.ASSEMBLED
+      ),
+      peripherals: products.filter(
+        (product): product is PeripheralProduct => product.category === ProductCategory.PERIPHERAL
+      ),
+    };
   }
 
   private applyEffectiveOffers(products: CatalogProduct[], offers: Offer[]): CatalogProduct[] {

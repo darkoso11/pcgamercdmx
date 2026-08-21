@@ -4,23 +4,23 @@ import { adminRoute } from './features/admin/admin-route.config';
 export const serverRoutes: ServerRoute[] = [
   {
     path: 'ensambles/:slug',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: 'colaboradores/:slug',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: 'productos/:slug',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: 'blog/:slug',
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: adminRoute('**'),
-    renderMode: RenderMode.Server
+    renderMode: RenderMode.Client
   },
   {
     path: '**',

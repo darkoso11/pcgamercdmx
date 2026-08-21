@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -14,6 +15,7 @@ await access(indexPath);
 
 const app = express();
 app.disable('x-powered-by');
+app.use(compression());
 app.use(express.static(browserRoot, { index: false }));
 app.use((request, response) => {
   if (request.method !== 'GET' || !request.accepts('html')) {

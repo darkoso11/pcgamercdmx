@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { optimizedImageUrl } from '../../../utils/image-url.util';
 
 interface Category {
   name: string;
@@ -15,6 +16,7 @@ interface Category {
   styleUrls: ['./peripherals-slider.component.css']
 })
 export class PeripheralsSliderComponent implements OnInit, AfterViewInit {
+  readonly optimizeImage = optimizedImageUrl;
   @Input() items: any[] = [];
   @Input() categories: Category[] = [];
   @Input() showFilters: boolean = true;
@@ -77,6 +79,17 @@ export class PeripheralsSliderComponent implements OnInit, AfterViewInit {
       const scrollStep = this.scrollStep * 2;
       this.scrollPosition = Math.min(maxScroll, this.scrollPosition + scrollStep);
     }
+  }
+
+  onCarouselKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    event.preventDefault();
+    event.key === 'ArrowLeft' ? this.scrollLeft() : this.scrollRight();
+  }
+
+  focusCarousel(event: Event): void {
+    (event.currentTarget as HTMLElement).focus({ preventScroll: true });
   }
   
   getMaxScroll(): number {

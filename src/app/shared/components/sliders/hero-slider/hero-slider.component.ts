@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDe
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SliderItem, SliderOptions } from '../../../models/slider.model';
+import { optimizedImageUrl } from '../../../utils/image-url.util';
 
 @Component({
   selector: 'app-hero-slider',
@@ -11,6 +12,7 @@ import { SliderItem, SliderOptions } from '../../../models/slider.model';
   styleUrls: ['./hero-slider.component.css']
 })
 export class HeroSliderComponent implements OnInit, OnDestroy, OnChanges {
+  readonly optimizeImage = optimizedImageUrl;
   @Input() items: SliderItem[] = [];
   @Input() options: SliderOptions = {
     autoplay: true,
@@ -109,5 +111,17 @@ export class HeroSliderComponent implements OnInit, OnDestroy, OnChanges {
       this.currentIndex = index;
       this.cdr.detectChanges();
     }
+  }
+
+  onCarouselKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+    event.preventDefault();
+    this.stopAutoplay();
+    event.key === 'ArrowLeft' ? this.prev() : this.next();
+  }
+
+  focusCarousel(event: Event): void {
+    (event.currentTarget as HTMLElement).focus({ preventScroll: true });
   }
 }
