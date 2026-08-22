@@ -66,6 +66,20 @@ riesgo funcional. No se rediseñarán iconos ni controles.
 - No se aceptarán regresiones de contenido, rutas, teclado, diseño adaptable,
   accesibilidad o SEO.
 
+## Flujo de promoción
+
+Todos los cambios se desarrollarán y confirmarán únicamente en
+`mejora-rendimiento-SEO-carga`. La promoción debe respetar este orden, sin saltos:
+
+1. Pull request de `mejora-rendimiento-SEO-carga` hacia `dev`.
+2. Pruebas automáticas e integración en `dev`.
+3. Pull request de `dev` hacia `test`.
+4. Pruebas funcionales, visuales y PageSpeed sobre el despliegue de `test`.
+5. Pull request de `test` hacia `main` solamente después de aprobar las pruebas.
+
+No se crearán commits ni pull requests directos desde la rama de trabajo hacia
+`test` o `main`.
+
 ## Fuera de alcance
 
 - Rediseño de la página o cambio de identidad visual.
