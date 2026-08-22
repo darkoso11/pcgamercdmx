@@ -4,13 +4,13 @@ version: 1.0
 date_created: 2026-08-22
 last_updated: 2026-08-22
 owner: PC Gamer CDMX
-status: 'In progress'
+status: 'Completed'
 tags: [performance, typography, accessibility, angular, tdd]
 ---
 
 # Introduction
 
-![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
 This plan restores the previously approved Orbitron display typography from a
 local WOFF2 asset while preserving the current layout and mobile loading behavior.
@@ -34,8 +34,8 @@ local WOFF2 asset while preserving the current layout and mobile loading behavio
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Add a Playwright assertion that the local Orbitron WOFF2 URL returns successfully and is used by the home display heading. | | |
-| TASK-002 | Run the focused browser test and record the expected missing-font failure. | | |
+| TASK-001 | Add a Playwright assertion that the local Orbitron WOFF2 URL returns successfully and is used by the home display heading. | ✅ | 2026-08-22 |
+| TASK-002 | Run the focused browser test and record the expected missing-font failure. | ✅ | 2026-08-22 |
 
 ### Implementation Phase 2
 
@@ -43,9 +43,9 @@ local WOFF2 asset while preserving the current layout and mobile loading behavio
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-003 | Add the official Latin Orbitron WOFF2 asset under `src/assets/fonts/`. | | |
-| TASK-004 | Add one global `@font-face` declaration in `src/styles.css` with weights 400-900 and `font-display: swap`. | | |
-| TASK-005 | Verify existing component font stacks resolve to the locally loaded Orbitron face without layout edits. | | |
+| TASK-003 | Add the official Latin Orbitron WOFF2 asset under `src/assets/fonts/`. | ✅ | 2026-08-22 |
+| TASK-004 | Add one global `@font-face` declaration in `src/styles.css` with weights 400-900 and `font-display: swap`. | ✅ | 2026-08-22 |
+| TASK-005 | Verify existing component font stacks resolve to the locally loaded Orbitron face without layout edits. | ✅ | 2026-08-22 |
 
 ### Implementation Phase 3
 
@@ -53,10 +53,10 @@ local WOFF2 asset while preserving the current layout and mobile loading behavio
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-006 | Run the focused browser test, full Angular suite, production build, and home quality suite. | | |
-| TASK-007 | Capture a mobile screenshot and verify heading and navigation typography visually. | | |
-| TASK-008 | Run local mobile Lighthouse and confirm no category or LCP regression attributable to the font. | | |
-| TASK-009 | Mark this plan Completed and commit implementation only after every required check passes. | | |
+| TASK-006 | Run the focused browser test, full Angular suite, production build, and home quality suite. | ✅ | 2026-08-22 |
+| TASK-007 | Capture a mobile screenshot and verify heading and navigation typography visually. | ✅ | 2026-08-22 |
+| TASK-008 | Run local mobile Lighthouse and confirm no category or LCP regression attributable to the font. | ✅ | 2026-08-22 |
+| TASK-009 | Mark this plan Completed and commit implementation only after every required check passes. | ✅ | 2026-08-22 |
 
 ## 3. Alternatives
 
@@ -74,8 +74,9 @@ local WOFF2 asset while preserving the current layout and mobile loading behavio
 
 - **FILE-001**: `e2e/home-quality.spec.ts` for regression coverage.
 - **FILE-002**: `src/assets/fonts/orbitron-latin.woff2` for the local font asset.
-- **FILE-003**: `src/styles.css` for the global `@font-face` declaration.
-- **FILE-004**: `plan/refactor-local-orbitron-font-1.md` for execution status.
+- **FILE-003**: `src/assets/fonts/OFL-Orbitron.txt` for the required font license notice.
+- **FILE-004**: `src/styles.css` for the global `@font-face` declaration.
+- **FILE-005**: `plan/refactor-local-orbitron-font-1.md` for execution status.
 
 ## 6. Testing
 
