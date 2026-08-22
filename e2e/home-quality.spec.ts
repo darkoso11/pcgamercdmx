@@ -37,6 +37,27 @@ test('initial HTML preloads the LCP image without blocking on third-party styles
   expect(html).not.toContain('fonts.googleapis.com/icon?family=Material+Icons');
 });
 
+test('home loads the Orbitron display font from a local WOFF2 asset', async ({ page, request }) => {
+  const fontResponse = await request.get('/assets/fonts/orbitron-latin.woff2');
+
+  expect(fontResponse.ok()).toBe(true);
+  expect(fontResponse.headers()['content-type']).toMatch(/font\/woff2|application\/font-woff2/);
+
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.evaluate(() => document.fonts.ready);
+
+  await expect(page.locator('app-home h1')).toHaveCSS('font-family', /Orbitron/);
+  const fontRequests = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .filter((url) => url.includes('font'))
+  );
+
+  expect(fontRequests).toContainEqual(expect.stringContaining('/assets/fonts/orbitron-latin.woff2'));
+  expect(fontRequests.some((url) => url.includes('fonts.gstatic.com'))).toBe(false);
+});
+
 test('keyboard arrows control only the focused carousel', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/', { waitUntil: 'networkidle' });
