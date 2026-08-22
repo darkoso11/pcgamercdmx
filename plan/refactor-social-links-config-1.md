@@ -4,13 +4,13 @@ version: 1.0
 date_created: 2026-08-22
 last_updated: 2026-08-22
 owner: PC Gamer CDMX
-status: 'In progress'
+status: 'Completed'
 tags: [bug, social-links, documentation]
 ---
 
 # Introduction
 
-![Status: In progress](https://img.shields.io/badge/status-In%20progress-yellow)
+![Status: Completed](https://img.shields.io/badge/status-Completed-brightgreen)
 
 Correct the Facebook, Instagram, and TikTok URLs exposed through the central business configuration, and keep the contact documentation consistent.
 
@@ -32,8 +32,8 @@ Correct the Facebook, Instagram, and TikTok URLs exposed through the central bus
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-001 | Create `src/app/shared/config/business-info.spec.ts` with exact assertions for all three approved URLs. | | |
-| TASK-002 | Run the focused test and confirm it fails because the current URLs differ. | | |
+| TASK-001 | Create `src/app/shared/config/business-info.spec.ts` with exact assertions for all three approved URLs. | ✅ | 2026-08-22 |
+| TASK-002 | Run the focused test and confirm it fails because the current URLs differ. | ✅ | 2026-08-22 |
 
 ### Implementation Phase 2
 
@@ -41,9 +41,9 @@ Correct the Facebook, Instagram, and TikTok URLs exposed through the central bus
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-003 | Update only the Facebook, Instagram, and TikTok properties in `src/app/shared/config/business-info.ts`. | | |
-| TASK-004 | Update only the corresponding entries in `docs/company_contact_info.md`. | | |
-| TASK-005 | Run the focused test, relevant test suite, production build, URL search, and `git diff --check`. | | |
+| TASK-003 | Update only the Facebook, Instagram, and TikTok properties in `src/app/shared/config/business-info.ts`. | ✅ | 2026-08-22 |
+| TASK-004 | Update only the corresponding entries in `docs/company_contact_info.md`. | ✅ | 2026-08-22 |
+| TASK-005 | Run the focused test, relevant test suite, production build, URL search, and `git diff --check`. | ✅ | 2026-08-22 |
 
 ## 3. Alternatives
 

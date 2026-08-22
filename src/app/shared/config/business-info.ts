@@ -35,9 +35,9 @@ export const BUSINESS_INFO = {
     },
   ],
   social: {
-    facebook: 'https://facebook.com/pcgamercdmx',
-    instagram: 'https://instagram.com/pcgamercdmx',
-    tiktok: 'https://tiktok.com/@pcgamercdmx',
+    facebook: 'https://www.facebook.com/pcgamerciudadmexico',
+    instagram: 'https://www.instagram.com/pcgamer_cdmx/',
+    tiktok: 'https://www.tiktok.com/@pcgamercdmx',
     youtube: 'https://youtube.com/@pcgamercdmx',
     discord: 'https://discord.gg/pcgamercdmx',
     facebookGroup: 'https://facebook.com/groups/pcgamercdmx',
