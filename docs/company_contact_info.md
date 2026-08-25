@@ -70,9 +70,9 @@ https://www.google.com/maps?q=Insurgentes%20Sur%20300%20local%205%2C%20Colonia%2
 
 ## Redes sociales
 
-- Facebook: https://facebook.com/pcgamercdmx
-- Instagram: https://instagram.com/pcgamercdmx
-- TikTok: https://tiktok.com/@pcgamercdmx
+- Facebook: https://www.facebook.com/pcgamerciudadmexico
+- Instagram: https://www.instagram.com/pcgamer_cdmx/
+- TikTok: https://www.tiktok.com/@pcgamercdmx
 - YouTube: https://youtube.com/@pcgamercdmx
 - Discord: https://discord.gg/pcgamercdmx
 - Grupo de Facebook: https://facebook.com/groups/pcgamercdmx
