@@ -15,7 +15,7 @@ test('assembly detail keeps power certification in one accessible place', async 
 
   const certification = sourceCard.locator('.spec-certification-image');
   await expect(certification).toBeVisible();
-  await expect(certification).toHaveAttribute('alt', '80 Plus Gold · 750W');
+  await expect(certification).toHaveAttribute('alt', '80+ Gold · 750W');
   await expect(certification).toHaveAttribute('loading', 'lazy');
   await expect(certification).toHaveAttribute('decoding', 'async');
   await expect(certification).toHaveAttribute('width', '42');
