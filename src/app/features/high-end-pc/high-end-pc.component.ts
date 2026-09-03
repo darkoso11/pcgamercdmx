@@ -15,6 +15,7 @@ import { take } from 'rxjs/operators';
 import { SeoService, SeoStructuredData } from '../../core/services/seo.service';
 import { AssembledPC } from '../../shared/models';
 import { ProductsService } from '../products/services/products.service';
+import { HIGH_END_PC_SEO } from './high-end-pc.seo';
 
 interface LandingSpec {
   label: string;
@@ -232,7 +233,7 @@ export class HighEndPcComponent implements OnInit {
   }
 
   private updateSeo(products: AssembledPC[]): void {
-    const canonical = 'https://pcgamercdmx.com/pc-gamer-gama-alta-cdmx';
+    const canonical = HIGH_END_PC_SEO.canonicalUrl;
     const productItems = products.map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
@@ -287,15 +288,7 @@ export class HighEndPcComponent implements OnInit {
       },
     ];
 
-    this.seo.update({
-      title: 'PC Gamer Gama Alta en CDMX | PC Gamer CDMX',
-      description: 'Cotiza una PC Gamer gama alta en CDMX para jugar en 4K, competir, hacer streaming o crear contenido con componentes de alto rendimiento.',
-      keywords: 'PC Gamer gama alta CDMX, PC Gamer 4K, computadora gamer gama alta, ensambles PC Gamer CDMX, cotizar PC Gamer',
-      image: 'https://cms.test.pcgamercdmx.com/assets/78fbe960-b0aa-43cd-93ab-04cbcf804ca2',
-      url: canonical,
-      type: 'website',
-      structuredData,
-    });
+    this.seo.updatePageStructuredData(structuredData);
   }
 
   private absoluteUrl(value: string): string {

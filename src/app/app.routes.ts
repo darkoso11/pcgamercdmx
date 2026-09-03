@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './features/admin/services/auth.guard';
 import { adminRoute } from './features/admin/admin-route.config';
+import { HIGH_END_PC_SEO } from './features/high-end-pc/high-end-pc.seo';
 
 export const routes: Routes = [
   {
@@ -16,11 +17,11 @@ export const routes: Routes = [
   {
     path: 'pc-gamer-gama-alta-cdmx',
     loadComponent: () => import('./features/high-end-pc/high-end-pc.component').then(m => m.HighEndPcComponent),
-    title: 'PC Gamer Gama Alta en CDMX | PC Gamer CDMX',
+    title: HIGH_END_PC_SEO.title,
     data: {
-      description: 'Cotiza una PC Gamer gama alta en CDMX para jugar en 4K, competir, hacer streaming o crear contenido con componentes de alto rendimiento.',
-      keywords: 'PC Gamer gama alta CDMX, PC Gamer 4K, computadora gamer gama alta, ensambles PC Gamer CDMX, cotizar PC Gamer',
-      image: 'https://cms.test.pcgamercdmx.com/assets/78fbe960-b0aa-43cd-93ab-04cbcf804ca2'
+      description: HIGH_END_PC_SEO.description,
+      keywords: HIGH_END_PC_SEO.keywords,
+      image: HIGH_END_PC_SEO.image
     }
   },
   {

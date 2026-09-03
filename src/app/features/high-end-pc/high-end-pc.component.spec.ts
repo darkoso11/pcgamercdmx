@@ -65,8 +65,9 @@ describe('HighEndPcComponent', () => {
       'sniker', 'shark', 'cpsula', 'robot',
     ]);
 
-    const seoConfig = seo.update.calls.mostRecent().args[0];
-    const schemas = seoConfig.structuredData;
+    expect(seo.update).not.toHaveBeenCalled();
+    expect(seo.updatePageStructuredData).toHaveBeenCalledTimes(1);
+    const schemas = seo.updatePageStructuredData.calls.mostRecent().args[0];
     const itemList = schemas.find((item: any) => item.data['@type'] === 'ItemList');
     expect(itemList.data.itemListElement.length).toBe(4);
     expect(JSON.stringify(itemList.data)).not.toContain('HYPERION');
@@ -131,7 +132,7 @@ describe('HighEndPcComponent', () => {
       providers: [
         provideRouter([]),
         { provide: ProductsService, useValue: products },
-        { provide: SeoService, useValue: { update: jasmine.createSpy('update') } },
+        { provide: SeoService, useValue: { updatePageStructuredData: jasmine.createSpy('updatePageStructuredData') } },
       ],
     }).compileComponents();
 
@@ -174,7 +175,7 @@ describe('HighEndPcComponent', () => {
       providers: [
         provideRouter([]),
         { provide: ProductsService, useValue: products },
-        { provide: SeoService, useValue: { update: jasmine.createSpy('update') } },
+        { provide: SeoService, useValue: { updatePageStructuredData: jasmine.createSpy('updatePageStructuredData') } },
       ],
     }).compileComponents();
 
@@ -215,7 +216,7 @@ describe('HighEndPcComponent', () => {
       providers: [
         provideRouter([]),
         { provide: ProductsService, useValue: products },
-        { provide: SeoService, useValue: { update: jasmine.createSpy('update') } },
+        { provide: SeoService, useValue: { updatePageStructuredData: jasmine.createSpy('updatePageStructuredData') } },
       ],
     }).compileComponents();
 
@@ -249,7 +250,7 @@ describe('HighEndPcComponent', () => {
       providers: [
         provideRouter([]),
         { provide: ProductsService, useValue: products },
-        { provide: SeoService, useValue: { update: jasmine.createSpy('update') } },
+        { provide: SeoService, useValue: { updatePageStructuredData: jasmine.createSpy('updatePageStructuredData') } },
       ],
     }).compileComponents();
 
