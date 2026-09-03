@@ -1,4 +1,5 @@
 /ensambles
+/pc-gamer-gama-alta-cdmx
 /productos
 /productos/hardware-accesorios
 /productos/perifericos
