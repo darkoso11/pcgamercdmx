@@ -12,9 +12,15 @@ export interface SeoConfig {
   url?: string;
   type?: 'website' | 'article' | 'product';
   noIndex?: boolean;
+  structuredData?: SeoStructuredData[];
 }
 
-const DEFAULT_SEO: Required<Omit<SeoConfig, 'noIndex'>> = {
+export interface SeoStructuredData {
+  id: string;
+  data: Record<string, unknown>;
+}
+
+const DEFAULT_SEO: Required<Omit<SeoConfig, 'noIndex' | 'structuredData'>> = {
   title: 'PC Gamer CDMX | Ensambles, componentes y PCs gamer en Ciudad de Mexico',
   description:
     'PC Gamer CDMX ensambla PCs gamer a medida, paquetes listos, perifericos, componentes y soporte tecnico especializado en Ciudad de Mexico.',
@@ -67,6 +73,19 @@ export class SeoService {
 
     this.setCanonical(absoluteUrl);
     this.setStructuredData();
+    if (config.structuredData !== undefined) {
+      this.setPageStructuredData(config.structuredData);
+    }
+  }
+
+  clearPageStructuredData(): void {
+    this.document.head
+      .querySelectorAll('script[data-seo-schema="page"]')
+      .forEach((script) => script.remove());
+  }
+
+  updatePageStructuredData(items: SeoStructuredData[]): void {
+    this.setPageStructuredData(items);
   }
 
   private setCanonical(url: string): void {
@@ -109,6 +128,19 @@ export class SeoService {
         BUSINESS_INFO.social.tiktok,
         BUSINESS_INFO.social.youtube,
       ],
+    });
+  }
+
+  private setPageStructuredData(items: SeoStructuredData[]): void {
+    this.clearPageStructuredData();
+
+    items.forEach(({ id, data }) => {
+      const script = this.document.createElement('script');
+      script.id = id;
+      script.type = 'application/ld+json';
+      script.setAttribute('data-seo-schema', 'page');
+      script.text = JSON.stringify(data);
+      this.document.head.appendChild(script);
     });
   }
 

@@ -16,7 +16,9 @@ await access(indexPath);
 const app = express();
 app.disable('x-powered-by');
 app.use(compression());
-app.use(express.static(browserRoot, { index: false }));
+// Serve each prerendered route's own index.html before falling back to the SPA shell.
+// This preserves SSR content and TransferState for direct links and remote previews.
+app.use(express.static(browserRoot, { index: 'index.html' }));
 app.use((request, response) => {
   if (request.method !== 'GET' || !request.accepts('html')) {
     response.sendStatus(404);

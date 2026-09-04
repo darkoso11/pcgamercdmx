@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './features/admin/services/auth.guard';
 import { adminRoute } from './features/admin/admin-route.config';
+import { HIGH_END_PC_SEO } from './features/high-end-pc/high-end-pc.seo';
 
 export const routes: Routes = [
   {
@@ -11,6 +12,16 @@ export const routes: Routes = [
       description: 'Compra o cotiza tu PC gamer en CDMX: ensambles personalizados, paquetes listos, perifericos, componentes y soporte tecnico especializado.',
       keywords: 'pc gamer cdmx, ensambles pc gamer, computadoras gamer cdmx, cotizar pc gamer, perifericos gamer',
       image: '/assets/img/leon.png'
+    }
+  },
+  {
+    path: 'pc-gamer-gama-alta-cdmx',
+    loadComponent: () => import('./features/high-end-pc/high-end-pc.component').then(m => m.HighEndPcComponent),
+    title: HIGH_END_PC_SEO.title,
+    data: {
+      description: HIGH_END_PC_SEO.description,
+      keywords: HIGH_END_PC_SEO.keywords,
+      image: HIGH_END_PC_SEO.image
     }
   },
   {
