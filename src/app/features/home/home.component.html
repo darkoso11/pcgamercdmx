@@ -96,10 +96,13 @@
       <app-products-slider [products]="filteredCarruselProducts" [showArrows]="true" [showMobileIndicator]="true" [wasFiltered]="wasFiltered" (filterChange)="onCarouselReset()"></app-products-slider>
     </div>
 
-    <div class="text-center mt-12">
+    <div class="flex flex-wrap justify-center gap-3 text-center mt-12">
       <a routerLink="/ensambles" class="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-3 px-8 rounded-lg font-bold hover:from-pink-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-pink-500/30">
         <i class="fas fa-cogs mr-2"></i>
         Ver todos los paquetes
+      </a>
+      <a routerLink="/pc-gamer-gama-alta-cdmx" class="border border-cyan-300/50 bg-cyan-300/10 text-cyan-100 py-3 px-8 rounded-lg font-bold hover:bg-cyan-300/20 hover:border-cyan-200 transition-all">
+        Explorar PC Gamer gama alta
       </a>
     </div>
   </section>

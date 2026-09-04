@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
@@ -27,7 +27,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.updateFooterVisibility(this.router.url);
     this.updateSeo();
     this.sub = this.router.events.subscribe((ev) => {
-      if (ev instanceof NavigationEnd) {
+      if (ev instanceof NavigationStart) {
+        this.seoService.clearPageStructuredData();
+      } else if (ev instanceof NavigationEnd) {
         this.updateFooterVisibility(ev.urlAfterRedirects);
         this.updateSeo();
       }

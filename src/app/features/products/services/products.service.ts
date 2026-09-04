@@ -600,6 +600,18 @@ export class ProductsService {
     return this.catalogProducts$;
   }
 
+  getAssembledPCsBySlugs(slugs: string[]): Observable<AssembledPC[]> {
+    const requestedOrder = new Map(slugs.map((slug, index) => [slug, index]));
+
+    return this.getAssembledPCs().pipe(
+      map((products) => products
+        .filter((product) => requestedOrder.has(product.slug))
+        .sort((left, right) =>
+          requestedOrder.get(left.slug)! - requestedOrder.get(right.slug)!
+        ))
+    );
+  }
+
   private groupHomeSliderProducts(products: CatalogProduct[]): HomeSliderProducts {
     return {
       assemblies: products.filter(
