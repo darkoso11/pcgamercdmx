@@ -54,7 +54,7 @@ test('SPA navigation keeps landing schemas and clears them when leaving', async 
   await expect(page).toHaveURL(/\/pc-gamer-gama-alta-cdmx$/);
   await expect(page.locator('script[data-seo-schema="page"]')).toHaveCount(3);
 
-  await page.locator('a[href="/"]').first().click();
+  await page.locator('a[href="/"]:visible').first().click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator('script[data-seo-schema="page"]')).toHaveCount(0);
 });
