@@ -94,6 +94,49 @@ h2 {
   text-shadow: 0 0 16px rgba(34, 211, 238, .42);
 }
 
+.assembly-card__description--collapsed {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.assembly-card__description-action {
+  min-height: 2rem;
+  padding-top: .35rem;
+}
+
+.assembly-card__description-toggle {
+  border: 0;
+  padding: .2rem 0;
+  color: #68e8ff;
+  background: transparent;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.assembly-card__description-toggle:hover,
+.assembly-card__description-toggle:focus-visible {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: .25rem;
+}
+
+.assembly-card__description-toggle:focus-visible {
+  outline: 2px solid #68e8ff;
+  outline-offset: 3px;
+}
+
+@media (min-width: 1024px) {
+  .assembly-card__description-region {
+    min-height: 9.5rem;
+  }
+}
+
 .hero__proof li::before {
   margin-right: .5rem;
   color: #e57aff;

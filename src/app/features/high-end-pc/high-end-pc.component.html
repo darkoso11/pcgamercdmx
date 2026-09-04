@@ -32,9 +32,9 @@
       <p class="catalog__status mb-8 bg-cyan-300/5 p-4 text-slate-300" role="status">El catálogo activo no está disponible por el momento. Puedes revisar las fichas especiales o hablar con un asesor.</p>
     }
 
-    <div class="assembly-grid grid items-start gap-6 lg:grid-cols-2">
-      @for (card of cards; track card.title) {
-        <article class="assembly-card relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-indigo-300/40" data-assembly-card data-card-layout="vertical" [attr.data-editorial-card]="card.source === 'editorial' ? '' : null">
+    <div class="assembly-grid grid auto-rows-fr items-stretch gap-6 lg:grid-cols-2">
+      @for (card of cards; track card.title; let cardIndex = $index) {
+        <article class="assembly-card relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-indigo-300/40" data-assembly-card data-card-layout="vertical" [attr.data-editorial-card]="card.source === 'editorial' ? '' : null">
           <div class="assembly-card__media relative z-[1] overflow-hidden rounded-xl">
             @if (card.image) {
               <img class="block h-full w-full object-contain p-5 md:px-8" [src]="card.image" [attr.title]="card.imageTitle" [alt]="card.imageAlt" width="560" height="420" loading="lazy">
@@ -49,7 +49,26 @@
           </div>
           <div class="assembly-card__body relative z-[1] flex flex-1 flex-col p-5 md:p-6">
             <div class="border-b border-slate-400/20 pb-3"><h3 class="m-0 text-[clamp(1.65rem,2.5vw,2.3rem)] text-white">{{ card.title }}</h3></div>
-            <p class="my-4 leading-relaxed text-indigo-100">{{ card.description }}</p>
+            <div class="assembly-card__description-region my-4">
+              <p
+                [id]="'assembly-description-' + cardIndex"
+                class="assembly-card__description m-0 leading-relaxed text-indigo-100"
+                [class.assembly-card__description--collapsed]="isDescriptionExpandable(card.description) && !isDescriptionExpanded(card.title)"
+                data-assembly-description
+              >{{ card.description }}</p>
+              <div class="assembly-card__description-action">
+                @if (isDescriptionExpandable(card.description)) {
+                  <button
+                    type="button"
+                    class="assembly-card__description-toggle"
+                    data-description-toggle
+                    [attr.aria-expanded]="isDescriptionExpanded(card.title)"
+                    [attr.aria-controls]="'assembly-description-' + cardIndex"
+                    (click)="toggleDescription(card.title)"
+                  >{{ isDescriptionExpanded(card.title) ? 'Ver menos' : 'Ver más' }}</button>
+                }
+              </div>
+            </div>
             <dl class="mb-6">
               @for (spec of card.specs; track spec.label) {
                 <div class="grid gap-1 border-t border-slate-400/20 py-3 md:grid-cols-[minmax(8.5rem,.85fr)_minmax(0,1.35fr)] md:gap-4">

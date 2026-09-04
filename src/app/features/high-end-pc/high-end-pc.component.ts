@@ -37,6 +37,7 @@ interface LandingAssemblyCard {
 }
 
 const HIGH_END_PRODUCTS_STATE = makeStateKey<AssembledPC[]>('pc-gamer-gama-alta-products-v1');
+const EXPANDABLE_DESCRIPTION_LENGTH = 360;
 
 const ASSEMBLY_IMAGE_METADATA: Record<string, { title: string; alt: string }> = {
   sniker: {
@@ -149,9 +150,27 @@ export class HighEndPcComponent implements OnInit {
 
   catalogCards: LandingAssemblyCard[] = [];
   loading = true;
+  private readonly expandedDescriptions = new Set<string>();
 
   get cards(): LandingAssemblyCard[] {
     return [...this.catalogCards, ...this.editorialCards];
+  }
+
+  isDescriptionExpandable(description: string): boolean {
+    return description.trim().length > EXPANDABLE_DESCRIPTION_LENGTH;
+  }
+
+  isDescriptionExpanded(cardTitle: string): boolean {
+    return this.expandedDescriptions.has(cardTitle);
+  }
+
+  toggleDescription(cardTitle: string): void {
+    if (this.expandedDescriptions.has(cardTitle)) {
+      this.expandedDescriptions.delete(cardTitle);
+      return;
+    }
+
+    this.expandedDescriptions.add(cardTitle);
   }
 
   constructor(

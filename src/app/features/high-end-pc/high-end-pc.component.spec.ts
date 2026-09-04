@@ -8,10 +8,15 @@ import { ProductsService } from '../products/services/products.service';
 import { HighEndPcComponent } from './high-end-pc.component';
 
 describe('HighEndPcComponent', () => {
-  const assembly = (title: string, slug: string, gpu = 'RTX 5070') => ({
+  const assembly = (
+    title: string,
+    slug: string,
+    gpu = 'RTX 5070',
+    description = `${title} de gama alta`
+  ) => ({
     title,
     slug,
-    description: `${title} de gama alta`,
+    description,
     image: `/assets/${slug}.webp`,
     price: 50000,
     stock: 1,
@@ -184,12 +189,15 @@ describe('HighEndPcComponent', () => {
     const element: HTMLElement = fixture.nativeElement;
     const heroTitle = element.querySelector<HTMLElement>('.hero h1')!;
     const sectionTitles = Array.from(element.querySelectorAll<HTMLElement>('.section-shell h2, .performance h2'));
+    const assemblyGrid = element.querySelector<HTMLElement>('.assembly-grid')!;
     const cards = Array.from(element.querySelectorAll<HTMLElement>('[data-assembly-card]'));
 
     expect(Number.parseFloat(getComputedStyle(heroTitle).fontSize)).toBeLessThanOrEqual(60);
     expect(sectionTitles.length).toBeGreaterThan(0);
     expect(sectionTitles.every((title) => title.dataset['glitchStrength'] === 'section')).toBeTrue();
+    expect(assemblyGrid.classList).toContain('auto-rows-fr');
     expect(cards.length).toBe(6);
+    expect(cards.every((card) => card.classList.contains('h-full'))).toBeTrue();
     expect(cards.every((card) => card.dataset['cardLayout'] === 'vertical')).toBeTrue();
     expect(cards.every((card) => card.querySelector('.assembly-card__scanline') === null)).toBeTrue();
     expect(cards.every((card) => {
@@ -199,6 +207,50 @@ describe('HighEndPcComponent', () => {
     })).toBeTrue();
     expect(cards.every((card) => card.querySelector('.assembly-card__footer .assembly-card__price'))).toBeTrue();
     expect(cards.every((card) => card.querySelector('.assembly-card__footer .button--card'))).toBeTrue();
+  });
+
+  it('collapses only long descriptions and expands the selected card accessibly', async () => {
+    const mediumDescription = 'R'.repeat(300);
+    const longDescription = 'Descripción extensa para explicar todos los detalles técnicos y estéticos del ensamble. '.repeat(6);
+    const products = {
+      getAssembledPCsBySlugs: jasmine.createSpy().and.returnValue(of([
+        assembly('Sniker', 'sniker', 'RTX 5070', mediumDescription),
+        assembly('Shark', 'shark', 'RTX 5070', longDescription),
+        assembly('CÁPSULA', 'cpsula'),
+        assembly('Robot', 'robot', ''),
+      ])),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [HighEndPcComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ProductsService, useValue: products },
+        { provide: SeoService, useValue: { updatePageStructuredData: jasmine.createSpy('updatePageStructuredData') } },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(HighEndPcComponent);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const cards = Array.from(element.querySelectorAll<HTMLElement>('[data-assembly-card]'));
+    const cardNamed = (name: string) => cards.find((card) => card.querySelector('h3')?.textContent?.trim() === name)!;
+    const sharkCard = cardNamed('Shark');
+    const description = sharkCard.querySelector<HTMLElement>('[data-assembly-description]')!;
+    const toggle = sharkCard.querySelector<HTMLButtonElement>('[data-description-toggle]')!;
+
+    expect(cardNamed('Sniker').querySelector('[data-description-toggle]')).toBeNull();
+    expect(description.classList).toContain('assembly-card__description--collapsed');
+    expect(toggle.textContent).toContain('Ver más');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe(description.id);
+
+    toggle.click();
+    fixture.detectChanges();
+
+    expect(description.classList).not.toContain('assembly-card__description--collapsed');
+    expect(toggle.textContent).toContain('Ver menos');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
   });
 
   it('keeps the approved marketing copy and routes the catalog actions correctly', async () => {

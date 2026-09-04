@@ -15,6 +15,22 @@ test('high-end landing exposes editorial cards, advisor links and accessible FAQ
   await expect(page.locator('.assembly-card__scanline')).toHaveCount(0);
   await expect(page.locator('details')).toHaveCount(4);
 
+  const sharkCard = page.locator('[data-assembly-card]').filter({ hasText: 'SHARK' });
+  const robotCard = page.locator('[data-assembly-card]').filter({ hasText: 'ROBOT' });
+  const sharkDescription = sharkCard.locator('[data-assembly-description]');
+  const descriptionToggle = sharkCard.locator('[data-description-toggle]');
+  await expect(robotCard.locator('[data-description-toggle]')).toHaveCount(0);
+  const cardHeights = await page.locator('[data-assembly-card]').evaluateAll((cards) =>
+    cards.map((card) => Math.round(card.getBoundingClientRect().height))
+  );
+  expect(new Set(cardHeights).size).toBe(1);
+  await expect(descriptionToggle).toHaveText('Ver más');
+  await expect(descriptionToggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(sharkDescription).toHaveCSS('-webkit-line-clamp', '4');
+  await descriptionToggle.click();
+  await expect(descriptionToggle).toHaveText('Ver menos');
+  await expect(descriptionToggle).toHaveAttribute('aria-expanded', 'true');
+
   const canonical = page.locator('link[rel="canonical"]');
   await expect(canonical).toHaveAttribute('href', 'https://pcgamercdmx.com/pc-gamer-gama-alta-cdmx');
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /PC Gamer gama alta en CDMX/i);
