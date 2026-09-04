@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, DeferBlockState, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
@@ -141,6 +141,17 @@ describe('HomeComponent', () => {
   it('keeps the assembly slider empty when the backend returns no assemblies', () => {
     expect(component.carruselProducts).toEqual([]);
     expect(component.filteredCarruselProducts).toEqual([]);
+  });
+
+  it('links the packages section to the high-end PC landing page', async () => {
+    const [packagesBlock] = await fixture.getDeferBlocks();
+    await packagesBlock.render(DeferBlockState.Complete);
+    const link = fixture.nativeElement.querySelector(
+      'a[href="/pc-gamer-gama-alta-cdmx"]'
+    ) as HTMLAnchorElement | null;
+
+    expect(link).not.toBeNull();
+    expect(link?.textContent).toContain('Explorar PC Gamer gama alta');
   });
 
   it('shows the most recent published Directus posts instead of sample posts', fakeAsync(() => {

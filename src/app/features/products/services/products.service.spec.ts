@@ -70,6 +70,33 @@ describe('ProductsService', () => {
     expect(products).toEqual([]);
   });
 
+  it('returns the requested assembly slugs in landing-page order', async () => {
+    const directus = {
+      isEnabled: jasmine.createSpy('isEnabled').and.returnValue(true),
+      readItems: jasmine.createSpy('readItems').and.callFake((collection: string) => of({
+        data: collection === 'pc_products' ? [
+          { id: '3', title: 'Robot', slug: 'robot', category: 'assembled', price: 3, stock: 1, published: true },
+          { id: '1', title: 'Sniker', slug: 'sniker', category: 'assembled', price: 1, stock: 1, published: true },
+          { id: '5', title: 'Otro', slug: 'otro', category: 'assembled', price: 5, stock: 1, published: true },
+          { id: '2', title: 'Shark', slug: 'shark', category: 'assembled', price: 2, stock: 1, published: true },
+          { id: '4', title: 'Capsula', slug: 'cpsula', category: 'assembled', price: 4, stock: 1, published: true },
+        ] : [],
+      })),
+    };
+    const service = new ProductsService(directus as any);
+
+    const products = await firstValueFrom(
+      service.getAssembledPCsBySlugs(['sniker', 'shark', 'cpsula', 'robot'])
+    );
+
+    expect(products.map((product) => product.slug)).toEqual([
+      'sniker',
+      'shark',
+      'cpsula',
+      'robot',
+    ]);
+  });
+
   it('applies an effective assembly offer while keeping its badge visibility independent', async () => {
     const directus = {
       isEnabled: jasmine.createSpy('isEnabled').and.returnValue(true),

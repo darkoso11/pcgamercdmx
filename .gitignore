@@ -43,6 +43,7 @@ testem.log
 /test-results/
 /playwright-report/
 /.superpowers/
+/.codex-remote-attachments/
 /typings
 
 # System files
