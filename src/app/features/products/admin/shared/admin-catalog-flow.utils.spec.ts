@@ -2,6 +2,7 @@ import { Offer, Product } from './products-admin.service';
 import {
   calculateCatalogMetrics,
   calculateOfferPrice,
+  getCatalogDashboardItems,
   filterAndSortCatalogItems,
   getOfferDomain,
   isProductInDomain,
@@ -115,6 +116,49 @@ describe('admin catalog flow utilities', () => {
       lowStock: 0,
       outOfStock: 1,
     });
+  });
+
+  it('returns at most the 20 most recently created products for the recent dashboard view', () => {
+    const items = Array.from({ length: 23 }, (_, index) => ({
+      ...product(`product-${index}`, 'componentes', 10),
+      createdAt: new Date(2026, 0, index + 1),
+    }));
+
+    const result = getCatalogDashboardItems(items, 'products', 'recent');
+
+    expect(result).toHaveSize(20);
+    expect(result[0]._id).toBe('product-22');
+    expect(result[19]._id).toBe('product-3');
+  });
+
+  it('keeps stable input order for recent items without comparable creation dates', () => {
+    const first = { ...product('first', 'paquetes', 10), createdAt: new Date(Number.NaN) };
+    const dated = { ...product('dated', 'paquetes', 10), createdAt: new Date('2026-08-01') };
+    const second = { ...product('second', 'paquetes', 10), createdAt: new Date(Number.NaN) };
+
+    expect(getCatalogDashboardItems([first, dated, second], 'assemblies', 'recent').map((item) => item._id))
+      .toEqual(['dated', 'first', 'second']);
+  });
+
+  it('derives every non-recent dashboard view without limiting the result to 20 items', () => {
+    const items = [
+      product('published', 'componentes', 10, 3, true),
+      product('draft', 'componentes', 10, 3, false),
+      product('low', 'perifericos', 2, 3, true),
+      product('out', 'perifericos', 0, 3, true),
+      product('assembly', 'paquetes', 0, 3, false),
+    ];
+
+    expect(getCatalogDashboardItems(items, 'products', 'all').map((item) => item._id))
+      .toEqual(['published', 'draft', 'low', 'out']);
+    expect(getCatalogDashboardItems(items, 'products', 'published').map((item) => item._id))
+      .toEqual(['published', 'low', 'out']);
+    expect(getCatalogDashboardItems(items, 'products', 'draft').map((item) => item._id))
+      .toEqual(['draft']);
+    expect(getCatalogDashboardItems(items, 'products', 'low-stock').map((item) => item._id))
+      .toEqual(['low']);
+    expect(getCatalogDashboardItems(items, 'products', 'out-of-stock').map((item) => item._id))
+      .toEqual(['out']);
   });
 
   it('assigns offers to one domain and rejects mixed-domain offers', () => {

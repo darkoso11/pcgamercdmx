@@ -17,6 +17,14 @@ import {
   CatalogStatusFilter,
   filterAndSortCatalogItems,
 } from '../../shared/admin-catalog-flow.utils';
+import {
+  buildCatalogQuickEditPatch,
+  CatalogQuickEditDraft,
+  createCatalogQuickEditDraft,
+  isCatalogQuickEditDirty,
+  resetCatalogQuickEditDraft,
+  validateCatalogQuickEditDraft,
+} from '../../shared/admin-catalog-quick-edit.utils';
 
 type BulkConfirmationAction = 'publish' | 'deactivate' | 'duplicate' | 'delete';
 type BulkEditMode = 'category' | 'price' | 'stock' | 'low-stock';
@@ -47,6 +55,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   bulkStockMode: 'set' | 'increase' | 'decrease' = 'set';
   bulkStockValue: number | null = null;
   bulkLowStockAlert: number | null = null;
+  quickEditDrafts = new Map<string, CatalogQuickEditDraft>();
 
   searchTerm = '';
   selectedCategory = '';
@@ -106,6 +115,7 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
       .subscribe((response: any) => {
         const productsData = Array.isArray(response) ? response : (response.data || []);
         this.products = filterAndSortCatalogItems(productsData, 'products', 'all');
+        this.initializeQuickEditDrafts(this.products);
         this.filterProducts(!preservePage);
         this.cdr.detectChanges();
       });
@@ -405,6 +415,79 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
     this.filterProducts();
   }
 
+  getQuickEditDraft(productId: string): CatalogQuickEditDraft {
+    const draft = this.quickEditDrafts.get(productId);
+    if (!draft) {
+      throw new Error(`No existe un borrador de edición rápida para ${productId}.`);
+    }
+    return draft;
+  }
+
+  isQuickEditDirty(productId: string): boolean {
+    return isCatalogQuickEditDirty(this.getQuickEditDraft(productId));
+  }
+
+  markQuickEditChanged(productId: string): void {
+    const draft = this.getQuickEditDraft(productId);
+    draft.message = '';
+    draft.messageType = '';
+    draft.errors = {};
+  }
+
+  saveQuickEdit(productId: string): void {
+    const draft = this.getQuickEditDraft(productId);
+    if (draft.saving || !isCatalogQuickEditDirty(draft)) {
+      return;
+    }
+
+    draft.errors = validateCatalogQuickEditDraft(draft);
+    draft.message = '';
+    draft.messageType = '';
+    if (Object.keys(draft.errors).length > 0) {
+      return;
+    }
+
+    draft.saving = true;
+    this.productsAdminService
+      .updateProduct(productId, buildCatalogQuickEditPatch(draft))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (savedProduct) => {
+          if (!savedProduct) {
+            this.setQuickEditSaveError(draft);
+            return;
+          }
+
+          this.products = this.products.map((product) =>
+            product._id === productId ? savedProduct : product
+          );
+          const confirmedDraft = createCatalogQuickEditDraft(savedProduct);
+          confirmedDraft.message = 'Cambios guardados.';
+          confirmedDraft.messageType = 'success';
+          this.quickEditDrafts.set(productId, confirmedDraft);
+          this.filterProducts(false);
+        },
+        error: () => this.setQuickEditSaveError(draft),
+      });
+  }
+
+  discardQuickEdit(productId: string): void {
+    const draft = this.getQuickEditDraft(productId);
+    if (!draft.saving) {
+      resetCatalogQuickEditDraft(draft);
+    }
+  }
+
+  handleQuickEditKeydown(event: KeyboardEvent, productId: string): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.saveQuickEdit(productId);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.discardQuickEdit(productId);
+    }
+  }
+
   editProduct(productId: string): void {
     this.router.navigate([adminUrl('products'), productId, 'edit']);
   }
@@ -503,6 +586,21 @@ export class AdminProductListComponent implements OnInit, OnDestroy {
   private setBulkError(message: string): void {
     this.bulkMessage = message;
     this.bulkMessageType = 'error';
+  }
+
+  private initializeQuickEditDrafts(products: Product[]): void {
+    this.quickEditDrafts = new Map(
+      products
+        .filter((product): product is Product & { _id: string } => Boolean(product._id))
+        .map((product) => [product._id, createCatalogQuickEditDraft(product)])
+    );
+  }
+
+  private setQuickEditSaveError(draft: CatalogQuickEditDraft): void {
+    draft.saving = false;
+    draft.message = 'No se pudieron guardar los cambios. Intenta de nuevo.';
+    draft.messageType = 'error';
+    this.cdr.detectChanges();
   }
 
   formatPrice(price: number): string {

@@ -2,13 +2,29 @@ import { of } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { adminUrl } from '../../../../admin/admin-route.config';
-import { AdminAssemblyCardComponent } from '../../assemblies/shared/admin-assembly-card/admin-assembly-card.component';
-import { ProductsAdminService } from '../../shared/products-admin.service';
+import { Product, ProductsAdminService } from '../../shared/products-admin.service';
 import { AdminAssembliesDashboardComponent } from './admin-assemblies-dashboard.component';
 
 describe('AdminAssembliesDashboardComponent', () => {
-  function createComponent() {
+  const assembly = (id: string, overrides: Partial<Product> = {}): Product => ({
+    _id: id,
+    title: id,
+    slug: id,
+    description: id,
+    category: 'paquetes',
+    price: 100,
+    image: '',
+    images: [],
+    brandLogos: [],
+    stock: 10,
+    lowStockAlert: 3,
+    published: true,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+    ...overrides,
+  });
+
+  function createComponent(assemblies: Product[] = []) {
     const productsAdminService = {
       getCatalogDashboardStats: jasmine.createSpy('getCatalogDashboardStats').and.returnValue(of({
         total: 5,
@@ -19,7 +35,10 @@ describe('AdminAssembliesDashboardComponent', () => {
         totalOffers: 1,
         activeOffers: 1,
       })),
-      getRecentCatalogItems: jasmine.createSpy('getRecentCatalogItems').and.returnValue(of([])),
+      getAllProducts: jasmine.createSpy('getAllProducts').and.returnValue(of({ data: assemblies })),
+      updateProduct: jasmine.createSpy('updateProduct'),
+      duplicateProduct: jasmine.createSpy('duplicateProduct').and.returnValue(of(undefined)),
+      deleteProduct: jasmine.createSpy('deleteProduct').and.returnValue(of(true)),
     };
     const router = { navigate: jasmine.createSpy('navigate') };
     const cdr = { detectChanges: jasmine.createSpy('detectChanges') };
@@ -38,22 +57,76 @@ describe('AdminAssembliesDashboardComponent', () => {
     component.ngOnInit();
 
     expect(productsAdminService.getCatalogDashboardStats).toHaveBeenCalledOnceWith('assemblies');
-    expect(productsAdminService.getRecentCatalogItems).toHaveBeenCalledOnceWith('assemblies', 5);
+    expect(productsAdminService.getAllProducts).toHaveBeenCalled();
     expect(component.stats?.draft).toBe(1);
   });
 
-  it('opens the assembly list with the selected metric filter', () => {
-    const { component, router } = createComponent();
+  it('starts with the 20 most recently created assemblies', () => {
+    const assemblies = Array.from({ length: 22 }, (_, index) => assembly(`assembly-${index}`, {
+      createdAt: new Date(2026, 0, index + 1),
+    }));
+    const { component } = createComponent(assemblies);
+
+    component.ngOnInit();
+
+    expect(component.selectedView).toBe('recent');
+    expect(component.visibleAssemblies).toHaveSize(20);
+    expect(component.visibleAssemblies[0]._id).toBe('assembly-21');
+  });
+
+  it('filters inside the dashboard without router navigation', () => {
+    const { component, router } = createComponent([
+      assembly('published'),
+      assembly('out', { stock: 0 }),
+    ]);
+    component.ngOnInit();
 
     component.goToStatus('out-of-stock');
 
-    expect(router.navigate).toHaveBeenCalledOnceWith(
-      [adminUrl('assemblies/list')],
-      { queryParams: { status: 'out-of-stock' } }
-    );
+    expect(component.selectedView).toBe('out-of-stock');
+    expect(component.visibleAssemblies.map((item) => item._id)).toEqual(['out']);
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  it('renders recent assemblies with the shared visual card', () => {
+  it('saves only changed quick-edit fields and confirms the returned assembly', () => {
+    const original = assembly('assembly');
+    const saved = assembly('assembly', { stock: 4 });
+    const { component, productsAdminService } = createComponent([original]);
+    productsAdminService.updateProduct.and.returnValue(of(saved));
+    component.ngOnInit();
+
+    component.getQuickEditDraft('assembly').stock = 4;
+    component.saveQuickEdit('assembly');
+
+    expect(productsAdminService.updateProduct).toHaveBeenCalledOnceWith('assembly', { stock: 4 });
+    expect(component.assemblies[0].stock).toBe(4);
+    expect(component.getQuickEditDraft('assembly').message).toBe('Cambios guardados.');
+    expect(productsAdminService.getCatalogDashboardStats).toHaveBeenCalledTimes(2);
+  });
+
+  it('duplicates an assembly and reloads the dashboard rows', () => {
+    const { component, productsAdminService } = createComponent([assembly('assembly')]);
+    productsAdminService.duplicateProduct.and.returnValue(of(assembly('copy')));
+    component.ngOnInit();
+
+    component.duplicateAssembly('assembly');
+
+    expect(productsAdminService.duplicateProduct).toHaveBeenCalledOnceWith('assembly');
+    expect(productsAdminService.getAllProducts).toHaveBeenCalledTimes(2);
+  });
+
+  it('deletes a confirmed assembly and reloads the dashboard rows', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    const { component, productsAdminService } = createComponent([assembly('assembly')]);
+    component.ngOnInit();
+
+    component.deleteAssembly('assembly');
+
+    expect(productsAdminService.deleteProduct).toHaveBeenCalledOnceWith('assembly');
+    expect(productsAdminService.getAllProducts).toHaveBeenCalledTimes(2);
+  });
+
+  it('renders quick-edit controls and detailed actions in the dashboard row', () => {
     TestBed.configureTestingModule({
       imports: [AdminAssembliesDashboardComponent],
       providers: [
@@ -62,12 +135,10 @@ describe('AdminAssembliesDashboardComponent', () => {
           provide: ProductsAdminService,
           useValue: {
             getCatalogDashboardStats: () => of({ total: 1 }),
-            getRecentCatalogItems: () => of([{
-              _id: 'robot', title: 'ROBOT', slug: 'robot', description: '', category: 'paquetes',
-              price: 100, image: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
-              images: [], brandLogos: [], stock: 1, lowStockAlert: 2, published: true,
-              createdAt: new Date(), updatedAt: new Date(),
-            }]),
+            getAllProducts: () => of({ data: [assembly('assembly')] }),
+            updateProduct: () => of(assembly('assembly')),
+            duplicateProduct: () => of(assembly('copy')),
+            deleteProduct: () => of(true),
           },
         },
       ],
@@ -76,6 +147,11 @@ describe('AdminAssembliesDashboardComponent', () => {
 
     fixture.detectChanges();
 
-    expect(fixture.debugElement.query(By.directive(AdminAssemblyCardComponent))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('[data-testid="dashboard-quick-edit-price-assembly"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('[data-testid="dashboard-quick-edit-stock-assembly"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('[data-testid="dashboard-quick-edit-published-assembly"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('[aria-label="Editar detalles de assembly"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('[aria-label="Duplicar assembly"]'))).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('[aria-label="Eliminar assembly"]'))).not.toBeNull();
   });
 });

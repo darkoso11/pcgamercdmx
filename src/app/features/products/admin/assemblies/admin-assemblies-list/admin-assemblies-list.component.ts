@@ -6,16 +6,23 @@ import { Subject, takeUntil } from 'rxjs';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { adminUrl } from '../../../../admin/admin-route.config';
 import { Product, ProductsAdminService } from '../../shared/products-admin.service';
-import { AdminAssemblyCardComponent } from '../shared/admin-assembly-card/admin-assembly-card.component';
 import {
   CatalogStatusFilter,
   filterAndSortCatalogItems,
 } from '../../shared/admin-catalog-flow.utils';
+import {
+  buildCatalogQuickEditPatch,
+  CatalogQuickEditDraft,
+  createCatalogQuickEditDraft,
+  isCatalogQuickEditDirty,
+  resetCatalogQuickEditDraft,
+  validateCatalogQuickEditDraft,
+} from '../../shared/admin-catalog-quick-edit.utils';
 
 @Component({
   selector: 'app-admin-assemblies-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, AdminHeaderComponent, AdminAssemblyCardComponent],
+  imports: [CommonModule, RouterModule, FormsModule, AdminHeaderComponent],
   templateUrl: './admin-assemblies-list.component.html',
 })
 export class AdminAssembliesListComponent implements OnInit, OnDestroy {
@@ -24,6 +31,7 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
   selectedStatus: CatalogStatusFilter = 'all';
   loading = true;
   errorMessage = '';
+  quickEditDrafts = new Map<string, CatalogQuickEditDraft>();
 
   private destroy$ = new Subject<void>();
 
@@ -48,6 +56,7 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((assemblies) => {
         this.assemblies = filterAndSortCatalogItems(assemblies, 'assemblies', 'all');
+        this.initializeQuickEditDrafts(this.assemblies);
         this.filterAssemblies();
         this.loading = false;
         this.cdr.detectChanges();
@@ -60,6 +69,86 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
       'assemblies',
       this.selectedStatus
     );
+  }
+
+  getQuickEditDraft(assemblyId: string): CatalogQuickEditDraft {
+    const draft = this.quickEditDrafts.get(assemblyId);
+    if (!draft) {
+      throw new Error(`No existe un borrador de edición rápida para ${assemblyId}.`);
+    }
+    return draft;
+  }
+
+  isQuickEditDirty(assemblyId: string): boolean {
+    return isCatalogQuickEditDirty(this.getQuickEditDraft(assemblyId));
+  }
+
+  markQuickEditChanged(assemblyId: string): void {
+    const draft = this.getQuickEditDraft(assemblyId);
+    draft.message = '';
+    draft.messageType = '';
+    draft.errors = {};
+  }
+
+  saveQuickEdit(assemblyId: string): void {
+    const draft = this.getQuickEditDraft(assemblyId);
+    if (draft.saving || !isCatalogQuickEditDirty(draft)) {
+      return;
+    }
+
+    draft.errors = validateCatalogQuickEditDraft(draft);
+    draft.message = '';
+    draft.messageType = '';
+    if (Object.keys(draft.errors).length > 0) {
+      return;
+    }
+
+    draft.saving = true;
+    this.productsAdminService
+      .updateProduct(assemblyId, buildCatalogQuickEditPatch(draft))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (savedAssembly) => {
+          if (!savedAssembly) {
+            this.setQuickEditSaveError(draft);
+            return;
+          }
+
+          this.assemblies = this.assemblies.map((assembly) =>
+            assembly._id === assemblyId ? savedAssembly : assembly
+          );
+          const confirmedDraft = createCatalogQuickEditDraft(savedAssembly);
+          confirmedDraft.message = 'Cambios guardados.';
+          confirmedDraft.messageType = 'success';
+          this.quickEditDrafts.set(assemblyId, confirmedDraft);
+          this.filterAssemblies();
+          this.cdr.detectChanges();
+        },
+        error: () => this.setQuickEditSaveError(draft),
+      });
+  }
+
+  discardQuickEdit(assemblyId: string): void {
+    const draft = this.getQuickEditDraft(assemblyId);
+    if (!draft.saving) {
+      resetCatalogQuickEditDraft(draft);
+    }
+  }
+
+  handleQuickEditKeydown(event: KeyboardEvent, assemblyId: string): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.saveQuickEdit(assemblyId);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.discardQuickEdit(assemblyId);
+    }
+  }
+
+  getStockLabel(assembly: Product): string {
+    if (assembly.stock <= 0) return 'Sin stock';
+    if (assembly.stock <= assembly.lowStockAlert) return `${assembly.stock} bajo stock`;
+    return `${assembly.stock} en stock`;
   }
 
   createAssembly(): void {
@@ -93,6 +182,21 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
 
         this.loadAssemblies();
       });
+  }
+
+  private initializeQuickEditDrafts(assemblies: Product[]): void {
+    this.quickEditDrafts = new Map(
+      assemblies
+        .filter((assembly): assembly is Product & { _id: string } => Boolean(assembly._id))
+        .map((assembly) => [assembly._id, createCatalogQuickEditDraft(assembly)])
+    );
+  }
+
+  private setQuickEditSaveError(draft: CatalogQuickEditDraft): void {
+    draft.saving = false;
+    draft.message = 'No se pudieron guardar los cambios. Intenta de nuevo.';
+    draft.messageType = 'error';
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {

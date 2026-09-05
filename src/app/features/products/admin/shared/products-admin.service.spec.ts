@@ -201,6 +201,35 @@ describe('ProductsAdminService bulk product operations', () => {
   });
 });
 
+describe('ProductsAdminService partial product updates', () => {
+  it('sends quick-edit fields without defaulting unrelated Directus data', async () => {
+    const directus = {
+      isEnabled: jasmine.createSpy('isEnabled').and.returnValue(true),
+      updateItem: jasmine.createSpy('updateItem').and.returnValue(of({
+        data: {
+          id: 'product-1',
+          title: 'Producto original',
+          slug: 'producto-original',
+          description: 'Descripción original',
+          category: 'component',
+          price: 100,
+          image: 'product.png',
+          images: [],
+          brand_logos: [],
+          stock: 4,
+          low_stock_alert: 3,
+          published: true,
+        },
+      })),
+    };
+    const service = new ProductsAdminService(directus as any);
+
+    await firstValueFrom(service.updateProduct('product-1', { stock: 4 }));
+
+    expect(directus.updateItem.calls.mostRecent().args[2]).toEqual({ stock: 4 });
+  });
+});
+
 describe('ProductsAdminService offer persistence', () => {
   function createDirectusService() {
     const directus = {
