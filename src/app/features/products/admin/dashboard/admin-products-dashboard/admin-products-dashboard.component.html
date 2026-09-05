@@ -65,7 +65,7 @@
     <section class="mb-8" aria-labelledby="product-status-title">
       <div class="mb-4">
         <h2 id="product-status-title" class="text-xl font-black">Filtrar por estado</h2>
-        <p class="mt-1 text-sm text-slate-400">Cada indicador abre el listado de productos con ese filtro aplicado.</p>
+        <p class="mt-1 text-sm text-slate-400">Cada indicador filtra los productos en este mismo panel.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
@@ -107,36 +107,110 @@
       </div>
     </section>
 
-    <section class="overflow-hidden rounded-xl border border-white/10 bg-pc-admin-panel">
-      <div class="flex items-center justify-between border-b border-white/10 px-6 py-5">
+    <section class="overflow-hidden rounded-xl border border-white/10 bg-pc-admin-panel" aria-labelledby="dashboard-products-title">
+      <div class="flex flex-col gap-4 border-b border-white/10 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 class="text-xl font-black">Productos recientes</h2>
-          <p class="mt-1 text-sm text-slate-400">Ordenados por disponibilidad: saludable, bajo y sin stock.</p>
+          <h2 id="dashboard-products-title" class="text-xl font-black">
+            {{ selectedView === 'recent' ? 'Productos recientes' : selectedView === 'all' ? 'Productos totales' : selectedView === 'published' ? 'Productos publicados' : selectedView === 'draft' ? 'Borradores' : selectedView === 'low-stock' ? 'Productos con bajo stock' : 'Productos sin stock' }}
+          </h2>
+          <p class="mt-1 text-sm text-slate-400">
+            {{ selectedView === 'recent' ? 'Los 20 productos creados más recientemente.' : filteredProducts.length + ' productos encontrados. Edítalos sin salir del panel.' }}
+          </p>
         </div>
-        <button type="button" (click)="goToSection('products')" class="text-sm font-bold text-cyan-300 hover:text-cyan-100">Ver todos</button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            (click)="setView('recent')"
+            class="rounded-lg border px-3 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            [ngClass]="selectedView === 'recent' ? 'border-cyan-300 bg-cyan-400/15 text-cyan-200' : 'border-white/15 text-slate-300 hover:border-cyan-300/60'"
+          >20 recientes</button>
+          <button type="button" (click)="goToSection('products')" class="rounded-lg px-3 py-2 text-sm font-bold text-cyan-300 hover:text-cyan-100">Ver listado completo</button>
+        </div>
       </div>
 
-      <div *ngIf="recentProducts.length; else noProducts" class="overflow-x-auto">
-        <table class="w-full min-w-[720px] text-sm">
-          <thead class="bg-pc-surface-deep text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-            <tr><th class="px-6 py-3">Producto</th><th class="px-6 py-3">Categoria</th><th class="px-6 py-3">Precio</th><th class="px-6 py-3">Stock</th><th class="px-6 py-3">Estado</th><th class="px-6 py-3 text-right">Accion</th></tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let product of recentProducts" class="border-t border-white/10 transition hover:bg-white/[0.04]">
-              <td class="px-6 py-4"><strong class="block">{{ product.title }}</strong><span class="text-xs text-slate-500">{{ product.slug }}</span></td>
-              <td class="px-6 py-4 text-slate-300">{{ getCategoryLabel(product) }}</td>
-              <td class="px-6 py-4 font-bold text-cyan-300">${{ product.price | number }}</td>
-              <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-bold" [ngClass]="product.stock <= 0 ? 'bg-red-500/15 text-red-300' : (product.stock <= product.lowStockAlert ? 'bg-orange-500/15 text-orange-300' : 'bg-green-500/15 text-green-300')">{{ getStockLabel(product) }}</span></td>
-              <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-bold" [ngClass]="product.published ? 'bg-green-500/15 text-green-300' : 'bg-amber-500/15 text-amber-300'">{{ product.published ? 'Publicado' : 'Borrador' }}</span></td>
-              <td class="px-6 py-4 text-right"><button type="button" (click)="editProduct(product._id!)" class="min-h-11 rounded px-3 font-bold text-cyan-300 hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" [attr.aria-label]="'Editar ' + product.title">Editar</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div *ngIf="errorMessage" role="alert" class="border-b border-red-400/20 bg-red-500/10 px-6 py-3 text-sm text-red-200">{{ errorMessage }}</div>
 
-      <ng-template #noProducts>
-        <div class="px-6 py-12 text-center text-slate-400">Aun no hay productos en este catalogo.</div>
-      </ng-template>
+      <ng-container *ngIf="visibleProducts.length; else noProducts">
+        <div class="hidden overflow-x-auto md:block">
+          <table class="w-full min-w-[980px] text-sm">
+            <thead class="bg-pc-surface-deep text-left text-xs uppercase tracking-[0.14em] text-slate-400">
+              <tr>
+                <th class="px-5 py-3">Producto</th>
+                <th class="px-3 py-3">Precio</th>
+                <th class="px-3 py-3">Stock</th>
+                <th class="px-3 py-3 text-center">Estado</th>
+                <th class="px-4 py-3">Categoría</th>
+                <th class="px-4 py-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let product of visibleProducts">
+                <tr class="border-t border-white/10 transition hover:bg-white/[0.04]" [class.bg-cyan-950]="isQuickEditDirty(product._id!)">
+                  <td class="px-5 py-4"><strong class="block">{{ product.title }}</strong><span class="text-xs text-slate-500">{{ product.slug }}</span></td>
+                  <td class="min-w-36 px-3 py-3">
+                    <label class="relative block">
+                      <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                      <input type="number" min="0" step="0.01" [ngModel]="getQuickEditDraft(product._id!).price" (ngModelChange)="getQuickEditDraft(product._id!).price = $event; markQuickEditChanged(product._id!)" (keydown)="handleQuickEditKeydown($event, product._id!)" [disabled]="getQuickEditDraft(product._id!).saving" [attr.aria-label]="'Precio de ' + product.title" [attr.aria-invalid]="!!getQuickEditDraft(product._id!).errors.price" [attr.data-testid]="'dashboard-quick-edit-price-' + product._id" class="w-full rounded-md border bg-pc-admin-bg py-2 pl-7 pr-2 text-right font-bold text-cyan-200 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60" [ngClass]="getQuickEditDraft(product._id!).price !== getQuickEditDraft(product._id!).original.price ? 'border-cyan-400' : 'border-white/20'" />
+                    </label>
+                  </td>
+                  <td class="min-w-24 px-3 py-3">
+                    <input type="number" min="0" step="1" [ngModel]="getQuickEditDraft(product._id!).stock" (ngModelChange)="getQuickEditDraft(product._id!).stock = $event; markQuickEditChanged(product._id!)" (keydown)="handleQuickEditKeydown($event, product._id!)" [disabled]="getQuickEditDraft(product._id!).saving" [attr.aria-label]="'Stock de ' + product.title" [attr.aria-invalid]="!!getQuickEditDraft(product._id!).errors.stock" [attr.data-testid]="'dashboard-quick-edit-stock-' + product._id" class="w-full rounded-md border bg-pc-admin-bg px-2 py-2 text-center font-semibold text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60" [ngClass]="getQuickEditDraft(product._id!).stock !== getQuickEditDraft(product._id!).original.stock ? 'border-cyan-400' : 'border-white/20'" />
+                  </td>
+                  <td class="min-w-36 px-3 py-3">
+                    <label class="flex cursor-pointer items-center justify-center gap-2">
+                      <input type="checkbox" [ngModel]="getQuickEditDraft(product._id!).published" (ngModelChange)="getQuickEditDraft(product._id!).published = $event; markQuickEditChanged(product._id!)" (keydown)="handleQuickEditKeydown($event, product._id!)" [disabled]="getQuickEditDraft(product._id!).saving" [attr.aria-label]="'Publicación de ' + product.title" [attr.data-testid]="'dashboard-quick-edit-published-' + product._id" class="peer sr-only" />
+                      <span class="relative h-6 w-11 rounded-full bg-slate-600 transition after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:bg-cyan-600 peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-300 peer-disabled:opacity-60"></span>
+                      <span class="text-xs font-semibold" [ngClass]="getQuickEditDraft(product._id!).published ? 'text-cyan-200' : 'text-slate-400'">{{ getQuickEditDraft(product._id!).published ? 'Publicado' : 'Borrador' }}</span>
+                    </label>
+                  </td>
+                  <td class="px-4 py-3 text-slate-300">{{ getCategoryLabel(product) }}</td>
+                  <td class="min-w-56 px-4 py-3">
+                    <div class="flex flex-wrap justify-center gap-2">
+                      <button *ngIf="isQuickEditDirty(product._id!) || getQuickEditDraft(product._id!).messageType === 'error'" type="button" (click)="saveQuickEdit(product._id!)" [disabled]="getQuickEditDraft(product._id!).saving || !isQuickEditDirty(product._id!)" class="rounded-md bg-cyan-500 px-2.5 py-1.5 text-xs font-black text-slate-950 transition hover:bg-cyan-300 disabled:opacity-50">{{ getQuickEditDraft(product._id!).saving ? 'Guardando…' : 'Guardar' }}</button>
+                      <button *ngIf="isQuickEditDirty(product._id!) || getQuickEditDraft(product._id!).messageType === 'error'" type="button" (click)="discardQuickEdit(product._id!)" [disabled]="getQuickEditDraft(product._id!).saving" class="rounded-md border border-white/20 px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:text-white disabled:opacity-50">Descartar</button>
+                      <button type="button" (click)="editProduct(product._id!)" class="rounded p-2 text-cyan-300 hover:bg-cyan-400/10 hover:text-cyan-100" title="Editar detalles" [attr.aria-label]="'Editar detalles de ' + product.title"><i class="fas fa-edit"></i></button>
+                      <button type="button" (click)="duplicateProduct(product._id!)" class="rounded p-2 text-amber-300 hover:bg-amber-400/10 hover:text-amber-100" title="Duplicar" [attr.aria-label]="'Duplicar ' + product.title"><i class="fas fa-copy"></i></button>
+                      <button type="button" (click)="deleteProduct(product._id!)" class="rounded p-2 text-red-300 hover:bg-red-400/10 hover:text-red-100" title="Eliminar" [attr.aria-label]="'Eliminar ' + product.title"><i class="fas fa-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="getQuickEditDraft(product._id!).message || getQuickEditDraft(product._id!).errors.price || getQuickEditDraft(product._id!).errors.stock">
+                  <td colspan="6" class="border-t border-white/5 px-5 py-2">
+                    <div role="status" aria-live="polite" class="text-xs" [ngClass]="getQuickEditDraft(product._id!).messageType === 'error' || getQuickEditDraft(product._id!).errors.price || getQuickEditDraft(product._id!).errors.stock ? 'text-red-300' : 'text-emerald-300'">{{ getQuickEditDraft(product._id!).errors.price || getQuickEditDraft(product._id!).errors.stock || getQuickEditDraft(product._id!).message }}</div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="divide-y divide-white/10 md:hidden">
+          <article *ngFor="let product of visibleProducts" class="p-4" [class.bg-cyan-950]="isQuickEditDirty(product._id!)">
+            <div><strong class="block">{{ product.title }}</strong><span class="text-xs text-slate-500">{{ getCategoryLabel(product) }} · {{ product.slug }}</span></div>
+            <div class="mt-4 grid grid-cols-2 gap-3">
+              <label class="text-xs text-slate-400">Precio<input type="number" min="0" step="0.01" [ngModel]="getQuickEditDraft(product._id!).price" (ngModelChange)="getQuickEditDraft(product._id!).price = $event; markQuickEditChanged(product._id!)" (keydown)="handleQuickEditKeydown($event, product._id!)" class="mt-1 w-full rounded-md border border-white/20 bg-pc-admin-bg px-3 py-2 text-white" /></label>
+              <label class="text-xs text-slate-400">Stock<input type="number" min="0" step="1" [ngModel]="getQuickEditDraft(product._id!).stock" (ngModelChange)="getQuickEditDraft(product._id!).stock = $event; markQuickEditChanged(product._id!)" (keydown)="handleQuickEditKeydown($event, product._id!)" class="mt-1 w-full rounded-md border border-white/20 bg-pc-admin-bg px-3 py-2 text-white" /></label>
+            </div>
+            <label class="mt-4 flex items-center gap-2 text-sm"><input type="checkbox" [ngModel]="getQuickEditDraft(product._id!).published" (ngModelChange)="getQuickEditDraft(product._id!).published = $event; markQuickEditChanged(product._id!)" class="h-4 w-4" />{{ getQuickEditDraft(product._id!).published ? 'Publicado' : 'Borrador' }}</label>
+            <div role="status" class="mt-2 text-xs" [ngClass]="getQuickEditDraft(product._id!).messageType === 'error' ? 'text-red-300' : 'text-emerald-300'">{{ getQuickEditDraft(product._id!).errors.price || getQuickEditDraft(product._id!).errors.stock || getQuickEditDraft(product._id!).message }}</div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button *ngIf="isQuickEditDirty(product._id!)" type="button" (click)="saveQuickEdit(product._id!)" class="rounded-md bg-cyan-500 px-3 py-2 text-xs font-black text-slate-950">Guardar</button>
+              <button *ngIf="isQuickEditDirty(product._id!)" type="button" (click)="discardQuickEdit(product._id!)" class="rounded-md border border-white/20 px-3 py-2 text-xs">Descartar</button>
+              <button type="button" (click)="editProduct(product._id!)" class="rounded-md px-3 py-2 text-xs font-bold text-cyan-300">Editar detalles</button>
+              <button type="button" (click)="duplicateProduct(product._id!)" class="rounded-md px-3 py-2 text-xs font-bold text-amber-300">Duplicar</button>
+              <button type="button" (click)="deleteProduct(product._id!)" class="rounded-md px-3 py-2 text-xs font-bold text-red-300">Eliminar</button>
+            </div>
+          </article>
+        </div>
+      </ng-container>
+
+      <ng-template #noProducts><div class="px-6 py-12 text-center text-slate-400">No hay productos para esta vista.</div></ng-template>
+
+      <div *ngIf="totalPages > 1" class="flex items-center justify-between border-t border-white/10 px-6 py-4 text-sm">
+        <button type="button" (click)="previousPage()" [disabled]="currentPage === 0" class="rounded-lg border border-white/15 px-3 py-2 font-bold disabled:opacity-40">Anterior</button>
+        <span class="text-slate-400">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="currentPage >= totalPages - 1" class="rounded-lg border border-white/15 px-3 py-2 font-bold disabled:opacity-40">Siguiente</button>
+      </div>
     </section>
   </main>
 </div>
