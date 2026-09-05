@@ -330,7 +330,9 @@ export class ProductsAdminService {
       .updateItem<DirectusProductRecord>(
         this.productsCollection,
         id,
-        mapAdminProductToDirectusPayload(product) as unknown as Record<string, unknown>,
+        isInventoryPatch(product)
+          ? mapInventoryPatch(product)
+          : mapAdminProductToDirectusPayload(product) as unknown as Record<string, unknown>,
         { auth: true }
       )
       .pipe(map((response) => mapDirectusProductToAdminProduct(response.data)));
@@ -1120,4 +1122,25 @@ function categorySlugToProductCategory(slug?: string): ProductCategory {
     default:
       return ProductCategory.COMPONENT;
   }
+}
+
+function isInventoryPatch(product: Partial<Product>): boolean {
+  const keys = Object.keys(product);
+  const supportedFields = new Set<keyof Product>([
+    'price',
+    'stock',
+    'lowStockAlert',
+    'published',
+  ]);
+
+  return keys.length > 0 && keys.every((key) => supportedFields.has(key as keyof Product));
+}
+
+function mapInventoryPatch(product: Partial<Product>): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+  if (product.price !== undefined) payload['price'] = product.price;
+  if (product.stock !== undefined) payload['stock'] = product.stock;
+  if (product.lowStockAlert !== undefined) payload['low_stock_alert'] = product.lowStockAlert;
+  if (product.published !== undefined) payload['published'] = product.published;
+  return payload;
 }
