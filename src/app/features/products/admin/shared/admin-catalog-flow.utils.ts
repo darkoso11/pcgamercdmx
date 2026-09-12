@@ -2,6 +2,7 @@ import type { Offer, Product } from './products-admin.service';
 
 export type CatalogDomain = 'products' | 'assemblies';
 export type CatalogStatusFilter = 'all' | 'published' | 'draft' | 'low-stock' | 'out-of-stock';
+export type CatalogDashboardView = 'recent' | CatalogStatusFilter;
 export type OfferStatus = 'scheduled' | 'active' | 'paused' | 'expired';
 
 export interface CatalogMetrics {
@@ -110,6 +111,36 @@ export function filterAndSortCatalogItems(
     .map(({ product }) => product);
 }
 
+export function getCatalogDashboardItems(
+  products: Product[],
+  domain: CatalogDomain,
+  view: CatalogDashboardView,
+  recentLimit = 20
+): Product[] {
+  if (view !== 'recent') {
+    return filterAndSortCatalogItems(products, domain, view);
+  }
+
+  return products
+    .map((product, index) => ({ product, index, createdAt: getCreationTime(product) }))
+    .filter(({ product }) => isProductInDomain(product, domain))
+    .sort((left, right) => {
+      if (left.createdAt === null && right.createdAt === null) {
+        return left.index - right.index;
+      }
+      if (left.createdAt === null) {
+        return 1;
+      }
+      if (right.createdAt === null) {
+        return -1;
+      }
+
+      return right.createdAt - left.createdAt || left.index - right.index;
+    })
+    .slice(0, recentLimit)
+    .map(({ product }) => product);
+}
+
 export function calculateCatalogMetrics(
   products: Product[],
   domain: CatalogDomain
@@ -164,6 +195,15 @@ function stockRank(product: Product): number {
   }
 
   return isLowStock(product) ? 1 : 0;
+}
+
+function getCreationTime(product: Product): number | null {
+  if (!product.createdAt) {
+    return null;
+  }
+
+  const value = new Date(product.createdAt).getTime();
+  return Number.isFinite(value) ? value : null;
 }
 
 function dateRangesOverlap(
