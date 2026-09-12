@@ -13,10 +13,12 @@ import {
 import {
   buildCatalogQuickEditPatch,
   CatalogQuickEditDraft,
-  createCatalogQuickEditDraft,
+  beginCatalogQuickEditSave,
+  confirmCatalogQuickEditSave,
+  failCatalogQuickEditSave,
+  reconcileCatalogQuickEditDrafts,
   isCatalogQuickEditDirty,
   resetCatalogQuickEditDraft,
-  validateCatalogQuickEditDraft,
 } from '../../shared/admin-catalog-quick-edit.utils';
 
 @Component({
@@ -92,18 +94,7 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
 
   saveQuickEdit(assemblyId: string): void {
     const draft = this.getQuickEditDraft(assemblyId);
-    if (draft.saving || !isCatalogQuickEditDirty(draft)) {
-      return;
-    }
-
-    draft.errors = validateCatalogQuickEditDraft(draft);
-    draft.message = '';
-    draft.messageType = '';
-    if (Object.keys(draft.errors).length > 0) {
-      return;
-    }
-
-    draft.saving = true;
+    if (!beginCatalogQuickEditSave(draft)) return;
     this.productsAdminService
       .updateProduct(assemblyId, buildCatalogQuickEditPatch(draft))
       .pipe(takeUntil(this.destroy$))
@@ -117,9 +108,7 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
           this.assemblies = this.assemblies.map((assembly) =>
             assembly._id === assemblyId ? savedAssembly : assembly
           );
-          const confirmedDraft = createCatalogQuickEditDraft(savedAssembly);
-          confirmedDraft.message = 'Cambios guardados.';
-          confirmedDraft.messageType = 'success';
+          const confirmedDraft = confirmCatalogQuickEditSave(savedAssembly);
           this.quickEditDrafts.set(assemblyId, confirmedDraft);
           this.filterAssemblies();
           this.cdr.detectChanges();
@@ -185,17 +174,11 @@ export class AdminAssembliesListComponent implements OnInit, OnDestroy {
   }
 
   private initializeQuickEditDrafts(assemblies: Product[]): void {
-    this.quickEditDrafts = new Map(
-      assemblies
-        .filter((assembly): assembly is Product & { _id: string } => Boolean(assembly._id))
-        .map((assembly) => [assembly._id, createCatalogQuickEditDraft(assembly)])
-    );
+    this.quickEditDrafts = reconcileCatalogQuickEditDrafts(assemblies, this.quickEditDrafts);
   }
 
   private setQuickEditSaveError(draft: CatalogQuickEditDraft): void {
-    draft.saving = false;
-    draft.message = 'No se pudieron guardar los cambios. Intenta de nuevo.';
-    draft.messageType = 'error';
+    failCatalogQuickEditSave(draft);
     this.cdr.detectChanges();
   }
 

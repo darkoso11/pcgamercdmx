@@ -183,4 +183,3 @@ Esta composición evita depender de desplazamiento horizontal para editar.
 6. La edición masiva de productos y las acciones administrativas existentes continúan funcionando.
 7. La edición es utilizable con teclado y en viewport móvil sin depender de desplazamiento horizontal.
 8. Las pruebas automatizadas y la compilación de producción terminan correctamente.
-

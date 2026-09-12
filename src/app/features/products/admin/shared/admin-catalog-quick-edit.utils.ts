@@ -33,6 +33,64 @@ export function isCatalogQuickEditDirty(draft: CatalogQuickEditDraft): boolean {
     || draft.published !== draft.original.published;
 }
 
+export function reconcileCatalogQuickEditDrafts(
+  products: Product[],
+  previous: Map<string, CatalogQuickEditDraft>
+): Map<string, CatalogQuickEditDraft> {
+  const next = new Map<string, CatalogQuickEditDraft>();
+  for (const product of products) {
+    if (!product._id) continue;
+    const draft = previous.get(product._id);
+    if (!draft) {
+      next.set(product._id, createCatalogQuickEditDraft(product));
+      continue;
+    }
+    next.set(product._id, draft);
+    // Keep the same object while its request owns the pending values.
+    if (draft.saving) continue;
+    let conflict = false;
+    for (const field of ['price', 'stock', 'published'] as const) {
+      const dirty = draft[field] !== draft.original[field];
+      if (dirty) {
+        conflict ||= product[field] !== draft.original[field] && product[field] !== draft[field];
+      } else if (field === 'published') {
+        draft.published = product.published;
+      } else {
+        draft[field] = product[field];
+      }
+    }
+    draft.original = valuesFromProduct(product);
+    if (conflict) {
+      draft.message = 'El servidor cambió campos que estás editando. Conservamos tu entrada: guarda para aplicarla o descarta para usar el valor del servidor.';
+      draft.messageType = 'error';
+    }
+  }
+  return next;
+}
+
+export function beginCatalogQuickEditSave(draft: CatalogQuickEditDraft): boolean {
+  if (draft.saving || !isCatalogQuickEditDirty(draft)) return false;
+  draft.errors = validateCatalogQuickEditDraft(draft);
+  draft.message = '';
+  draft.messageType = '';
+  if (Object.keys(draft.errors).length) return false;
+  draft.saving = true;
+  return true;
+}
+
+export function confirmCatalogQuickEditSave(product: Product): CatalogQuickEditDraft {
+  const draft = createCatalogQuickEditDraft(product);
+  draft.message = 'Cambios guardados.';
+  draft.messageType = 'success';
+  return draft;
+}
+
+export function failCatalogQuickEditSave(draft: CatalogQuickEditDraft): void {
+  draft.saving = false;
+  draft.message = 'No se pudieron guardar los cambios. Intenta de nuevo.';
+  draft.messageType = 'error';
+}
+
 export function validateCatalogQuickEditDraft(
   draft: CatalogQuickEditDraft
 ): CatalogQuickEditDraft['errors'] {

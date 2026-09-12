@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
@@ -74,6 +74,16 @@ describe('AdminAssembliesDashboardComponent', () => {
     expect(component.visibleAssemblies[0]._id).toBe('assembly-21');
   });
 
+  it('keeps another row draft when duplication reloads the dashboard', () => {
+    const { component, productsAdminService } = createComponent([assembly('a'), assembly('b')]);
+    component.ngOnInit();
+    component.getQuickEditDraft('a').price = 125;
+    productsAdminService.duplicateProduct.and.returnValue(of(assembly('copy')));
+    component.duplicateAssembly('b');
+    expect(component.getQuickEditDraft('a').price).toBe(125);
+    expect(component.isQuickEditDirty('a')).toBeTrue();
+  });
+
   it('filters inside the dashboard without router navigation', () => {
     const { component, router } = createComponent([
       assembly('published'),
@@ -127,6 +137,7 @@ describe('AdminAssembliesDashboardComponent', () => {
   });
 
   it('renders quick-edit controls and detailed actions in the dashboard row', () => {
+    const pendingSave = new Subject<Product>();
     TestBed.configureTestingModule({
       imports: [AdminAssembliesDashboardComponent],
       providers: [
@@ -136,7 +147,7 @@ describe('AdminAssembliesDashboardComponent', () => {
           useValue: {
             getCatalogDashboardStats: () => of({ total: 1 }),
             getAllProducts: () => of({ data: [assembly('assembly')] }),
-            updateProduct: () => of(assembly('assembly')),
+            updateProduct: () => pendingSave,
             duplicateProduct: () => of(assembly('copy')),
             deleteProduct: () => of(true),
           },
@@ -153,5 +164,14 @@ describe('AdminAssembliesDashboardComponent', () => {
     expect(fixture.debugElement.query(By.css('[aria-label="Editar detalles de assembly"]'))).not.toBeNull();
     expect(fixture.debugElement.query(By.css('[aria-label="Duplicar assembly"]'))).not.toBeNull();
     expect(fixture.debugElement.query(By.css('[aria-label="Eliminar assembly"]'))).not.toBeNull();
+
+    fixture.componentInstance.getQuickEditDraft('assembly').price = 125;
+    fixture.componentInstance.saveQuickEdit('assembly');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.getQuickEditDraft('assembly').saving).toBeTrue();
+    pendingSave.next(assembly('assembly', { price: 125 }));
+    pendingSave.complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.getQuickEditDraft('assembly').price).toBe(125);
   });
 });

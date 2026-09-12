@@ -12,10 +12,12 @@ import {
 import {
   buildCatalogQuickEditPatch,
   CatalogQuickEditDraft,
-  createCatalogQuickEditDraft,
+  beginCatalogQuickEditSave,
+  confirmCatalogQuickEditSave,
+  failCatalogQuickEditSave,
+  reconcileCatalogQuickEditDrafts,
   isCatalogQuickEditDirty,
   resetCatalogQuickEditDraft,
-  validateCatalogQuickEditDraft,
 } from '../../shared/admin-catalog-quick-edit.utils';
 import {
   Category,
@@ -122,18 +124,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
 
   saveQuickEdit(productId: string): void {
     const draft = this.getQuickEditDraft(productId);
-    if (draft.saving || !isCatalogQuickEditDirty(draft)) {
-      return;
-    }
-
-    draft.errors = validateCatalogQuickEditDraft(draft);
-    draft.message = '';
-    draft.messageType = '';
-    if (Object.keys(draft.errors).length > 0) {
-      return;
-    }
-
-    draft.saving = true;
+    if (!beginCatalogQuickEditSave(draft)) return;
     this.productsAdminService
       .updateProduct(productId, buildCatalogQuickEditPatch(draft))
       .pipe(takeUntil(this.destroy$))
@@ -147,9 +138,7 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
           this.products = this.products.map((product) =>
             product._id === productId ? savedProduct : product
           );
-          const confirmedDraft = createCatalogQuickEditDraft(savedProduct);
-          confirmedDraft.message = 'Cambios guardados.';
-          confirmedDraft.messageType = 'success';
+          const confirmedDraft = confirmCatalogQuickEditSave(savedProduct);
           this.quickEditDrafts.set(productId, confirmedDraft);
           this.filterProducts(true);
           this.loadStats();
@@ -207,18 +196,6 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
 
   getCategoryLabel(product: Product): string {
     return getAdminProductCategoryLabel(product, this.categories);
-  }
-
-  getStockLabel(product: Product): string {
-    if (product.stock <= 0) {
-      return 'Sin stock';
-    }
-
-    if (product.stock <= product.lowStockAlert) {
-      return `${product.stock} bajo stock`;
-    }
-
-    return `${product.stock} en stock`;
   }
 
   private loadDashboardData(): void {
@@ -283,17 +260,11 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   }
 
   private initializeQuickEditDrafts(products: Product[]): void {
-    this.quickEditDrafts = new Map(
-      products
-        .filter((product): product is Product & { _id: string } => Boolean(product._id))
-        .map((product) => [product._id, createCatalogQuickEditDraft(product)])
-    );
+    this.quickEditDrafts = reconcileCatalogQuickEditDrafts(products, this.quickEditDrafts);
   }
 
   private setQuickEditSaveError(draft: CatalogQuickEditDraft): void {
-    draft.saving = false;
-    draft.message = 'No se pudieron guardar los cambios. Intenta de nuevo.';
-    draft.messageType = 'error';
+    failCatalogQuickEditSave(draft);
     this.cdr.detectChanges();
   }
 }

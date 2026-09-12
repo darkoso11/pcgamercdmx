@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
@@ -76,6 +76,16 @@ describe('AdminProductsDashboardComponent', () => {
     expect(component.visibleProducts[0]._id).toBe('product-21');
   });
 
+  it('keeps another row draft when duplication reloads the dashboard', () => {
+    const { component, productsAdminService } = createComponent([product('a'), product('b')]);
+    component.ngOnInit();
+    component.getQuickEditDraft('a').price = 125;
+    productsAdminService.duplicateProduct.and.returnValue(of(product('copy')));
+    component.duplicateProduct('b');
+    expect(component.getQuickEditDraft('a').price).toBe(125);
+    expect(component.isQuickEditDirty('a')).toBeTrue();
+  });
+
   it('filters inside the dashboard without router navigation', () => {
     const { component, router } = createComponent([
       product('published'),
@@ -139,6 +149,7 @@ describe('AdminProductsDashboardComponent', () => {
   });
 
   it('renders quick-edit controls and detailed actions in the dashboard row', () => {
+    const pendingSave = new Subject<Product>();
     TestBed.configureTestingModule({
       imports: [AdminProductsDashboardComponent],
       providers: [
@@ -149,7 +160,7 @@ describe('AdminProductsDashboardComponent', () => {
             getCatalogDashboardStats: () => of({ total: 1 }),
             getAllCategories: () => of([]),
             getAllProducts: () => of({ data: [product('product')] }),
-            updateProduct: () => of(product('product')),
+            updateProduct: () => pendingSave,
             duplicateProduct: () => of(product('copy')),
             deleteProduct: () => of(true),
           },
@@ -166,6 +177,15 @@ describe('AdminProductsDashboardComponent', () => {
     expect(fixture.debugElement.query(By.css('[aria-label="Editar detalles de product"]'))).not.toBeNull();
     expect(fixture.debugElement.query(By.css('[aria-label="Duplicar product"]'))).not.toBeNull();
     expect(fixture.debugElement.query(By.css('[aria-label="Eliminar product"]'))).not.toBeNull();
+
+    fixture.componentInstance.getQuickEditDraft('product').price = 125;
+    fixture.componentInstance.saveQuickEdit('product');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.getQuickEditDraft('product').saving).toBeTrue();
+    pendingSave.next(product('product', { price: 125 }));
+    pendingSave.complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.getQuickEditDraft('product').price).toBe(125);
   });
 
   it('shows the selected subcategory instead of a generic category label', () => {
