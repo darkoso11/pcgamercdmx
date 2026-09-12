@@ -4,6 +4,7 @@ import {
   createCatalogQuickEditDraft,
   isCatalogQuickEditDirty,
   resetCatalogQuickEditDraft,
+  reconcileCatalogQuickEditDrafts,
   validateCatalogQuickEditDraft,
 } from './admin-catalog-quick-edit.utils';
 
@@ -24,6 +25,44 @@ describe('admin catalog quick edit utilities', () => {
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
     ...overrides,
+  });
+
+  it('preserves a dirty field and refreshes untouched fields after another row changes', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.price = 12000;
+    const result = reconcileCatalogQuickEditDrafts([product({ stock: 4 })], new Map([['product-1', draft]]));
+    expect(result.get('product-1')).toBe(draft);
+    expect(draft.price).toBe(12000);
+    expect(draft.stock).toBe(4);
+    expect(buildCatalogQuickEditPatch(draft)).toEqual({ price: 12000 });
+  });
+
+  it('preserves a pending save object during reload', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.stock = 2;
+    draft.saving = true;
+    const result = reconcileCatalogQuickEditDrafts([product()], new Map([['product-1', draft]]));
+    expect(result.get('product-1')).toBe(draft);
+    expect(draft.saving).toBeTrue();
+    expect(draft.stock).toBe(2);
+  });
+
+  it('warns on concurrent changes and discards to the latest server values', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.price = 12000;
+    reconcileCatalogQuickEditDrafts([product({ price: 13000 })], new Map([['product-1', draft]]));
+    expect(draft.price).toBe(12000);
+    expect(draft.original.price).toBe(13000);
+    expect(draft.messageType).toBe('error');
+    expect(draft.message).toContain('servidor');
+    resetCatalogQuickEditDraft(draft);
+    expect(draft.price).toBe(13000);
+  });
+
+  it('adds new records and removes deleted records', () => {
+    const result = reconcileCatalogQuickEditDrafts([product({ _id: 'new' })], new Map([['old', createCatalogQuickEditDraft(product())]]));
+    expect(result.has('old')).toBeFalse();
+    expect(result.has('new')).toBeTrue();
   });
 
   it('creates an independent draft from the confirmed catalog values', () => {

@@ -1,5 +1,18 @@
 # Auditoría técnica del editor rápido
 
+## Plan de corrección — 2026-09-12
+
+El usuario autorizó corregir los hallazgos. PR existente: #81; no integrar hasta validar.
+
+- [x] H1: reconciliar borradores por ID en los cuatro componentes. Preservar entradas pendientes y objetos en guardado; actualizar campos sin editar y avisar cuando un valor editado cambió también en servidor.
+- [x] H2: deshabilitar controles móviles durante el guardado y verificar el estado con una respuesta diferida.
+- [x] H3: centralizar la reconciliación y el ciclo de guardado compartido, sin modificar filtros ni reglas de negocio.
+- [x] H4/H6: método sin consumidores y línea final sobrante retirados en 7672c2f.
+- [x] H5: retirar los tres archivos de la tarjeta sin consumidores, tras confirmar referencias.
+- [x] Validar con pruebas de regresión, suite completa, build y TypeScript; actualizar resultados abajo.
+
+Las secciones siguientes conservan el diagnóstico original; el cierre se registra al final.
+
 ## Resumen Ejecutivo
 
 - Rama auditada: `dev`, HEAD `6d7a5b9`. Base: `origin/main` en `934b9c5`; ancestro común `a55289f`. Referencias locales disponibles, sin actualizar el remoto durante esta auditoría.
@@ -75,18 +88,24 @@ Archivo añadido:
 
 3. `docs/auditoria-editor-rapido-2026-09-08.md`: este informe, solicitado como entregable de la auditoría.
 
-Archivos eliminados: ninguno. Assets eliminados: ninguno. No se cambiaron reglas de negocio, dependencias, rutas ni configuración del CMS. No se generó commit ni push de esta limpieza.
+Archivos eliminados: `src/app/features/products/admin/assemblies/shared/admin-assembly-card/admin-assembly-card.component.ts`, `.html` y `.spec.ts`, por no tener consumidores de producción. Assets eliminados: ninguno. No se cambiaron reglas de negocio, dependencias, rutas ni configuración del CMS.
 
 ## Elementos Dudosos
 
-- `src/app/features/products/admin/assemblies/shared/admin-assembly-card/admin-assembly-card.component.ts`, su plantilla y pruebas: sin consumidor de producción encontrado después de esta rama. Confirmar si se conservarán para reutilización antes de ampliar el alcance para retirarlos.
 - Los cuatro documentos añadidos de especificación y planificación describen decisiones y validación del editor. No son temporales ni se recomienda eliminarlos como basura.
 - Preservar borradores cuando una operación masiva modifica los mismos campos necesita definir si prevalece la edición local o el resultado masivo; H1 no debe resolverse descartando silenciosamente una de las dos entradas.
 
 ## Validación
 
 - `npm run build`: correcto, 14 rutas prerenderizadas. Advertencia: bundle inicial de 551.89 kB frente al presupuesto de 550 kB (exceso de 1.89 kB). No se atribuye causalidad a esta rama sin un build equivalente de la base.
-- `npx ng test --watch=false`: 272 pruebas exitosas en Chrome Headless. No certifican H1/H2: faltan los escenarios asíncronos descritos.
+- `npx ng test --watch=false`: 270 pruebas exitosas en Chrome Headless, incluyendo regresiones de reconciliación, conservación durante guardado y borrado/alta de filas. Las dos pruebas retiradas correspondían a la tarjeta sin consumidores.
 - `npx tsc --project tsconfig.app.json --noEmit --noUnusedLocals --noUnusedParameters`: correcto.
 - Lint: no existe script `lint` ni target Angular de lint; no se instaló uno para ampliar el alcance.
 - No se repitió la auditoría visual integral ni pruebas E2E autenticadas contra el CMS durante esta revisión.
+
+## Cierre de correcciones
+
+- H1 queda resuelto con `reconcileCatalogQuickEditDrafts`: conserva el objeto sucio o en guardado, actualiza campos no editados y avisa de conflictos del servidor.
+- H2 queda resuelto: los tres controles de la variante móvil reciben `[disabled]` durante la petición y el flujo conserva la respuesta confirmada.
+- H3 queda resuelto parcialmente de forma acotada mediante utilidades compartidas de inicio, confirmación, error y reconciliación; la plantilla permanece específica por dominio para evitar ampliar el cambio.
+- H4, H5 y H6 quedan resueltos en esta rama.
