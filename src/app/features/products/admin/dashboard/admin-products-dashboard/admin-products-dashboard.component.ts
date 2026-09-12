@@ -209,18 +209,6 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
     return getAdminProductCategoryLabel(product, this.categories);
   }
 
-  getStockLabel(product: Product): string {
-    if (product.stock <= 0) {
-      return 'Sin stock';
-    }
-
-    if (product.stock <= product.lowStockAlert) {
-      return `${product.stock} bajo stock`;
-    }
-
-    return `${product.stock} en stock`;
-  }
-
   private loadDashboardData(): void {
     this.productsAdminService
       .getAllCategories()
