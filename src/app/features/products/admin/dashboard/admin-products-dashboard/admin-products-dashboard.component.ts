@@ -1,9 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
-import { CatalogStatusFilter } from '../../shared/admin-catalog-flow.utils';
+import {
+  CatalogDashboardView,
+  CatalogStatusFilter,
+  getCatalogDashboardItems,
+} from '../../shared/admin-catalog-flow.utils';
+import {
+  buildCatalogQuickEditPatch,
+  CatalogQuickEditDraft,
+  beginCatalogQuickEditSave,
+  confirmCatalogQuickEditSave,
+  failCatalogQuickEditSave,
+  reconcileCatalogQuickEditDrafts,
+  isCatalogQuickEditDirty,
+  resetCatalogQuickEditDraft,
+} from '../../shared/admin-catalog-quick-edit.utils';
 import {
   Category,
   CatalogDashboardStats,
@@ -15,14 +30,22 @@ import { getAdminProductCategoryLabel } from '../../shared/admin-product-display
 @Component({
   selector: 'app-admin-products-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-products-dashboard.component.html',
 })
 export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   readonly adminHomeUrl = adminUrl();
   stats: CatalogDashboardStats | null = null;
-  recentProducts: Product[] = [];
+  products: Product[] = [];
+  filteredProducts: Product[] = [];
+  visibleProducts: Product[] = [];
   categories: Category[] = [];
+  selectedView: CatalogDashboardView = 'recent';
+  currentPage = 0;
+  readonly pageSize = 20;
+  totalPages = 1;
+  errorMessage = '';
+  quickEditDrafts = new Map<string, CatalogQuickEditDraft>();
 
   private readonly destroy$ = new Subject<void>();
 
@@ -53,30 +76,126 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
   }
 
   goToStatus(status: CatalogStatusFilter): void {
-    this.router.navigate(
-      [adminUrl('products/list')],
-      { queryParams: { status } }
-    );
+    this.setView(status);
+  }
+
+  setView(view: CatalogDashboardView): void {
+    this.selectedView = view;
+    this.currentPage = 0;
+    this.filterProducts();
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.updatePagination();
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.updatePagination();
+    }
   }
 
   editProduct(productId: string): void {
     this.router.navigate([adminUrl('products'), productId, 'edit']);
   }
 
-  getCategoryLabel(product: Product): string {
-    return getAdminProductCategoryLabel(product, this.categories);
+  getQuickEditDraft(productId: string): CatalogQuickEditDraft {
+    const draft = this.quickEditDrafts.get(productId);
+    if (!draft) {
+      throw new Error(`No existe un borrador de edición rápida para ${productId}.`);
+    }
+    return draft;
   }
 
-  getStockLabel(product: Product): string {
-    if (product.stock <= 0) {
-      return 'Sin stock';
+  isQuickEditDirty(productId: string): boolean {
+    return isCatalogQuickEditDirty(this.getQuickEditDraft(productId));
+  }
+
+  markQuickEditChanged(productId: string): void {
+    const draft = this.getQuickEditDraft(productId);
+    draft.message = '';
+    draft.messageType = '';
+    draft.errors = {};
+  }
+
+  saveQuickEdit(productId: string): void {
+    const draft = this.getQuickEditDraft(productId);
+    if (!beginCatalogQuickEditSave(draft)) return;
+    this.productsAdminService
+      .updateProduct(productId, buildCatalogQuickEditPatch(draft))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (savedProduct) => {
+          if (!savedProduct) {
+            this.setQuickEditSaveError(draft);
+            return;
+          }
+
+          this.products = this.products.map((product) =>
+            product._id === productId ? savedProduct : product
+          );
+          const confirmedDraft = confirmCatalogQuickEditSave(savedProduct);
+          this.quickEditDrafts.set(productId, confirmedDraft);
+          this.filterProducts(true);
+          this.loadStats();
+        },
+        error: () => this.setQuickEditSaveError(draft),
+      });
+  }
+
+  discardQuickEdit(productId: string): void {
+    const draft = this.getQuickEditDraft(productId);
+    if (!draft.saving) {
+      resetCatalogQuickEditDraft(draft);
+    }
+  }
+
+  handleQuickEditKeydown(event: KeyboardEvent, productId: string): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.saveQuickEdit(productId);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.discardQuickEdit(productId);
+    }
+  }
+
+  duplicateProduct(productId: string): void {
+    this.productsAdminService
+      .duplicateProduct(productId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadProducts();
+        this.loadStats();
+      });
+  }
+
+  deleteProduct(productId: string): void {
+    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      return;
     }
 
-    if (product.stock <= product.lowStockAlert) {
-      return `${product.stock} bajo stock`;
-    }
+    this.productsAdminService
+      .deleteProduct(productId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((deleted) => {
+        if (!deleted) {
+          this.errorMessage = 'No se pudo eliminar el producto. Intenta de nuevo.';
+          return;
+        }
 
-    return `${product.stock} en stock`;
+        this.errorMessage = '';
+        this.loadProducts();
+        this.loadStats();
+      });
+  }
+
+  getCategoryLabel(product: Product): string {
+    return getAdminProductCategoryLabel(product, this.categories);
   }
 
   private loadDashboardData(): void {
@@ -93,6 +212,11 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
         },
       });
 
+    this.loadStats();
+    this.loadProducts();
+  }
+
+  private loadStats(): void {
     this.productsAdminService
       .getCatalogDashboardStats('products')
       .pipe(takeUntil(this.destroy$))
@@ -100,13 +224,47 @@ export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
         this.stats = stats;
         this.cdr.detectChanges();
       });
+  }
 
+  private loadProducts(): void {
     this.productsAdminService
-      .getRecentCatalogItems('products', 5)
+      .getAllProducts()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((products) => {
-        this.recentProducts = products;
+      .subscribe((response) => {
+        this.products = response.data || [];
+        this.initializeQuickEditDrafts(this.products);
+        this.filterProducts();
         this.cdr.detectChanges();
       });
+  }
+
+  private filterProducts(preservePage = false): void {
+    if (!preservePage) {
+      this.currentPage = 0;
+    }
+    this.filteredProducts = getCatalogDashboardItems(
+      this.products,
+      'products',
+      this.selectedView,
+      this.pageSize
+    );
+    this.totalPages = Math.max(1, Math.ceil(this.filteredProducts.length / this.pageSize));
+    this.currentPage = Math.min(this.currentPage, this.totalPages - 1);
+    this.updatePagination();
+  }
+
+  private updatePagination(): void {
+    const start = this.currentPage * this.pageSize;
+    this.visibleProducts = this.filteredProducts.slice(start, start + this.pageSize);
+    this.cdr.detectChanges();
+  }
+
+  private initializeQuickEditDrafts(products: Product[]): void {
+    this.quickEditDrafts = reconcileCatalogQuickEditDrafts(products, this.quickEditDrafts);
+  }
+
+  private setQuickEditSaveError(draft: CatalogQuickEditDraft): void {
+    failCatalogQuickEditSave(draft);
+    this.cdr.detectChanges();
   }
 }

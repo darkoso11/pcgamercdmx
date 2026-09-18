@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { BUSINESS_INFO } from '../../shared/config/business-info';
 
 @Component({
   selector: 'app-about',
@@ -8,4 +9,6 @@ import { RouterModule } from '@angular/router';
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.css']
 })
-export class AboutComponent {}
+export class AboutComponent {
+  readonly business = BUSINESS_INFO;
+}

@@ -45,15 +45,142 @@
       {{ errorMessage }}
     </section>
 
-    <section *ngIf="!loading && filteredAssemblies.length" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-      <app-admin-assembly-card
-        *ngFor="let assembly of filteredAssemblies"
-        [assembly]="assembly"
-        [managementMode]="true"
-        (edit)="editAssembly($event)"
-        (duplicate)="duplicateAssembly($event)"
-        (delete)="deleteAssembly($event)"
-      ></app-admin-assembly-card>
+    <section *ngIf="!loading && filteredAssemblies.length" class="overflow-hidden rounded-xl border border-white/10 bg-pc-admin-panel">
+      <div class="hidden overflow-x-auto md:block">
+        <table class="w-full min-w-[820px] text-sm">
+          <thead class="border-b border-white/10 bg-pc-surface-deep text-left text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-4 py-3">Ensamble</th>
+              <th class="px-3 py-3">Precio</th>
+              <th class="px-3 py-3">Stock</th>
+              <th class="px-3 py-3 text-center">Publicación</th>
+              <th class="px-4 py-3 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let assembly of filteredAssemblies">
+              <tr class="border-t border-white/10 transition hover:bg-white/5" [class.bg-cyan-950]="isQuickEditDirty(assembly._id!)">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <img *ngIf="assembly.image" [src]="assembly.image" [alt]="''" class="h-11 w-14 rounded-md object-cover" />
+                    <div>
+                      <div class="font-semibold text-white">{{ assembly.title }}</div>
+                      <div class="mt-1 text-xs text-slate-500">{{ assembly.slug }} · {{ getStockLabel(assembly) }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="min-w-40 px-3 py-3">
+                  <label class="relative block">
+                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      [ngModel]="getQuickEditDraft(assembly._id!).price"
+                      (ngModelChange)="getQuickEditDraft(assembly._id!).price = $event; markQuickEditChanged(assembly._id!)"
+                      (keydown)="handleQuickEditKeydown($event, assembly._id!)"
+                      [disabled]="getQuickEditDraft(assembly._id!).saving"
+                      [attr.aria-label]="'Precio de ' + assembly.title"
+                      [attr.aria-invalid]="!!getQuickEditDraft(assembly._id!).errors.price"
+                      [attr.data-testid]="'quick-edit-price-' + assembly._id"
+                      class="w-full rounded-md border bg-pc-admin-bg py-2 pl-7 pr-2 text-right font-bold text-cyan-200 outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60"
+                      [ngClass]="getQuickEditDraft(assembly._id!).price !== getQuickEditDraft(assembly._id!).original.price ? 'border-cyan-400' : 'border-white/20'"
+                    />
+                  </label>
+                </td>
+                <td class="min-w-24 px-3 py-3">
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    [ngModel]="getQuickEditDraft(assembly._id!).stock"
+                    (ngModelChange)="getQuickEditDraft(assembly._id!).stock = $event; markQuickEditChanged(assembly._id!)"
+                    (keydown)="handleQuickEditKeydown($event, assembly._id!)"
+                    [disabled]="getQuickEditDraft(assembly._id!).saving"
+                    [attr.aria-label]="'Stock de ' + assembly.title"
+                    [attr.aria-invalid]="!!getQuickEditDraft(assembly._id!).errors.stock"
+                    [attr.data-testid]="'quick-edit-stock-' + assembly._id"
+                    class="w-full rounded-md border bg-pc-admin-bg px-2 py-2 text-center font-semibold text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60"
+                    [ngClass]="getQuickEditDraft(assembly._id!).stock !== getQuickEditDraft(assembly._id!).original.stock ? 'border-cyan-400' : 'border-white/20'"
+                  />
+                </td>
+                <td class="min-w-36 px-3 py-3">
+                  <label class="flex cursor-pointer items-center justify-center gap-2">
+                    <input
+                      type="checkbox"
+                      [ngModel]="getQuickEditDraft(assembly._id!).published"
+                      (ngModelChange)="getQuickEditDraft(assembly._id!).published = $event; markQuickEditChanged(assembly._id!)"
+                      (keydown)="handleQuickEditKeydown($event, assembly._id!)"
+                      [disabled]="getQuickEditDraft(assembly._id!).saving"
+                      [attr.aria-label]="'Publicación de ' + assembly.title"
+                      [attr.data-testid]="'quick-edit-published-' + assembly._id"
+                      class="peer sr-only"
+                    />
+                    <span class="relative h-6 w-11 rounded-full bg-slate-600 transition after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:bg-cyan-600 peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-300 peer-disabled:opacity-60"></span>
+                    <span class="text-xs font-semibold" [ngClass]="getQuickEditDraft(assembly._id!).published ? 'text-cyan-200' : 'text-slate-400'">
+                      {{ getQuickEditDraft(assembly._id!).published ? 'Publicado' : 'Oculto' }}
+                    </span>
+                  </label>
+                </td>
+                <td class="min-w-52 px-4 py-3">
+                  <div class="flex flex-wrap justify-center gap-2">
+                    <button *ngIf="isQuickEditDirty(assembly._id!) || getQuickEditDraft(assembly._id!).messageType === 'error'" type="button" (click)="saveQuickEdit(assembly._id!)" [disabled]="getQuickEditDraft(assembly._id!).saving || !isQuickEditDirty(assembly._id!)" class="rounded-md bg-cyan-600 px-2.5 py-1.5 text-xs font-bold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-50">{{ getQuickEditDraft(assembly._id!).saving ? 'Guardando…' : 'Guardar' }}</button>
+                    <button *ngIf="isQuickEditDirty(assembly._id!) || getQuickEditDraft(assembly._id!).messageType === 'error'" type="button" (click)="discardQuickEdit(assembly._id!)" [disabled]="getQuickEditDraft(assembly._id!).saving" class="rounded-md border border-white/20 px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:text-white disabled:opacity-50">Descartar</button>
+                    <button type="button" (click)="editAssembly(assembly._id!)" class="rounded-md px-2 py-1.5 text-xs font-semibold text-violet-300 hover:text-violet-100">Editar</button>
+                    <button type="button" (click)="duplicateAssembly(assembly._id!)" class="rounded-md px-2 py-1.5 text-xs font-semibold text-amber-300 hover:text-amber-100">Duplicar</button>
+                    <button type="button" (click)="deleteAssembly(assembly._id!)" class="rounded-md px-2 py-1.5 text-xs font-semibold text-red-300 hover:text-red-100">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="getQuickEditDraft(assembly._id!).message || getQuickEditDraft(assembly._id!).errors.price || getQuickEditDraft(assembly._id!).errors.stock">
+                <td colspan="5" class="border-t border-white/5 px-4 py-2">
+                  <div role="status" aria-live="polite" class="text-xs" [ngClass]="getQuickEditDraft(assembly._id!).messageType === 'error' || getQuickEditDraft(assembly._id!).errors.price || getQuickEditDraft(assembly._id!).errors.stock ? 'text-red-300' : 'text-emerald-300'">
+                    {{ getQuickEditDraft(assembly._id!).errors.price || getQuickEditDraft(assembly._id!).errors.stock || getQuickEditDraft(assembly._id!).message }}
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="divide-y divide-white/10 md:hidden">
+        <article *ngFor="let assembly of filteredAssemblies" class="p-4" [class.bg-cyan-950]="isQuickEditDirty(assembly._id!)">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="font-semibold text-white">{{ assembly.title }}</div>
+              <div class="mt-1 text-xs text-slate-400">Ensamble · {{ getStockLabel(assembly) }}</div>
+            </div>
+            <span class="rounded-full bg-white/10 px-2 py-1 text-[10px] font-semibold text-slate-300">{{ getQuickEditDraft(assembly._id!).published ? 'Publicado' : 'Oculto' }}</span>
+          </div>
+          <div class="mt-4 grid grid-cols-[1fr_0.7fr] gap-3">
+            <label class="block text-xs text-slate-400">Precio
+              <input type="number" min="0" step="0.01" [ngModel]="getQuickEditDraft(assembly._id!).price" (ngModelChange)="getQuickEditDraft(assembly._id!).price = $event; markQuickEditChanged(assembly._id!)" (keydown)="handleQuickEditKeydown($event, assembly._id!)" [disabled]="getQuickEditDraft(assembly._id!).saving" [attr.aria-label]="'Precio de ' + assembly.title" class="mt-1 w-full rounded-md border border-white/20 bg-pc-admin-bg px-3 py-2 text-white outline-none focus:border-cyan-300" />
+            </label>
+            <label class="block text-xs text-slate-400">Stock
+              <input type="number" min="0" step="1" [ngModel]="getQuickEditDraft(assembly._id!).stock" (ngModelChange)="getQuickEditDraft(assembly._id!).stock = $event; markQuickEditChanged(assembly._id!)" (keydown)="handleQuickEditKeydown($event, assembly._id!)" [disabled]="getQuickEditDraft(assembly._id!).saving" [attr.aria-label]="'Stock de ' + assembly.title" class="mt-1 w-full rounded-md border border-white/20 bg-pc-admin-bg px-3 py-2 text-white outline-none focus:border-cyan-300" />
+            </label>
+          </div>
+          <div class="my-4 flex items-center justify-between border-y border-white/10 py-3">
+            <span class="text-xs text-slate-300">Visible en la tienda</span>
+            <label class="flex cursor-pointer items-center gap-2">
+              <input type="checkbox" [ngModel]="getQuickEditDraft(assembly._id!).published" (ngModelChange)="getQuickEditDraft(assembly._id!).published = $event; markQuickEditChanged(assembly._id!)" [disabled]="getQuickEditDraft(assembly._id!).saving" [attr.aria-label]="'Publicación de ' + assembly.title" class="peer sr-only" />
+              <span class="relative h-6 w-11 rounded-full bg-slate-600 transition after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:bg-cyan-600 peer-checked:after:translate-x-5"></span>
+              <span class="text-xs">{{ getQuickEditDraft(assembly._id!).published ? 'Publicado' : 'Oculto' }}</span>
+            </label>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button *ngIf="isQuickEditDirty(assembly._id!) || getQuickEditDraft(assembly._id!).messageType === 'error'" type="button" (click)="saveQuickEdit(assembly._id!)" [disabled]="getQuickEditDraft(assembly._id!).saving || !isQuickEditDirty(assembly._id!)" class="rounded-md bg-cyan-600 px-3 py-2 text-xs font-bold text-slate-950 disabled:opacity-50">{{ getQuickEditDraft(assembly._id!).saving ? 'Guardando…' : 'Guardar' }}</button>
+            <button *ngIf="isQuickEditDirty(assembly._id!) || getQuickEditDraft(assembly._id!).messageType === 'error'" type="button" (click)="discardQuickEdit(assembly._id!)" class="rounded-md border border-white/20 px-3 py-2 text-xs font-semibold text-slate-200">Descartar</button>
+            <button type="button" (click)="editAssembly(assembly._id!)" class="px-2 py-2 text-xs font-semibold text-violet-300">Editar</button>
+            <button type="button" (click)="duplicateAssembly(assembly._id!)" class="px-2 py-2 text-xs font-semibold text-amber-300">Duplicar</button>
+            <button type="button" (click)="deleteAssembly(assembly._id!)" class="px-2 py-2 text-xs font-semibold text-red-300">Eliminar</button>
+          </div>
+          <p *ngIf="getQuickEditDraft(assembly._id!).message || getQuickEditDraft(assembly._id!).errors.price || getQuickEditDraft(assembly._id!).errors.stock" role="status" aria-live="polite" class="mt-3 text-xs" [ngClass]="getQuickEditDraft(assembly._id!).messageType === 'error' || getQuickEditDraft(assembly._id!).errors.price || getQuickEditDraft(assembly._id!).errors.stock ? 'text-red-300' : 'text-emerald-300'">
+            {{ getQuickEditDraft(assembly._id!).errors.price || getQuickEditDraft(assembly._id!).errors.stock || getQuickEditDraft(assembly._id!).message }}
+          </p>
+        </article>
+      </div>
     </section>
 
     <section *ngIf="!loading && !filteredAssemblies.length" class="rounded-lg border border-white/10 bg-pc-admin-panel p-10 text-center">

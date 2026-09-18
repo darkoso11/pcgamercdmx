@@ -1,7 +1,10 @@
-import { convertToParamMap } from '@angular/router';
-import { of } from 'rxjs';
+import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { of, throwError } from 'rxjs';
 import { adminUrl } from '../../../../admin/admin-route.config';
-import { Product } from '../../shared/products-admin.service';
+import { AuthService } from '../../../../admin/services/auth.service';
+import { Product, ProductsAdminService } from '../../shared/products-admin.service';
 import { AdminProductListComponent } from './admin-product-list.component';
 
 describe('AdminProductListComponent', () => {
@@ -42,6 +45,15 @@ describe('AdminProductListComponent', () => {
       getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
       duplicateProduct: jasmine.createSpy('duplicateProduct').and.returnValue(of(undefined)),
       deleteProduct: jasmine.createSpy('deleteProduct').and.returnValue(deleteResult),
+      updateProduct: jasmine.createSpy('updateProduct').and.callFake((id: string, changes: Partial<Product>) => {
+        const source = [
+          product('out', 'componentes', 0),
+          product('draft', 'perifericos', 8, false),
+          product('low', 'componentes', 2),
+          product('healthy', 'componentes', 10),
+        ].find((item) => item._id === id);
+        return of(source ? { ...source, ...changes } : undefined);
+      }),
       bulkUpdateProducts: jasmine.createSpy('bulkUpdateProducts').and.callFake((ids: string[]) => of({
         successfulIds: ids,
         failedIds: [],
@@ -415,5 +427,139 @@ describe('AdminProductListComponent', () => {
     expect(productsAdminService.deleteProduct).toHaveBeenCalledOnceWith('123');
     expect(productsAdminService.getAllProducts).not.toHaveBeenCalled();
     expect(window.alert).toHaveBeenCalledOnceWith('No se pudo eliminar el producto. Intenta de nuevo.');
+  });
+
+  it('initializes an independent quick-edit draft for every listed product', () => {
+    const { component } = createComponent();
+
+    component.ngOnInit();
+
+    expect(component.getQuickEditDraft('healthy').original).toEqual({
+      price: 100,
+      stock: 10,
+      published: true,
+    });
+    expect(component.isQuickEditDirty('healthy')).toBeFalse();
+  });
+
+  it('saves only changed quick-edit fields and confirms the returned product', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    const draft = component.getQuickEditDraft('healthy');
+    draft.stock = 4;
+    draft.published = false;
+
+    component.saveQuickEdit('healthy');
+
+    expect(productsAdminService.updateProduct).toHaveBeenCalledOnceWith('healthy', {
+      stock: 4,
+      published: false,
+    });
+    expect(component.products.find((item) => item._id === 'healthy')?.stock).toBe(4);
+    expect(component.getQuickEditDraft('healthy').message).toBe('Cambios guardados.');
+    expect(component.isQuickEditDirty('healthy')).toBeFalse();
+  });
+
+  it('keeps an invalid quick-edit draft without calling the service', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.getQuickEditDraft('healthy').stock = 1.5;
+
+    component.saveQuickEdit('healthy');
+
+    expect(productsAdminService.updateProduct).not.toHaveBeenCalled();
+    expect(component.getQuickEditDraft('healthy').errors.stock).toContain('entera');
+  });
+
+  it('keeps changed values available for retry when a quick save fails', () => {
+    const { component, productsAdminService } = createComponent();
+    productsAdminService.updateProduct.and.returnValue(throwError(() => new Error('network')));
+    component.ngOnInit();
+    component.getQuickEditDraft('healthy').price = 125;
+
+    component.saveQuickEdit('healthy');
+
+    expect(component.getQuickEditDraft('healthy').price).toBe(125);
+    expect(component.getQuickEditDraft('healthy').message).toBe(
+      'No se pudieron guardar los cambios. Intenta de nuevo.'
+    );
+    expect(component.isQuickEditDirty('healthy')).toBeTrue();
+  });
+
+  it('discards quick-edit changes for only the requested row', () => {
+    const { component } = createComponent();
+    component.ngOnInit();
+    component.getQuickEditDraft('healthy').price = 125;
+    component.getQuickEditDraft('low').stock = 1;
+
+    component.discardQuickEdit('healthy');
+
+    expect(component.getQuickEditDraft('healthy').price).toBe(100);
+    expect(component.getQuickEditDraft('low').stock).toBe(1);
+  });
+
+  it('uses Enter to save and Escape to discard the focused row', () => {
+    const { component, productsAdminService } = createComponent();
+    component.ngOnInit();
+    component.getQuickEditDraft('healthy').price = 125;
+    const enter = new KeyboardEvent('keydown', { key: 'Enter' });
+    const escape = new KeyboardEvent('keydown', { key: 'Escape' });
+    spyOn(enter, 'preventDefault');
+    spyOn(escape, 'preventDefault');
+
+    component.handleQuickEditKeydown(enter, 'healthy');
+    component.getQuickEditDraft('low').stock = 1;
+    component.handleQuickEditKeydown(escape, 'low');
+
+    expect(productsAdminService.updateProduct).toHaveBeenCalledOnceWith('healthy', { price: 125 });
+    expect(component.getQuickEditDraft('low').stock).toBe(2);
+    expect(enter.preventDefault).toHaveBeenCalled();
+    expect(escape.preventDefault).toHaveBeenCalled();
+  });
+
+  it('reapplies the active status filter after a quick save', () => {
+    const { component } = createComponent('published');
+    component.ngOnInit();
+    component.getQuickEditDraft('healthy').published = false;
+
+    component.saveQuickEdit('healthy');
+
+    expect(component.filteredProducts.map((item) => item._id)).not.toContain('healthy');
+  });
+
+  it('renders accessible quick-edit controls and keeps bulk actions available', () => {
+    TestBed.configureTestingModule({
+      imports: [AdminProductListComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: { logout: () => undefined } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+        {
+          provide: ProductsAdminService,
+          useValue: {
+            getAllProducts: () => of({ data: [product('healthy', 'componentes', 10)], total: 1 }),
+            getAllCategories: () => of([]),
+            updateProduct: () => of(product('healthy', 'componentes', 10)),
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(AdminProductListComponent);
+
+    fixture.detectChanges();
+    fixture.componentInstance.toggleProductSelection('healthy', true);
+    fixture.detectChanges();
+
+    const priceInput = fixture.debugElement.query(By.css('[data-testid="quick-edit-price-healthy"]'));
+    const stockInput = fixture.debugElement.query(By.css('[data-testid="quick-edit-stock-healthy"]'));
+    const publishedInput = fixture.debugElement.query(By.css('[data-testid="quick-edit-published-healthy"]'));
+    expect(priceInput.attributes['aria-label']).toContain('healthy');
+    expect(stockInput.attributes['aria-label']).toContain('healthy');
+    expect(publishedInput.attributes['aria-label']).toContain('healthy');
+    expect(fixture.nativeElement.textContent).toContain('Publicar');
+    expect(fixture.nativeElement.textContent).toContain('Desactivar');
   });
 });
