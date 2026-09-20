@@ -2,8 +2,16 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './features/admin/services/auth.guard';
 import { adminRoute } from './features/admin/admin-route.config';
 import { HIGH_END_PC_SEO } from './features/high-end-pc/high-end-pc.seo';
+import { COMMERCIAL_PAGES } from './features/commercial-pages/commercial-pages.config';
+import { COMMERCIAL_IMAGES } from './features/commercial-pages/commercial-images';
 
 export const routes: Routes = [
+  ...COMMERCIAL_PAGES.map(page => ({
+    path: page.path,
+    loadComponent: () => import('./features/commercial-pages/commercial-page.component').then(m => m.CommercialPageComponent),
+    title: page.title,
+    data: { commercialPage: page.key, description: page.description, keywords: page.keywords, image: COMMERCIAL_IMAGES[page.key] },
+  })),
   {
     path: '',
     loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
