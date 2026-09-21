@@ -1,0 +1,65 @@
+<div class="commercial-page">
+  <header class="hero shell">
+    <div class="hero-copy">
+      <nav aria-label="Ruta de navegación" class="breadcrumbs"><a routerLink="/">Inicio</a><span>/</span><a routerLink="/productos">Productos</a><span>/</span><span>{{ config.label }}</span></nav>
+      <p class="eyebrow">PC Gamer CDMX · Equipos a tu medida</p>
+      <h1>{{ page.heading }}</h1>
+      @for (paragraph of page.intro; track $index) { <div class="copy" [innerHTML]="paragraph"></div> }
+      <div class="actions">
+        @for (action of page.heroActions; track action.label) { <a class="button primary" [routerLink]="action.href">{{ action.label }}</a> }
+        <a class="button" href="#modelos">Explorar {{ config.key === 'componentes' ? 'componentes' : 'modelos' }}</a>
+      </div>
+    </div>
+    <figure class="hero-image"><img [src]="page.cards[0].image.src" [alt]="page.cards[0].image.alt" [title]="page.cards[0].image.title" [width]="page.cards[0].image.width" [height]="page.cards[0].image.height" fetchpriority="high"></figure>
+  </header>
+
+  <section id="modelos" class="shell catalog" aria-labelledby="catalog-title">
+    <p class="eyebrow">Encuentra tu próximo setup</p>
+    <h2 id="catalog-title">{{ page.catalogHeading }}</h2>
+    <div class="product-grid" [class.components-grid]="config.key === 'componentes'">
+      @for (card of page.cards; track card.name; let index = $index) {
+        <article class="product-card" data-product-card [id]="'producto-' + (index + 1)">
+          <div class="product-image"><img [src]="card.image.src" [alt]="card.image.alt" [title]="card.image.title" [width]="card.image.width" [height]="card.image.height" loading="lazy"></div>
+          <div class="card-body"><h3>{{ card.name }}</h3>
+            @if (card.price) { <p class="price">{{ card.price }} <span>MXN</span></p> }
+            <a class="button" [routerLink]="card.action.href" [attr.aria-label]="card.action.label + ': ' + card.name">{{ card.action.label }}</a>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+
+  <div class="shell editorial">
+    @for (section of page.sections; track $index) {
+      <section class="content-section">
+        @if (section.heading) { <h2>{{ section.heading }}</h2> }
+        <div class="section-blocks" [class.spec-grid]="section.blocks.length > 3">
+          @for (block of section.blocks; track $index) {
+            <div class="text-block">
+              @if (block.heading) { <h3>{{ block.heading }}</h3> }
+              @for (paragraph of block.paragraphs; track $index) { <div class="copy" [innerHTML]="paragraph"></div> }
+            </div>
+          }
+        </div>
+        @if (section.images.length) {
+          <div class="software-grid">
+            @for (image of section.images; track image.src) { <div><img [src]="image.src" [alt]="image.alt" [title]="image.title" [width]="image.width" [height]="image.height" loading="lazy"></div> }
+          </div>
+        }
+        @if (section.actions.length) {
+          <div class="actions">@for (action of section.actions; track action.label) { <a class="button primary" [routerLink]="action.href">{{ action.label }}</a> }</div>
+        }
+      </section>
+    }
+  </div>
+
+  <section class="shell faq" aria-labelledby="faq-title">
+    <p class="eyebrow">Te ayudamos a elegir</p><h2 id="faq-title">Preguntas frecuentes</h2>
+    @for (faq of page.faqs; track faq.question) { <details><summary>{{ faq.question }}</summary><p class="copy">{{ faq.answer }}</p></details> }
+  </section>
+
+  <nav class="shell related" aria-label="Más opciones para tu PC">
+    <h2>Más opciones para tu PC</h2>
+    <div class="actions">@for (related of relatedPages; track related.key) { <a class="button" [routerLink]="'/' + related.path">{{ related.label }}</a> }<a class="button" routerLink="/productos/perifericos">Periféricos</a></div>
+  </nav>
+</div>

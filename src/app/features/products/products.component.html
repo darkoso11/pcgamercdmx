@@ -38,6 +38,11 @@
             </span>
           </a>
         </nav>
+        <nav aria-label="Computadoras y componentes por uso" class="flex flex-wrap justify-center gap-3">
+          @for (page of commercialPages; track page.key) {
+            <a [routerLink]="'/' + page.path" class="rounded-lg border border-cyan-300/40 px-4 py-3 text-sm text-cyan-100 hover:bg-cyan-300/10">{{ page.label }}</a>
+          }
+        </nav>
       </div>
     </div>
   </div>
