@@ -1,4 +1,8 @@
 /ensambles
+/pc-para-edicion-de-audio-y-video
+/workstation
+/streaming-pc
+/componentes-para-pc-gamer
 /pc-gamer-gama-alta-cdmx
 /productos
 /productos/hardware-accesorios
