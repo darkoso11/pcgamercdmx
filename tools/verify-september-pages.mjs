@@ -1,10 +1,8 @@
 import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
 
 const base = process.env.SEPTEMBER_BASE_URL || 'http://127.0.0.1:4266';
 const paths = ['pc-para-edicion-de-audio-y-video', 'workstation', 'streaming-pc', 'componentes-para-pc-gamer'];
-await mkdir('test-results/september', { recursive: true });
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
@@ -37,7 +35,6 @@ try {
       assert.ok(await page.locator('app-commercial-page details').first().getAttribute('open') !== null);
       await page.locator('app-commercial-page summary').first().click();
       await page.evaluate(() => scrollTo(0, 0));
-      await page.screenshot({ path: `test-results/september/${path}-${width}.png`, fullPage: true });
       console.log(`${width}px ${path}: HTML, SEO, cards, images, FAQ, overflow OK`);
     }
   }

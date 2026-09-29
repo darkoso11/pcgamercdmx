@@ -1,10 +1,8 @@
 import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
 
 const base = process.env.AUGUST_BASE_URL || 'http://127.0.0.1:4266';
 const paths = ['computadora-para-diseno-grafico', 'pc-gamer-gama-media', 'pc-gamer-gama-alta'];
-await mkdir('test-results/august', { recursive: true });
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
@@ -40,7 +38,6 @@ try {
       await page.locator('summary').first().click();
       await expect(page.locator('details').first()).toHaveAttribute('open', '');
       await page.evaluate(() => scrollTo(0, 0));
-      await page.screenshot({ path: `test-results/august/${path}-${width}.png`, fullPage: true });
       console.log(`${width}px ${path}: prerender, head, GA initialization, images and layout OK`);
     }
   }
