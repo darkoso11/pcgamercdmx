@@ -1,6 +1,6 @@
-"""Build the September editorial data from the reviewed source transcriptions.
+"""Build editorial data from the versioned source transcriptions.
 
-Run after placing original Drive image bytes in .tmp-september-assets/<drive-id>.
+Optional new Drive images go in .local-run/<month>-assets/<drive-id>.
 Images are copied unchanged; no runtime Drive dependency is introduced.
 """
 from pathlib import Path
@@ -47,7 +47,7 @@ def media(lines, topic, number):
     drive_id = re.search(r'/file/d/([^/]+)', raw)[1]
     title = next(line.split(':', 1)[1].strip() for line in lines if line.startswith('Título:'))
     alt = next(line.split(':', 1)[1].strip() for line in lines if line.startswith('Alt Text:'))
-    original = ROOT / ('.local-run/august-assets' if IS_AUGUST else '.tmp-september-assets') / drive_id
+    original = ROOT / '.local-run' / ('august-assets' if IS_AUGUST else 'september-assets') / drive_id
     if not original.exists() and drive_id in previous_images:
         original = ROOT / 'src' / previous_images[drive_id]['src'].lstrip('/')
     with Image.open(original) as image:

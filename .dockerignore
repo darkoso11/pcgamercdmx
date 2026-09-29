@@ -11,6 +11,13 @@ coverage
 .vscode
 .qa
 .tmp-*.png
+.tmp-*
+.local-run
+.codex-remote-attachments
+test-results
+playwright-report
+docs
+plan
 *.swp
 *.swo
 *~
