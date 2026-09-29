@@ -8,6 +8,7 @@ await mkdir('test-results/september', { recursive: true });
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
+  await page.route('**/www.googletagmanager.com/gtag/js?*', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   for (const width of [1440, 390]) {
@@ -47,7 +48,7 @@ try {
   assert.match(await page.locator('#commercial-faq-schema').textContent(), /streaming PC/);
   await page.goto(`${base}/productos/perifericos`, { waitUntil: 'domcontentloaded' });
   assert.match(page.url(), /productos\/perifericos/);
-  await expect(page.locator('nav[aria-label="Computadoras y componentes por uso"] a')).toHaveCount(4);
+  await expect(page.locator('nav[aria-label="Computadoras y componentes por uso"] a')).toHaveCount(7);
   assert.deepEqual(errors, []);
 } finally {
   await browser.close();

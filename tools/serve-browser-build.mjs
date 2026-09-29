@@ -16,6 +16,10 @@ await access(indexPath);
 const app = express();
 app.disable('x-powered-by');
 app.use(compression());
+app.get(['/pc-gamer-gama-alta-cdmx', '/pc-gamer-gama-alta-cdmx/'], (request, response) => {
+  const query = request.originalUrl.includes('?') ? request.originalUrl.slice(request.originalUrl.indexOf('?')) : '';
+  response.redirect(301, `/pc-gamer-gama-alta${query}`);
+});
 // Serve each prerendered route's own index.html before falling back to the SPA shell.
 // This preserves SSR content and TransferState for direct links and remote previews.
 app.use(express.static(browserRoot, { index: 'index.html' }));

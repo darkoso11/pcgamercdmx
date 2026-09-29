@@ -1,4 +1,7 @@
+import { AUGUST_PAGES } from './august-pages.config';
+
 export const COMMERCIAL_PAGES = [
+  ...AUGUST_PAGES,
   {
     key: 'edicion', path: 'pc-para-edicion-de-audio-y-video', label: 'Edición de audio y video',
     title: 'Cotiza tu PC para edición de audio y video | PC Gamer CDMX',

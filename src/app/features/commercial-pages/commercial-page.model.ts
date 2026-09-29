@@ -13,7 +13,7 @@ export interface CommercialContent {
   intro: string[];
   heroActions: EditorialAction[];
   catalogHeading: string;
-  cards: { name: string; image: EditorialImage; price: string; action: EditorialAction }[];
+  cards: { name: string; image: EditorialImage; price: string; action: EditorialAction; specs?: string[] }[];
   sections: {
     heading: string;
     blocks: { heading: string; paragraphs: string[] }[];

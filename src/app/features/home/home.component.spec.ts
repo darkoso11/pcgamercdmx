@@ -147,7 +147,7 @@ describe('HomeComponent', () => {
     const [packagesBlock] = await fixture.getDeferBlocks();
     await packagesBlock.render(DeferBlockState.Complete);
     const link = fixture.nativeElement.querySelector(
-      'a[href="/pc-gamer-gama-alta-cdmx"]'
+      'a[href="/pc-gamer-gama-alta"]'
     ) as HTMLAnchorElement | null;
 
     expect(link).not.toBeNull();

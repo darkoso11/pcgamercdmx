@@ -1,5 +1,5 @@
-import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Inject, Injectable } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
 import { BUSINESS_INFO } from '../../shared/config/business-info';
@@ -157,12 +157,12 @@ export class AnalyticsService {
   private loaded = false;
 
   constructor(
-    @Inject(DOCUMENT) private readonly document: Document,
-    @Inject(PLATFORM_ID) private readonly platformId: object
+    @Inject(DOCUMENT) private readonly document: Document
   ) {}
 
   init(): void {
-    if (!isPlatformBrowser(this.platformId) || this.loaded) {
+    // Prerender writes the tag into HTML; hydration must reuse it.
+    if (this.loaded || this.document.getElementById('google-tag-loader')) {
       return;
     }
 
@@ -174,6 +174,7 @@ export class AnalyticsService {
     }
 
     const gtagScript = this.document.createElement('script');
+    gtagScript.id = 'google-tag-loader';
     gtagScript.async = true;
     gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
     this.document.head.appendChild(gtagScript);
