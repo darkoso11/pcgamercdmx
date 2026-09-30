@@ -21,6 +21,9 @@
         <article class="product-card" data-product-card [id]="'producto-' + (index + 1)">
           <div class="product-image"><img [src]="card.image.src" [alt]="card.image.alt" [title]="card.image.title" [width]="card.image.width" [height]="card.image.height" loading="lazy"></div>
           <div class="card-body"><h3>{{ card.name }}</h3>
+            @if (card.specs?.length) {
+              <ul class="assembly-specs">@for (spec of card.specs; track $index) { <li>{{ spec }}</li> }</ul>
+            }
             @if (card.price) { <p class="price">{{ card.price }} <span>MXN</span></p> }
             <a class="button" [routerLink]="card.action.href" [attr.aria-label]="card.action.label + ': ' + card.name">{{ card.action.label }}</a>
           </div>

@@ -1,6 +1,6 @@
-"""Build the September editorial data from the reviewed source transcriptions.
+"""Build editorial data from the versioned source transcriptions.
 
-Run after placing original Drive image bytes in .tmp-september-assets/<drive-id>.
+Optional new Drive images go in .local-run/<month>-assets/<drive-id>.
 Images are copied unchanged; no runtime Drive dependency is introduced.
 """
 from pathlib import Path
@@ -10,16 +10,20 @@ import html
 import shutil
 import unicodedata
 from PIL import Image
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--month', choices=['septiembre', 'agosto'], default='septiembre')
+MONTH = parser.parse_args().month
+IS_AUGUST = MONTH == 'agosto'
+PREFIX = 'august' if IS_AUGUST else 'commercial'
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/app/features/commercial-pages'
-ASSETS = ROOT / 'src/assets/img/septiembre-2026'
+ASSETS = ROOT / f'src/assets/img/{MONTH}-2026'
 OUT.mkdir(parents=True, exist_ok=True)
 ASSETS.mkdir(parents=True, exist_ok=True)
 LINKS = {
-    '/pc-gamer-gama-alta': '/pc-gamer-gama-alta-cdmx',
-    '/pc-gamer-gama-media': '/cotiza-tu-pc',
-    '/computadora-para-diseno-grafico': '/cotiza-tu-pc',
     '/ensambles/hyperion': '/contacto',
     '/ensambles/workstation': '/contacto',
 }
@@ -36,14 +40,14 @@ def action(text):
     return [{'label': label if '/ensambles/hyperion' not in url and '/ensambles/workstation' not in url else 'Consultar este ensamble', 'href': destination(url)} for label, url in re.findall(r'\[([^]]+)\]\(([^)]+)\)', text)]
 
 manifest = []
-manifest_path = ROOT / 'docs/content/septiembre-2026/images.json'
+manifest_path = ROOT / f'docs/content/{MONTH}-2026/images.json'
 previous_images = {item['driveId']: item for item in json.loads(manifest_path.read_text(encoding='utf-8'))} if manifest_path.exists() else {}
 def media(lines, topic, number):
     raw = next(line for line in lines if re.match(r'URL[:;]', line))
     drive_id = re.search(r'/file/d/([^/]+)', raw)[1]
     title = next(line.split(':', 1)[1].strip() for line in lines if line.startswith('Título:'))
     alt = next(line.split(':', 1)[1].strip() for line in lines if line.startswith('Alt Text:'))
-    original = ROOT / '.tmp-september-assets' / drive_id
+    original = ROOT / '.local-run' / ('august-assets' if IS_AUGUST else 'september-assets') / drive_id
     if not original.exists() and drive_id in previous_images:
         original = ROOT / 'src' / previous_images[drive_id]['src'].lstrip('/')
     with Image.open(original) as image:
@@ -53,17 +57,19 @@ def media(lines, topic, number):
     filename = f'{topic}-{number:02}-{slug}.{ext}'
     if original.resolve() != (ASSETS / filename).resolve():
         shutil.copyfile(original, ASSETS / filename)
-    result = {'src': '/assets/img/septiembre-2026/' + filename, 'title': title, 'alt': alt, 'width': width, 'height': height}
+    result = {'src': f'/assets/img/{MONTH}-2026/' + filename, 'title': title, 'alt': alt, 'width': width, 'height': height}
     manifest.append({'driveId': drive_id, **result})
     return result
 
 pages = {}
-for topic in ['edicion', 'workstation', 'streaming', 'componentes']:
-    lines = [line.strip() for line in (ROOT / f'docs/content/septiembre-2026/{topic}-fuente.md').read_text(encoding='utf-8').splitlines() if line.strip()]
-    lines = lines[3:]
+for topic in (['diseno', 'media'] if IS_AUGUST else ['edicion', 'workstation', 'streaming', 'componentes']):
+    lines = [line.strip() for line in (ROOT / f'docs/content/{MONTH}-2026/{topic}-fuente.md').read_text(encoding='utf-8').splitlines() if line.strip()]
+    lines = lines[2 if IS_AUGUST else 3:]
     assert lines[0].startswith('# ')
     page = {'heading': lines.pop(0)[2:], 'intro': [], 'heroActions': [], 'cards': [], 'sections': [], 'faqs': []}
-    start = next(i for i, line in enumerate(lines) if line.startswith('## Conoce'))
+    if IS_AUGUST:
+        page['heading'] = {'diseno': 'Computadora para Diseño Gráfico en CDMX', 'media': 'PC Gamer Gama Media en CDMX'}[topic]
+    start = next(i for i, line in enumerate(lines) if line.startswith(('## Conoce', '## Catálogo')))
     for line in lines[:start]:
         if line.startswith('## '): page['heroActions'] += action(line)
         else: page['intro'].append(inline(line))
@@ -80,6 +86,8 @@ for topic in ['edicion', 'workstation', 'streaming', 'componentes']:
         prices = [line for line in block if line.startswith('$')]
         ctas = [cta for line in block if line.startswith('### [') for cta in action(line)]
         page['cards'].append({'name': title, 'image': media(block, topic, index+1), 'price': prices[0] if prices else '', 'action': ctas[0] if ctas else {'label': 'Cotizar componente', 'href': '/contacto'}})
+        if IS_AUGUST:
+            page['cards'][-1]['specs'] = [line for line in block if line.startswith(('CPU:', 'GPU:', 'RAM:', 'Almacenamiento:', 'Motherboard:'))]
     image_number = len(starts)
     current = None
     faq_mode = False
@@ -110,7 +118,7 @@ for topic in ['edicion', 'workstation', 'streaming', 'componentes']:
     assert len(page['cards']) == (14 if topic == 'componentes' else 6)
     pages[topic] = page
 
-(OUT / 'commercial-content.ts').write_text('// Editorial source: docs/content/septiembre-2026. Regenerate with tools/prepare-september-content.py.\nimport { CommercialContent } from "./commercial-page.model";\n\nexport const COMMERCIAL_CONTENT: Record<string, CommercialContent> = ' + json.dumps(pages, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
-(ROOT / 'docs/content/septiembre-2026/images.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-(OUT / 'commercial-images.ts').write_text('export const COMMERCIAL_IMAGES: Record<string, string> = ' + json.dumps({key: page['cards'][0]['image']['src'] for key, page in pages.items()}, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
+(OUT / f'{PREFIX}-content.ts').write_text(f'// Editorial source: docs/content/{MONTH}-2026. Regenerate with tools/prepare-september-content.py --month {MONTH}.\nimport {{ CommercialContent }} from "./commercial-page.model";\n\nexport const {PREFIX.upper()}_CONTENT: Record<string, CommercialContent> = ' + json.dumps(pages, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
+manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+(OUT / f'{PREFIX}-images.ts').write_text(f'export const {PREFIX.upper()}_IMAGES: Record<string, string> = ' + json.dumps({key: page['cards'][0]['image']['src'] for key, page in pages.items()}, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
 print(f'Prepared {len(pages)} pages and {len(manifest)} images.')

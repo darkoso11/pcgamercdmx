@@ -3,7 +3,7 @@
 /workstation
 /streaming-pc
 /componentes-para-pc-gamer
-/pc-gamer-gama-alta-cdmx
+/pc-gamer-gama-alta
 /productos
 /productos/hardware-accesorios
 /productos/perifericos
@@ -29,3 +29,7 @@
 /blog/mejores-tarjetas-graficas-2024
 /blog/guia-overclock-seguro-cpu
 /blog/configurar-pc-para-streaming
+
+/computadora-para-diseno-grafico
+/pc-gamer-gama-media
+/pc-gamer-gama-alta-cdmx

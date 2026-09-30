@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SeoService } from '../../core/services/seo.service';
 import { COMMERCIAL_CONTENT } from './commercial-content';
+import { AUGUST_CONTENT } from './august-content';
 import { COMMERCIAL_PAGES } from './commercial-pages.config';
 
 @Component({
@@ -16,7 +17,7 @@ export class CommercialPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly seo = inject(SeoService);
   readonly config = COMMERCIAL_PAGES.find(page => page.key === this.route.snapshot.data['commercialPage'])!;
-  readonly page = COMMERCIAL_CONTENT[this.config.key];
+  readonly page = AUGUST_CONTENT[this.config.key] ?? COMMERCIAL_CONTENT[this.config.key];
   readonly relatedPages = COMMERCIAL_PAGES.filter(page => page.key !== this.config.key);
 
   constructor() {

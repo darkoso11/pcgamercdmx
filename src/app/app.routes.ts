@@ -4,13 +4,14 @@ import { adminRoute } from './features/admin/admin-route.config';
 import { HIGH_END_PC_SEO } from './features/high-end-pc/high-end-pc.seo';
 import { COMMERCIAL_PAGES } from './features/commercial-pages/commercial-pages.config';
 import { COMMERCIAL_IMAGES } from './features/commercial-pages/commercial-images';
+import { AUGUST_IMAGES } from './features/commercial-pages/august-images';
 
 export const routes: Routes = [
   ...COMMERCIAL_PAGES.map(page => ({
     path: page.path,
     loadComponent: () => import('./features/commercial-pages/commercial-page.component').then(m => m.CommercialPageComponent),
     title: page.title,
-    data: { commercialPage: page.key, description: page.description, keywords: page.keywords, image: COMMERCIAL_IMAGES[page.key] },
+    data: { commercialPage: page.key, description: page.description, keywords: page.keywords, image: AUGUST_IMAGES[page.key] ?? COMMERCIAL_IMAGES[page.key] },
   })),
   {
     path: '',
@@ -24,6 +25,11 @@ export const routes: Routes = [
   },
   {
     path: 'pc-gamer-gama-alta-cdmx',
+    redirectTo: 'pc-gamer-gama-alta',
+    pathMatch: 'full',
+  },
+  {
+    path: 'pc-gamer-gama-alta',
     loadComponent: () => import('./features/high-end-pc/high-end-pc.component').then(m => m.HighEndPcComponent),
     title: HIGH_END_PC_SEO.title,
     data: {

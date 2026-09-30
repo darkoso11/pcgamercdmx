@@ -11,7 +11,10 @@ import { COMMERCIAL_PAGES } from '../commercial-pages/commercial-pages.config';
   styleUrl: './products.component.css',
 })
 export class ProductsComponent {
-  readonly commercialPages = COMMERCIAL_PAGES;
+  readonly commercialPages = [
+    ...COMMERCIAL_PAGES,
+    { key: 'alta', path: 'pc-gamer-gama-alta', label: 'PC Gamer gama alta' },
+  ];
   constructor(private readonly router: Router) {}
 
   get isProductDetailRoute(): boolean {

@@ -1,3 +1,7 @@
 :host {
   display: block;
 }
+
+.assembly-card {
+  overflow-wrap: anywhere;
+}
