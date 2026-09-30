@@ -2,7 +2,7 @@ export const environment = {
   production: true,
   siteUrl: 'https://pcgamercdmx.com',
   marketing: {
-    googleAnalyticsId: '',
+    googleAnalyticsId: 'G-1RE1CQG7LC',
     googleAdsId: '',
   },
   directus: {

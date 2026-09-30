@@ -1,13 +1,12 @@
 import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
 
 const base = process.env.SEPTEMBER_BASE_URL || 'http://127.0.0.1:4266';
 const paths = ['pc-para-edicion-de-audio-y-video', 'workstation', 'streaming-pc', 'componentes-para-pc-gamer'];
-await mkdir('test-results/september', { recursive: true });
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
+  await page.route('**/www.googletagmanager.com/gtag/js?*', route => route.fulfill({ contentType: 'application/javascript', body: '' }));
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   for (const width of [1440, 390]) {
@@ -36,7 +35,6 @@ try {
       assert.ok(await page.locator('app-commercial-page details').first().getAttribute('open') !== null);
       await page.locator('app-commercial-page summary').first().click();
       await page.evaluate(() => scrollTo(0, 0));
-      await page.screenshot({ path: `test-results/september/${path}-${width}.png`, fullPage: true });
       console.log(`${width}px ${path}: HTML, SEO, cards, images, FAQ, overflow OK`);
     }
   }
@@ -47,7 +45,7 @@ try {
   assert.match(await page.locator('#commercial-faq-schema').textContent(), /streaming PC/);
   await page.goto(`${base}/productos/perifericos`, { waitUntil: 'domcontentloaded' });
   assert.match(page.url(), /productos\/perifericos/);
-  await expect(page.locator('nav[aria-label="Computadoras y componentes por uso"] a')).toHaveCount(4);
+  await expect(page.locator('nav[aria-label="Computadoras y componentes por uso"] a')).toHaveCount(7);
   assert.deepEqual(errors, []);
 } finally {
   await browser.close();

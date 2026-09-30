@@ -5,6 +5,16 @@
   "outputDirectory": "dist/pcgamercdmx/browser",
   "redirects": [
     {
+      "source": "/pc-gamer-gama-alta-cdmx",
+      "destination": "/pc-gamer-gama-alta",
+      "permanent": true
+    },
+    {
+      "source": "/pc-gamer-gama-alta-cdmx/",
+      "destination": "/pc-gamer-gama-alta",
+      "permanent": true
+    },
+    {
       "source": "/admin",
       "destination": "/",
       "permanent": false

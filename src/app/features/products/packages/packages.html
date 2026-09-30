@@ -137,10 +137,10 @@
     </div>
   </section>
 
-  <section *ngIf="filteredProducts.length; else emptyState" class="grid gap-6 xl:grid-cols-2">
+  <section *ngIf="filteredProducts.length; else emptyState" class="grid grid-cols-1 gap-6 xl:grid-cols-2">
     <article
       *ngFor="let item of filteredProducts"
-      class="pc-card rounded-2xl border pc-border p-6 shadow-lg shadow-black/20"
+      class="assembly-card pc-card min-w-0 rounded-2xl border pc-border p-6 shadow-lg shadow-black/20"
     >
       <div class="pc-text-cyan flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em]">
         <span *ngFor="let badge of item.card.badges" class="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1">
@@ -148,8 +148,8 @@
         </span>
       </div>
 
-      <div class="mt-5 grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-        <div class="pc-field flex items-center justify-center rounded-2xl p-4">
+      <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div class="pc-field flex min-w-0 items-center justify-center rounded-2xl p-4">
           <img
             [src]="item.card.image"
             [alt]="item.card.title"
@@ -157,23 +157,23 @@
             height="288"
             loading="lazy"
             decoding="async"
-            class="max-h-72 max-w-full object-contain"
+            class="min-w-0 max-h-72 max-w-full object-contain"
           />
         </div>
 
-        <div class="space-y-4">
+        <div class="min-w-0 space-y-4">
           <div>
             <h3 class="text-2xl font-semibold">{{ item.card.title }}</h3>
             <p class="pc-text-muted mt-2 text-sm leading-6">{{ item.card.description }}</p>
           </div>
 
-          <div class="grid gap-3 text-sm">
+          <div class="grid grid-cols-1 gap-3 text-sm">
             <div
               *ngFor="let spec of item.card.specHighlights"
-              class="flex items-center justify-between rounded-xl border pc-border bg-white/5 px-4 py-3"
+              class="flex min-w-0 items-center justify-between gap-3 rounded-xl border pc-border bg-white/5 px-4 py-3"
             >
               <span class="pc-text-subtle">{{ spec.label }}</span>
-              <span class="text-right text-white">{{ spec.value }}</span>
+              <span class="min-w-0 text-right text-white">{{ spec.value }}</span>
             </div>
           </div>
 
@@ -181,7 +181,7 @@
             {{ getSummary(item.product) }}
           </div>
 
-          <div class="flex items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p class="pc-text-subtle text-xs uppercase tracking-[0.2em]">Precio referencial</p>
               <p *ngIf="item.card.discountedPrice" class="mt-1 text-xs text-slate-400 line-through">

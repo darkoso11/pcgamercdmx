@@ -1,4 +1,4 @@
-// Editorial source: docs/content/septiembre-2026. Regenerate with tools/prepare-september-content.py.
+// Editorial source: docs/content/septiembre-2026. Regenerate with tools/prepare-september-content.py --month septiembre.
 import { CommercialContent } from "./commercial-page.model";
 
 export const COMMERCIAL_CONTENT: Record<string, CommercialContent> = {
@@ -243,7 +243,7 @@ export const COMMERCIAL_CONTENT: Record<string, CommercialContent> = {
           {
             "heading": "",
             "paragraphs": [
-              "En <a href=\"/\">PC Gamer CDMX</a> tenemos la mejor variedad en modelos de <a href=\"/cotiza-tu-pc\">pc gamer gama media</a> y <a href=\"/pc-gamer-gama-alta-cdmx\">pc gamer gama alta</a> adaptados a tu presupuesto creativo.",
+              "En <a href=\"/\">PC Gamer CDMX</a> tenemos la mejor variedad en modelos de <a href=\"/pc-gamer-gama-media\">pc gamer gama media</a> y <a href=\"/pc-gamer-gama-alta\">pc gamer gama alta</a> adaptados a tu presupuesto creativo.",
               "Además, si quieres que tu espacio luzca único, podemos personalizar tu gabinete (Custom Case) con temáticas especiales.",
               "Pásate por nuestro local en la ciudad, arma tu rig en vivo con garantía de un año con nosotros y hasta si quieres, con tus amigos e impulsa tus producciones hoy mismo."
             ]
@@ -487,7 +487,7 @@ export const COMMERCIAL_CONTENT: Record<string, CommercialContent> = {
           {
             "heading": "",
             "paragraphs": [
-              "En <a href=\"/\">PC Gamer CDMX</a> contamos con excelentes opciones para tu workstation y opciones de <a href=\"/cotiza-tu-pc\">pc gamer gama media</a> o en <a href=\"/pc-gamer-gama-alta-cdmx\">pc gamer gama alta</a> listas para adaptarse a tus requerimientos.",
+              "En <a href=\"/\">PC Gamer CDMX</a> contamos con excelentes opciones para tu workstation y opciones de <a href=\"/pc-gamer-gama-media\">pc gamer gama media</a> o en <a href=\"/pc-gamer-gama-alta\">pc gamer gama alta</a> listas para adaptarse a tus requerimientos.",
               "Además, si quieres un toque estético único en tu oficina, personalizamos tu gabinete (Custom Case) a tu gusto.",
               "Visítanos en nuestro local, presenciarás el ensamble de tu equipo o aún mejor, podrás armar tu pc junto con amigos y nuestra asesoría en todo momento. ¡Lleva tu trabajo al siguiente nivel!"
             ]
@@ -729,7 +729,7 @@ export const COMMERCIAL_CONTENT: Record<string, CommercialContent> = {
           {
             "heading": "",
             "paragraphs": [
-              "En <a href=\"/\">PC Gamer CDMX</a> contamos con una selección completa en <a href=\"/cotiza-tu-pc\">pc gamer gama media</a> y <a href=\"/pc-gamer-gama-alta-cdmx\">pc gamer gama</a> alta preparadas para tus directos.",
+              "En <a href=\"/\">PC Gamer CDMX</a> contamos con una selección completa en <a href=\"/pc-gamer-gama-media\">pc gamer gama media</a> y <a href=\"/pc-gamer-gama-alta\">pc gamer gama</a> alta preparadas para tus directos.",
               "Además, si quieres que tu espacio en cámara resalte, realizamos un custom Case con temáticas únicas que se identifiquen contigo.",
               "Visítanos en nuestro local, presenciarás el ensamble en vivo o bien podrás pasar momentos muy divertidos armando tu compu tú mismo con nuestra asesoría profesional."
             ]
@@ -1020,7 +1020,7 @@ export const COMMERCIAL_CONTENT: Record<string, CommercialContent> = {
               "Tarjeta Gráfica (GPU): La responsable de procesar cada fotograma en tus juegos y acelerar tareas pesadas en tu computadora gamer.",
               "Memoria RAM y Almacenamiento: Módulos DDR5 de alta frecuencia y SSDs NVMe M.2 para que tu compu gamer ejecute multitareas y abra juegos sin tiempos de carga.",
               "Fuente de Poder y Gabinete: Energía certificada para proteger tus piezas y un chasis con excelente flujo de aire.",
-              "Nuestros especialistas te ayudan a seleccionar la combinación exacta, asegurando compatibilidad total tanto para juegos como para armar una <a href=\"/cotiza-tu-pc\">computadora para diseño gráfico</a> o una <a href=\"/pc-para-edicion-de-audio-y-video\">pc para edición de audio y video</a>."
+              "Nuestros especialistas te ayudan a seleccionar la combinación exacta, asegurando compatibilidad total tanto para juegos como para armar una <a href=\"/computadora-para-diseno-grafico\">computadora para diseño gráfico</a> o una <a href=\"/pc-para-edicion-de-audio-y-video\">pc para edición de audio y video</a>."
             ]
           }
         ],

@@ -40,6 +40,9 @@ testem.log
 /.codex-ng-serve.log
 /.tmp-*.log
 /.tmp-*.png
+/.tmp-*/
+/.tmp-*.json
+/docs/content/**/capturas/
 /test-results/
 /playwright-report/
 /.superpowers/
