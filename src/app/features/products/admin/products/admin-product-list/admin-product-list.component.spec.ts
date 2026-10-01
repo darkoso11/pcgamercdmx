@@ -435,6 +435,7 @@ describe('AdminProductListComponent', () => {
     component.ngOnInit();
 
     expect(component.getQuickEditDraft('healthy').original).toEqual({
+      title: 'healthy',
       price: 100,
       stock: 10,
       published: true,

@@ -146,7 +146,28 @@
             <tbody>
               <ng-container *ngFor="let product of visibleProducts">
                 <tr class="border-t border-white/10 transition hover:bg-white/[0.04]" [class.bg-cyan-950]="isQuickEditDirty(product._id!)">
-                  <td class="px-5 py-4"><strong class="block">{{ product.title }}</strong><span class="text-xs text-slate-500">{{ product.slug }}</span></td>
+                  <td class="min-w-64 px-5 py-4">
+                    <label class="block text-xs text-slate-400">
+                      <span class="sr-only">Nombre</span>
+                      <input
+                        type="text"
+                        required
+                        [ngModel]="getQuickEditDraft(product._id!).title"
+                        (ngModelChange)="getQuickEditDraft(product._id!).title = $event; markQuickEditChanged(product._id!)"
+                        (keydown)="handleQuickEditKeydown($event, product._id!)"
+                        [disabled]="getQuickEditDraft(product._id!).saving"
+                        [attr.aria-label]="'Nombre de ' + product.title"
+                        [attr.aria-invalid]="!!getQuickEditDraft(product._id!).errors.title"
+                        [attr.aria-describedby]="getQuickEditDraft(product._id!).errors.title ? 'quick-edit-title-error-desktop-' + product._id : null"
+                        [attr.data-testid]="'quick-edit-title-desktop-' + product._id"
+                        [title]="getQuickEditDraft(product._id!).title"
+                        class="w-full min-w-0 rounded-md border bg-pc-admin-bg px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60"
+                        [ngClass]="getQuickEditDraft(product._id!).errors.title ? 'border-red-400' : getQuickEditDraft(product._id!).title !== getQuickEditDraft(product._id!).original.title ? 'border-cyan-400' : 'border-white/20'"
+                      />
+                    </label>
+                    <p *ngIf="getQuickEditDraft(product._id!).errors.title" [id]="'quick-edit-title-error-desktop-' + product._id" role="status" class="mt-1 text-xs text-red-300">{{ getQuickEditDraft(product._id!).errors.title }}</p>
+                    <span class="break-all text-xs text-slate-500">{{ product.slug }}</span>
+                  </td>
                   <td class="min-w-36 px-3 py-3">
                     <label class="relative block">
                       <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
@@ -186,7 +207,28 @@
 
         <div class="divide-y divide-white/10 md:hidden">
           <article *ngFor="let product of visibleProducts" class="p-4" [class.bg-cyan-950]="isQuickEditDirty(product._id!)">
-            <div><strong class="block">{{ product.title }}</strong><span class="text-xs text-slate-500">{{ getCategoryLabel(product) }} · {{ product.slug }}</span></div>
+            <div>
+              <label class="block text-xs text-slate-400">
+                <span>Nombre</span>
+                <input
+                  type="text"
+                  required
+                  [ngModel]="getQuickEditDraft(product._id!).title"
+                  (ngModelChange)="getQuickEditDraft(product._id!).title = $event; markQuickEditChanged(product._id!)"
+                  (keydown)="handleQuickEditKeydown($event, product._id!)"
+                  [disabled]="getQuickEditDraft(product._id!).saving"
+                  [attr.aria-label]="'Nombre de ' + product.title"
+                  [attr.aria-invalid]="!!getQuickEditDraft(product._id!).errors.title"
+                  [attr.aria-describedby]="getQuickEditDraft(product._id!).errors.title ? 'quick-edit-title-error-mobile-' + product._id : null"
+                  [attr.data-testid]="'quick-edit-title-mobile-' + product._id"
+                  [title]="getQuickEditDraft(product._id!).title"
+                  class="mt-1 w-full min-w-0 rounded-md border bg-pc-admin-bg px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60"
+                  [ngClass]="getQuickEditDraft(product._id!).errors.title ? 'border-red-400' : getQuickEditDraft(product._id!).title !== getQuickEditDraft(product._id!).original.title ? 'border-cyan-400' : 'border-white/20'"
+                />
+              </label>
+              <p *ngIf="getQuickEditDraft(product._id!).errors.title" [id]="'quick-edit-title-error-mobile-' + product._id" role="status" class="mt-1 text-xs text-red-300">{{ getQuickEditDraft(product._id!).errors.title }}</p>
+              <span class="break-all text-xs text-slate-500">{{ getCategoryLabel(product) }} · {{ product.slug }}</span>
+            </div>
             <div class="mt-4 grid grid-cols-2 gap-3">
               <label class="text-xs text-slate-400">Precio<input [disabled]="getQuickEditDraft(product._id!).saving" type="number" min="0" step="0.01" [ngModel]="getQuickEditDraft(product._id!).price" (ngModelChange)="getQuickEditDraft(product._id!).price = $event; markQuickEditChanged(product._id!)" (keydown)="handleQuickEditKeydown($event, product._id!)" class="mt-1 w-full rounded-md border border-white/20 bg-pc-admin-bg px-3 py-2 text-white" /></label>
               <label class="text-xs text-slate-400">Stock<input [disabled]="getQuickEditDraft(product._id!).saving" type="number" min="0" step="1" [ngModel]="getQuickEditDraft(product._id!).stock" (ngModelChange)="getQuickEditDraft(product._id!).stock = $event; markQuickEditChanged(product._id!)" (keydown)="handleQuickEditKeydown($event, product._id!)" class="mt-1 w-full rounded-md border border-white/20 bg-pc-admin-bg px-3 py-2 text-white" /></label>
