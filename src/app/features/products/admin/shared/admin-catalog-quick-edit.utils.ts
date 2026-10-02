@@ -1,6 +1,7 @@
 import { Product } from './products-admin.service';
 
 export interface CatalogQuickEditValues {
+  title: string;
   price: number;
   stock: number;
   published: boolean;
@@ -11,7 +12,7 @@ export interface CatalogQuickEditDraft extends CatalogQuickEditValues {
   saving: boolean;
   message: string;
   messageType: 'success' | 'error' | '';
-  errors: Partial<Record<'price' | 'stock', string>>;
+  errors: Partial<Record<'title' | 'price' | 'stock', string>>;
 }
 
 export function createCatalogQuickEditDraft(product: Product): CatalogQuickEditDraft {
@@ -28,7 +29,8 @@ export function createCatalogQuickEditDraft(product: Product): CatalogQuickEditD
 }
 
 export function isCatalogQuickEditDirty(draft: CatalogQuickEditDraft): boolean {
-  return draft.price !== draft.original.price
+  return draft.title !== draft.original.title
+    || draft.price !== draft.original.price
     || draft.stock !== draft.original.stock
     || draft.published !== draft.original.published;
 }
@@ -49,12 +51,14 @@ export function reconcileCatalogQuickEditDrafts(
     // Keep the same object while its request owns the pending values.
     if (draft.saving) continue;
     let conflict = false;
-    for (const field of ['price', 'stock', 'published'] as const) {
+    for (const field of ['title', 'price', 'stock', 'published'] as const) {
       const dirty = draft[field] !== draft.original[field];
       if (dirty) {
         conflict ||= product[field] !== draft.original[field] && product[field] !== draft[field];
       } else if (field === 'published') {
         draft.published = product.published;
+      } else if (field === 'title') {
+        draft.title = product.title;
       } else {
         draft[field] = product[field];
       }
@@ -96,6 +100,10 @@ export function validateCatalogQuickEditDraft(
 ): CatalogQuickEditDraft['errors'] {
   const errors: CatalogQuickEditDraft['errors'] = {};
 
+  if (!draft.title.trim()) {
+    errors.title = 'Ingresa un nombre válido.';
+  }
+
   if (!isValidPrice(draft.price)) {
     errors.price = 'Ingresa un precio válido con máximo dos decimales.';
   }
@@ -109,9 +117,10 @@ export function validateCatalogQuickEditDraft(
 
 export function buildCatalogQuickEditPatch(
   draft: CatalogQuickEditDraft
-): Pick<Partial<Product>, 'price' | 'stock' | 'published'> {
-  const patch: Pick<Partial<Product>, 'price' | 'stock' | 'published'> = {};
+): Pick<Partial<Product>, 'title' | 'price' | 'stock' | 'published'> {
+  const patch: Pick<Partial<Product>, 'title' | 'price' | 'stock' | 'published'> = {};
 
+  if (draft.title !== draft.original.title) patch.title = draft.title.trim();
   if (draft.price !== draft.original.price) patch.price = draft.price;
   if (draft.stock !== draft.original.stock) patch.stock = draft.stock;
   if (draft.published !== draft.original.published) patch.published = draft.published;
@@ -120,6 +129,7 @@ export function buildCatalogQuickEditPatch(
 }
 
 export function resetCatalogQuickEditDraft(draft: CatalogQuickEditDraft): void {
+  draft.title = draft.original.title;
   draft.price = draft.original.price;
   draft.stock = draft.original.stock;
   draft.published = draft.original.published;
@@ -131,6 +141,7 @@ export function resetCatalogQuickEditDraft(draft: CatalogQuickEditDraft): void {
 
 function valuesFromProduct(product: Product): CatalogQuickEditValues {
   return {
+    title: product.title,
     price: product.price,
     stock: product.stock,
     published: product.published,
