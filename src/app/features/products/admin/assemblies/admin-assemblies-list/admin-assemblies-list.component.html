@@ -63,9 +63,27 @@
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-3">
                     <img *ngIf="assembly.image" [src]="assembly.image" [alt]="''" class="h-11 w-14 rounded-md object-cover" />
-                    <div>
-                      <div class="font-semibold text-white">{{ assembly.title }}</div>
-                      <div class="mt-1 text-xs text-slate-500">{{ assembly.slug }} · {{ getStockLabel(assembly) }}</div>
+                    <div class="min-w-64 flex-1">
+                      <label class="block text-xs text-slate-400">
+                        <span class="sr-only">Nombre</span>
+                        <input
+                          type="text"
+                          required
+                          [ngModel]="getQuickEditDraft(assembly._id!).title"
+                          (ngModelChange)="getQuickEditDraft(assembly._id!).title = $event; markQuickEditChanged(assembly._id!)"
+                          (keydown)="handleQuickEditKeydown($event, assembly._id!)"
+                          [disabled]="getQuickEditDraft(assembly._id!).saving"
+                          [attr.aria-label]="'Nombre de ' + assembly.title"
+                          [attr.aria-invalid]="!!getQuickEditDraft(assembly._id!).errors.title"
+                          [attr.aria-describedby]="getQuickEditDraft(assembly._id!).errors.title ? 'quick-edit-title-error-desktop-' + assembly._id : null"
+                          [attr.data-testid]="'quick-edit-title-desktop-' + assembly._id"
+                          [title]="getQuickEditDraft(assembly._id!).title"
+                          class="w-full min-w-0 rounded-md border bg-pc-admin-bg px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60"
+                          [ngClass]="getQuickEditDraft(assembly._id!).errors.title ? 'border-red-400' : getQuickEditDraft(assembly._id!).title !== getQuickEditDraft(assembly._id!).original.title ? 'border-cyan-400' : 'border-white/20'"
+                        />
+                      </label>
+                      <p *ngIf="getQuickEditDraft(assembly._id!).errors.title" [id]="'quick-edit-title-error-desktop-' + assembly._id" role="status" class="mt-1 text-xs text-red-300">{{ getQuickEditDraft(assembly._id!).errors.title }}</p>
+                      <div class="mt-1 break-all text-xs text-slate-500">{{ assembly.slug }} · {{ getStockLabel(assembly) }}</div>
                     </div>
                   </div>
                 </td>
@@ -147,8 +165,26 @@
       <div class="divide-y divide-white/10 md:hidden">
         <article *ngFor="let assembly of filteredAssemblies" class="p-4" [class.bg-cyan-950]="isQuickEditDirty(assembly._id!)">
           <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="font-semibold text-white">{{ assembly.title }}</div>
+            <div class="min-w-0 flex-1">
+              <label class="block text-xs text-slate-400">
+                <span>Nombre</span>
+                <input
+                  type="text"
+                  required
+                  [ngModel]="getQuickEditDraft(assembly._id!).title"
+                  (ngModelChange)="getQuickEditDraft(assembly._id!).title = $event; markQuickEditChanged(assembly._id!)"
+                  (keydown)="handleQuickEditKeydown($event, assembly._id!)"
+                  [disabled]="getQuickEditDraft(assembly._id!).saving"
+                  [attr.aria-label]="'Nombre de ' + assembly.title"
+                  [attr.aria-invalid]="!!getQuickEditDraft(assembly._id!).errors.title"
+                  [attr.aria-describedby]="getQuickEditDraft(assembly._id!).errors.title ? 'quick-edit-title-error-mobile-' + assembly._id : null"
+                  [attr.data-testid]="'quick-edit-title-mobile-' + assembly._id"
+                  [title]="getQuickEditDraft(assembly._id!).title"
+                  class="mt-1 w-full min-w-0 rounded-md border bg-pc-admin-bg px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/20 disabled:opacity-60"
+                  [ngClass]="getQuickEditDraft(assembly._id!).errors.title ? 'border-red-400' : getQuickEditDraft(assembly._id!).title !== getQuickEditDraft(assembly._id!).original.title ? 'border-cyan-400' : 'border-white/20'"
+                />
+              </label>
+              <p *ngIf="getQuickEditDraft(assembly._id!).errors.title" [id]="'quick-edit-title-error-mobile-' + assembly._id" role="status" class="mt-1 text-xs text-red-300">{{ getQuickEditDraft(assembly._id!).errors.title }}</p>
               <div class="mt-1 text-xs text-slate-400">Ensamble · {{ getStockLabel(assembly) }}</div>
             </div>
             <span class="rounded-full bg-white/10 px-2 py-1 text-[10px] font-semibold text-slate-300">{{ getQuickEditDraft(assembly._id!).published ? 'Publicado' : 'Oculto' }}</span>
