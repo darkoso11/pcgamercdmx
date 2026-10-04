@@ -202,6 +202,30 @@ describe('ProductsAdminService bulk product operations', () => {
 });
 
 describe('ProductsAdminService partial product updates', () => {
+  for (const patch of [
+    { title: 'Nuevo nombre' },
+    { title: 'Nuevo nombre', price: 125, stock: 2, published: false },
+  ]) {
+    it(`sends exactly the name patch without regenerating slug or unrelated fields: ${JSON.stringify(patch)}`, async () => {
+      const directus = {
+        isEnabled: () => true,
+        updateItem: jasmine.createSpy('updateItem').and.returnValue(of({
+          data: {
+            id: 'product-1', title: 'Nuevo nombre', slug: 'producto-original',
+            description: 'Descripción original', category: 'component', price: 100,
+            image: 'product.png', images: [], brand_logos: [], stock: 4,
+            low_stock_alert: 3, published: true,
+          },
+        })),
+      };
+      const service = new ProductsAdminService(directus as any);
+      const result = await firstValueFrom(service.updateProduct('product-1', patch));
+      expect(directus.updateItem).toHaveBeenCalledOnceWith('pc_products', 'product-1', patch, { auth: true });
+      expect(result?.title).toBe('Nuevo nombre');
+      expect(result?.slug).toBe('producto-original');
+    });
+  }
+
   it('sends quick-edit fields without defaulting unrelated Directus data', async () => {
     const directus = {
       isEnabled: jasmine.createSpy('isEnabled').and.returnValue(true),

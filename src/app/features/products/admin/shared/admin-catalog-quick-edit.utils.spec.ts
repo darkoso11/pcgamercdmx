@@ -1,5 +1,6 @@
 import { Product } from './products-admin.service';
 import {
+  beginCatalogQuickEditSave,
   buildCatalogQuickEditPatch,
   createCatalogQuickEditDraft,
   isCatalogQuickEditDirty,
@@ -71,7 +72,7 @@ describe('admin catalog quick edit utilities', () => {
     const draft = createCatalogQuickEditDraft(item);
     draft.price = 12000;
 
-    expect(draft.original).toEqual({ price: 14999, stock: 8, published: true });
+    expect(draft.original).toEqual({ title: 'RTX 5070', price: 14999, stock: 8, published: true });
     expect(item.price).toBe(14999);
   });
 
@@ -95,6 +96,66 @@ describe('admin catalog quick edit utilities', () => {
     draft.published = false;
 
     expect(buildCatalogQuickEditPatch(draft)).toEqual({ stock: 2, published: false });
+  });
+
+  it('initializes the editable name from the product', () => {
+    expect(createCatalogQuickEditDraft(product())).toEqual(jasmine.objectContaining({ title: 'RTX 5070' }));
+  });
+
+  it('detects a name-only change and trims only outer whitespace in its patch', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.title = '  RTX  5070 OC  ';
+    expect(isCatalogQuickEditDirty(draft)).toBeTrue();
+    expect(buildCatalogQuickEditPatch(draft)).toEqual({ title: 'RTX  5070 OC' });
+    expect(draft.title).toBe('  RTX  5070 OC  ');
+  });
+
+  for (const title of ['', '   ', '\t\n']) {
+    it(`rejects the empty name ${JSON.stringify(title)} without starting a save`, () => {
+      const draft = createCatalogQuickEditDraft(product());
+      draft.title = title;
+      expect(validateCatalogQuickEditDraft(draft)).toEqual({ title: 'Ingresa un nombre válido.' });
+      expect(beginCatalogQuickEditSave(draft)).toBeFalse();
+      expect(draft.errors).toEqual({ title: 'Ingresa un nombre válido.' });
+      expect(draft.saving).toBeFalse();
+    });
+  }
+
+  it('restores a changed name when discarding', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.title = 'RTX nueva';
+    resetCatalogQuickEditDraft(draft);
+    expect(draft.title).toBe('RTX 5070');
+    expect(isCatalogQuickEditDirty(draft)).toBeFalse();
+  });
+
+  it('refreshes an untouched name without losing a price draft', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.price = 12000;
+    reconcileCatalogQuickEditDrafts([product({ title: 'Nombre del servidor' })], new Map([['product-1', draft]]));
+    expect(draft).toEqual(jasmine.objectContaining({ title: 'Nombre del servidor' }));
+    expect(buildCatalogQuickEditPatch(draft)).toEqual({ price: 12000 });
+  });
+
+  it('preserves a local name while refreshing untouched stock', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.title = 'Nombre local';
+    reconcileCatalogQuickEditDrafts([product({ stock: 2 })], new Map([['product-1', draft]]));
+    expect(draft.title).toBe('Nombre local');
+    expect(draft.stock).toBe(2);
+    expect(draft.messageType).toBe('');
+    expect(buildCatalogQuickEditPatch(draft)).toEqual({ title: 'Nombre local' });
+  });
+
+  it('warns about name conflicts and discards to the latest server name', () => {
+    const draft = createCatalogQuickEditDraft(product());
+    draft.title = 'Nombre local';
+    reconcileCatalogQuickEditDrafts([product({ title: 'Nombre del servidor' })], new Map([['product-1', draft]]));
+    expect(draft.title).toBe('Nombre local');
+    expect(draft.messageType).toBe('error');
+    resetCatalogQuickEditDraft(draft);
+    expect(draft.title).toBe('Nombre del servidor');
+    expect(isCatalogQuickEditDirty(draft)).toBeFalse();
   });
 
   it('accepts zero and prices with at most two decimals', () => {
