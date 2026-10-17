@@ -1,57 +1,5 @@
 <section class="min-h-screen bg-[#080b1d] text-white font-orbitron">
-  <div
-    *ngIf="!isProductDetailRoute"
-    class="bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.16),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(34,211,238,0.14),_transparent_30%)]"
-  >
-    <div class="mx-auto max-w-6xl px-4 pb-12 pt-32 md:px-6 md:pt-36 lg:px-8 lg:pb-14 lg:pt-40">
-      <div class="mx-auto max-w-5xl space-y-9 text-center">
-        <span class="inline-flex rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1 text-xs uppercase tracking-[0.28em] text-cyan-300">
-          Catalogo PC Gamer CDMX
-        </span>
-
-        <h1 class="mx-auto max-w-4xl text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
-          Productos para completar tu setup.
-        </h1>
-
-        <nav class="grid gap-5 md:grid-cols-2">
-          <a
-            routerLink="/productos/perifericos"
-            routerLinkActive="is-active"
-            class="product-choice rounded-2xl border border-cyan-400/25 bg-[#10162b] px-7 py-8 text-center transition hover:-translate-y-1 hover:border-cyan-300/60 hover:bg-[#131d36] md:min-h-[190px] md:px-8 md:py-9"
-          >
-            <span class="block text-xs uppercase tracking-[0.22em] text-cyan-300">Perifericos</span>
-            <span class="mt-4 block text-2xl font-semibold leading-tight text-white md:text-3xl">Teclados, mouse y pantallas</span>
-            <span class="mx-auto mt-4 block max-w-md text-sm leading-6 text-slate-300 md:text-base">
-              Monitores, audio, teclados, mouse y accesorios externos para completar tu escritorio.
-            </span>
-          </a>
-
-          <a
-            routerLink="/productos/hardware-accesorios"
-            routerLinkActive="is-active"
-            class="product-choice rounded-2xl border border-cyan-400/25 bg-[#10162b] px-7 py-8 text-center transition hover:-translate-y-1 hover:border-cyan-300/60 hover:bg-[#131d36] md:min-h-[190px] md:px-8 md:py-9"
-          >
-            <span class="block text-xs uppercase tracking-[0.22em] text-cyan-300">Hardware y accesorios</span>
-            <span class="mt-4 block text-2xl font-semibold leading-tight text-white md:text-3xl">Componentes, cables y adaptadores</span>
-            <span class="mx-auto mt-4 block max-w-md text-sm leading-6 text-slate-300 md:text-base">
-              Partes internas, upgrades, hubs, conectores y cables para armar o actualizar tu PC.
-            </span>
-          </a>
-        </nav>
-        <nav aria-label="Computadoras y componentes por uso" class="flex flex-wrap justify-center gap-3">
-          @for (page of commercialPages; track page.key) {
-            <a [routerLink]="'/' + page.path" class="rounded-lg border border-cyan-300/40 px-4 py-3 text-sm text-cyan-100 hover:bg-cyan-300/10">{{ page.label }}</a>
-          }
-        </nav>
-      </div>
-    </div>
-  </div>
-
-  <div
-    class="mx-auto max-w-7xl px-4 md:px-6 lg:px-8"
-    [class.py-7]="!isProductDetailRoute"
-    [class.py-0]="isProductDetailRoute"
-  >
+  <div [class.detail-container]="isProductDetailRoute">
     <router-outlet></router-outlet>
   </div>
 </section>

@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable, of } from 'rxjs';
+import { forkJoin, Observable, of, throwError } from 'rxjs';
 import { catchError, map, shareReplay } from 'rxjs/operators';
 import { DirectusApiService } from '../../../core/services/directus-api.service';
 import {
   DirectusProductRecord,
+  DirectusCategoryRecord,
+  DirectusSubcategoryRecord,
   mapDirectusProductToCatalogProduct,
 } from '../../../core/services/directus-content.mapper';
 import {
@@ -23,6 +25,8 @@ import {
   resolveOfferPresentation,
 } from '../admin/shared/admin-catalog-flow.utils';
 import type { Offer } from '../admin/shared/products-admin.service';
+import { buildCatalogCategories, CatalogCategory } from '../catalog-categories';
+import { catalogProductBrand } from '../catalog-filters';
 export type CatalogProduct =
   | AssembledPC
   | ComponentProduct
@@ -84,8 +88,38 @@ export class ProductsService {
   private readonly accessories = this.buildAccessories();
   private catalogProducts$?: Observable<CatalogProduct[]>;
   private homeSliderProducts$?: Observable<HomeSliderProducts>;
+  private catalogCategories$?: Observable<CatalogCategory[]>;
 
   constructor(private readonly directus: DirectusApiService) {}
+
+  getCatalogCategories(requireRemote = false): Observable<CatalogCategory[]> {
+    if (!this.directus.isEnabled('catalog')) return of(buildCatalogCategories([], []));
+    if (!this.catalogCategories$) {
+      this.catalogCategories$ = forkJoin({
+        parents: this.directus.readItems<DirectusCategoryRecord>('pc_categories', {
+          'filter[published][_eq]': true, fields: 'id,name,slug,published', sort: 'sort,id', limit: -1,
+        }),
+        children: this.directus.readItems<DirectusSubcategoryRecord>('pc_subcategories', {
+          'filter[published][_eq]': true, fields: 'id,name,slug,category_id,category_slug,sort,published', sort: 'sort,id', limit: -1,
+        }),
+      }).pipe(
+        map(({ parents, children }) => {
+          const categories = buildCatalogCategories(parents.data, children.data);
+          if (!categories.some(category => (category.values?.length ?? 0) > 1)) {
+            throw new Error('El CMS no devolvió taxonomía pública válida para el catálogo.');
+          }
+          return categories;
+        }),
+        catchError(error => {
+          this.catalogCategories$ = undefined;
+          return throwError(() => error);
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this.catalogCategories$.pipe(catchError(error => requireRemote
+      ? throwError(() => error) : of(buildCatalogCategories([], []))));
+  }
 
   getHomeSliderProducts(): Observable<HomeSliderProducts> {
     const fallbackProducts = this.getAllCatalogProducts().filter((product) =>
@@ -586,7 +620,14 @@ export class ProductsService {
     })
       .pipe(
         map(({ products: productResponse, offers: offerResponse }) => {
-          const products = productResponse.data.map(mapDirectusProductToCatalogProduct);
+          const products = productResponse.data.map(record => {
+            const product = mapDirectusProductToCatalogProduct(record);
+            const brand = catalogProductBrand(record);
+            if (brand && product.category !== ProductCategory.ASSEMBLED) {
+              product.specifications = { ...product.specifications, brand };
+            }
+            return product;
+          });
           const offers = offerResponse.data.map((record) => this.mapPublicOffer(record));
           return products.length ? this.applyEffectiveOffers(products, offers) : fallback;
         }),
