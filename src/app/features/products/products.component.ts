@@ -1,20 +1,14 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { COMMERCIAL_PAGES } from '../commercial-pages/commercial-pages.config';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './products.component.html',
   styleUrl: './products.component.css',
 })
 export class ProductsComponent {
-  readonly commercialPages = [
-    ...COMMERCIAL_PAGES,
-    { key: 'alta', path: 'pc-gamer-gama-alta', label: 'PC Gamer gama alta' },
-  ];
   constructor(private readonly router: Router) {}
 
   get isProductDetailRoute(): boolean {

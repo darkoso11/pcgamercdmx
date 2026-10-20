@@ -64,7 +64,7 @@ export class AppComponent implements OnInit, OnDestroy {
       image: data['image'] as string | undefined,
       type: data['seoType'] as 'website' | 'article' | 'product' | undefined,
       noIndex: Boolean(data['noIndex']) || isAdminUrl(url),
-      url,
+      url: (data['canonicalPath'] as string | undefined) ?? url,
     });
   }
 }
