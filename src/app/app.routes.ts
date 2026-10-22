@@ -80,47 +80,7 @@ export const routes: Routes = [
   // Rutas adicionales
   {
     path: 'productos',
-    loadComponent: () => import('./features/products/products.component').then(m => m.ProductsComponent),
-    title: 'Productos | PC Gamer CDMX',
-    data: {
-      description: 'Catalogo de componentes, perifericos, paquetes y productos gamer disponibles en PC Gamer CDMX.',
-      keywords: 'componentes pc, perifericos gamer, productos gamer, pc gamer cdmx'
-    },
-    children: [
-      {
-        path: 'perifericos',
-        loadComponent: () => import('./features/products/peripherals/peripherals').then(m => m.Peripherals),
-        title: 'Perifericos gamer | PC Gamer CDMX',
-        data: {
-          description: 'Explora perifericos gamer: teclados, mouse, monitores, headsets, sillas y accesorios para completar tu setup.',
-          keywords: 'perifericos gamer, teclados gamer, mouse gamer, monitores gamer, headsets gamer'
-        }
-      },
-      {
-        path: 'hardware-accesorios',
-        loadComponent: () => import('./features/products/components/components').then(m => m.Components),
-        title: 'Hardware y accesorios para PC | PC Gamer CDMX',
-        data: {
-          description: 'Hardware, componentes, cables, adaptadores y accesorios para armar, actualizar o conectar tu PC.',
-          keywords: 'hardware pc, accesorios pc, cables pc, adaptadores pc, componentes pc, tarjeta grafica, procesador'
-        }
-      },
-      {
-        path: 'componentes',
-        redirectTo: 'hardware-accesorios',
-        pathMatch: 'full'
-      },
-      {
-        path: ':slug',
-        loadComponent: () => import('./features/products/product-detail.component').then(m => m.ProductDetailComponent),
-        data: { seoType: 'product' }
-      },
-      {
-        path: '',
-        redirectTo: 'perifericos',
-        pathMatch: 'full'
-      }
-    ]
+    loadChildren: () => import('./features/products/catalog.routes').then(m => m.CATALOG_ROUTES),
   },
   {
     path: 'nosotros',

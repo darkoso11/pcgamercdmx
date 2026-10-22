@@ -3,6 +3,17 @@ import { firstValueFrom, of, throwError } from 'rxjs';
 import { ProductsService } from './products.service';
 
 describe('ProductsService', () => {
+  it('preserves an explicit admin brand when a product has a catalog snapshot', async () => {
+    const directus = {
+      isEnabled: () => true,
+      readItems: (collection: string) => of({ data: collection === 'pc_products' ? [{
+        id: 1, title: 'Modelo 900', slug: 'modelo-900', category: 'component', subcategory: 'gpu',
+        specifications: { admin: { brand: 'Gigabyte' }, catalog: { specifications: { brand: 'Old brand' } } },
+      }] : [] }),
+    };
+    const products = await firstValueFrom(new ProductsService(directus as any).getCatalogProducts());
+    expect((products[0].specifications as unknown as { brand: string }).brand).toBe('Gigabyte');
+  });
   it('loads only the public fields and categories required by the home sliders', async () => {
     const directus = {
       isEnabled: jasmine.createSpy('isEnabled').and.returnValue(true),
