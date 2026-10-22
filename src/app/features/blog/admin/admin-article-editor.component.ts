@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Va
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
 import { firstValueFrom } from 'rxjs';
+import { PrivateMediaDirective } from '../private-media.directive';
+import { Article } from '../models/types';
 import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
@@ -13,7 +15,7 @@ import { localDateTimeToUtc, normalizeVideoUrl, utcDateTimeToLocal } from '../se
 @Component({
   selector: 'app-admin-article-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule, AdminHeaderComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule, AdminHeaderComponent, PrivateMediaDirective],
   templateUrl: './admin-article-editor.component.html',
   styleUrls: ['./admin-article-editor.component.css']
 })
@@ -26,6 +28,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   uploading = false;
   selectedCoverFile: File | null = null;
   coverImagePreview: string | null = null;
+  private coverPreviewFile: File | null = null;
   private coverUploadPromise: Promise<void> | null = null;
   errorMsg = '';
   successMsg = '';
@@ -77,11 +80,10 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const id = this.route.snapshot.params['id'];
-    if (id) {
-      this.isNew = false;
-      this.loadArticle(id);
-    } else {
-      this.addSection();
+    this.isNew = !id;
+    if (!this.restorePreviewDraft()) {
+      if (id) this.loadArticle(id);
+      else this.addSection();
     }
     this.loadCategories();
     this.loadSubcategories();
@@ -137,66 +139,75 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   loadArticle(id: string) {
     this.blogService.getById(id).subscribe({
       next: (article) => {
-        this.sectionsArray.clear();
-        (article.sections || []).forEach((section: any) => {
-          const media = section.media || [];
-          const fileVideo = media.find((item: any) => item.kind === 'video-file');
-          const embedVideo = media.find((item: any) => item.kind === 'video-embed');
-          const sectionForm = this.fb.group({
-            title: [section.title || ''],
-            text: [section.text || ''],
-            order: [section.order || this.sectionsArray.length],
-            images: this.fb.array((section.images || []).map((image: any) => this.fb.group({
-              url: [image.url || ''],
-              fileId: [image.fileId || ''],
-              filename: [image.filename || ''],
-              mimeType: [image.mimeType || ''],
-              alt: [image.alt || ''],
-              preview: [image.url || ''],
-              order: [image.order || 0]
-            }))),
-            imageLayout: [section.imageLayout || '1'],
-            existingMedia: [media.filter(
-              (item: any) =>
-                item.kind !== 'video-file' && item.kind !== 'video-embed'
-            )],
-            videoUrl: [this.editableEmbedUrl(embedVideo)],
-            videoTitle: [fileVideo?.title || embedVideo?.title || ''],
-            videoFileId: [fileVideo?.fileId || ''],
-            videoFileUrl: [fileVideo?.url || ''],
-            videoFileName: [fileVideo?.filename || ''],
-            videoFileType: [fileVideo?.mimeType || ''],
-            videoPreviewUrl: ['']
-          });
-          this.sectionsArray.push(sectionForm);
-        });
-
-        if (this.sectionsArray.length === 0) {
-          this.addSection();
-        }
-
-        this.form.patchValue({
-          title: article.title,
-          slug: article.slug || '',
-          summary: article.summary || '',
-          categoryId: article.categoryId || '',
-          subCategoryId: article.subCategoryId || '',
-          tags: (article.tags || []).join(', '),
-          coverImage: article.coverImage || '',
-          published: article.published,
-          scheduledAt: article.publishedAt
-            ? utcDateTimeToLocal(article.publishedAt)
-            : ''
-        });
-        this.coverImagePreview = article.coverImage?.url || null;
-        this.updateFilteredSubcategories();
-        this.cdr.detectChanges();
+        this.populateArticle(article);
       },
       error: () => {
         this.errorMsg = 'No se pudo cargar el artículo';
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private populateArticle(article: Article): void {
+    this.sectionsArray.clear();
+    (article.sections || []).forEach((section: any) => {
+      const media = section.media || [];
+      const fileVideo = media.find((item: any) => item.kind === 'video-file');
+      const embedVideo = media.find((item: any) => item.kind === 'video-embed');
+      const sectionForm = this.fb.group({
+        originalSection: [section],
+        originalFileVideo: [fileVideo || null],
+        originalEmbedVideo: [embedVideo || null],
+        initialVideoTitle: [fileVideo?.title || embedVideo?.title || ''],
+        title: [section.title || ''],
+        text: [section.text || ''],
+        order: [section.order || this.sectionsArray.length],
+        images: this.fb.array((section.images || []).map((image: any) => this.fb.group({
+          originalImage: [image],
+          url: [image.url || ''],
+          fileId: [image.fileId || ''],
+          filename: [image.filename || ''],
+          mimeType: [image.mimeType || ''],
+          alt: [image.alt || ''],
+          preview: [image.url || ''],
+          order: [image.order || 0]
+        }))),
+        imageLayout: [section.imageLayout || '1'],
+        existingMedia: [media.filter(
+          (item: any) =>
+            item !== fileVideo && item !== embedVideo
+        )],
+        videoUrl: [this.editableEmbedUrl(embedVideo)],
+        videoTitle: [fileVideo?.title || embedVideo?.title || ''],
+        videoFileId: [fileVideo?.fileId || ''],
+        videoFileUrl: [fileVideo?.url || ''],
+        videoFileName: [fileVideo?.filename || ''],
+        videoFileType: [fileVideo?.mimeType || ''],
+        videoPreviewUrl: ['']
+      });
+      this.sectionsArray.push(sectionForm);
+    });
+
+    if (this.sectionsArray.length === 0) {
+      this.addSection();
+    }
+
+    this.form.patchValue({
+      title: article.title,
+      slug: article.slug || '',
+      summary: article.summary || '',
+      categoryId: article.categoryId || '',
+      subCategoryId: article.subCategoryId || '',
+      tags: (article.tags || []).join(', '),
+      coverImage: article.coverImage || '',
+      published: article.published,
+      scheduledAt: article.publishedAt
+        ? utcDateTimeToLocal(article.publishedAt)
+        : ''
+    });
+    this.coverImagePreview = article.coverImage?.url || null;
+    this.updateFilteredSubcategories();
+    this.cdr.detectChanges();
   }
 
   addSection() {
@@ -248,14 +259,14 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         this.errorMsg = 'La imagen no puede ser mayor a 5MB';
         return;
       }
+      const imageForm = this.getSectionImages(sectionIndex).at(imageIndex) as FormGroup;
+      imageForm.patchValue({ fileId: '', url: '' });
       const reader = new FileReader();
       reader.onload = (e) => {
-        const preview = e.target?.result as string;
-        const imagesArray = this.getSectionImages(sectionIndex);
-        (imagesArray.at(imageIndex) as FormGroup).patchValue({ preview });
+        if ((imageForm as any)._file !== file) return;
+        imageForm.patchValue({ preview: e.target?.result as string });
       };
       reader.readAsDataURL(file);
-      const imageForm = this.getSectionImages(sectionIndex).at(imageIndex) as FormGroup;
       (imageForm as any)._file = file;
       void this.uploadSectionImage(sectionIndex, imageIndex).catch(() => undefined);
     }
@@ -277,17 +288,21 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     this.errorMsg = '';
     const upload = (async () => {
       try {
-        const uploaded = await this.uploadService.uploadFile(file);
-        imageForm.patchValue({
-          url: uploaded.url,
-          fileId: uploaded.fileId,
-          filename: uploaded.filename,
-          mimeType: uploaded.mimeType,
-        });
-        this.successMsg = 'Imagen lista para guardar';
-      } catch (e) {
-        this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
-        throw e;
+        while ((imageForm as any)._file) {
+          const selected = (imageForm as any)._file as File;
+          try {
+            const uploaded = await this.uploadService.uploadFile(selected);
+            if ((imageForm as any)._file !== selected) continue;
+            imageForm.patchValue({ ...uploaded, preview: uploaded.url });
+            delete (imageForm as any)._file;
+            this.successMsg = 'Imagen lista para guardar';
+            return;
+          } catch (error) {
+            if ((imageForm as any)._file !== selected) continue;
+            this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(error)}`;
+            throw error;
+          }
+        }
       } finally {
         delete (imageForm as any)._uploadPromise;
         this.uploading = false;
@@ -306,20 +321,20 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   moveSectionUp(index: number) {
     if (index > 0) {
       const sections = this.sectionsArray;
-      const current = sections.at(index).value;
-      const previous = sections.at(index - 1).value;
-      sections.at(index).patchValue(previous);
-      sections.at(index - 1).patchValue(current);
+      const current = sections.at(index);
+      sections.removeAt(index);
+      sections.insert(index - 1, current);
+      sections.markAsDirty();
     }
   }
 
   moveSectionDown(index: number) {
     if (index < this.sectionsArray.length - 1) {
       const sections = this.sectionsArray;
-      const current = sections.at(index).value;
-      const next = sections.at(index + 1).value;
-      sections.at(index).patchValue(next);
-      sections.at(index + 1).patchValue(current);
+      const current = sections.at(index);
+      sections.removeAt(index);
+      sections.insert(index + 1, current);
+      sections.markAsDirty();
     }
   }
 
@@ -331,8 +346,11 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         return;
       }
       this.selectedCoverFile = file;
+      this.coverPreviewFile = file;
+      this.form.patchValue({ coverImage: '' });
       const reader = new FileReader();
       reader.onload = (e) => {
+        if (this.coverPreviewFile !== file) return;
         this.coverImagePreview = e.target?.result as string;
         this.cdr.markForCheck();
       };
@@ -350,21 +368,23 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
     this.uploading = true;
     this.errorMsg = '';
-    const file = this.selectedCoverFile;
     this.coverUploadPromise = (async () => {
       try {
-        const uploaded = await this.uploadService.uploadFile(file);
-        this.form.patchValue({
-          coverImage: {
-            ...uploaded,
-            alt: this.form.value.title || '',
-          },
-        });
-        this.successMsg = 'Portada lista para guardar';
-        this.selectedCoverFile = null;
-      } catch (e) {
-        this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
-        throw e;
+        while (this.selectedCoverFile) {
+          const file = this.selectedCoverFile;
+          try {
+            const uploaded = await this.uploadService.uploadFile(file);
+            if (this.selectedCoverFile !== file) continue;
+            this.form.patchValue({ coverImage: { ...uploaded, alt: this.form.value.title || '' } });
+            this.selectedCoverFile = null;
+            this.successMsg = 'Portada lista para guardar';
+            return;
+          } catch (error) {
+            if (this.selectedCoverFile !== file) continue;
+            this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(error)}`;
+            throw error;
+          }
+        }
       } finally {
         this.coverUploadPromise = null;
         this.uploading = false;
@@ -489,8 +509,11 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     return upload;
   }
 
-  openPreview() {
+  async openPreview() {
+    if (this.saving) return;
+    this.saving = true;
     try {
+      await this.uploadPendingMedia();
       const preview = this.form.getRawValue();
       preview.tags = typeof preview.tags === 'string'
         ? preview.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
@@ -503,18 +526,26 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       const returnUrl = this.isNew || !id
         ? adminUrl('blog/new')
         : adminUrl(`blog/${id}/edit`);
+      sessionStorage.setItem('pcg_blog_editor_draft', JSON.stringify({
+        returnUrl,
+        article: preview,
+        scheduledAt: this.form.value.scheduledAt,
+      }));
       sessionStorage.setItem('pcg_blog_preview', JSON.stringify({
         article: preview,
         returnUrl,
       }));
-      this.router.navigate([adminUrl('blog/preview')]);
+      await this.router.navigate([adminUrl('blog/preview')]);
     } catch (error) {
       this.errorMsg = `No se pudo generar la vista previa: ${this.requestErrorMessage(error)}`;
+    } finally {
+      this.saving = false;
       this.cdr.markForCheck();
     }
   }
 
   async onSave(mode: 'draft' | 'publish' | 'schedule' = 'draft') {
+    if (this.saving) return;
     if (!this.form.valid) {
       this.errorMsg = 'Por favor completa todos los campos requeridos';
       return;
@@ -583,6 +614,24 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  private restorePreviewDraft(): boolean {
+    try {
+      const raw = sessionStorage.getItem('pcg_blog_editor_draft');
+      if (!raw) return false;
+      const draft = JSON.parse(raw);
+      const id = this.route.snapshot.params['id'];
+      const returnUrl = id ? adminUrl(`blog/${id}/edit`) : adminUrl('blog/new');
+      if (draft.returnUrl !== returnUrl || !Array.isArray(draft.article?.sections)) return false;
+      this.populateArticle(draft.article);
+      this.form.patchValue({ scheduledAt: draft.scheduledAt || '' });
+      this.form.markAsDirty();
+      sessionStorage.removeItem('pcg_blog_editor_draft');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   private requestErrorMessage(error: unknown): string {
     const directusMessage = (error as any)?.error?.errors?.[0]?.message;
     if (typeof directusMessage === 'string' && directusMessage.trim()) {
@@ -599,36 +648,51 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
   private buildPersistedSections(sections: any[], articleTitle: string): any[] {
     return sections.map((section: any, index: number) => {
-      const media = [...(section.existingMedia || [])];
-      if (section.videoUrl?.trim()) {
-        const embed = normalizeVideoUrl(section.videoUrl);
-        media.push({
-          ...embed,
-          title: section.videoTitle?.trim() || `Video de ${articleTitle}`,
-        });
+      const { originalSection, originalFileVideo, originalEmbedVideo, initialVideoTitle,
+        existingMedia, videoUrl, videoTitle, videoFileId, videoFileUrl,
+        videoFileName, videoFileType, videoPreviewUrl, images, ...persisted } = section;
+      const media = [...(existingMedia || [])];
+      let embedVideo: any;
+      let fileVideo: any;
+      if (videoUrl?.trim()) {
+        const embed = normalizeVideoUrl(videoUrl);
+        const unchanged = embed.provider === originalEmbedVideo?.provider &&
+          embed.externalId === originalEmbedVideo?.externalId;
+        embedVideo = {
+          ...(unchanged ? originalEmbedVideo : {}), ...embed,
+          title: unchanged && videoTitle === initialVideoTitle
+            ? originalEmbedVideo.title : videoTitle?.trim() || `Video de ${articleTitle}`,
+        };
       }
-      if (section.videoFileId && section.videoFileUrl) {
-        media.push({
-          kind: 'video-file',
-          fileId: section.videoFileId,
-          url: section.videoFileUrl,
-          filename: section.videoFileName,
-          mimeType: section.videoFileType,
-          title: section.videoTitle?.trim() || `Video de ${articleTitle}`,
-        });
+      if (videoFileId && videoFileUrl) {
+        const unchanged = videoFileId === originalFileVideo?.fileId;
+        fileVideo = {
+          ...(unchanged ? originalFileVideo : {}),
+          kind: 'video-file', fileId: videoFileId, url: videoFileUrl,
+          ...(videoFileName ? { filename: videoFileName } : {}),
+          ...(videoFileType ? { mimeType: videoFileType } : {}),
+          title: unchanged && videoTitle === initialVideoTitle
+            ? originalFileVideo.title : videoTitle?.trim() || `Video de ${articleTitle}`,
+        };
       }
-      const {
-        existingMedia,
-        videoUrl,
-        videoTitle,
-        videoFileId,
-        videoFileUrl,
-        videoFileName,
-        videoFileType,
-        videoPreviewUrl,
-        ...persisted
-      } = section;
-      return { ...persisted, media, order: index };
+      // Replace only the two videos exposed by the editor, preserving the others in order.
+      const orderedMedia = (originalSection?.media || []).flatMap((item: any) => {
+        if (item === originalFileVideo) return fileVideo ? [fileVideo] : [];
+        if (item === originalEmbedVideo) return embedVideo ? [embedVideo] : [];
+        return media.includes(item) ? [item] : [];
+      });
+      for (const item of media) {
+        if (!orderedMedia.includes(item)) orderedMedia.push(item);
+      }
+      if (embedVideo && !originalEmbedVideo) orderedMedia.push(embedVideo);
+      if (fileVideo && !originalFileVideo) orderedMedia.push(fileVideo);
+      return {
+        ...originalSection, ...persisted, media: orderedMedia, order: index,
+        images: (images || []).map((image: any) => {
+          const { originalImage, preview, ...editable } = image;
+          return { ...originalImage, ...editable };
+        }),
+      };
     });
   }
 
@@ -636,10 +700,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     if (this.coverUploadPromise) {
       await this.coverUploadPromise;
     }
-    if (
-      this.selectedCoverFile &&
-      !this.form.value.coverImage?.fileId
-    ) {
+    if (this.selectedCoverFile) {
       await this.uploadCoverImage();
     }
 
@@ -652,7 +713,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         if (pendingImageUpload) {
           await pendingImageUpload;
         }
-        if ((image as any)._file && !image.value.fileId) {
+        if ((image as any)._file) {
           await this.uploadSectionImage(
             this.sectionsArray.controls.indexOf(section),
             images.controls.indexOf(image)

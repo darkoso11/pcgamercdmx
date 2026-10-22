@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { DirectusApiService } from '../../../core/services/directus-api.service';
 import { provideRouter } from '@angular/router';
 import { adminUrl } from '../../admin/admin-route.config';
 import { AdminArticlePreviewComponent } from './admin-article-preview.component';
@@ -8,7 +10,10 @@ describe('AdminArticlePreviewComponent', () => {
     sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [AdminArticlePreviewComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: DirectusApiService, useValue: {
+        isAssetUrl: () => true,
+        readAsset: jasmine.createSpy().and.returnValue(of(new Blob(['video'], { type: 'video/mp4' }))),
+      } }],
     }).compileComponents();
   });
 
@@ -43,7 +48,10 @@ describe('AdminArticlePreviewComponent', () => {
       '.preview-bar a'
     ) as HTMLAnchorElement;
     expect(video).not.toBeNull();
-    expect(video.querySelector('source')?.getAttribute('src')).toContain('video-1');
+    expect(video.getAttribute('src')).toMatch(/^blob:/);
+    expect(TestBed.inject(DirectusApiService).readAsset).toHaveBeenCalledWith(
+      'https://cms.test.pcgamercdmx.com/assets/video-1'
+    );
     expect(backLink.getAttribute('href')).toBe(adminUrl('blog/2/edit'));
   });
 });

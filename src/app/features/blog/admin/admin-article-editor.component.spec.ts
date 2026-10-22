@@ -23,6 +23,7 @@ describe('AdminArticleEditorComponent async state', () => {
   let component: AdminArticleEditorComponent;
 
   beforeEach(() => {
+    sessionStorage.removeItem('pcg_blog_editor_draft');
     blogService = {
       getById: jasmine.createSpy(),
       update: jasmine.createSpy(),
@@ -249,7 +250,7 @@ describe('AdminArticleEditorComponent async state', () => {
     expect(section.value.images[0].fileId).toBe('image-1');
   });
 
-  it('stores the current editor route for the private preview', () => {
+  it('stores the current editor route for the private preview', async () => {
     component.isNew = false;
     component.addSection();
     component.form.patchValue({
@@ -258,7 +259,7 @@ describe('AdminArticleEditorComponent async state', () => {
       categoryId: 'guias',
     });
 
-    component.openPreview();
+    await component.openPreview();
 
     const preview = JSON.parse(
       sessionStorage.getItem('pcg_blog_preview') || '{}'
@@ -267,7 +268,7 @@ describe('AdminArticleEditorComponent async state', () => {
     expect(preview.article.title).toBe('Artículo editable');
   });
 
-  it('normalizes a selected video into preview media', () => {
+  it('normalizes a selected video into preview media', async () => {
     component.isNew = false;
     component.addSection();
     const section = component.sectionsArray.at(0);
@@ -284,7 +285,7 @@ describe('AdminArticleEditorComponent async state', () => {
       categoryId: 'guias',
     });
 
-    component.openPreview();
+    await component.openPreview();
 
     const preview = JSON.parse(
       sessionStorage.getItem('pcg_blog_preview') || '{}'
@@ -421,5 +422,131 @@ describe('AdminArticleEditorComponent async state', () => {
 
     expect(uploadService.uploadFile).not.toHaveBeenCalled();
     expect(component.errorMsg).toContain('250 MB');
+  });
+
+  for (const direction of ['up', 'down'] as const) {
+    it(`moves complete sections ${direction} without losing images or pending files`, () => {
+      component.addSection();
+      component.addSection();
+      component.addImageToSection(0);
+      component.addImageToSection(0);
+      const first = component.sectionsArray.at(0);
+      const second = component.sectionsArray.at(1);
+      const image = component.getSectionImages(0).at(0);
+      const file = new File(['pending'], 'pending.png');
+      (image as any)._file = file;
+      if (direction === 'up') component.moveSectionUp(1);
+      else component.moveSectionDown(0);
+      expect(component.sectionsArray.at(0)).toBe(second);
+      expect(component.sectionsArray.at(1)).toBe(first);
+      expect(component.getSectionImages(0).length).toBe(0);
+      expect(component.getSectionImages(1).length).toBe(2);
+      expect((component.getSectionImages(1).at(0) as any)._file).toBe(file);
+    });
+  }
+
+  it('preserves all section data when loading and saving unchanged multimedia', async () => {
+    const section = {
+      id: 'stable-section', title: 'Sección', text: '<p>Texto</p>', order: 0,
+      links: [{ title: 'Referencia', link: '/contacto' }],
+      images: [{ url: '/image.webp', alt: 'Equipo', position: 'left', decorative: false, variant: 'large', order: 0 }],
+      media: [
+        { kind: 'video-file', fileId: 'v1', url: '/v1.mp4', title: 'Primero', captionsUrl: '/es.vtt', transcript: 'Texto' },
+        { kind: 'video-embed', provider: 'youtube', externalId: 'abcdefghi', title: 'Otro título', transcript: 'Otro texto' },
+        { kind: 'video-file', fileId: 'v2', url: '/v2.mp4', title: 'Segundo' },
+      ],
+    };
+    component.isNew = false;
+    blogService.getById.and.returnValue(of({ title: 'Artículo completo', summary: 'Resumen suficientemente largo', categoryId: 'guias', tags: [], sections: [section] }));
+    blogService.update.and.returnValue(of({}));
+    component.loadArticle('2');
+    await component.onSave('draft');
+    const saved = blogService.update.calls.mostRecent().args[1].sections[0];
+    expect(saved).toEqual(jasmine.objectContaining({ id: section.id, links: section.links }));
+    expect(saved.images[0]).toEqual(jasmine.objectContaining(section.images[0]));
+    expect(saved.media).toEqual(section.media);
+  });
+
+  it('restores unsaved changes once after returning from preview', async () => {
+    sessionStorage.removeItem('pcg_blog_editor_draft');
+    component.isNew = false;
+    component.addSection();
+    component.addImageToSection(0);
+    component.form.patchValue({ title: 'Cambios sin guardar', summary: 'Resumen suficientemente largo', categoryId: 'guias', scheduledAt: '2026-12-01T10:00' });
+    component.getSectionImages(0).at(0).patchValue({ url: '/saved.webp', alt: 'Imagen' });
+    await component.openPreview();
+    const restored = new AdminArticleEditorComponent(new FormBuilder(), blogService as any, uploadService as any, route as any, router as any, cdr as any);
+    spyOn(restored, 'loadCategories');
+    spyOn(restored, 'loadSubcategories');
+    restored.ngOnInit();
+    expect(restored.form.value.title).toBe('Cambios sin guardar');
+    expect(restored.form.value.scheduledAt).toBe('2026-12-01T10:00');
+    expect(restored.getSectionImages(0).value[0].alt).toBe('Imagen');
+    expect(blogService.getById).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('pcg_blog_editor_draft')).toBeNull();
+  });
+
+  it('waits for pending files before navigating to preview', async () => {
+    component.addSection();
+    let finish!: (value: any) => void;
+    component.selectedCoverFile = new File(['cover'], 'cover.png');
+    uploadService.uploadFile.and.returnValue(new Promise(resolve => finish = resolve));
+    const preview = component.openPreview();
+    expect(router.navigate).not.toHaveBeenCalled();
+    finish({ fileId: 'cover', url: '/cover.png' });
+    await preview;
+    expect(JSON.parse(sessionStorage.getItem('pcg_blog_preview')!).article.coverImage.fileId).toBe('cover');
+    expect(router.navigate).toHaveBeenCalled();
+  });
+
+  for (const target of ['cover', 'section'] as const) {
+    it(`keeps the latest ${target} image when replaced during upload`, async () => {
+      component.addSection();
+      component.addImageToSection(0);
+      const image = component.getSectionImages(0).at(0);
+      const first = new File(['first'], 'first.png', { type: 'image/png' });
+      const second = new File(['second'], 'second.png', { type: 'image/png' });
+      let finish!: (value: any) => void;
+      uploadService.uploadFile.and.returnValues(new Promise(resolve => finish = resolve), Promise.resolve({ fileId: 'second', url: '/second.png', filename: 'second.png' }));
+      if (target === 'cover') component.selectedCoverFile = first;
+      else (image as any)._file = first;
+      const pending = target === 'cover' ? component.uploadCoverImage() : component.uploadSectionImage(0, 0);
+      if (target === 'cover') component.selectedCoverFile = second;
+      else (image as any)._file = second;
+      finish({ fileId: 'first', url: '/first.png' });
+      await pending;
+      expect(uploadService.uploadFile.calls.mostRecent().args[0]).toBe(second);
+      expect(target === 'cover' ? component.form.value.coverImage.fileId : image.value.fileId).toBe('second');
+    });
+  }
+
+  it('keeps the editor open if a pending upload fails before preview', async () => {
+    component.selectedCoverFile = new File(['image'], 'cover.png');
+    uploadService.uploadFile.and.rejectWith(new Error('Sin conexión'));
+    await component.openPreview();
+    expect(router.navigate).not.toHaveBeenCalled();
+    expect(component.errorMsg).toContain('Sin conexión');
+    expect(component.saving).toBeFalse();
+  });
+
+  it('preserves multimedia across repeated preview and restore cycles without duplicates', async () => {
+    const media = [
+      { kind: 'video-file', fileId: 'v1', url: '/v1.mp4', title: 'Uno', transcript: 'Transcripción' },
+      { kind: 'video-file', fileId: 'v2', url: '/v2.mp4', title: 'Dos' },
+    ];
+    blogService.getById.and.returnValue(of({ title: 'Artículo original', summary: 'Resumen suficientemente largo', categoryId: 'guias', tags: ['guia'], sections: [{ id: 's1', media, images: [], links: [{ title: 'Enlace', link: '/blog' }] }] }));
+    component.isNew = false;
+    component.loadArticle('2');
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await component.openPreview();
+      component = new AdminArticleEditorComponent(new FormBuilder(), blogService as any, uploadService as any, route as any, router as any, cdr as any);
+      spyOn(component, 'loadCategories');
+      spyOn(component, 'loadSubcategories');
+      component.ngOnInit();
+    }
+    blogService.update.and.returnValue(of({}));
+    await component.onSave('draft');
+    expect(blogService.update.calls.mostRecent().args[1].sections[0].media).toEqual(media);
+    expect(blogService.update.calls.mostRecent().args[1].tags).toEqual(['guia']);
   });
 });

@@ -127,7 +127,7 @@
       </div>
 
       <div *ngIf="coverImagePreview" class="mt-4">
-        <img [src]="coverImagePreview" alt="Preview" class="max-w-xs rounded border border-cyan-400/30">
+        <img [privateMedia]="coverImagePreview || undefined" [authorizedMedia]="true" alt="Preview" class="max-w-xs rounded border border-cyan-400/30">
       </div>
 
       <div *ngIf="selectedCoverFile && uploading" class="mt-3 text-sm text-cyan-100" role="status">
@@ -241,7 +241,7 @@
 
                   <!-- Preview -->
                   <div *ngIf="(imgCtrl.value)?.preview" class="mb-2">
-                    <img [src]="(imgCtrl.value).preview" alt="Preview" class="h-16 rounded border border-cyan-400/20">
+                    <img [privateMedia]="(imgCtrl.value).preview" [authorizedMedia]="true" alt="Preview" class="h-16 rounded border border-cyan-400/20">
                   </div>
 
                   <!-- Campo Alt -->
@@ -308,7 +308,7 @@
               <video
                 *ngIf="section.value.videoPreviewUrl || section.value.videoFileUrl"
                 class="mt-3 w-full max-w-xl rounded border border-cyan-300/30 bg-black"
-                [src]="section.value.videoPreviewUrl || section.value.videoFileUrl"
+                [privateMedia]="section.value.videoPreviewUrl || section.value.videoFileUrl" [authorizedMedia]="true"
                 controls
                 preload="metadata"
                 [attr.aria-label]="section.value.videoTitle || section.value.videoFileName"
@@ -393,7 +393,7 @@
       <button
         type="button"
         (click)="openPreview()"
-        [disabled]="form.invalid"
+        [disabled]="form.invalid || saving"
         class="border border-slate-400 text-slate-100 hover:bg-slate-800 disabled:opacity-50 px-6 py-3 rounded font-semibold transition"
       >
         Vista previa
