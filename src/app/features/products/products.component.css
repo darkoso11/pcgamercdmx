@@ -1,20 +1,4 @@
-:host {
-  display: block;
-}
-
-.product-choice {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-}
-
-.product-choice:hover {
-  border-color: rgba(34, 211, 238, 0.45);
-  background: rgba(34, 211, 238, 0.08);
-}
-
-.product-choice.is-active {
-  border-color: rgba(236, 72, 153, 0.65);
-  background:
-    linear-gradient(180deg, rgba(236, 72, 153, 0.16), rgba(236, 72, 153, 0.06)),
-    rgba(255, 255, 255, 0.04);
-  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.35);
-}
+:host { display: block; }
+.detail-container { max-width: 1280px; margin: auto; padding: 0 16px; }
+@media (min-width: 768px) { .detail-container { padding: 0 24px; } }
+@media (min-width: 1024px) { .detail-container { padding: 0 32px; } }
