@@ -19,7 +19,7 @@ export class UploadService {
     }
 
     const response = await firstValueFrom(
-      this.directus.uploadFile(file, file.name, { auth: true })
+      this.directus.uploadFile(file, file.name, { auth: true, blogManaged: true })
     );
     const fileId = response.data.id;
     return {

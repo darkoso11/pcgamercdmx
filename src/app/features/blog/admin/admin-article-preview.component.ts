@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { adminUrl } from '../../admin/admin-route.config';
+import { PrivateMediaDirective } from '../private-media.directive';
 import { ArticleMediaComponent } from '../article-media.component';
 
 @Component({
   selector: 'app-admin-article-preview',
   standalone: true,
-  imports: [CommonModule, RouterModule, ArticleMediaComponent],
+  imports: [CommonModule, RouterModule, ArticleMediaComponent, PrivateMediaDirective],
   template: `
     <main class="preview-page">
       <div class="preview-bar">
@@ -25,7 +26,7 @@ import { ArticleMediaComponent } from '../article-media.component';
           <div class="summary">{{ article.summary }}</div>
         </header>
         <figure *ngIf="article.coverImage?.url">
-          <img [src]="article.coverImage?.url" [alt]="article.coverImage?.alt || ''" />
+          <img [privateMedia]="article.coverImage?.url" [authorizedMedia]="true" [alt]="article.coverImage?.alt || ''" />
         </figure>
         <div class="body">
           <section *ngFor="let section of article.sections">
@@ -33,7 +34,7 @@ import { ArticleMediaComponent } from '../article-media.component';
             <div class="rich-text" [innerHTML]="section.text || ''"></div>
             <div class="images" *ngIf="section.images?.length">
               <figure *ngFor="let image of section.images">
-                <img [src]="image.preview || image.url" [alt]="image.alt || ''" />
+                <img [privateMedia]="image.preview || image.url" [authorizedMedia]="true" [alt]="image.alt || ''" />
                 <figcaption *ngIf="image.alt">{{ image.alt }}</figcaption>
               </figure>
             </div>
@@ -41,6 +42,7 @@ import { ArticleMediaComponent } from '../article-media.component';
               <app-article-media
                 *ngFor="let media of section.media"
                 [media]="media"
+                [authorizedMedia]="true"
               ></app-article-media>
             </div>
           </section>
