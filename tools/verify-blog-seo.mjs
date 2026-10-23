@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+
+const base = process.env.BLOG_TEST_URL || 'http://127.0.0.1:4267';
+const cms = process.env.DIRECTUS_URL || 'https://cms.test.pcgamercdmx.com';
+const query = new URLSearchParams({ 'filter[published][_eq]': 'true', 'filter[published_at][_lte]': new Date().toISOString(), limit: '1', fields: '*' });
+const response = await fetch(`${cms}/items/pc_blog_posts?${query}`);
+assert.equal(response.status, 200);
+const article = (await response.json()).data[0];
+assert.ok(article, 'A published article is needed for the read-only SSR check');
+const page = await fetch(`${base}/blog/${encodeURIComponent(article.slug)}`);
+const html = await page.text();
+assert.equal(page.status, 200);
+const escaped = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+assert.ok(html.includes(`<title>${escaped(article.seo_title?.trim() || `${article.title} | PC Gamer CDMX`)}</title>`), 'Initial HTML must contain the article title');
+assert.ok(html.includes('BlogPosting'), 'Initial HTML must contain the article structured data');
+assert.ok(html.includes('BreadcrumbList'));
+assert.equal((html.match(/rel="canonical"/g) || []).length, 1);
+assert.ok(html.includes(`https://pcgamercdmx.com/blog/${encodeURIComponent(article.slug)}`));
+assert.equal((html.match(/property="og:title"/g) || []).length, 1);
+const missing = await fetch(`${base}/blog/seo-verification-does-not-exist-20261022`);
+assert.equal(missing.status, 404, 'Missing article must return HTTP 404');
+assert.ok((await missing.text()).includes('noindex'));
+const sitemap = await fetch(`${base}/sitemap.xml`);
+assert.equal(sitemap.status, 200);
+assert.ok((await sitemap.text()).includes(`/blog/${encodeURIComponent(article.slug)}`));
+assert.equal((await fetch(`${base}/healthz`)).status, 200);
+console.log('SSR HTML, unique metadata, JSON-LD, canonical, HTTP 404, dynamic sitemap and healthz: passed.');

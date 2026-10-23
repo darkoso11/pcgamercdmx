@@ -14,6 +14,13 @@ describe('SeoService', () => {
     document.head.querySelectorAll('script[data-seo-schema="page"]').forEach((node) => node.remove());
   });
 
+  it('escapes script terminators in structured data serialized into SSR HTML', () => {
+    service.updatePageStructuredData([{ id: 'unsafe-text', data: { headline: '</script><script>alert(1)</script>' } }]);
+    const text = document.getElementById('unsafe-text')!.textContent!;
+    expect(text).not.toContain('</script>');
+    expect(JSON.parse(text).headline).toBe('</script><script>alert(1)</script>');
+  });
+
   it('adds page-specific JSON-LD alongside the organization schema', () => {
     service.update({
       structuredData: [{

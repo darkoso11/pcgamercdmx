@@ -55,6 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
       route = route.firstChild;
     }
 
+    if (data['seoManagedByComponent']) return;
     const url = this.router.url.split('?')[0] || '/';
 
     this.seoService.update({

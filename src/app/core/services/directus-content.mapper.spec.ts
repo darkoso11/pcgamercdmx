@@ -9,6 +9,13 @@ import {
 } from './directus-content.mapper';
 
 describe('Directus content mapper', () => {
+  it('preserves editorial SEO overrides and real modification dates', () => {
+    const record = { id: 1, title: 'Artículo', slug: 'articulo', published_at: '2026-10-01T12:00:00Z', seo_title: 'Título SEO', seo_description: 'Descripción SEO', seo_image: 'https://example.com/social.webp', date_created: '2026-09-01T12:00:00Z', date_updated: '2026-10-02T12:00:00Z' };
+    const article = mapDirectusBlogPostToArticle(record as any);
+    expect(article).toEqual(jasmine.objectContaining({ seoTitle: record.seo_title, seoDescription: record.seo_description, seoImage: record.seo_image, createdAt: record.date_created, updatedAt: record.date_updated }));
+    const payload = mapArticleToDirectusPayload(article);
+    expect(payload).toEqual(jasmine.objectContaining({ seo_title: record.seo_title, seo_description: record.seo_description, seo_image: record.seo_image }));
+  });
   it('maps Directus products to the admin product shape', () => {
     const product = mapDirectusProductToAdminProduct({
       id: 12,

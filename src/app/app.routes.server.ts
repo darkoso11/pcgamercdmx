@@ -28,10 +28,8 @@ export const serverRoutes: ServerRoute[] = [
     path: 'productos/:slug',
     renderMode: RenderMode.Client
   },
-  {
-    path: 'blog/:slug',
-    renderMode: RenderMode.Client
-  },
+  { path: 'blog', renderMode: RenderMode.Server },
+  { path: 'blog/:slug', renderMode: RenderMode.Server },
   {
     path: adminRoute('**'),
     renderMode: RenderMode.Client
