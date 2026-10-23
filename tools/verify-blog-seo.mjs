@@ -17,6 +17,11 @@ assert.ok(html.includes('BreadcrumbList'));
 assert.equal((html.match(/rel="canonical"/g) || []).length, 1);
 assert.ok(html.includes(`https://pcgamercdmx.com/blog/${encodeURIComponent(article.slug)}`));
 assert.equal((html.match(/property="og:title"/g) || []).length, 1);
+const proxied = await fetch(`${base}/blog/${encodeURIComponent(article.slug)}`, { headers: {
+  'x-forwarded-for': '192.0.2.1', 'x-forwarded-port': '443', 'x-forwarded-server': 'traefik',
+} });
+assert.equal(proxied.status, 200);
+assert.ok((await proxied.text()).includes(`<title>${escaped(article.seo_title?.trim() || `${article.title} | PC Gamer CDMX`)}</title>`), 'Proxy headers must preserve SSR');
 const missing = await fetch(`${base}/blog/seo-verification-does-not-exist-20261022`);
 assert.equal(missing.status, 404, 'Missing article must return HTTP 404');
 assert.ok((await missing.text()).includes('noindex'));

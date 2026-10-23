@@ -14,7 +14,10 @@ import { join } from 'node:path';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+const angularApp = new AngularNodeAppEngine({
+  // Traefik supplies these headers; hostname validation still uses allowedHosts.
+  trustProxyHeaders: ['x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-for', 'x-forwarded-port', 'x-forwarded-server'],
+});
 
 app.disable('x-powered-by');
 app.use(compression());

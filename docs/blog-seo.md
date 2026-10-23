@@ -31,11 +31,14 @@ Los campos nuevos y el seguimiento de imagen social se aplicaron al CMS comparti
 ## Validación
 
 - Suite Angular: 385 pruebas correctas antes de la verificación final.
+- Interfaz pública: 46 pruebas Chromium correctas.
 - Compilación híbrida: correcta, 99 rutas prerenderizadas y blog SSR.
 - `node tools/verify-blog-seo.mjs`: HTML inicial, etiquetas únicas, canonical, datos estructurados, 404, sitemap y healthz; lectura sin credenciales.
 - `python tools/verify-blog-seo-live.py`: crea únicamente datos temporales, verifica personalización SEO, programación, actualización sin recompilar, imagen social privada y retirada del sitemap al despublicar; elimina los datos al terminar.
 - `python tools/verify-blog-privacy.py`: regresión de permisos de medios y entradas.
 - Las respuestas 503/noindex del detalle se cubren además por una prueba de componente con fallo simulado del CMS.
+
+Detrás de Traefik, Angular acepta explícitamente las cabeceras forwarded que añade Dokploy, manteniendo la lista de hosts permitidos. El verificador incluye una solicitud con esas cabeceras para detectar una caída involuntaria a renderizado del cliente. Véase la [configuración de proxy de Angular](https://angular.dev/best-practices/security#configuring-trusted-proxy-headers).
 
 Para verificar un despliegue, establecer `BLOG_TEST_URL` al dominio de pruebas al ejecutar los dos verificadores SEO. No publicar cambios en una entrada real para comprobarlos.
 
