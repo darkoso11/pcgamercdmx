@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, timeout } from 'rxjs/operators';
 import { DirectusApiService } from '../../../core/services/directus-api.service';
 import {
   DirectusBlogPostRecord,
@@ -55,6 +55,7 @@ export class BlogService {
     return this.directus
       .readItems<DirectusBlogPostRecord>(this.postsCollection, query)
       .pipe(
+        timeout(10000),
         map((response) => {
           const articles = response.data.map(mapDirectusBlogPostToArticle);
           return {
@@ -79,6 +80,7 @@ export class BlogService {
         limit: 1,
       })
       .pipe(
+        timeout(10000),
         map((response) =>
           response.data[0] ? mapDirectusBlogPostToArticle(response.data[0]) : null
         )
@@ -164,7 +166,7 @@ export class BlogService {
         { fields: '*', sort: 'sort,name', limit: 100 },
         { auth: true }
       )
-      .pipe(map((response) => response.data.map(mapDirectusCategoryToBlogCategory)));
+      .pipe(timeout(10000), map((response) => response.data.map(mapDirectusCategoryToBlogCategory)));
   }
 
   createCategory(payload: { name: string; description?: string }): Observable<Category> {

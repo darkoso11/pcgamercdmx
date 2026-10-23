@@ -78,6 +78,9 @@ export type Article = {
     slug?: string;
     // Resumen corto para listados y SEO
     summary?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    seoImage?: string;
     // Imagen de portada principal (S3 url)
     coverImage?: ArticleImage;
     // Secciones del artículo (editor dividido en bloques)

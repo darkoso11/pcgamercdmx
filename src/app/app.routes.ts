@@ -136,7 +136,7 @@ export const routes: Routes = [
     path: 'blog/:slug',
     loadComponent: () => import('./features/blog/article.component').then(m => m.ArticleComponent),
     title: 'Artículo | PC Gamer CDMX',
-    data: { renderMode: 'dynamic' }
+    data: { seoManagedByComponent: true }
   },
 
   // Admin Blog routes

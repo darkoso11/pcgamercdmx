@@ -84,6 +84,11 @@ export interface DirectusSubcategoryRecord {
 }
 
 export interface DirectusBlogPostRecord {
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_image?: string | null;
+  date_created?: string | null;
+  date_updated?: string | null;
   id?: number | string;
   title?: string;
   slug?: string;
@@ -99,6 +104,9 @@ export interface DirectusBlogPostRecord {
 }
 
 export interface DirectusBlogPostPayload {
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_image?: string | null;
   title: string;
   slug: string;
   summary: string | null;
@@ -362,6 +370,9 @@ export function mapDirectusBlogPostToArticle(
     title: text(item.title, 'Articulo sin titulo'),
     slug: text(item.slug, ''),
     summary: text(item.summary, ''),
+    seoTitle: text(item.seo_title, ''),
+    seoDescription: text(item.seo_description, ''),
+    seoImage: text(item.seo_image, ''),
     coverImage: normalizeCoverImage(item.cover_image),
     sections: normalizeArray(item.sections),
     categoryId: text(item.category, ''),
@@ -369,8 +380,8 @@ export function mapDirectusBlogPostToArticle(
     tags: normalizeStringArray(item.tags),
     published: Boolean(item.published),
     publishedAt: text(item.published_at, ''),
-    createdAt: text(item.published_at, ''),
-    updatedAt: text(item.published_at, ''),
+    createdAt: text(item.date_created, '') || text(item.published_at, ''),
+    updatedAt: text(item.date_updated, ''),
   };
 }
 
@@ -381,6 +392,9 @@ export function mapArticleToDirectusPayload(
     title: text(article.title, 'Articulo sin titulo'),
     slug: text(article.slug, slugify(text(article.title, 'articulo'))),
     summary: text(article.summary, '') || null,
+    seo_title: text(article.seoTitle, '').trim() || null,
+    seo_description: text(article.seoDescription, '').trim() || null,
+    seo_image: text(article.seoImage, '').trim() || null,
     cover_image: normalizeCoverImage(article.coverImage),
     sections: normalizeArray(article.sections),
     category: text(article.categoryId, '') || null,

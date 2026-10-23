@@ -549,4 +549,38 @@ describe('AdminArticleEditorComponent async state', () => {
     expect(blogService.update.calls.mostRecent().args[1].sections[0].media).toEqual(media);
     expect(blogService.update.calls.mostRecent().args[1].tags).toEqual(['guia']);
   });
+
+  it('loads and persists SEO overrides while preserving the original publication date', async () => {
+    component.isNew = false;
+    blogService.getById.and.returnValue(of({ title: 'Artículo', slug: 'articulo', summary: 'Resumen suficientemente largo', categoryId: '1', published: true, publishedAt: '2026-01-01T12:00:00Z', seoTitle: 'Título SEO', seoDescription: 'Descripción para buscadores', seoImage: 'https://example.com/social.webp', sections: [{ text: '<p>Contenido</p>' }] }));
+    blogService.update.and.returnValue(of({}));
+    component.loadArticle('2');
+    expect(component.form.value.seoTitle).toBe('Título SEO');
+    await component.onSave('publish');
+    expect(blogService.update.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({ seoTitle: 'Título SEO', seoImage: 'https://example.com/social.webp', publishedAt: '2026-01-01T12:00:00Z' }));
+  });
+
+  it('does not publish immediately when the scheduling date is in the past', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ title: 'Artículo', summary: 'Resumen suficientemente largo', categoryId: '1', scheduledAt: '2020-01-01T12:00' });
+    blogService.update.and.returnValue(of({}));
+    await component.onSave('schedule');
+    expect(blogService.update).not.toHaveBeenCalled();
+    expect(component.errorMsg).toContain('futura');
+  });
+
+  it('generates an accented title slug without losing its letters', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ title: 'Guía de edición', summary: 'Resumen suficientemente largo', categoryId: '1' });
+    blogService.update.and.returnValue(of({}));
+    await component.onSave('draft');
+    expect(blogService.update.calls.mostRecent().args[1].slug).toBe('guia-de-edicion');
+  });
+
+  it('rejects slugs that cannot be used as a single canonical path', () => {
+    component.form.get('slug')!.setValue('entrada con / espacios');
+    expect(component.form.get('slug')!.valid).toBeFalse();
+  });
 });

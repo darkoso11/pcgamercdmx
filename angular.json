@@ -35,11 +35,23 @@
             "allowedCommonJsDependencies": [
               "quill-delta"
             ],
-            "scripts": []
+            "scripts": [],
+            "ssr": {
+              "entry": "src/server.ts"
+            },
+            "security": {
+              "allowedHosts": [
+                "localhost",
+                "127.0.0.1",
+                "test.pcgamercdmx.com",
+                "pcgamercdmx.com",
+                "www.pcgamercdmx.com"
+              ]
+            }
           },
           "configurations": {
             "production": {
-              "outputMode": "static",
+              "outputMode": "server",
               "optimization": {
                 "scripts": true,
                 "styles": {
