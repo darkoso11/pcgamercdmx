@@ -12,6 +12,9 @@ export interface SeoConfig {
   url?: string;
   type?: 'website' | 'article' | 'product';
   noIndex?: boolean;
+  publishedTime?: string;
+  modifiedTime?: string;
+  imageAlt?: string;
   structuredData?: SeoStructuredData[];
 }
 
@@ -20,7 +23,7 @@ export interface SeoStructuredData {
   data: Record<string, unknown>;
 }
 
-const DEFAULT_SEO: Required<Omit<SeoConfig, 'noIndex' | 'structuredData'>> = {
+const DEFAULT_SEO: Required<Omit<SeoConfig, 'noIndex' | 'structuredData' | 'publishedTime' | 'modifiedTime' | 'imageAlt'>> = {
   title: 'PC Gamer CDMX | Ensambles, componentes y PCs gamer en Ciudad de Mexico',
   description:
     'PC Gamer CDMX ensambla PCs gamer a medida, paquetes listos, perifericos, componentes y soporte tecnico especializado en Ciudad de Mexico.',
@@ -71,6 +74,14 @@ export class SeoService {
     this.meta.updateTag({ name: 'twitter:description', content: seo.description });
     this.meta.updateTag({ name: 'twitter:image', content: absoluteImage });
 
+    for (const [property, content] of [
+      ['article:published_time', seo.type === 'article' ? config.publishedTime : undefined],
+      ['article:modified_time', seo.type === 'article' ? config.modifiedTime : undefined],
+      ['og:image:alt', config.imageAlt],
+    ]) {
+      if (content) this.meta.updateTag({ property: property!, content });
+      else this.meta.removeTag(`property="${property}"`);
+    }
     this.setCanonical(absoluteUrl);
     this.setStructuredData();
     if (config.structuredData !== undefined) {
@@ -139,7 +150,7 @@ export class SeoService {
       script.id = id;
       script.type = 'application/ld+json';
       script.setAttribute('data-seo-schema', 'page');
-      script.text = JSON.stringify(data);
+      script.text = JSON.stringify(data).replace(/</g, '\\u003c');
       this.document.head.appendChild(script);
     });
   }

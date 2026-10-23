@@ -27,10 +27,13 @@
           <input 
             type="text" 
             formControlName="slug" 
+            [readOnly]="!isNew && !!form.value.publishedAt"
             placeholder="mi-primer-articulo"
             class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
           />
           <div class="text-xs text-gray-400 mt-1">Se genera automáticamente si dejas vacío</div>
+          <p *ngIf="form.get('slug')?.invalid" class="mt-1 text-sm text-red-300">Usa letras minúsculas sin acentos, números y guiones, sin espacios.</p>
+          <p *ngIf="!isNew && form.value.publishedAt" class="mt-1 text-sm text-slate-300">La URL se conserva para mantener los enlaces de esta publicación.</p>
         </div>
       </div>
 
@@ -381,6 +384,26 @@
     <div *ngIf="successMsg" aria-live="polite" role="status" class="p-4 bg-emerald-950 border border-emerald-400 rounded text-emerald-100">
       ✓ {{ successMsg }}
     </div>
+
+    <section class="rounded-lg border border-cyan-400/30 bg-pc-admin-panel p-6" aria-labelledby="seo-heading">
+      <h2 id="seo-heading" class="mb-3 text-xl font-bold text-cyan-400">SEO y vista al compartir</h2>
+      <p class="mb-4 text-slate-300">Si dejas estos campos vacíos, usaremos el título, el resumen y la portada del artículo.</p>
+      <label for="seo-title" class="mb-2 block font-semibold">Título SEO (opcional)</label>
+      <input id="seo-title" formControlName="seoTitle" maxlength="255" class="mb-2 w-full rounded border border-slate-500 bg-pc-surface-deep p-3 text-white" />
+      <p class="mb-4 text-sm text-slate-300">{{ (form.value.seoTitle || '').length }} caracteres. Procura que describa claramente el artículo.</p>
+      <label for="seo-description" class="mb-2 block font-semibold">Descripción SEO (opcional)</label>
+      <textarea id="seo-description" formControlName="seoDescription" rows="3" class="mb-2 w-full rounded border border-slate-500 bg-pc-surface-deep p-3 text-white"></textarea>
+      <p class="mb-4 text-sm text-slate-300">{{ (form.value.seoDescription || '').length }} caracteres. El buscador puede ajustar el texto mostrado.</p>
+      <label for="seo-image" class="mb-2 block font-semibold">URL de imagen para compartir (opcional)</label>
+      <input id="seo-image" type="url" formControlName="seoImage" placeholder="https://…" class="w-full rounded border border-slate-500 bg-pc-surface-deep p-3 text-white" />
+      <p *ngIf="form.get('seoImage')?.invalid" class="mt-2 text-red-300" role="alert">Introduce una URL completa http o https.</p>
+      <div class="mt-5 border-t border-slate-600 pt-4" aria-label="Vista orientativa en buscadores">
+        <p class="break-words text-sm text-emerald-200">{{ seoPreview.url }}</p>
+        <p class="my-2 text-xl font-semibold text-cyan-200">{{ seoPreview.title }}</p>
+        <p class="text-slate-200">{{ seoPreview.description }}</p>
+        <p class="mt-3 text-sm text-slate-400">Vista orientativa; no garantiza la apariencia final en Google o redes sociales.</p>
+      </div>
+    </section>
 
     <!-- Botones de acción -->
     <div class="flex gap-3 justify-end">

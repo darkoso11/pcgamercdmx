@@ -10,6 +10,7 @@ import { BlogService } from '../services/blog.service';
 import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { adminUrl } from '../../admin/admin-route.config';
+import { buildArticleSeo } from '../services/blog-seo.utils';
 import { localDateTimeToUtc, normalizeVideoUrl, utcDateTimeToLocal } from '../services/blog-content.utils';
 
 @Component({
@@ -62,8 +63,12 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   ) {
     this.form = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
-      slug: [''],
+      slug: ['', Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)],
       summary: ['', [Validators.required, Validators.minLength(10)]],
+      seoTitle: ['', Validators.maxLength(255)],
+      seoDescription: [''],
+      seoImage: ['', Validators.pattern(/^https?:\/\/[^\s]+$/)],
+      publishedAt: [''],
       categoryId: ['', Validators.required],
       subCategoryId: [''],
       tags: [''],
@@ -72,6 +77,10 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       scheduledAt: [''],
       sections: this.fb.array([])
     });
+  }
+
+  get seoPreview() {
+    return buildArticleSeo({ ...this.form.getRawValue(), title: this.form.value.title || 'Título del artículo', slug: this.form.value.slug || 'url-del-articulo' });
   }
 
   get sectionsArray(): FormArray {
@@ -196,6 +205,10 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       title: article.title,
       slug: article.slug || '',
       summary: article.summary || '',
+      seoTitle: article.seoTitle || '',
+      seoDescription: article.seoDescription || '',
+      seoImage: article.seoImage || '',
+      publishedAt: article.publishedAt || '',
       categoryId: article.categoryId || '',
       subCategoryId: article.subCategoryId || '',
       tags: (article.tags || []).join(', '),
@@ -569,25 +582,30 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
       if (!formData.slug) {
         formData.slug = formData.title
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
           .toLowerCase()
           .replace(/\s+/g, '-')
           .replace(/[^\w-]/g, '')
           .replace(/-+/g, '-')
-          .substring(0, 50);
+          .substring(0, 80).replace(/^-+|-+$/g, '');
       }
 
+      if (!formData.slug) throw new Error('Escribe una URL con letras y números para el artículo');
       if (mode === 'schedule' && !formData.scheduledAt) {
         this.errorMsg = 'Selecciona la fecha y hora de publicación';
         this.saving = false;
         return;
       }
 
+      if (mode === 'schedule' && Date.parse(localDateTimeToUtc(formData.scheduledAt)) <= Date.now()) {
+        throw new Error('Selecciona una fecha futura para programar la publicación');
+      }
       formData.published = mode !== 'draft';
       formData.publishedAt = mode === 'schedule'
         ? localDateTimeToUtc(formData.scheduledAt)
         : mode === 'publish'
-          ? new Date().toISOString()
-          : null;
+          ? (formData.publishedAt && Date.parse(formData.publishedAt) <= Date.now() ? formData.publishedAt : new Date().toISOString())
+          : formData.publishedAt || null;
       formData.sections = this.buildPersistedSections(
         formData.sections,
         formData.title

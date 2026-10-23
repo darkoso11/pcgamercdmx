@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy, inject, RESPONSE_INIT } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { combineLatest, of, Subject, Subscription } from 'rxjs';
+import { catchError, map, startWith, switchMap } from 'rxjs/operators';
+import { SeoService } from '../../core/services/seo.service';
+import { buildArticleSeo } from './services/blog-seo.utils';
 import { Article } from './models/types';
 import { ArticleMediaComponent } from './article-media.component';
 import { BlogService } from './services/blog.service';
@@ -56,10 +60,10 @@ import { BlogService } from './services/blog.service';
 
           <div class="article-body">
             <section
-              *ngFor="let section of article.sections"
-              [attr.aria-labelledby]="section.title ? 'section-' + section.id : null"
+              *ngFor="let section of article.sections; let sectionIndex = index"
+              [attr.aria-labelledby]="section.title ? 'section-' + sectionIndex : null"
             >
-              <h2 *ngIf="section.title" [id]="'section-' + section.id">{{ section.title }}</h2>
+              <h2 *ngIf="section.title" [id]="'section-' + sectionIndex">{{ section.title }}</h2>
               <div class="rich-text" [innerHTML]="section.text || ''"></div>
 
               <div class="media-grid" *ngIf="section.images?.length">
@@ -126,7 +130,7 @@ import { BlogService } from './services/blog.service';
     @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; } }
   `],
 })
-export class ArticleComponent implements OnInit {
+export class ArticleComponent implements OnInit, OnDestroy {
   article: Article | null = null;
   loading = true;
   error = false;
@@ -139,30 +143,46 @@ export class ArticleComponent implements OnInit {
     private readonly cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.load();
-  }
+  private readonly seo = inject(SeoService);
+  private readonly response = inject(RESPONSE_INIT, { optional: true });
+  private requestedSlug = '';
+  private readonly retry = new Subject<void>();
+  private subscription?: Subscription;
 
-  load(): void {
-    const slug = this.route.snapshot.paramMap.get('slug') ?? '';
-    this.loading = true;
-    this.error = false;
-    this.notFound = false;
-    this.coverFailed = false;
-    this.blog.getPublishedBySlug(slug).subscribe({
-      next: (article) => {
-        this.article = article;
-        this.loading = false;
-        this.notFound = !article;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.error = true;
-        this.cdr.markForCheck();
-      },
+  ngOnInit(): void {
+    this.subscription = combineLatest([this.route.paramMap, this.retry.pipe(startWith(undefined))]).pipe(
+      switchMap(([params]) => {
+        this.requestedSlug = params.get('slug') || '';
+        this.article = null;
+        this.loading = true;
+        this.error = false;
+        this.notFound = false;
+        this.coverFailed = false;
+        this.seo.update({ title: 'Cargando artículo | PC Gamer CDMX', noIndex: true, structuredData: [] });
+        return this.blog.getPublishedBySlug(params.get('slug') || '').pipe(
+          map(article => ({ article, error: false })),
+          catchError(() => of({ article: null, error: true }))
+        );
+      })
+    ).subscribe(({ article, error }) => {
+      this.article = article;
+      this.error = error;
+      this.notFound = !article && !error;
+      this.loading = false;
+      if (this.response) this.response.status = error ? 503 : article ? 200 : 404;
+      if (article) this.seo.update(buildArticleSeo(article));
+      else this.seo.update({
+        title: error ? 'Blog temporalmente no disponible | PC Gamer CDMX' : 'Publicación no encontrada | PC Gamer CDMX',
+        description: error ? 'Intenta abrir esta publicación más tarde.' : 'Esta publicación no está disponible.',
+        noIndex: true, structuredData: [], url: `/blog/${encodeURIComponent(this.requestedSlug)}`,
+      });
+      this.cdr.markForCheck();
     });
   }
+
+  load(): void { this.retry.next(); }
+
+  ngOnDestroy(): void { this.subscription?.unsubscribe(); }
 
   handleCoverError(): void {
     this.coverFailed = true;
