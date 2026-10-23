@@ -16,7 +16,7 @@ describe('UploadService', () => {
 
     const result = await service.uploadFile(file);
 
-    expect(directus.uploadFile).toHaveBeenCalledWith(file, 'cover.webp', { auth: true });
+    expect(directus.uploadFile).toHaveBeenCalledWith(file, 'cover.webp', { auth: true, blogManaged: true });
     expect(result).toEqual({
       fileId: 'file-123',
       url: 'https://cms.test.pcgamercdmx.com/assets/file-123',

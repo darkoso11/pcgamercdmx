@@ -28,6 +28,28 @@ describe('DirectusApiService', () => {
     clearStoredDirectusSession();
   });
 
+  it('loads private assets with authorization in headers rather than URLs', () => {
+    setStoredDirectusSession('test-token');
+    (service as any).readAsset(`${baseUrl}/assets/private-image`).subscribe();
+    const request = httpMock.expectOne(`${baseUrl}/assets/private-image`);
+    expect(request.request.headers.get('Authorization')).toBe('Bearer test-token');
+    expect(request.request.responseType).toBe('blob');
+    request.flush(new Blob(['image']));
+  });
+
+  it('never sends the CMS token to another origin', () => {
+    expect(() => (service as any).readAsset('https://example.com/assets/image')).toThrow();
+    httpMock.expectNone('https://example.com/assets/image');
+  });
+
+  it('marks blog files private before the upload reaches the CMS', () => {
+    service.uploadFile(new File(['image'], 'cover.png'), 'cover.png', { auth: true, blogManaged: true }).subscribe();
+    const upload = httpMock.expectOne(`${baseUrl}/files`);
+    expect(upload.request.body.get('pc_blog_managed')).toBe('true');
+    expect(upload.request.body.get('file').name).toBe('cover.png');
+    upload.flush({ data: { id: 'private-cover' } });
+  });
+
   it('refreshes the session and retries authenticated reads after a 401', () => {
     setStoredDirectusSession('expired-access', 'valid-refresh');
     let result: unknown;

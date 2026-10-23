@@ -24,6 +24,7 @@ type DirectusQueryValue = string | number | boolean;
 
 interface DirectusRequestOptions {
   auth?: boolean;
+  blogManaged?: boolean;
 }
 
 export interface DirectusListResponse<T> {
@@ -209,6 +210,7 @@ export class DirectusApiService {
     options: DirectusRequestOptions = {}
   ): Observable<DirectusFileResponse> {
     const formData = new FormData();
+    if (options.blogManaged) formData.append('pc_blog_managed', 'true');
     if (title) {
       formData.append('title', title);
     }
@@ -226,6 +228,24 @@ export class DirectusApiService {
 
   assetUrl(fileId: string): string {
     return `${this.baseUrl}/assets/${fileId}`;
+  }
+
+  readAsset(url: string): Observable<Blob> {
+    if (!this.isAssetUrl(url)) throw new Error('Asset is outside the configured CMS');
+    return this.withAuthRetry(() => this.http.get(url, {
+      headers: this.toHeaders({ auth: true }), responseType: 'blob',
+    }), { auth: true });
+  }
+
+  isAssetUrl(value: string): boolean {
+    try {
+      const url = new URL(value);
+      const base = new URL(this.baseUrl);
+      return url.origin === base.origin && url.pathname.startsWith(`${base.pathname.replace(/\/$/, '')}/assets/`)
+        && !url.username && !url.password && !url.searchParams.has('access_token');
+    } catch {
+      return false;
+    }
   }
 
   private toParams(query: Record<string, DirectusQueryValue>): HttpParams {
