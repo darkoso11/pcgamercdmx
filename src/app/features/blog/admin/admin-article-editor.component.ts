@@ -550,6 +550,8 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         returnUrl,
         article: preview,
         scheduledAt: this.form.value.scheduledAt,
+        coverAlt: this.form.value.coverAlt,
+        coverDecorative: this.form.value.coverDecorative,
       }));
       sessionStorage.setItem('pcg_blog_preview', JSON.stringify({
         article: preview,
@@ -658,6 +660,8 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       if (draft.returnUrl !== returnUrl || !Array.isArray(draft.article?.sections)) return false;
       this.populateArticle(draft.article);
       this.form.patchValue({ scheduledAt: draft.scheduledAt || '' });
+      if (typeof draft.coverAlt === 'string') this.form.patchValue({ coverAlt: draft.coverAlt });
+      if (typeof draft.coverDecorative === 'boolean') this.form.patchValue({ coverDecorative: draft.coverDecorative });
       this.form.markAsDirty();
       sessionStorage.removeItem('pcg_blog_editor_draft');
       return true;

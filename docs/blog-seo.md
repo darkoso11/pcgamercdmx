@@ -52,7 +52,7 @@ El servidor responde `X-Robots-Tag: noindex` exclusivamente al hostname `test.pc
 
 Las propuestas concretas para las dos entradas públicas y la validación en Search Console están en [la revisión editorial](blog-seo-editorial-review.md). La propiedad está verificada según el usuario. La comprobación de producción aún devuelve el HTML anterior al despliegue SSR; repetirla después de la promoción. No se han reescrito ni despublicado artículos reales ni enviado solicitudes a Search Console.
 
-Validación de este cierre: 388 pruebas Angular correctas, compilación híbrida correcta, verificación SSR local y prueba de cabeceras para test, dominio principal y www.
+Validación de este cierre: 389 pruebas Angular correctas, compilación híbrida correcta, verificación SSR y noindex en el dominio real de pruebas. El guardado real de un borrador temporal conservó la descripción de portada, el estado decorativo y los subtítulos H3. La vuelta desde vista previa conserva también la descripción escrita cuando la portada está marcada decorativa. Las comprobaciones de noindex incluyen páginas, 404, sitemap y robots; producción no hereda la cabecera.
 
 Los cambios mejoran los datos entregados a buscadores y lectores de enlaces, sin garantizar indexación, posición ni apariencia final en resultados. El despliegue inicial corresponde al sitio de pruebas; producción requiere la promoción habitual audit-blog → dev → test → main. Revertir el frontend al contenedor Nginx anterior elimina SSR, aunque los campos aditivos y permisos del CMS siguen siendo compatibles. Una migración del CMS a otro servidor debe incluir también el SQL de seguimiento de archivos.
 

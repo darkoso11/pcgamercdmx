@@ -70,6 +70,16 @@ describe('AdminArticleEditorComponent async state', () => {
     );
   });
 
+  it('keeps an unsaved cover description when returning from decorative preview', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ coverImage: { url: '/cover.png' }, coverAlt: 'Conservar esta descripción', coverDecorative: true });
+    await component.openPreview();
+    expect((component as any).restorePreviewDraft()).toBeTrue();
+    expect(component.form.value.coverAlt).toBe('Conservar esta descripción');
+    expect(component.form.value.coverDecorative).toBeTrue();
+  });
+
   it('notifies zoneless change detection when a video upload finishes', async () => {
     component.addSection();
     const section = component.sectionsArray.at(0);
