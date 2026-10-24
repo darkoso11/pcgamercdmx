@@ -3,6 +3,25 @@ import { of, throwError } from 'rxjs';
 import { AdminArticleEditorComponent } from './admin-article-editor.component';
 
 describe('AdminArticleEditorComponent async state', () => {
+  it('persists only body headings below the article and section headings', () => {
+    const editor = new AdminArticleEditorComponent(new FormBuilder(), {} as any, {} as any, {} as any, {} as any, {} as any);
+    const sections = (editor as any).buildPersistedSections([{ text: '<h1>Intro</h1><h2>Detalle</h2><p>Texto</p>' }], 'Artículo');
+    expect(sections[0].text).toBe('<h3>Intro</h3><h3>Detalle</h3><p>Texto</p>');
+  });
+
+  it('restores editable cover descriptions and decorative status', () => {
+    const editor = new AdminArticleEditorComponent(new FormBuilder(), {} as any, {} as any, {} as any, {} as any, { detectChanges() {} } as any);
+    (editor as any).populateArticle({ title: 'Artículo', sections: [], coverImage: { url: '/cover.png', alt: 'PC abierta', decorative: true } });
+    expect(editor.form.value.coverAlt).toBe('PC abierta');
+    expect(editor.form.value.coverDecorative).toBeTrue();
+    const preview = editor.form.getRawValue();
+    (editor as any).applyCoverDescription(preview);
+    expect(preview.coverImage).toEqual({ url: '/cover.png', alt: '', decorative: true });
+    editor.form.patchValue({ coverDecorative: false, coverAlt: 'Una PC abierta' });
+    const saved = editor.form.getRawValue();
+    (editor as any).applyCoverDescription(saved);
+    expect(saved.coverImage.alt).toBe('Una PC abierta');
+  });
   let blogService: {
     getById: jasmine.Spy;
     update: jasmine.Spy;

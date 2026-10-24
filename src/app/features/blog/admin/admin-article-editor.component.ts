@@ -11,7 +11,7 @@ import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { adminUrl } from '../../admin/admin-route.config';
 import { buildArticleSeo } from '../services/blog-seo.utils';
-import { localDateTimeToUtc, normalizeVideoUrl, utcDateTimeToLocal } from '../services/blog-content.utils';
+import { localDateTimeToUtc, normalizeBodyHeadings, normalizeVideoUrl, utcDateTimeToLocal } from '../services/blog-content.utils';
 
 @Component({
   selector: 'app-admin-article-editor',
@@ -46,7 +46,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     toolbar: [
       ['bold', 'italic', 'underline', 'strike'],
       ['blockquote', 'code-block'],
-      [{ 'header': 1 }, { 'header': 2 }],
+      [{ 'header': 3 }, { 'header': 4 }],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
       ['link', 'image'],
       ['clean']
@@ -73,6 +73,8 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       subCategoryId: [''],
       tags: [''],
       coverImage: [''],
+      coverAlt: [''],
+      coverDecorative: [false],
       published: [false],
       scheduledAt: [''],
       sections: this.fb.array([])
@@ -178,6 +180,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
           filename: [image.filename || ''],
           mimeType: [image.mimeType || ''],
           alt: [image.alt || ''],
+          decorative: [image.decorative === true],
           preview: [image.url || ''],
           order: [image.order || 0]
         }))),
@@ -213,6 +216,8 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       subCategoryId: article.subCategoryId || '',
       tags: (article.tags || []).join(', '),
       coverImage: article.coverImage || '',
+      coverAlt: article.coverImage?.alt || '',
+      coverDecorative: article.coverImage?.decorative === true,
       published: article.published,
       scheduledAt: article.publishedAt
         ? utcDateTimeToLocal(article.publishedAt)
@@ -254,6 +259,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       filename: [''],
       mimeType: [''],
       alt: [''],
+      decorative: [false],
       preview: [''],
       order: [imagesArray.length]
     });
@@ -388,7 +394,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
           try {
             const uploaded = await this.uploadService.uploadFile(file);
             if (this.selectedCoverFile !== file) continue;
-            this.form.patchValue({ coverImage: { ...uploaded, alt: this.form.value.title || '' } });
+            this.form.patchValue({ coverImage: { ...uploaded, alt: this.form.value.coverAlt || '', decorative: this.form.value.coverDecorative } });
             this.selectedCoverFile = null;
             this.successMsg = 'Portada lista para guardar';
             return;
@@ -528,6 +534,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     try {
       await this.uploadPendingMedia();
       const preview = this.form.getRawValue();
+      this.applyCoverDescription(preview);
       preview.tags = typeof preview.tags === 'string'
         ? preview.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
         : preview.tags;
@@ -575,6 +582,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     try {
       await this.uploadPendingMedia();
       const formData = this.form.getRawValue();
+      this.applyCoverDescription(formData);
       
       if (typeof formData.tags === 'string') {
         formData.tags = formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
@@ -630,6 +638,14 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       this.saving = false;
       this.cdr.markForCheck();
     }
+  }
+
+  private applyCoverDescription(data: any): void {
+    if (data.coverImage?.url) {
+      data.coverImage = { ...data.coverImage, alt: data.coverDecorative ? '' : data.coverAlt?.trim() || '', decorative: data.coverDecorative === true };
+    }
+    delete data.coverAlt;
+    delete data.coverDecorative;
   }
 
   private restorePreviewDraft(): boolean {
@@ -705,10 +721,10 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       if (embedVideo && !originalEmbedVideo) orderedMedia.push(embedVideo);
       if (fileVideo && !originalFileVideo) orderedMedia.push(fileVideo);
       return {
-        ...originalSection, ...persisted, media: orderedMedia, order: index,
+        ...originalSection, ...persisted, text: normalizeBodyHeadings(persisted.text || ''), media: orderedMedia, order: index,
         images: (images || []).map((image: any) => {
           const { originalImage, preview, ...editable } = image;
-          return { ...originalImage, ...editable };
+          return { ...originalImage, ...editable, alt: editable.decorative ? '' : editable.alt || '' };
         }),
       };
     });

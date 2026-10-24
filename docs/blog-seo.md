@@ -44,6 +44,16 @@ Para verificar un despliegue, establecer `BLOG_TEST_URL` al dominio de pruebas a
 
 ## Límites
 
+### Cierre editorial y pruebas
+
+El editor permite describir la portada y marcarla decorativa, así como marcar imágenes de sección decorativas. El guardado y la vista previa conservan estos valores. El contenido enriquecido reserva H1 al título y H2 a las secciones: ofrece H3/H4 y normaliza los H1/H2 heredados a H3 al mostrar y guardar, sin eliminar su texto.
+
+El servidor responde `X-Robots-Tag: noindex` exclusivamente al hostname `test.pcgamercdmx.com`, incluyendo páginas, errores, archivos y sitemap. Producción conserva su política de indexación. Se mantiene el rastreo permitido para que los buscadores lean noindex. Verificar con `node tools/verify-blog-indexing.mjs`.
+
+Las propuestas concretas para las dos entradas públicas y la validación en Search Console están en [la revisión editorial](blog-seo-editorial-review.md). La propiedad está verificada según el usuario. La comprobación de producción aún devuelve el HTML anterior al despliegue SSR; repetirla después de la promoción. No se han reescrito ni despublicado artículos reales ni enviado solicitudes a Search Console.
+
+Validación de este cierre: 388 pruebas Angular correctas, compilación híbrida correcta, verificación SSR local y prueba de cabeceras para test, dominio principal y www.
+
 Los cambios mejoran los datos entregados a buscadores y lectores de enlaces, sin garantizar indexación, posición ni apariencia final en resultados. El despliegue inicial corresponde al sitio de pruebas; producción requiere la promoción habitual audit-blog → dev → test → main. Revertir el frontend al contenedor Nginx anterior elimina SSR, aunque los campos aditivos y permisos del CMS siguen siendo compatibles. Una migración del CMS a otro servidor debe incluir también el SQL de seguimiento de archivos.
 
 Referencias: [Angular SSR 20](https://v20.angular.dev/guide/ssr), [Google Article structured data](https://developers.google.com/search/docs/appearance/structured-data/article), [descripciones en resultados](https://developers.google.com/search/docs/appearance/snippet).
