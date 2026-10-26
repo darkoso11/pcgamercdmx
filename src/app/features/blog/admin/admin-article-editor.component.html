@@ -2,8 +2,46 @@
 <div class="min-h-screen bg-pc-admin-bg p-6 text-slate-100">
   <div class="max-w-5xl mx-auto">
   <h1 class="text-3xl font-bold text-cyan-400 mb-8">{{ isNew ? 'Nuevo Artículo' : 'Editar Artículo' }}</h1>
+
+  <section class="mb-6 rounded-lg border border-slate-500 p-4" aria-label="Guardado y recuperación">
+    <p role="status" aria-live="polite">{{ hasUnsavedChanges ? 'Cambios sin guardar en el CMS.' : 'Sin cambios pendientes.' }} <span *ngIf="localSavedAt">Copia local: {{ localSavedAt | date:'short' }}.</span></p>
+    <p *ngIf="localPending" role="status" class="mt-2 text-sm text-cyan-200">Copia local pendiente…</p>
+    <p class="mt-2 text-sm text-slate-300">La copia automática se conserva solo en este navegador. Para conservar una versión en el servidor, usa Guardar borrador o Publicar.</p>
+    <p *ngIf="autosaveError" class="mt-2 text-amber-200" role="alert">{{ autosaveError }}</p>
+    <button *ngIf="autosaveError" type="button" (click)="retryRecovery()" class="mt-2 rounded border border-amber-300 p-2">Revisar recuperación local</button>
+    <div *ngIf="recoveryCandidate" class="mt-4 rounded border border-cyan-300 p-3">
+      <p>Hay una copia local del {{ recoveryCandidate.savedAt | date:'short' }}. Elige qué conservar antes de seguir.</p>
+      <div class="mt-3 flex flex-wrap gap-3">
+        <button type="button" (click)="recoverLocalDraft()" class="rounded bg-cyan-300 p-3 font-semibold text-slate-950">Recuperar copia local</button>
+        <button type="button" (click)="discardLocalDraft()" class="rounded border border-slate-400 p-3">Descartar copia local</button>
+      </div>
+    </div>
+    <div *ngIf="remoteConflict" class="mt-3" role="alert">
+      <p>El CMS tiene cambios posteriores a la versión que editabas. Guarda tu texto aparte o compáralo en otra pestaña.</p>
+      <button type="button" (click)="loadLatestVersion()" class="mt-2 rounded border border-amber-300 p-3">Descartar cambios y cargar versión actual</button>
+    </div>
+  </section>
+
+  <p *ngIf="loadingArticle" role="status">Cargando versión del CMS…</p>
+  <button *ngIf="loadFailed" type="button" (click)="retryArticleLoad()" class="mb-4 rounded border border-amber-300 p-3">Reintentar carga del artículo</button>
+
+  <section *ngIf="!isNew" class="mb-6 rounded-lg border border-slate-500 p-4" aria-label="Historial de versiones">
+    <button type="button" (click)="loadHistory()" [disabled]="historyBusy || saving" class="rounded border border-cyan-300 p-3">{{ historyBusy ? 'Cargando historial…' : 'Ver historial de versiones' }}</button>
+    <div *ngIf="historyOpen" class="mt-3">
+      <p class="text-sm text-slate-300">Últimas 20 versiones guardadas en el CMS. Abrir una versión solo la carga en el editor; conserva la URL y fecha actuales. Los archivos eliminados no se recuperan.</p>
+      <p *ngIf="historyError" role="alert" class="mt-2 text-amber-200">{{ historyError }}</p>
+      <p *ngIf="!historyBusy && !historyError && !revisions.length" class="mt-2">No hay versiones disponibles para este artículo.</p>
+      <ul class="mt-3 space-y-2">
+        <li *ngFor="let revision of revisions" class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-600 py-2">
+          <span>Versión {{ revision.id }} · {{ revision.activity?.timestamp | date:'short' }}</span>
+          <button type="button" (click)="restoreRevision(revision)" [disabled]="historyBusy || saving || !!recoveryCandidate" class="rounded border border-slate-400 p-2">Abrir versión {{ revision.id }}</button>
+        </li>
+      </ul>
+    </div>
+  </section>
   
   <form [formGroup]="form" (ngSubmit)="onSave()" class="space-y-8">
+    <fieldset [disabled]="saving || historyBusy || loadingArticle || loadFailed || !!recoveryCandidate" class="space-y-8 min-w-0">
     <!-- Sección: Información General -->
     <div class="bg-pc-admin-panel border border-cyan-400/30 p-6 rounded-lg">
       <h2 class="text-xl font-bold text-cyan-400 mb-4">Información General</h2>
@@ -455,5 +493,6 @@
         {{ saving ? 'Guardando…' : 'Publicar ahora' }}
       </button>
     </div>
+    </fieldset>
   </form>
   </div>

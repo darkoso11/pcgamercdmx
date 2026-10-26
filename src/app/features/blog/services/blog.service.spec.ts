@@ -29,6 +29,22 @@ describe('BlogService', () => {
     );
   });
 
+  it('lists only live revisions of the requested blog article', () => {
+    const readSystem = jasmine.createSpy().and.returnValue(of({ data: [{ id: 42 }] }));
+    const editorService = new BlogService({ readSystem } as any);
+    editorService.getRevisions('3').subscribe(result => expect(result[0].id).toBe(42));
+    expect(readSystem).toHaveBeenCalledWith('revisions', jasmine.objectContaining({
+      'filter[collection][_eq]': 'pc_blog_posts', 'filter[item][_eq]': '3', limit: 20,
+    }));
+  });
+
+  it('refuses a revision belonging to a different article', () => {
+    const editorService = new BlogService({ readSystem: () => of({ data: { collection: 'pc_blog_posts', item: '99', data: {} } }) } as any);
+    let rejected = false;
+    editorService.getRevision(42, '3').subscribe({ error: () => rejected = true });
+    expect(rejected).toBeTrue();
+  });
+
   it('uses blog-specific taxonomy collections', () => {
     service.getCategories().subscribe();
     service.getSubCategories().subscribe();

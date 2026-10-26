@@ -15,6 +15,11 @@ import {
 } from '../../../core/services/directus-content.mapper';
 import { Article, Category, SubCategory } from '../models/types';
 
+export interface BlogRevision {
+  id: number;
+  activity?: { timestamp?: string };
+}
+
 @Injectable({ providedIn: 'root' })
 export class BlogService {
   private readonly postsCollection = 'pc_blog_posts';
@@ -157,6 +162,25 @@ export class BlogService {
 
   delete(id: string): Observable<void> {
     return this.directus.deleteItem(this.postsCollection, id, { auth: true });
+  }
+
+  getRevisions(id: string): Observable<BlogRevision[]> {
+    return this.directus.readSystem<{ data: BlogRevision[] }>('revisions', {
+      'filter[collection][_eq]': this.postsCollection, 'filter[item][_eq]': id,
+      'filter[parent][_null]': true, 'filter[version][_null]': true,
+      fields: 'id,activity.timestamp', sort: '-id', limit: 20,
+    }).pipe(map(response => response.data));
+  }
+
+  getRevision(revisionId: number, articleId: string): Observable<Article> {
+    return this.directus.readSystem<{ data: { collection: string; item: string; data: DirectusBlogPostRecord } }>(`revisions/${revisionId}`, {
+      fields: 'collection,item,data',
+    }).pipe(map(response => {
+      if (response.data.collection !== this.postsCollection || String(response.data.item) !== String(articleId)) {
+        throw new Error('La versión no pertenece a este artículo');
+      }
+      return mapDirectusBlogPostToArticle(response.data.data);
+    }));
   }
 
   getCategories(): Observable<Category[]> {

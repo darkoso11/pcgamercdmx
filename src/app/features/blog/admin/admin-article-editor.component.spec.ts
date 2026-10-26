@@ -70,6 +70,89 @@ describe('AdminArticleEditorComponent async state', () => {
     );
   });
 
+  it('captures incomplete text and pending files for recovery without uploading', () => {
+    component.addSection();
+    component.form.patchValue({ title: 'Sin terminar' });
+    const file = new File(['pending'], 'cover.png', { type: 'image/png' });
+    component.selectedCoverFile = file;
+    const draft = (component as any).captureLocalDraft();
+    expect(draft.raw.title).toBe('Sin terminar');
+    expect(draft.cover).toBe(file);
+    expect(uploadService.uploadFile).not.toHaveBeenCalled();
+  });
+
+  it('reports a failed local write without claiming that the work was saved', async () => {
+    component.addSection();
+    (component as any).draftStore = { write: () => Promise.reject(new Error('QuotaExceededError')) };
+    (component as any).localKey = 'test';
+    component.hasUnsavedChanges = true;
+    await component.persistLocalDraft();
+    expect(component.localSavedAt).toBe('');
+    expect(component.autosaveError).toContain('No se pudo guardar');
+    expect(blogService.update).not.toHaveBeenCalled();
+  });
+
+  it('does not mark a newer edit as copied when an older queued write completes', async () => {
+    component.addSection();
+    let finish!: (value: any) => void;
+    const pending = new Promise(resolve => finish = resolve);
+    (component as any).draftStore = { write: () => pending };
+    (component as any).localKey = 'test';
+    (component as any).changeSequence = 1;
+    component.hasUnsavedChanges = true;
+    component.localPending = true;
+    const saving = component.persistLocalDraft();
+    (component as any).changeSequence = 2;
+    finish({ token: 'old-copy', savedAt: '2026-10-25T12:00:00Z' });
+    await saving;
+    expect(component.localPending).toBeTrue();
+  });
+
+  it('opens a historical snapshot for review while retaining the live URL and publication date', async () => {
+    component.addSection();
+    component.form.patchValue({ title: 'Actual', slug: 'url-actual', published: true, publishedAt: '2026-01-01T00:00:00Z' });
+    (blogService as any).getRevision = jasmine.createSpy().and.returnValue(of({ title: 'Versión anterior', slug: 'url-antigua', published: false, publishedAt: '2020-01-01', sections: [] }));
+    await component.restoreRevision({ id: 42 });
+    expect(component.form.value.title).toBe('Versión anterior');
+    expect(component.form.value.slug).toBe('url-actual');
+    expect(component.form.value.publishedAt).toBe('2026-01-01T00:00:00Z');
+    expect(component.hasUnsavedChanges).toBeTrue();
+    expect(blogService.update).not.toHaveBeenCalled();
+  });
+
+  it('blocks saving over a newer CMS version and retains local work', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ title: 'Edición local', summary: 'Resumen suficientemente largo', categoryId: '1' });
+    (component as any).draftStore = {};
+    (component as any).serverVersion = '2026-01-01';
+    blogService.getById.and.returnValue(of({ updatedAt: '2026-02-01' }));
+    await component.onSave('publish');
+    expect(component.remoteConflict).toBeTrue();
+    expect(blogService.update).not.toHaveBeenCalled();
+    expect(component.form.value.title).toBe('Edición local');
+  });
+
+  it('warns on internal navigation with changes that have not been saved in the CMS', () => {
+    component.hasUnsavedChanges = true;
+    spyOn(window, 'confirm').and.returnValue(false);
+    expect(component.canLeaveEditor()).toBeFalse();
+  });
+
+  it('recovers incomplete video links and image selections without publishing', () => {
+    component.addSection();
+    component.addImageToSection(0);
+    component.form.patchValue({ title: 'Recuperado' });
+    component.sectionsArray.at(0).patchValue({ videoUrl: 'https://youtu' });
+    const raw = component.form.getRawValue();
+    const file = new File(['pending'], 'image.png', { type: 'image/png' });
+    (component as any).applyLocalDraft({ raw, images: [[file]], videos: [] });
+    expect(component.form.value.title).toBe('Recuperado');
+    expect(component.sectionsArray.at(0).value.videoUrl).toBe('https://youtu');
+    expect((component.getSectionImages(0).at(0) as any)._file.name).toBe('image.png');
+    expect(blogService.update).not.toHaveBeenCalled();
+  });
+
   it('keeps an unsaved cover description when returning from decorative preview', async () => {
     component.isNew = false;
     component.addSection();
