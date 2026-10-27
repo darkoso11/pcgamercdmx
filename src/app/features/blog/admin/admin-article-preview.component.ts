@@ -1,3 +1,4 @@
+import { blogLinkRel, safeBlogLink } from '../services/blog-link.utils';
 import { normalizeBodyHeadings } from '../services/blog-content.utils';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -46,6 +47,9 @@ import { ArticleMediaComponent } from '../article-media.component';
                 [authorizedMedia]="true"
               ></app-article-media>
             </div>
+            <ul *ngIf="section.links?.length" class="mt-4">
+              <li *ngFor="let link of section.links"><a [href]="safeBlogLink(link.link)" [attr.target]="link.newTab ? '_blank' : null" [attr.rel]="blogLinkRel(link)">{{ link.title }}</a></li>
+            </ul>
           </section>
         </div>
       </article>
@@ -85,6 +89,8 @@ import { ArticleMediaComponent } from '../article-media.component';
 })
 export class AdminArticlePreviewComponent {
   readonly normalizeBodyHeadings = normalizeBodyHeadings;
+  readonly blogLinkRel = blogLinkRel;
+  readonly safeBlogLink = safeBlogLink;
   private readonly preview = this.readPreview();
   readonly editorUrl = this.preview.returnUrl || adminUrl('blog/new');
   readonly article = this.preview.article;

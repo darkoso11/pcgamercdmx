@@ -16,6 +16,43 @@ describe('BlogService', () => {
     service = new BlogService(directus as any);
   });
 
+  const adminRecords = () => [
+    { id: 1, title: 'Guía Intel', summary: 'Presupuesto', category: '1', subcategory: 'a', tags: ['Intel', 'CPU'], published: false, published_at: null, date_created: '2026-10-26T18:00:00Z' },
+    { id: 2, title: 'Artículo público', summary: 'Resumen', category: '2', subcategory: 'b', tags: ['Gaming'], published: true, published_at: '2025-01-01T06:00:00Z', date_created: '2024-12-31T22:00:00Z' },
+    { id: 3, title: 'Guía futura', summary: 'Resumen', category: '1', subcategory: 'a', tags: ['GPU'], published: true, published_at: '2099-01-01T00:00:00Z', date_created: '2024-12-31T23:00:00Z' },
+    { id: 4, title: 'Sin fecha', category: '1', published: false },
+  ];
+
+  it('matches the displayed creation date and includes the whole last day in Mexico City', () => {
+    directus.readItems.and.returnValue(of({ data: adminRecords() }));
+    service.list({ dateFrom: '2024-12-31', dateTo: '2024-12-31' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['2', '3']));
+  });
+
+  it('uses inclusive local midnight at the start and exclusive midnight of the next day', () => {
+    const records = ['2024-12-31T05:59:59Z', '2024-12-31T06:00:00Z', '2025-01-01T05:59:59Z', '2025-01-01T06:00:00Z'].map((date_created, index) => ({ id: index + 1, title: 'Entrada', published: false, date_created }));
+    directus.readItems.and.returnValue(of({ data: records }));
+    service.list({ dateFrom: '2024-12-31', dateTo: '2024-12-31' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['2', '3']));
+  });
+
+  it('separates published entries from scheduled and draft entries', () => {
+    directus.readItems.and.returnValue(of({ data: adminRecords() }));
+    service.list({ status: 'published' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['2']));
+    service.list({ status: 'scheduled' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['3']));
+    service.list({ status: 'draft' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['1', '4']));
+  });
+
+  it('combines draft status, date, category, subcategory and tags', () => {
+    directus.readItems.and.returnValue(of({ data: adminRecords() }));
+    service.list({ status: 'draft', dateFrom: '2026-10-26', dateTo: '2026-10-26', categoryId: '1', subCategoryId: 'a', tags: 'CPU' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['1']));
+  });
+
+  it('supports comma separated tags and accent insensitive title searches', () => {
+    directus.readItems.and.returnValue(of({ data: adminRecords() }));
+    service.list({ tags: 'Intel, Gaming' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['1', '2']));
+    service.list({ q: 'guia' }).subscribe(result => expect(result.data.map(item => item._id)).toEqual(['1', '3']));
+    service.list({ q: 'Presupuesto' }).subscribe(result => expect(result.total).toBe(0));
+  });
+
   it('requests only published posts whose publication date has arrived', () => {
     service.listPublished({ limit: 6 }).subscribe();
 

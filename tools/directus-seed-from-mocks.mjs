@@ -357,7 +357,7 @@ async function upsertProducts(products, categoriesBySlug, subcategoriesBySlug) {
 }
 
 async function upsertBlogSample(categoriesBySlug) {
-  const blogPath = path.join(root, 'src/assets/mock/blog-sample.json');
+  const blogPath = path.join(root, 'tools/fixtures/blog-sample.json');
   const articles = JSON.parse(fs.readFileSync(blogPath, 'utf8'));
   const stats = { created: 0, updated: 0 };
   const defaultCategory = categoriesBySlug.get('componentes');

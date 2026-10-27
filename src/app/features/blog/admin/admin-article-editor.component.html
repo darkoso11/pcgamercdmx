@@ -231,10 +231,13 @@
             <quill-editor 
               formControlName="text" 
               [modules]="quillModules"
+              [beforeRender]="prepareBlogLinkFormats"
+              (onEditorCreated)="setTextEditor(section, $event)"
               [sanitize]="true"
               class="rounded bg-white text-black"
             ></quill-editor>
             <p class="mt-2 text-sm text-slate-300">El título del artículo es H1 y el de cada sección es H2. Usa H3 y H4 para los subtítulos del contenido.</p>
+            <app-blog-links-editor [links]="getSectionLinks(i)" [sectionNumber]="i + 1" [html]="section.value.text || ''" [editor]="getTextEditor(section)" />
           </div>
 
           <!-- Galería de Imágenes de la Sección -->
@@ -453,7 +456,18 @@
     </section>
 
     <!-- Botones de acción -->
-    <div class="flex gap-3 justify-end">
+    <section id="publication-review" tabindex="-1" aria-labelledby="publication-review-heading" class="rounded-lg border border-cyan-400/40 bg-pc-admin-panel p-6">
+      <h2 id="publication-review-heading" class="text-xl font-bold text-cyan-300">Revisión antes de publicar</h2>
+      <ng-container *ngIf="reviewReport as report">
+        <p class="mt-3">{{ report.errors.length }} errores · {{ report.warnings.length }} recomendaciones.</p>
+        <p *ngIf="!report.errors.length" class="mt-2 text-emerald-200">No se detectaron errores que impidan publicar.</p>
+        <div *ngIf="report.errors.length" class="mt-4"><h3 class="font-semibold text-red-200">Corrige antes de publicar o programar</h3><ul class="mt-2 list-disc space-y-2 pl-5"><li *ngFor="let issue of report.errors">{{ issue.message }}</li></ul></div>
+        <div *ngIf="report.warnings.length" class="mt-4"><h3 class="font-semibold text-amber-200">Recomendaciones (no bloquean la publicación)</h3><ul class="mt-2 list-disc space-y-2 pl-5"><li *ngFor="let issue of report.warnings">{{ issue.message }}</li></ul></div>
+        <p *ngIf="uploading" class="mt-3 text-cyan-200" role="status">Hay archivos en proceso de subida. Se completarán antes del guardado.</p>
+        <p class="mt-4 text-sm text-slate-300">El título SEO, la descripción y la imagen social son opcionales: usan los valores automáticos si los dejas vacíos. Esta revisión comprueba estructura y URLs; no verifica la respuesta HTTP de cada destino ni garantiza posicionamiento.</p>
+      </ng-container>
+    </section>
+    <div class="flex flex-wrap gap-3 justify-end">
       <a 
         [routerLink]="adminBlogUrl"
         class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded font-semibold transition"
@@ -479,7 +493,7 @@
       <button
         type="button"
         (click)="onSave('schedule')"
-        [disabled]="form.invalid || saving || !form.get('scheduledAt')?.value"
+        [disabled]="form.invalid || saving || !form.get('scheduledAt')?.value || reviewReport.errors.length > 0"
         class="border border-cyan-300 text-cyan-100 hover:bg-cyan-950 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded font-semibold transition"
       >
         Programar
@@ -487,7 +501,7 @@
       <button
         type="button"
         (click)="onSave('publish')"
-        [disabled]="form.invalid || saving"
+        [disabled]="form.invalid || saving || reviewReport.errors.length > 0"
         class="bg-cyan-300 hover:bg-cyan-200 disabled:opacity-50 disabled:cursor-not-allowed text-[#05242c] px-6 py-3 rounded font-bold transition"
       >
         {{ saving ? 'Guardando…' : 'Publicar ahora' }}

@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, HostListener, Optional, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, HostListener, Inject, Optional, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
@@ -13,17 +13,22 @@ import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { adminUrl } from '../../admin/admin-route.config';
 import { buildArticleSeo } from '../services/blog-seo.utils';
 import { localDateTimeToUtc, normalizeBodyHeadings, normalizeVideoUrl, utcDateTimeToLocal } from '../services/blog-content.utils';
+import { reviewBlogArticle } from '../services/blog-review.utils';
+import { BlogLinksEditorComponent, createBlogLinkForm } from './blog-links-editor.component';
+import { prepareBlogLinkFormats } from './blog-link-formats';
 
 @Component({
   selector: 'app-admin-article-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule, AdminHeaderComponent, PrivateMediaDirective],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule, AdminHeaderComponent, PrivateMediaDirective, BlogLinksEditorComponent],
   templateUrl: './admin-article-editor.component.html',
   styleUrls: ['./admin-article-editor.component.css']
 })
 export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   readonly maxVideoSizeMb = 250;
   readonly adminBlogUrl = adminUrl('blog');
+  readonly prepareBlogLinkFormats = prepareBlogLinkFormats;
+  private readonly textEditors = new WeakMap<object, any>();
   form: FormGroup;
   isNew = true;
   saving = false;
@@ -90,7 +95,8 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    @Optional() private readonly draftStore: BlogDraftStore | null = null
+    @Optional() private readonly draftStore: BlogDraftStore | null = null,
+    @Inject(DOCUMENT) private readonly editorDocument: Document = document
   ) {
     this.form = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
@@ -119,6 +125,11 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   get sectionsArray(): FormArray {
     return this.form.get('sections') as FormArray;
   }
+
+  get reviewReport() { return reviewBlogArticle(this.form.getRawValue(), this.editorDocument); }
+  getSectionLinks(index: number): FormArray { return this.sectionsArray.at(index).get('links') as FormArray; }
+  setTextEditor(section: object, editor: any): void { this.textEditors.set(section, editor); this.cdr.markForCheck(); }
+  getTextEditor(section: object): any { return this.textEditors.get(section); }
 
   ngOnInit() {
     this.editorSubscription?.unsubscribe();
@@ -227,6 +238,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         initialVideoTitle: [fileVideo?.title || embedVideo?.title || ''],
         title: [section.title || ''],
         text: [section.text || ''],
+        links: this.fb.array((section.links || section.originalSection?.links || []).map((link: any) => createBlogLinkForm(this.fb, link))),
         order: [section.order || this.sectionsArray.length],
         images: this.fb.array((section.images || []).map((image: any) => this.fb.group({
           originalImage: [image],
@@ -287,6 +299,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     const sectionForm = this.fb.group({
       title: [''],
       text: [''],
+      links: this.fb.array([]),
       order: [this.sectionsArray.length],
       images: this.fb.array([]),
       imageLayout: ['1'], // 1, 2, 3, o 4 columnas
@@ -634,6 +647,11 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   async onSave(mode: 'draft' | 'publish' | 'schedule' = 'draft') {
     if (this.saving || this.historyBusy || this.loadingArticle || this.loadFailed) return;
     if (this.recoveryCandidate) { this.errorMsg = 'Elige recuperar o descartar la copia local antes de guardar.'; return; }
+    if (mode !== 'draft' && this.reviewReport.errors.length) {
+      this.errorMsg = 'Corrige los errores del panel de revisión antes de publicar o programar.';
+      this.editorDocument.getElementById('publication-review')?.focus();
+      return;
+    }
     if (!this.form.valid) {
       this.errorMsg = 'Por favor completa todos los campos requeridos';
       return;
@@ -991,7 +1009,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     return sections.map((section: any, index: number) => {
       const { originalSection, originalFileVideo, originalEmbedVideo, initialVideoTitle,
         existingMedia, videoUrl, videoTitle, videoFileId, videoFileUrl,
-        videoFileName, videoFileType, videoPreviewUrl, images, ...persisted } = section;
+        videoFileName, videoFileType, videoPreviewUrl, images, links, ...persisted } = section;
       const media = [...(existingMedia || [])];
       let embedVideo: any;
       let fileVideo: any;
@@ -1029,6 +1047,14 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       if (fileVideo && !originalFileVideo) orderedMedia.push(fileVideo);
       return {
         ...originalSection, ...persisted, text: normalizeBodyHeadings(persisted.text || ''), media: orderedMedia, order: index,
+        links: (links || originalSection?.links || []).map((entry: any, order: number) => {
+          const { originalLink, ...editable } = entry;
+          const link = { ...originalLink, ...editable, title: (editable.title || '').trim(), link: (editable.link || '').trim() };
+          if (originalLink && !('newTab' in originalLink) && !link.newTab) delete link.newTab;
+          if (originalLink && !('rel' in originalLink) && !link.rel) delete link.rel;
+          if ('order' in (originalLink || entry)) link.order = order;
+          return link;
+        }),
         images: (images || []).map((image: any) => {
           const { originalImage, preview, ...editable } = image;
           return { ...originalImage, ...editable, alt: editable.decorative ? '' : editable.alt || '' };

@@ -1,3 +1,4 @@
+import { blogLinkRel, safeBlogLink } from './services/blog-link.utils';
 import { normalizeBodyHeadings } from './services/blog-content.utils';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy, inject, RESPONSE_INIT } from '@angular/core';
@@ -83,7 +84,7 @@ import { BlogService } from './services/blog.service';
 
               <ul class="related-links" *ngIf="section.links?.length">
                 <li *ngFor="let link of section.links">
-                  <a [href]="link.link">{{ link.title }}</a>
+                  <a [href]="safeBlogLink(link.link)" [attr.target]="link.newTab ? '_blank' : null" [attr.rel]="blogLinkRel(link)">{{ link.title }}</a>
                 </li>
               </ul>
             </section>
@@ -133,6 +134,8 @@ import { BlogService } from './services/blog.service';
 })
 export class ArticleComponent implements OnInit, OnDestroy {
   readonly normalizeBodyHeadings = normalizeBodyHeadings;
+  readonly blogLinkRel = blogLinkRel;
+  readonly safeBlogLink = safeBlogLink;
   article: Article | null = null;
   loading = true;
   error = false;

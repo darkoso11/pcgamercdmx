@@ -70,6 +70,34 @@ describe('AdminArticleEditorComponent async state', () => {
     );
   });
 
+  it('reports unsafe links before publication without requiring SEO overrides', () => {
+    component.addSection();
+    component.form.patchValue({ title: 'Artículo válido', summary: 'Resumen suficientemente largo', categoryId: '1' });
+    component.sectionsArray.at(0).patchValue({ text: '<p><a href="javascript:alert(1)">Enlace</a></p>' });
+    const review = (component as any).reviewReport;
+    expect(review.errors.some((issue: any) => issue.code === 'link-url')).toBeTrue();
+    expect(review.errors.some((issue: any) => issue.code === 'seo-title')).toBeFalse();
+  });
+
+  it('blocks publishing invalid links while preserving the option to save a draft', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ title: 'Artículo válido', summary: 'Resumen suficientemente largo', categoryId: '1' });
+    component.sectionsArray.at(0).patchValue({ text: '<p><a href="javascript:alert(1)">Enlace</a></p>' });
+    blogService.update.and.returnValue(of({}));
+    await component.onSave('publish');
+    expect(blogService.update).not.toHaveBeenCalled();
+    await component.onSave('draft');
+    expect(blogService.update).toHaveBeenCalledWith('2', jasmine.objectContaining({ published: false }));
+  });
+
+  it('loads related links into editable controls without losing their attributes', () => {
+    (component as any).populateArticle({ title: 'Enlaces', sections: [{ links: [{ title: 'Comprar', link: '/productos', rel: 'sponsored', newTab: true }] }] });
+    const links = component.sectionsArray.at(0).get('links');
+    expect(links?.value[0].rel).toBe('sponsored');
+    expect(links?.value[0].newTab).toBeTrue();
+  });
+
   it('captures incomplete text and pending files for recovery without uploading', () => {
     component.addSection();
     component.form.patchValue({ title: 'Sin terminar' });

@@ -1,0 +1,43 @@
+<details class="mt-6 rounded border border-slate-500 p-4">
+  <summary class="cursor-pointer font-semibold text-cyan-200">Gestionar enlaces de la sección {{ sectionNumber }}</summary>
+  <div [attr.aria-label]="'Enlaces de la sección ' + sectionNumber" role="region" class="mt-4 space-y-5">
+    <p class="text-sm text-slate-300">Busca un destino público o escribe una URL. Aplica el enlace para incorporarlo al contenido y al autoguardado.</p>
+    <div class="rounded border border-slate-600 p-3">
+      <label [for]="'link-kind-' + sectionNumber">Buscar en el sitio</label>
+      <select [id]="'link-kind-' + sectionNumber" [(ngModel)]="kind" (ngModelChange)="resetSearch()" [ngModelOptions]="{standalone:true}">
+        <option value="article">Artículos publicados</option><option value="product">Productos</option><option value="assembly">Ensambles</option>
+      </select>
+      <label [for]="'link-query-' + sectionNumber">Título que deseas buscar</label>
+      <input [id]="'link-query-' + sectionNumber" [(ngModel)]="query" (ngModelChange)="resetSearch()" [ngModelOptions]="{standalone:true}" (keydown.enter)="$event.preventDefault(); search()" />
+      <button type="button" (click)="search()" class="mt-3">{{ searching ? 'Buscar de nuevo' : 'Buscar destinos' }}</button>
+      <p class="mt-2 text-sm text-slate-300">Se muestran hasta 12 resultados. Afina el título si no encuentras el destino.</p>
+      <p *ngIf="searching" role="status">Buscando contenido público…</p>
+      <p *ngIf="searchError" role="alert" class="mt-2 text-amber-200">{{ searchError }}</p>
+      <p *ngIf="searched && !results.length" role="status">No se encontraron resultados públicos.</p>
+      <ul class="mt-3 space-y-2"><li *ngFor="let result of results"><button type="button" (click)="choose(result)" class="w-full text-left"><span>{{ result.title }}</span> · <span>{{ result.link }}</span></button></li></ul>
+    </div>
+
+    <div [formGroup]="draft" class="rounded border border-cyan-400/40 p-3">
+      <p class="font-semibold">{{ editingInline ? 'Editar enlace del texto' : editingRelated !== null ? 'Editar enlace relacionado' : 'Nuevo enlace' }}</p>
+      <label [for]="'link-title-' + sectionNumber">Texto del enlace</label>
+      <input [id]="'link-title-' + sectionNumber" formControlName="title" />
+      <label [for]="'link-url-' + sectionNumber">Destino del enlace</label>
+      <input [id]="'link-url-' + sectionNumber" formControlName="link" placeholder="/productos o https://ejemplo.com" />
+      <label [for]="'link-rel-' + sectionNumber">Relación con el destino</label>
+      <select [id]="'link-rel-' + sectionNumber" formControlName="rel">
+        <option value="">Normal</option><option value="sponsored">Patrocinado / afiliado (sponsored)</option><option value="ugc">Contenido de usuarios (ugc)</option><option value="nofollow">No asociar el destino (nofollow)</option><option value="sponsored nofollow">Patrocinado y nofollow</option><option value="ugc nofollow">Usuarios y nofollow</option>
+      </select>
+      <label class="flex items-center gap-2"><input type="checkbox" formControlName="newTab" /> Abrir en otra pestaña</label>
+      <p class="text-sm text-slate-300">Los enlaces pagados o de afiliados deben marcarse como patrocinados. Abrir en otra pestaña añade protección noopener y noreferrer.</p>
+      <p *ngIf="error" role="alert" class="mt-2 text-amber-200">{{ error }}</p>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <button *ngIf="editingRelated === null" type="button" (click)="saveInline()" [disabled]="!editor">{{ editingInline ? 'Aplicar cambio en el texto' : 'Insertar en el texto' }}</button>
+        <button *ngIf="!editingInline" type="button" (click)="saveRelated()">{{ editingRelated !== null ? 'Guardar enlace relacionado' : 'Agregar enlace relacionado' }}</button>
+        <button type="button" (click)="reset()">Limpiar edición del enlace</button>
+      </div>
+    </div>
+
+    <div *ngIf="inlineLinks.length"><h4 class="font-semibold">Enlaces dentro del texto</h4><ul class="mt-2 space-y-3"><li *ngFor="let link of inlineLinks" class="border-t border-slate-600 pt-3"><p class="break-all">{{ link.title || '(sin texto)' }} · {{ link.link || '(sin destino)' }}</p><div class="mt-2 flex flex-wrap gap-2"><button type="button" (click)="editInline(link)">Editar enlace del texto {{ link.index + 1 }}</button><button type="button" (click)="removeInline(link)">Quitar enlace del texto {{ link.index + 1 }}</button></div></li></ul></div>
+    <div><h4 class="font-semibold">Enlaces relacionados de la sección</h4><p *ngIf="!links.length" class="mt-2 text-sm text-slate-300">Todavía no hay enlaces relacionados.</p><ul class="mt-2 space-y-3"><li *ngFor="let link of links.controls; let index = index" class="border-t border-slate-600 pt-3"><p class="break-all">{{ link.value.title || '(sin texto)' }} · {{ link.value.link || '(sin destino)' }}</p><div class="mt-2 flex flex-wrap gap-2"><button type="button" (click)="editRelated(index)">Editar relacionado {{ index + 1 }}</button><button type="button" (click)="removeRelated(index)">Quitar relacionado {{ index + 1 }}</button><button type="button" (click)="moveRelated(index,-1)" [disabled]="index === 0" [attr.aria-label]="'Subir enlace relacionado ' + (index + 1)">↑</button><button type="button" (click)="moveRelated(index,1)" [disabled]="index === links.length-1" [attr.aria-label]="'Bajar enlace relacionado ' + (index + 1)">↓</button></div></li></ul></div>
+  </div>
+</details>

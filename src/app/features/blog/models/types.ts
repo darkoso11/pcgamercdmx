@@ -49,6 +49,8 @@ export type ArticleLink = {
     link: string;
     // Orden relativo del link
     order?: number;
+    newTab?: boolean;
+    rel?: string;
 }
 
 // Sección de artículo: unidad de contenido (texto + imágenes + links)
