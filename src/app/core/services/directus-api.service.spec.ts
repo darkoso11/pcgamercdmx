@@ -28,6 +28,14 @@ describe('DirectusApiService', () => {
     clearStoredDirectusSession();
   });
 
+  it('authenticates system reads without putting credentials in the URL', () => {
+    setStoredDirectusSession('editor-token');
+    (service as any).readSystem('users/me', { fields: 'id' }).subscribe();
+    const request = httpMock.expectOne(`${baseUrl}/users/me?fields=id`);
+    expect(request.request.headers.get('Authorization')).toBe('Bearer editor-token');
+    request.flush({ data: { id: 'user-1' } });
+  });
+
   it('loads private assets with authorization in headers rather than URLs', () => {
     setStoredDirectusSession('test-token');
     (service as any).readAsset(`${baseUrl}/assets/private-image`).subscribe();

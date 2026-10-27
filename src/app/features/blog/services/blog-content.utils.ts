@@ -8,6 +8,11 @@ export type NormalizedVideoEmbed = {
 
 const BLOG_TIME_ZONE = 'America/Mexico_City';
 
+// Article and section titles own H1/H2; preserve the rich text beneath them.
+export function normalizeBodyHeadings(html: string): string {
+  return html.replace(/<(\/?)(h[12])(?=[\s>])/gi, '<$1h3');
+}
+
 export function getPublicationState(
   published: boolean,
   publishedAt?: string,

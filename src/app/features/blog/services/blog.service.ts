@@ -14,6 +14,12 @@ import {
   mapDirectusSubcategoryToBlogSubcategory,
 } from '../../../core/services/directus-content.mapper';
 import { Article, Category, SubCategory } from '../models/types';
+import { filterAdminBlogArticles } from './blog-admin-filters.utils';
+
+export interface BlogRevision {
+  id: number;
+  activity?: { timestamp?: string };
+}
 
 @Injectable({ providedIn: 'root' })
 export class BlogService {
@@ -103,10 +109,11 @@ export class BlogService {
         { auth: true }
       )
       .pipe(
+        timeout(15000),
         map((response) => {
           const page = Number(params['page'] ?? 0);
           const limit = Number(params['limit'] ?? 10);
-          const filtered = this.filterArticles(
+          const filtered = filterAdminBlogArticles(
             response.data.map(mapDirectusBlogPostToArticle),
             params
           );
@@ -157,6 +164,25 @@ export class BlogService {
 
   delete(id: string): Observable<void> {
     return this.directus.deleteItem(this.postsCollection, id, { auth: true });
+  }
+
+  getRevisions(id: string): Observable<BlogRevision[]> {
+    return this.directus.readSystem<{ data: BlogRevision[] }>('revisions', {
+      'filter[collection][_eq]': this.postsCollection, 'filter[item][_eq]': id,
+      'filter[parent][_null]': true, 'filter[version][_null]': true,
+      fields: 'id,activity.timestamp', sort: '-id', limit: 20,
+    }).pipe(map(response => response.data));
+  }
+
+  getRevision(revisionId: number, articleId: string): Observable<Article> {
+    return this.directus.readSystem<{ data: { collection: string; item: string; data: DirectusBlogPostRecord } }>(`revisions/${revisionId}`, {
+      fields: 'collection,item,data',
+    }).pipe(map(response => {
+      if (response.data.collection !== this.postsCollection || String(response.data.item) !== String(articleId)) {
+        throw new Error('La versión no pertenece a este artículo');
+      }
+      return mapDirectusBlogPostToArticle(response.data.data);
+    }));
   }
 
   getCategories(): Observable<Category[]> {
@@ -256,30 +282,4 @@ export class BlogService {
       .pipe(map((response) => mapDirectusBlogPostToArticle(response.data[0])));
   }
 
-  private filterArticles(articles: Article[], params: Record<string, any>): Article[] {
-    const q = String(params['q'] ?? '').trim().toLowerCase();
-    const tags = String(params['tags'] ?? '').trim().toLowerCase();
-    const categoryId = String(params['categoryId'] ?? '');
-    const subCategoryId = String(params['subCategoryId'] ?? '');
-    const dateFrom = String(params['dateFrom'] ?? '');
-    const dateTo = String(params['dateTo'] ?? '');
-    const hasPublished = params['published'] !== undefined && params['published'] !== '';
-    const published = params['published'] === true || params['published'] === 'true';
-
-    return articles.filter((article) => {
-      const text = `${article.title} ${article.summary ?? ''}`.toLowerCase();
-      const articleTags = (article.tags ?? []).map((tag) => tag.toLowerCase());
-      const publishedAt = article.publishedAt ? new Date(article.publishedAt).getTime() : 0;
-
-      return (
-        (!q || text.includes(q)) &&
-        (!tags || articleTags.some((tag) => tag.includes(tags))) &&
-        (!categoryId || article.categoryId === categoryId) &&
-        (!subCategoryId || article.subCategoryId === subCategoryId) &&
-        (!hasPublished || article.published === published) &&
-        (!dateFrom || publishedAt >= new Date(dateFrom).getTime()) &&
-        (!dateTo || publishedAt <= new Date(dateTo).getTime())
-      );
-    });
-  }
 }
