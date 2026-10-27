@@ -1,3 +1,4 @@
+import { blogEditorCanDeactivate } from './features/blog/admin/blog-editor.guard';
 import { Routes } from '@angular/router';
 import { AuthGuard } from './features/admin/services/auth.guard';
 import { adminRoute } from './features/admin/admin-route.config';
@@ -155,6 +156,7 @@ export const routes: Routes = [
   },
   {
     path: adminRoute('blog/new'),
+      canDeactivate: [blogEditorCanDeactivate],
     loadComponent: () => import('./features/blog/admin/admin-article-editor.component').then(m => m.AdminArticleEditorComponent),
     title: 'Nuevo Artículo | PC Gamer CDMX',
     canActivate: [AuthGuard]
@@ -167,6 +169,7 @@ export const routes: Routes = [
   },
   {
     path: adminRoute('blog/:id/edit'),
+      canDeactivate: [blogEditorCanDeactivate],
     loadComponent: () => import('./features/blog/admin/admin-article-editor.component').then(m => m.AdminArticleEditorComponent),
     title: 'Editar Artículo | PC Gamer CDMX',
     data: { renderMode: 'dynamic' }

@@ -1,0 +1,55 @@
+import { expect, test } from '@playwright/test';
+import { setupMockEditor } from './support/blog-editor-fixtures';
+
+test('finds public destinations and preserves inline and related link attributes through preview and recovery', async ({ page }) => {
+  let writes = 0;
+  await setupMockEditor(page, () => writes++);
+  await page.goto('/control-pcg-cdmx-2026/blog/1/edit');
+  await page.getByText('Gestionar enlaces de la sección 1', { exact: true }).click();
+  const tools = page.getByRole('region', { name: 'Enlaces de la sección 1', exact: true });
+  await tools.getByLabel('Título que deseas buscar').fill('Guía');
+  await tools.getByRole('button', { name: 'Buscar destinos', exact: true }).click();
+  await tools.getByRole('button', { name: /Guía pública.*guia-publica/ }).click();
+  await tools.getByLabel('Relación con el destino').selectOption('sponsored');
+  await tools.getByLabel('Abrir en otra pestaña', { exact: true }).check();
+  await tools.getByRole('button', { name: 'Insertar en el texto', exact: true }).click();
+  const inline = page.locator('.ql-editor a');
+  await expect(inline).toHaveAttribute('href', '/blog/guia-publica');
+  await expect(inline).toHaveAttribute('target', '_blank');
+  await expect(inline).toHaveAttribute('rel', /sponsored/);
+  await expect(inline).toHaveAttribute('rel', /noopener/);
+  await tools.getByLabel('Texto del enlace', { exact: true }).fill('Contacto comercial');
+  await tools.getByLabel('Destino del enlace', { exact: true }).fill('/contacto');
+  await tools.getByRole('button', { name: 'Agregar enlace relacionado', exact: true }).click();
+  await page.getByRole('button', { name: 'Vista previa', exact: true }).click();
+  const article = page.locator('main article');
+  await expect(article.getByRole('link', { name: 'Guía pública', exact: true })).toHaveAttribute('rel', /sponsored/);
+  await expect(article.getByRole('link', { name: 'Contacto comercial', exact: true })).toHaveAttribute('href', '/contacto');
+  await page.getByRole('link', { name: 'Volver al editor', exact: true }).click();
+  await expect(inline).toHaveAttribute('rel', /sponsored/);
+  await expect(inline).toHaveAttribute('target', '_blank');
+  await expect(page.getByText('Copia local pendiente…', { exact: true })).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: 'Recuperar copia local', exact: true }).click();
+  await expect(inline).toHaveAttribute('rel', /sponsored/);
+  await page.getByText('Gestionar enlaces de la sección 1', { exact: true }).click();
+  await tools.getByRole('button', { name: 'Editar enlace del texto 1', exact: true }).click();
+  await tools.getByLabel('Texto del enlace', { exact: true }).fill('Guía recomendada');
+  await tools.getByLabel('Abrir en otra pestaña', { exact: true }).uncheck();
+  await tools.getByRole('button', { name: 'Aplicar cambio en el texto', exact: true }).click();
+  await expect(inline).toHaveText('Guía recomendada');
+  await expect(inline).toHaveAttribute('target', '_self');
+  await expect(inline).toHaveAttribute('rel', 'sponsored');
+  await tools.getByRole('button', { name: 'Quitar enlace del texto 1', exact: true }).click();
+  await expect(inline).toHaveCount(0);
+  await expect(page.locator('.ql-editor')).toContainText('Guía recomendada');
+  expect(writes).toBe(0);
+});
+
+test('blocks publication of invalid links but keeps manual draft saving available', async ({ page }) => {
+  await setupMockEditor(page, () => {}, { sections: [{ title: 'Enlace incompleto', text: '<p><a href="javascript:alert(1)">Destino inseguro</a></p>' }] });
+  await page.goto('/control-pcg-cdmx-2026/blog/1/edit');
+  await expect(page.locator('#publication-review')).toContainText('URL no admitida');
+  await expect(page.getByRole('button', { name: 'Publicar ahora', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Guardar borrador', exact: true })).toBeEnabled();
+});

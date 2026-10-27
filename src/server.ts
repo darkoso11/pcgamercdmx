@@ -10,6 +10,7 @@ import { readFile } from 'node:fs/promises';
 import { environment } from './environments/environment';
 import { buildBlogSitemap, SitemapPost } from './app/features/blog/services/blog-sitemap.utils';
 import { join } from 'node:path';
+import { getIndexingDirective } from './app/features/blog/services/blog-indexing.utils';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -22,6 +23,8 @@ const angularApp = new AngularNodeAppEngine({
 app.disable('x-powered-by');
 app.use(compression());
 app.use((request, response, next) => {
+  const indexing = getIndexingDirective(request.hostname);
+  if (indexing) response.setHeader('X-Robots-Tag', indexing);
   response.setHeader('X-Content-Type-Options', 'nosniff');
   response.setHeader('X-Frame-Options', 'SAMEORIGIN');
   response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');

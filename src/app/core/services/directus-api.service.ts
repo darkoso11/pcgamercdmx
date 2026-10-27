@@ -141,6 +141,12 @@ export class DirectusApiService {
     );
   }
 
+  readSystem<T>(path: 'users/me' | 'revisions' | `revisions/${number}`, query: Record<string, DirectusQueryValue> = {}): Observable<T> {
+    return this.withAuthRetry(() => this.http.get<T>(`${this.baseUrl}/${path}`, {
+      params: this.toParams(query), headers: this.toHeaders({ auth: true }),
+    }), { auth: true }).pipe(timeout(15000));
+  }
+
   readItem<T>(
     collection: string,
     id: string | number,

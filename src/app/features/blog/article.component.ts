@@ -1,3 +1,5 @@
+import { blogLinkRel, safeBlogLink } from './services/blog-link.utils';
+import { normalizeBodyHeadings } from './services/blog-content.utils';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy, inject, RESPONSE_INIT } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -53,7 +55,7 @@ import { BlogService } from './services/blog.service';
           <figure class="hero-media" *ngIf="article.coverImage?.url && !coverFailed">
             <img
               [src]="article.coverImage?.url"
-              [alt]="article.coverImage?.alt || ''"
+              [alt]="article.coverImage?.decorative ? '' : article.coverImage?.alt || ''"
               (error)="handleCoverError()"
             />
           </figure>
@@ -64,12 +66,12 @@ import { BlogService } from './services/blog.service';
               [attr.aria-labelledby]="section.title ? 'section-' + sectionIndex : null"
             >
               <h2 *ngIf="section.title" [id]="'section-' + sectionIndex">{{ section.title }}</h2>
-              <div class="rich-text" [innerHTML]="section.text || ''"></div>
+              <div class="rich-text" [innerHTML]="normalizeBodyHeadings(section.text || '')"></div>
 
               <div class="media-grid" *ngIf="section.images?.length">
                 <figure *ngFor="let image of section.images">
-                  <img [src]="image.url" [alt]="image.alt || ''" loading="lazy" />
-                  <figcaption *ngIf="image.alt">{{ image.alt }}</figcaption>
+                  <img [src]="image.url" [alt]="image.decorative ? '' : image.alt || ''" loading="lazy" />
+                  <figcaption *ngIf="image.alt && !image.decorative">{{ image.alt }}</figcaption>
                 </figure>
               </div>
 
@@ -82,7 +84,7 @@ import { BlogService } from './services/blog.service';
 
               <ul class="related-links" *ngIf="section.links?.length">
                 <li *ngFor="let link of section.links">
-                  <a [href]="link.link">{{ link.title }}</a>
+                  <a [href]="safeBlogLink(link.link)" [attr.target]="link.newTab ? '_blank' : null" [attr.rel]="blogLinkRel(link)">{{ link.title }}</a>
                 </li>
               </ul>
             </section>
@@ -131,6 +133,9 @@ import { BlogService } from './services/blog.service';
   `],
 })
 export class ArticleComponent implements OnInit, OnDestroy {
+  readonly normalizeBodyHeadings = normalizeBodyHeadings;
+  readonly blogLinkRel = blogLinkRel;
+  readonly safeBlogLink = safeBlogLink;
   article: Article | null = null;
   loading = true;
   error = false;

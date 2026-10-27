@@ -3,6 +3,25 @@ import { of, throwError } from 'rxjs';
 import { AdminArticleEditorComponent } from './admin-article-editor.component';
 
 describe('AdminArticleEditorComponent async state', () => {
+  it('persists only body headings below the article and section headings', () => {
+    const editor = new AdminArticleEditorComponent(new FormBuilder(), {} as any, {} as any, {} as any, {} as any, {} as any);
+    const sections = (editor as any).buildPersistedSections([{ text: '<h1>Intro</h1><h2>Detalle</h2><p>Texto</p>' }], 'Artículo');
+    expect(sections[0].text).toBe('<h3>Intro</h3><h3>Detalle</h3><p>Texto</p>');
+  });
+
+  it('restores editable cover descriptions and decorative status', () => {
+    const editor = new AdminArticleEditorComponent(new FormBuilder(), {} as any, {} as any, {} as any, {} as any, { detectChanges() {} } as any);
+    (editor as any).populateArticle({ title: 'Artículo', sections: [], coverImage: { url: '/cover.png', alt: 'PC abierta', decorative: true } });
+    expect(editor.form.value.coverAlt).toBe('PC abierta');
+    expect(editor.form.value.coverDecorative).toBeTrue();
+    const preview = editor.form.getRawValue();
+    (editor as any).applyCoverDescription(preview);
+    expect(preview.coverImage).toEqual({ url: '/cover.png', alt: '', decorative: true });
+    editor.form.patchValue({ coverDecorative: false, coverAlt: 'Una PC abierta' });
+    const saved = editor.form.getRawValue();
+    (editor as any).applyCoverDescription(saved);
+    expect(saved.coverImage.alt).toBe('Una PC abierta');
+  });
   let blogService: {
     getById: jasmine.Spy;
     update: jasmine.Spy;
@@ -49,6 +68,127 @@ describe('AdminArticleEditorComponent async state', () => {
       router as any,
       cdr as any
     );
+  });
+
+  it('reports unsafe links before publication without requiring SEO overrides', () => {
+    component.addSection();
+    component.form.patchValue({ title: 'Artículo válido', summary: 'Resumen suficientemente largo', categoryId: '1' });
+    component.sectionsArray.at(0).patchValue({ text: '<p><a href="javascript:alert(1)">Enlace</a></p>' });
+    const review = (component as any).reviewReport;
+    expect(review.errors.some((issue: any) => issue.code === 'link-url')).toBeTrue();
+    expect(review.errors.some((issue: any) => issue.code === 'seo-title')).toBeFalse();
+  });
+
+  it('blocks publishing invalid links while preserving the option to save a draft', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ title: 'Artículo válido', summary: 'Resumen suficientemente largo', categoryId: '1' });
+    component.sectionsArray.at(0).patchValue({ text: '<p><a href="javascript:alert(1)">Enlace</a></p>' });
+    blogService.update.and.returnValue(of({}));
+    await component.onSave('publish');
+    expect(blogService.update).not.toHaveBeenCalled();
+    await component.onSave('draft');
+    expect(blogService.update).toHaveBeenCalledWith('2', jasmine.objectContaining({ published: false }));
+  });
+
+  it('loads related links into editable controls without losing their attributes', () => {
+    (component as any).populateArticle({ title: 'Enlaces', sections: [{ links: [{ title: 'Comprar', link: '/productos', rel: 'sponsored', newTab: true }] }] });
+    const links = component.sectionsArray.at(0).get('links');
+    expect(links?.value[0].rel).toBe('sponsored');
+    expect(links?.value[0].newTab).toBeTrue();
+  });
+
+  it('captures incomplete text and pending files for recovery without uploading', () => {
+    component.addSection();
+    component.form.patchValue({ title: 'Sin terminar' });
+    const file = new File(['pending'], 'cover.png', { type: 'image/png' });
+    component.selectedCoverFile = file;
+    const draft = (component as any).captureLocalDraft();
+    expect(draft.raw.title).toBe('Sin terminar');
+    expect(draft.cover).toBe(file);
+    expect(uploadService.uploadFile).not.toHaveBeenCalled();
+  });
+
+  it('reports a failed local write without claiming that the work was saved', async () => {
+    component.addSection();
+    (component as any).draftStore = { write: () => Promise.reject(new Error('QuotaExceededError')) };
+    (component as any).localKey = 'test';
+    component.hasUnsavedChanges = true;
+    await component.persistLocalDraft();
+    expect(component.localSavedAt).toBe('');
+    expect(component.autosaveError).toContain('No se pudo guardar');
+    expect(blogService.update).not.toHaveBeenCalled();
+  });
+
+  it('does not mark a newer edit as copied when an older queued write completes', async () => {
+    component.addSection();
+    let finish!: (value: any) => void;
+    const pending = new Promise(resolve => finish = resolve);
+    (component as any).draftStore = { write: () => pending };
+    (component as any).localKey = 'test';
+    (component as any).changeSequence = 1;
+    component.hasUnsavedChanges = true;
+    component.localPending = true;
+    const saving = component.persistLocalDraft();
+    (component as any).changeSequence = 2;
+    finish({ token: 'old-copy', savedAt: '2026-10-25T12:00:00Z' });
+    await saving;
+    expect(component.localPending).toBeTrue();
+  });
+
+  it('opens a historical snapshot for review while retaining the live URL and publication date', async () => {
+    component.addSection();
+    component.form.patchValue({ title: 'Actual', slug: 'url-actual', published: true, publishedAt: '2026-01-01T00:00:00Z' });
+    (blogService as any).getRevision = jasmine.createSpy().and.returnValue(of({ title: 'Versión anterior', slug: 'url-antigua', published: false, publishedAt: '2020-01-01', sections: [] }));
+    await component.restoreRevision({ id: 42 });
+    expect(component.form.value.title).toBe('Versión anterior');
+    expect(component.form.value.slug).toBe('url-actual');
+    expect(component.form.value.publishedAt).toBe('2026-01-01T00:00:00Z');
+    expect(component.hasUnsavedChanges).toBeTrue();
+    expect(blogService.update).not.toHaveBeenCalled();
+  });
+
+  it('blocks saving over a newer CMS version and retains local work', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ title: 'Edición local', summary: 'Resumen suficientemente largo', categoryId: '1' });
+    (component as any).draftStore = {};
+    (component as any).serverVersion = '2026-01-01';
+    blogService.getById.and.returnValue(of({ updatedAt: '2026-02-01' }));
+    await component.onSave('publish');
+    expect(component.remoteConflict).toBeTrue();
+    expect(blogService.update).not.toHaveBeenCalled();
+    expect(component.form.value.title).toBe('Edición local');
+  });
+
+  it('warns on internal navigation with changes that have not been saved in the CMS', () => {
+    component.hasUnsavedChanges = true;
+    spyOn(window, 'confirm').and.returnValue(false);
+    expect(component.canLeaveEditor()).toBeFalse();
+  });
+
+  it('recovers incomplete video links and image selections without publishing', () => {
+    component.addSection();
+    component.addImageToSection(0);
+    component.form.patchValue({ title: 'Recuperado' });
+    component.sectionsArray.at(0).patchValue({ videoUrl: 'https://youtu' });
+    const raw = component.form.getRawValue();
+    const file = new File(['pending'], 'image.png', { type: 'image/png' });
+    (component as any).applyLocalDraft({ raw, images: [[file]], videos: [] });
+    expect(component.form.value.title).toBe('Recuperado');
+    expect(component.sectionsArray.at(0).value.videoUrl).toBe('https://youtu');
+    expect((component.getSectionImages(0).at(0) as any)._file.name).toBe('image.png');
+    expect(blogService.update).not.toHaveBeenCalled();
+  });
+
+  it('keeps an unsaved cover description when returning from decorative preview', async () => {
+    component.isNew = false;
+    component.addSection();
+    component.form.patchValue({ coverImage: { url: '/cover.png' }, coverAlt: 'Conservar esta descripción', coverDecorative: true });
+    await component.openPreview();
+    expect((component as any).restorePreviewDraft()).toBeTrue();
+    expect(component.form.value.coverAlt).toBe('Conservar esta descripción');
+    expect(component.form.value.coverDecorative).toBeTrue();
   });
 
   it('notifies zoneless change detection when a video upload finishes', async () => {
