@@ -2,8 +2,46 @@
 <div class="min-h-screen bg-pc-admin-bg p-6 text-slate-100">
   <div class="max-w-5xl mx-auto">
   <h1 class="text-3xl font-bold text-cyan-400 mb-8">{{ isNew ? 'Nuevo Artículo' : 'Editar Artículo' }}</h1>
+
+  <section class="mb-6 rounded-lg border border-slate-500 p-4" aria-label="Guardado y recuperación">
+    <p role="status" aria-live="polite">{{ hasUnsavedChanges ? 'Cambios sin guardar en el CMS.' : 'Sin cambios pendientes.' }} <span *ngIf="localSavedAt">Copia local: {{ localSavedAt | date:'short' }}.</span></p>
+    <p *ngIf="localPending" role="status" class="mt-2 text-sm text-cyan-200">Copia local pendiente…</p>
+    <p class="mt-2 text-sm text-slate-300">La copia automática se conserva solo en este navegador. Para conservar una versión en el servidor, usa Guardar borrador o Publicar.</p>
+    <p *ngIf="autosaveError" class="mt-2 text-amber-200" role="alert">{{ autosaveError }}</p>
+    <button *ngIf="autosaveError" type="button" (click)="retryRecovery()" class="mt-2 rounded border border-amber-300 p-2">Revisar recuperación local</button>
+    <div *ngIf="recoveryCandidate" class="mt-4 rounded border border-cyan-300 p-3">
+      <p>Hay una copia local del {{ recoveryCandidate.savedAt | date:'short' }}. Elige qué conservar antes de seguir.</p>
+      <div class="mt-3 flex flex-wrap gap-3">
+        <button type="button" (click)="recoverLocalDraft()" class="rounded bg-cyan-300 p-3 font-semibold text-slate-950">Recuperar copia local</button>
+        <button type="button" (click)="discardLocalDraft()" class="rounded border border-slate-400 p-3">Descartar copia local</button>
+      </div>
+    </div>
+    <div *ngIf="remoteConflict" class="mt-3" role="alert">
+      <p>El CMS tiene cambios posteriores a la versión que editabas. Guarda tu texto aparte o compáralo en otra pestaña.</p>
+      <button type="button" (click)="loadLatestVersion()" class="mt-2 rounded border border-amber-300 p-3">Descartar cambios y cargar versión actual</button>
+    </div>
+  </section>
+
+  <p *ngIf="loadingArticle" role="status">Cargando versión del CMS…</p>
+  <button *ngIf="loadFailed" type="button" (click)="retryArticleLoad()" class="mb-4 rounded border border-amber-300 p-3">Reintentar carga del artículo</button>
+
+  <section *ngIf="!isNew" class="mb-6 rounded-lg border border-slate-500 p-4" aria-label="Historial de versiones">
+    <button type="button" (click)="loadHistory()" [disabled]="historyBusy || saving" class="rounded border border-cyan-300 p-3">{{ historyBusy ? 'Cargando historial…' : 'Ver historial de versiones' }}</button>
+    <div *ngIf="historyOpen" class="mt-3">
+      <p class="text-sm text-slate-300">Últimas 20 versiones guardadas en el CMS. Abrir una versión solo la carga en el editor; conserva la URL y fecha actuales. Los archivos eliminados no se recuperan.</p>
+      <p *ngIf="historyError" role="alert" class="mt-2 text-amber-200">{{ historyError }}</p>
+      <p *ngIf="!historyBusy && !historyError && !revisions.length" class="mt-2">No hay versiones disponibles para este artículo.</p>
+      <ul class="mt-3 space-y-2">
+        <li *ngFor="let revision of revisions" class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-600 py-2">
+          <span>Versión {{ revision.id }} · {{ revision.activity?.timestamp | date:'short' }}</span>
+          <button type="button" (click)="restoreRevision(revision)" [disabled]="historyBusy || saving || !!recoveryCandidate" class="rounded border border-slate-400 p-2">Abrir versión {{ revision.id }}</button>
+        </li>
+      </ul>
+    </div>
+  </section>
   
   <form [formGroup]="form" (ngSubmit)="onSave()" class="space-y-8">
+    <fieldset [disabled]="saving || historyBusy || loadingArticle || loadFailed || !!recoveryCandidate" class="space-y-8 min-w-0">
     <!-- Sección: Información General -->
     <div class="bg-pc-admin-panel border border-cyan-400/30 p-6 rounded-lg">
       <h2 class="text-xl font-bold text-cyan-400 mb-4">Información General</h2>
@@ -27,10 +65,13 @@
           <input 
             type="text" 
             formControlName="slug" 
+            [readOnly]="!isNew && !!form.value.publishedAt"
             placeholder="mi-primer-articulo"
             class="w-full p-3 rounded bg-pc-surface-deep border border-cyan-400/30 text-white placeholder-gray-500 focus:border-cyan-400 transition"
           />
           <div class="text-xs text-gray-400 mt-1">Se genera automáticamente si dejas vacío</div>
+          <p *ngIf="form.get('slug')?.invalid" class="mt-1 text-sm text-red-300">Usa letras minúsculas sin acentos, números y guiones, sin espacios.</p>
+          <p *ngIf="!isNew && form.value.publishedAt" class="mt-1 text-sm text-slate-300">La URL se conserva para mantener los enlaces de esta publicación.</p>
         </div>
       </div>
 
@@ -127,8 +168,13 @@
       </div>
 
       <div *ngIf="coverImagePreview" class="mt-4">
-        <img [src]="coverImagePreview" alt="Preview" class="max-w-xs rounded border border-cyan-400/30">
+        <img [privateMedia]="coverImagePreview || undefined" [authorizedMedia]="true" alt="Preview" class="max-w-xs rounded border border-cyan-400/30">
       </div>
+
+      <label for="cover-alt" class="mt-4 block font-semibold">Descripción de la portada</label>
+      <input id="cover-alt" formControlName="coverAlt" [readOnly]="form.value.coverDecorative" class="mt-2 w-full rounded border border-slate-500 bg-pc-surface-deep p-3 text-white" aria-describedby="cover-alt-help" />
+      <p id="cover-alt-help" class="mt-2 text-sm text-slate-300">Describe lo que muestra la imagen. Si solo adorna el artículo, marca la opción decorativa.</p>
+      <label class="mt-3 flex items-center gap-2"><input type="checkbox" formControlName="coverDecorative" /> Portada decorativa (sin texto alternativo)</label>
 
       <div *ngIf="selectedCoverFile && uploading" class="mt-3 text-sm text-cyan-100" role="status">
         Preparando portada…
@@ -185,9 +231,13 @@
             <quill-editor 
               formControlName="text" 
               [modules]="quillModules"
+              [beforeRender]="prepareBlogLinkFormats"
+              (onEditorCreated)="setTextEditor(section, $event)"
               [sanitize]="true"
               class="rounded bg-white text-black"
             ></quill-editor>
+            <p class="mt-2 text-sm text-slate-300">El título del artículo es H1 y el de cada sección es H2. Usa H3 y H4 para los subtítulos del contenido.</p>
+            <app-blog-links-editor [links]="getSectionLinks(i)" [sectionNumber]="i + 1" [html]="section.value.text || ''" [editor]="getTextEditor(section)" />
           </div>
 
           <!-- Galería de Imágenes de la Sección -->
@@ -241,16 +291,19 @@
 
                   <!-- Preview -->
                   <div *ngIf="(imgCtrl.value)?.preview" class="mb-2">
-                    <img [src]="(imgCtrl.value).preview" alt="Preview" class="h-16 rounded border border-cyan-400/20">
+                    <img [privateMedia]="(imgCtrl.value).preview" [authorizedMedia]="true" alt="Preview" class="h-16 rounded border border-cyan-400/20">
                   </div>
 
                   <!-- Campo Alt -->
                   <input 
                     type="text" 
                     formControlName="alt" 
+                    [readOnly]="imgCtrl.value.decorative"
+                    aria-label="Descripción de la imagen de sección"
                     placeholder="Texto alternativo"
                     class="w-full p-1 rounded bg-pc-surface-deep border border-cyan-400/20 text-white text-xs placeholder-gray-500 focus:border-cyan-400"
                   />
+                  <label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" formControlName="decorative" /> Imagen decorativa</label>
 
                   <div *ngIf="(imgCtrl.value)?.url" class="mt-1 text-xs text-green-300">
                     ✓ Imagen lista para guardar
@@ -308,7 +361,7 @@
               <video
                 *ngIf="section.value.videoPreviewUrl || section.value.videoFileUrl"
                 class="mt-3 w-full max-w-xl rounded border border-cyan-300/30 bg-black"
-                [src]="section.value.videoPreviewUrl || section.value.videoFileUrl"
+                [privateMedia]="section.value.videoPreviewUrl || section.value.videoFileUrl" [authorizedMedia]="true"
                 controls
                 preload="metadata"
                 [attr.aria-label]="section.value.videoTitle || section.value.videoFileName"
@@ -382,8 +435,39 @@
       ✓ {{ successMsg }}
     </div>
 
+    <section class="rounded-lg border border-cyan-400/30 bg-pc-admin-panel p-6" aria-labelledby="seo-heading">
+      <h2 id="seo-heading" class="mb-3 text-xl font-bold text-cyan-400">SEO y vista al compartir</h2>
+      <p class="mb-4 text-slate-300">Si dejas estos campos vacíos, usaremos el título, el resumen y la portada del artículo.</p>
+      <label for="seo-title" class="mb-2 block font-semibold">Título SEO (opcional)</label>
+      <input id="seo-title" formControlName="seoTitle" maxlength="255" class="mb-2 w-full rounded border border-slate-500 bg-pc-surface-deep p-3 text-white" />
+      <p class="mb-4 text-sm text-slate-300">{{ (form.value.seoTitle || '').length }} caracteres. Procura que describa claramente el artículo.</p>
+      <label for="seo-description" class="mb-2 block font-semibold">Descripción SEO (opcional)</label>
+      <textarea id="seo-description" formControlName="seoDescription" rows="3" class="mb-2 w-full rounded border border-slate-500 bg-pc-surface-deep p-3 text-white"></textarea>
+      <p class="mb-4 text-sm text-slate-300">{{ (form.value.seoDescription || '').length }} caracteres. El buscador puede ajustar el texto mostrado.</p>
+      <label for="seo-image" class="mb-2 block font-semibold">URL de imagen para compartir (opcional)</label>
+      <input id="seo-image" type="url" formControlName="seoImage" placeholder="https://…" class="w-full rounded border border-slate-500 bg-pc-surface-deep p-3 text-white" />
+      <p *ngIf="form.get('seoImage')?.invalid" class="mt-2 text-red-300" role="alert">Introduce una URL completa http o https.</p>
+      <div class="mt-5 border-t border-slate-600 pt-4" aria-label="Vista orientativa en buscadores">
+        <p class="break-words text-sm text-emerald-200">{{ seoPreview.url }}</p>
+        <p class="my-2 text-xl font-semibold text-cyan-200">{{ seoPreview.title }}</p>
+        <p class="text-slate-200">{{ seoPreview.description }}</p>
+        <p class="mt-3 text-sm text-slate-400">Vista orientativa; no garantiza la apariencia final en Google o redes sociales.</p>
+      </div>
+    </section>
+
     <!-- Botones de acción -->
-    <div class="flex gap-3 justify-end">
+    <section id="publication-review" tabindex="-1" aria-labelledby="publication-review-heading" class="rounded-lg border border-cyan-400/40 bg-pc-admin-panel p-6">
+      <h2 id="publication-review-heading" class="text-xl font-bold text-cyan-300">Revisión antes de publicar</h2>
+      <ng-container *ngIf="reviewReport as report">
+        <p class="mt-3">{{ report.errors.length }} errores · {{ report.warnings.length }} recomendaciones.</p>
+        <p *ngIf="!report.errors.length" class="mt-2 text-emerald-200">No se detectaron errores que impidan publicar.</p>
+        <div *ngIf="report.errors.length" class="mt-4"><h3 class="font-semibold text-red-200">Corrige antes de publicar o programar</h3><ul class="mt-2 list-disc space-y-2 pl-5"><li *ngFor="let issue of report.errors">{{ issue.message }}</li></ul></div>
+        <div *ngIf="report.warnings.length" class="mt-4"><h3 class="font-semibold text-amber-200">Recomendaciones (no bloquean la publicación)</h3><ul class="mt-2 list-disc space-y-2 pl-5"><li *ngFor="let issue of report.warnings">{{ issue.message }}</li></ul></div>
+        <p *ngIf="uploading" class="mt-3 text-cyan-200" role="status">Hay archivos en proceso de subida. Se completarán antes del guardado.</p>
+        <p class="mt-4 text-sm text-slate-300">El título SEO, la descripción y la imagen social son opcionales: usan los valores automáticos si los dejas vacíos. Esta revisión comprueba estructura y URLs; no verifica la respuesta HTTP de cada destino ni garantiza posicionamiento.</p>
+      </ng-container>
+    </section>
+    <div class="flex flex-wrap gap-3 justify-end">
       <a 
         [routerLink]="adminBlogUrl"
         class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded font-semibold transition"
@@ -393,7 +477,7 @@
       <button
         type="button"
         (click)="openPreview()"
-        [disabled]="form.invalid"
+        [disabled]="form.invalid || saving"
         class="border border-slate-400 text-slate-100 hover:bg-slate-800 disabled:opacity-50 px-6 py-3 rounded font-semibold transition"
       >
         Vista previa
@@ -409,7 +493,7 @@
       <button
         type="button"
         (click)="onSave('schedule')"
-        [disabled]="form.invalid || saving || !form.get('scheduledAt')?.value"
+        [disabled]="form.invalid || saving || !form.get('scheduledAt')?.value || reviewReport.errors.length > 0"
         class="border border-cyan-300 text-cyan-100 hover:bg-cyan-950 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded font-semibold transition"
       >
         Programar
@@ -417,11 +501,12 @@
       <button
         type="button"
         (click)="onSave('publish')"
-        [disabled]="form.invalid || saving"
+        [disabled]="form.invalid || saving || reviewReport.errors.length > 0"
         class="bg-cyan-300 hover:bg-cyan-200 disabled:opacity-50 disabled:cursor-not-allowed text-[#05242c] px-6 py-3 rounded font-bold transition"
       >
         {{ saving ? 'Guardando…' : 'Publicar ahora' }}
       </button>
     </div>
+    </fieldset>
   </form>
   </div>

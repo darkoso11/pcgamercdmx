@@ -49,6 +49,8 @@ export type ArticleLink = {
     link: string;
     // Orden relativo del link
     order?: number;
+    newTab?: boolean;
+    rel?: string;
 }
 
 // Sección de artículo: unidad de contenido (texto + imágenes + links)
@@ -78,6 +80,9 @@ export type Article = {
     slug?: string;
     // Resumen corto para listados y SEO
     summary?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    seoImage?: string;
     // Imagen de portada principal (S3 url)
     coverImage?: ArticleImage;
     // Secciones del artículo (editor dividido en bloques)

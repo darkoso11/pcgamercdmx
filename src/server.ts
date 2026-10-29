@@ -5,33 +5,74 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import compression from 'compression';
+import { readFile } from 'node:fs/promises';
+import { environment } from './environments/environment';
+import { buildBlogSitemap, SitemapPost } from './app/features/blog/services/blog-sitemap.utils';
 import { join } from 'node:path';
+import { getIndexingDirective } from './app/features/blog/services/blog-indexing.utils';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+const angularApp = new AngularNodeAppEngine({
+  // Traefik supplies these headers; hostname validation still uses allowedHosts.
+  trustProxyHeaders: ['x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-for', 'x-forwarded-port', 'x-forwarded-server'],
+});
 
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
+app.disable('x-powered-by');
+app.use(compression());
+app.use((request, response, next) => {
+  const indexing = getIndexingDirective(request.hostname);
+  if (indexing) response.setHeader('X-Robots-Tag', indexing);
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  response.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  response.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
+  if (request.path === '/blog' || request.path.startsWith('/blog/')) response.setHeader('Cache-Control', 'no-store');
+  next();
+});
+app.get('/healthz', (_request, response) => { response.type('text/plain').send('ok'); });
+app.get(['/pc-gamer-gama-alta-cdmx', '/pc-gamer-gama-alta-cdmx/'], (request, response) => {
+  const query = request.originalUrl.includes('?') ? request.originalUrl.slice(request.originalUrl.indexOf('?')) : '';
+  response.redirect(301, `/pc-gamer-gama-alta${query}`);
+});
+app.use('/admin', (_request, response) => { response.sendStatus(404); });
+app.get('/sitemap.xml', async (_request, response) => {
+  response.setHeader('Cache-Control', 'no-store');
+  const posts: SitemapPost[] = [];
+  const now = new Date();
+  try {
+    for (let page = 0; page < 1000; page++) {
+      const query = new URLSearchParams({
+        'filter[published][_eq]': 'true', 'filter[published_at][_lte]': now.toISOString(),
+        fields: '*', sort: 'id', limit: '100', offset: String(page * 100),
+      });
+      const upstream = await fetch(`${environment.directus.url}/items/pc_blog_posts?${query}`, { signal: AbortSignal.timeout(10000) });
+      if (!upstream.ok) throw new Error('CMS unavailable');
+      const result = await upstream.json() as { data: SitemapPost[] };
+      if (!Array.isArray(result.data)) throw new Error('Invalid CMS response');
+      posts.push(...result.data);
+      if (result.data.length < 100) break;
+      if (page === 999) throw new Error('Sitemap pagination limit exceeded');
+    }
+    const base = await readFile(join(browserDistFolder, 'sitemap.xml'), 'utf8');
+    response.type('application/xml').send(buildBlogSitemap(base, posts, environment.siteUrl, now.getTime()));
+  } catch {
+    response.setHeader('Retry-After', '60');
+    response.status(503).type('text/plain').send('Sitemap temporarily unavailable');
+  }
+});
 
-/**
- * Serve static files from /browser
- */
 app.use(
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
     redirect: false,
+    setHeaders(response, path) {
+      if (path.endsWith('.html') || path.endsWith('robots.txt')) response.setHeader('Cache-Control', 'no-cache');
+    },
   }),
 );
 

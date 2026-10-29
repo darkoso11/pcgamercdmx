@@ -1,13 +1,16 @@
+import { blogLinkRel, safeBlogLink } from '../services/blog-link.utils';
+import { normalizeBodyHeadings } from '../services/blog-content.utils';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { adminUrl } from '../../admin/admin-route.config';
+import { PrivateMediaDirective } from '../private-media.directive';
 import { ArticleMediaComponent } from '../article-media.component';
 
 @Component({
   selector: 'app-admin-article-preview',
   standalone: true,
-  imports: [CommonModule, RouterModule, ArticleMediaComponent],
+  imports: [CommonModule, RouterModule, ArticleMediaComponent, PrivateMediaDirective],
   template: `
     <main class="preview-page">
       <div class="preview-bar">
@@ -25,24 +28,28 @@ import { ArticleMediaComponent } from '../article-media.component';
           <div class="summary">{{ article.summary }}</div>
         </header>
         <figure *ngIf="article.coverImage?.url">
-          <img [src]="article.coverImage?.url" [alt]="article.coverImage?.alt || ''" />
+          <img [privateMedia]="article.coverImage?.url" [authorizedMedia]="true" [alt]="article.coverImage?.decorative ? '' : article.coverImage?.alt || ''" />
         </figure>
         <div class="body">
           <section *ngFor="let section of article.sections">
             <h2 *ngIf="section.title">{{ section.title }}</h2>
-            <div class="rich-text" [innerHTML]="section.text || ''"></div>
+            <div class="rich-text" [innerHTML]="normalizeBodyHeadings(section.text || '')"></div>
             <div class="images" *ngIf="section.images?.length">
               <figure *ngFor="let image of section.images">
-                <img [src]="image.preview || image.url" [alt]="image.alt || ''" />
-                <figcaption *ngIf="image.alt">{{ image.alt }}</figcaption>
+                <img [privateMedia]="image.preview || image.url" [authorizedMedia]="true" [alt]="image.decorative ? '' : image.alt || ''" />
+                <figcaption *ngIf="image.alt && !image.decorative">{{ image.alt }}</figcaption>
               </figure>
             </div>
             <div class="media" *ngIf="section.media?.length">
               <app-article-media
                 *ngFor="let media of section.media"
                 [media]="media"
+                [authorizedMedia]="true"
               ></app-article-media>
             </div>
+            <ul *ngIf="section.links?.length" class="mt-4">
+              <li *ngFor="let link of section.links"><a [href]="safeBlogLink(link.link)" [attr.target]="link.newTab ? '_blank' : null" [attr.rel]="blogLinkRel(link)">{{ link.title }}</a></li>
+            </ul>
           </section>
         </div>
       </article>
@@ -81,6 +88,9 @@ import { ArticleMediaComponent } from '../article-media.component';
   `],
 })
 export class AdminArticlePreviewComponent {
+  readonly normalizeBodyHeadings = normalizeBodyHeadings;
+  readonly blogLinkRel = blogLinkRel;
+  readonly safeBlogLink = safeBlogLink;
   private readonly preview = this.readPreview();
   readonly editorUrl = this.preview.returnUrl || adminUrl('blog/new');
   readonly article = this.preview.article;

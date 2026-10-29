@@ -37,7 +37,8 @@
     "quill": "2.0.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zone.js": "^0.15.1"
+    "zone.js": "^0.15.1",
+    "compression": "1.8.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "20.3.33",
@@ -53,7 +54,6 @@
     "@types/jasmine": "~5.1.0",
     "@types/node": "22.20.1",
     "autoprefixer": "10.5.4",
-    "compression": "1.8.1",
     "jasmine-core": "6.3.0",
     "karma": "^6.4.4",
     "karma-chrome-launcher": "^3.2.0",

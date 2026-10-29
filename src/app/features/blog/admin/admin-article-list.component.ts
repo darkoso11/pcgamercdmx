@@ -1,4 +1,6 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { adminBlogDateRange } from '../services/blog-admin-filters.utils';
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,43 +25,44 @@ import { getPublicationState } from '../services/blog-content.utils';
         <div class="bg-[#0b1220] border border-cyan-300/40 p-4 rounded-lg mb-6 overflow-x-auto">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
-              <label class="block text-sm text-gray-400 mb-1">Buscar por título</label>
-              <input [(ngModel)]="q" placeholder="Buscar por título..." class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
+              <label for="blog-filter-title" class="block text-sm text-gray-400 mb-1">Buscar por título</label>
+              <input id="blog-filter-title" [(ngModel)]="q" (ngModelChange)="queueSearch()" (keydown.enter)="onSearch()" placeholder="Buscar por título..." class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
             </div>
             <div>
-              <label class="block text-sm text-gray-400 mb-1">Buscar por tags</label>
-              <input [(ngModel)]="filterTags" placeholder="Ej: Intel, CPU, Gaming" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
+              <label for="blog-filter-tags" class="block text-sm text-gray-400 mb-1">Buscar por tags</label>
+              <input id="blog-filter-tags" [(ngModel)]="filterTags" (ngModelChange)="queueSearch()" (keydown.enter)="onSearch()" placeholder="Ej: Intel, CPU, Gaming" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
             </div>
             <div>
-              <label class="block text-sm text-gray-400 mb-1">Estado</label>
-              <select [(ngModel)]="filterPublished" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white">
+              <label for="blog-filter-state" class="block text-sm text-gray-400 mb-1">Estado</label>
+              <select id="blog-filter-state" [(ngModel)]="filterPublished" (ngModelChange)="onSearch()" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white">
                 <option value="">Todos</option>
                 <option value="true">Publicado</option>
                 <option value="false">Borrador</option>
+                <option value="scheduled">Programado</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm text-gray-400 mb-1">Categoría</label>
-              <select [(ngModel)]="filterCategory" (change)="onCategoryChange()" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white">
+              <label for="blog-filter-category" class="block text-sm text-gray-400 mb-1">Categoría</label>
+              <select id="blog-filter-category" [(ngModel)]="filterCategory" (ngModelChange)="onCategoryChange(); onSearch()" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white">
                 <option value="">Todas las categorías</option>
                 <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-sm text-gray-400 mb-1">Subcategoría</label>
-              <select [(ngModel)]="filterSubcategory" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white">
+              <label for="blog-filter-subcategory" class="block text-sm text-gray-400 mb-1">Subcategoría</label>
+              <select id="blog-filter-subcategory" [(ngModel)]="filterSubcategory" (ngModelChange)="onSearch()" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white">
                 <option value="">Todas las subcategorías</option>
                 <option *ngFor="let sub of filteredSubcategories" [value]="sub._id">{{ sub.name }}</option>
               </select>
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-sm text-gray-400 mb-1">Fecha desde</label>
-                <input [(ngModel)]="filterDateFrom" type="date" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
+                <label for="blog-filter-from" class="block text-sm text-gray-400 mb-1">Fecha desde</label>
+                <input id="blog-filter-from" [(ngModel)]="filterDateFrom" (ngModelChange)="queueSearch()" type="date" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
               </div>
               <div>
-                <label class="block text-sm text-gray-400 mb-1">Fecha hasta</label>
-                <input [(ngModel)]="filterDateTo" type="date" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
+                <label for="blog-filter-to" class="block text-sm text-gray-400 mb-1">Fecha hasta</label>
+                <input id="blog-filter-to" [(ngModel)]="filterDateTo" (ngModelChange)="queueSearch()" type="date" class="w-full p-2 rounded bg-[#081229] border border-cyan-400/20 text-white" />
               </div>
             </div>
           </div>
@@ -72,6 +75,8 @@ import { getPublicationState } from '../services/blog-content.utils';
             </button>
           </div>
 
+          <p class="mt-3 text-sm text-slate-300">Los filtros se aplican al cambiar. Las etiquetas separadas por comas coinciden con cualquiera de ellas. El rango incluye ambos días en horario de Ciudad de México y usa la fecha mostrada en la tabla (creación o publicación en registros antiguos); las entradas sin fecha quedan fuera del rango.</p>
+          <p *ngIf="error" role="alert" class="my-4 text-amber-200">{{ error }}</p>
           <table class="w-full min-w-[760px] text-left text-sm text-slate-100">
             <thead>
               <tr class="text-gray-400 border-b border-white/5">
@@ -79,7 +84,7 @@ import { getPublicationState } from '../services/blog-content.utils';
                 <th class="py-2">Categoría</th>
                 <th class="py-2">Subcategoría</th>
                 <th class="py-2">Fecha</th>
-                <th class="py-2">Publicado</th>
+                <th class="py-2">Estado</th>
                 <th class="py-2">Acciones</th>
               </tr>
             </thead>
@@ -113,7 +118,7 @@ import { getPublicationState } from '../services/blog-content.utils';
             </tbody>
           </table>
 
-          <div *ngIf="articles.length === 0 && !loading" class="text-center text-gray-400 p-6">
+          <div *ngIf="articles.length === 0 && !loading && !error" class="text-center text-gray-400 p-6">
             {{ q || filterCategory || filterSubcategory || filterPublished || filterDateFrom || filterDateTo || filterTags ? 'No se encontraron artículos con los filtros aplicados' : 'No hay artículos aún' }}
           </div>
 
@@ -135,6 +140,7 @@ import { getPublicationState } from '../services/blog-content.utils';
                 <button
                   *ngFor="let page of getPagesArray()"
                   (click)="goToPage(page)"
+                  [disabled]="loading"
                   [class.active]="page === currentPage"
                   class="px-3 py-1 rounded border text-sm transition-colors"
                   [class]="page === currentPage ? 'bg-cyan-400 text-[#071029] border-cyan-400' : 'bg-[#081229] border-cyan-400/20 text-white hover:bg-cyan-400/10'">
@@ -155,7 +161,7 @@ import { getPublicationState } from '../services/blog-content.utils';
     </div>
   `
 })
-export class AdminArticleListComponent {
+export class AdminArticleListComponent implements OnDestroy {
   readonly adminBlogUrl = adminUrl('blog');
   readonly adminNewArticleUrl = adminUrl('blog/new');
   articles: any[] = [];
@@ -176,6 +182,9 @@ export class AdminArticleListComponent {
   totalArticles = 0;
   totalPages = 0;
   loading = false;
+  error = '';
+  private searchRequest?: Subscription;
+  private searchTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private blog: BlogService,
@@ -223,9 +232,10 @@ export class AdminArticleListComponent {
   }
 
   formatDate(dateString: string): string {
-    if (!dateString) return '-';
+    if (!dateString || !Number.isFinite(Date.parse(dateString))) return '-';
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
+    return date.toLocaleDateString('es-MX', {
+      timeZone: 'America/Mexico_City',
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -237,7 +247,30 @@ export class AdminArticleListComponent {
     return state === 'scheduled' ? 'Programado' : state === 'published' ? 'Publicado' : 'Borrador';
   }
 
+  ngOnDestroy(): void {
+    clearTimeout(this.searchTimer);
+    this.searchRequest?.unsubscribe();
+  }
+
+  queueSearch(): void {
+    clearTimeout(this.searchTimer);
+    this.searchRequest?.unsubscribe();
+    this.loading = true;
+    this.searchTimer = setTimeout(() => this.onSearch(), 300);
+  }
+
   load() {
+    this.searchRequest?.unsubscribe();
+    this.error = '';
+    try { adminBlogDateRange(this.filterDateFrom, this.filterDateTo); }
+    catch (error) {
+      this.error = (error as Error).message;
+      this.articles = [];
+      this.totalArticles = this.totalPages = 0;
+      this.loading = false;
+      this.cdr.markForCheck();
+      return;
+    }
     this.loading = true;
     const params: any = {
       q: this.q,
@@ -246,12 +279,12 @@ export class AdminArticleListComponent {
     };
     if (this.filterCategory) params.categoryId = this.filterCategory;
     if (this.filterSubcategory) params.subCategoryId = this.filterSubcategory;
-    if (this.filterPublished !== '') params.published = this.filterPublished === 'true';
+    if (this.filterPublished !== '') params.status = this.filterPublished === 'true' ? 'published' : this.filterPublished === 'false' ? 'draft' : 'scheduled';
     if (this.filterDateFrom) params.dateFrom = this.filterDateFrom;
     if (this.filterDateTo) params.dateTo = this.filterDateTo;
     if (this.filterTags) params.tags = this.filterTags;
 
-    this.blog.list(params).subscribe({
+    this.searchRequest = this.blog.list(params).subscribe({
       next: (res: any) => {
         this.articles = res?.data || res || [];
         this.totalArticles = res?.total || 0;
@@ -260,6 +293,7 @@ export class AdminArticleListComponent {
         this.cdr.detectChanges();
       },
       error: () => {
+        this.error = 'No se pudieron cargar los artículos. Revisa la conexión o tus permisos y vuelve a buscar.';
         this.articles = [];
         this.totalArticles = 0;
         this.totalPages = 0;
@@ -270,6 +304,7 @@ export class AdminArticleListComponent {
   }
 
   onSearch() {
+    clearTimeout(this.searchTimer);
     this.currentPage = 0; // Reset to first page when searching
     this.load();
   }
@@ -330,8 +365,7 @@ export class AdminArticleListComponent {
       next: () => {
         this.load();
       },
-      error: (err) => {
-        console.error('Error deleting article:', err);
+      error: () => {
         this.loading = false;
         alert('Error al eliminar el artículo');
       }

@@ -1,34 +1,73 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, HostListener, Inject, Optional, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
-import { firstValueFrom } from 'rxjs';
-import { BlogService } from '../services/blog.service';
+import { firstValueFrom, Subscription } from 'rxjs';
+import { PrivateMediaDirective } from '../private-media.directive';
+import { Article } from '../models/types';
+import { BlogRevision, BlogService } from '../services/blog.service';
+import { BlogDraftStore, DraftConflictError, EditorDraft, StoredEditorDraft } from '../services/blog-draft.store';
 import { UploadService } from '../services/upload.service';
 import { AdminHeaderComponent } from '../../admin/admin-header.component';
 import { adminUrl } from '../../admin/admin-route.config';
-import { localDateTimeToUtc, normalizeVideoUrl, utcDateTimeToLocal } from '../services/blog-content.utils';
+import { buildArticleSeo } from '../services/blog-seo.utils';
+import { localDateTimeToUtc, normalizeBodyHeadings, normalizeVideoUrl, utcDateTimeToLocal } from '../services/blog-content.utils';
+import { reviewBlogArticle } from '../services/blog-review.utils';
+import { BlogLinksEditorComponent, createBlogLinkForm } from './blog-links-editor.component';
+import { prepareBlogLinkFormats } from './blog-link-formats';
 
 @Component({
   selector: 'app-admin-article-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule, AdminHeaderComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, QuillModule, AdminHeaderComponent, PrivateMediaDirective, BlogLinksEditorComponent],
   templateUrl: './admin-article-editor.component.html',
   styleUrls: ['./admin-article-editor.component.css']
 })
 export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   readonly maxVideoSizeMb = 250;
   readonly adminBlogUrl = adminUrl('blog');
+  readonly prepareBlogLinkFormats = prepareBlogLinkFormats;
+  private readonly textEditors = new WeakMap<object, any>();
   form: FormGroup;
   isNew = true;
   saving = false;
   uploading = false;
   selectedCoverFile: File | null = null;
   coverImagePreview: string | null = null;
+  private coverPreviewFile: File | null = null;
   private coverUploadPromise: Promise<void> | null = null;
   errorMsg = '';
   successMsg = '';
+  hasUnsavedChanges = false;
+  localSavedAt = '';
+  localPending = false;
+  autosaveError = '';
+  recoveryCandidate?: StoredEditorDraft;
+  revisions: BlogRevision[] = [];
+  historyOpen = false;
+  historyBusy = false;
+  historyError = '';
+  remoteConflict = false;
+  loadingArticle = false;
+  loadFailed = false;
+  private editorReady = false;
+  private recoveryInitialized = false;
+  private returningFromPreview = false;
+  private previewLocalToken?: string;
+  private destroyed = false;
+  private suppressRecovery = false;
+  private allowNavigation = false;
+  private localConflict = false;
+  private localKey?: string;
+  private localToken?: string;
+  private changeSequence = 0;
+  private serverVersion = '';
+  private autosaveTimer?: ReturnType<typeof setTimeout>;
+  private editorSubscription?: Subscription;
+  private articleSubscription?: Subscription;
+  private writes: Promise<void> = Promise.resolve();
+  private recoveredImageUrls: string[] = [];
 
   categories: any[] = [];
   subcategories: any[] = [];
@@ -42,7 +81,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     toolbar: [
       ['bold', 'italic', 'underline', 'strike'],
       ['blockquote', 'code-block'],
-      [{ 'header': 1 }, { 'header': 2 }],
+      [{ 'header': 3 }, { 'header': 4 }],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
       ['link', 'image'],
       ['clean']
@@ -55,39 +94,69 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     private uploadService: UploadService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Optional() private readonly draftStore: BlogDraftStore | null = null,
+    @Inject(DOCUMENT) private readonly editorDocument: Document = document
   ) {
     this.form = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
-      slug: [''],
+      slug: ['', Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)],
       summary: ['', [Validators.required, Validators.minLength(10)]],
+      seoTitle: ['', Validators.maxLength(255)],
+      seoDescription: [''],
+      seoImage: ['', Validators.pattern(/^https?:\/\/[^\s]+$/)],
+      publishedAt: [''],
       categoryId: ['', Validators.required],
       subCategoryId: [''],
       tags: [''],
       coverImage: [''],
+      coverAlt: [''],
+      coverDecorative: [false],
       published: [false],
       scheduledAt: [''],
       sections: this.fb.array([])
     });
   }
 
+  get seoPreview() {
+    return buildArticleSeo({ ...this.form.getRawValue(), title: this.form.value.title || 'Título del artículo', slug: this.form.value.slug || 'url-del-articulo' });
+  }
+
   get sectionsArray(): FormArray {
     return this.form.get('sections') as FormArray;
   }
 
+  get reviewReport() { return reviewBlogArticle(this.form.getRawValue(), this.editorDocument); }
+  getSectionLinks(index: number): FormArray { return this.sectionsArray.at(index).get('links') as FormArray; }
+  setTextEditor(section: object, editor: any): void { this.textEditors.set(section, editor); this.cdr.markForCheck(); }
+  getTextEditor(section: object): any { return this.textEditors.get(section); }
+
   ngOnInit() {
+    this.editorSubscription?.unsubscribe();
+    this.editorSubscription = this.form.valueChanges.subscribe(() => this.editorChanged());
     const id = this.route.snapshot.params['id'];
-    if (id) {
-      this.isNew = false;
-      this.loadArticle(id);
-    } else {
-      this.addSection();
+    this.isNew = !id;
+    this.returningFromPreview = this.restorePreviewDraft();
+    if (!this.returningFromPreview) {
+      if (id) this.loadArticle(id);
+      else this.addSection();
+    }
+    if (this.returningFromPreview || !id) {
+      this.editorReady = true;
+      if (this.returningFromPreview) this.hasUnsavedChanges = true;
+      void this.initializeRecovery();
     }
     this.loadCategories();
     this.loadSubcategories();
   }
 
   ngOnDestroy(): void {
+    clearTimeout(this.autosaveTimer);
+    if (!this.allowNavigation) void this.persistLocalDraft();
+    this.destroyed = true;
+    this.editorSubscription?.unsubscribe();
+    this.articleSubscription?.unsubscribe();
+    this.recoveredImageUrls.forEach(url => URL.revokeObjectURL(url));
     for (const control of this.sectionsArray.controls) {
       this.releaseVideoPreview(control as FormGroup);
     }
@@ -135,74 +204,102 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   }
 
   loadArticle(id: string) {
-    this.blogService.getById(id).subscribe({
+    this.articleSubscription?.unsubscribe();
+    this.loadingArticle = true;
+    this.loadFailed = false;
+    this.articleSubscription = this.blogService.getById(id).subscribe({
       next: (article) => {
-        this.sectionsArray.clear();
-        (article.sections || []).forEach((section: any) => {
-          const media = section.media || [];
-          const fileVideo = media.find((item: any) => item.kind === 'video-file');
-          const embedVideo = media.find((item: any) => item.kind === 'video-embed');
-          const sectionForm = this.fb.group({
-            title: [section.title || ''],
-            text: [section.text || ''],
-            order: [section.order || this.sectionsArray.length],
-            images: this.fb.array((section.images || []).map((image: any) => this.fb.group({
-              url: [image.url || ''],
-              fileId: [image.fileId || ''],
-              filename: [image.filename || ''],
-              mimeType: [image.mimeType || ''],
-              alt: [image.alt || ''],
-              preview: [image.url || ''],
-              order: [image.order || 0]
-            }))),
-            imageLayout: [section.imageLayout || '1'],
-            existingMedia: [media.filter(
-              (item: any) =>
-                item.kind !== 'video-file' && item.kind !== 'video-embed'
-            )],
-            videoUrl: [this.editableEmbedUrl(embedVideo)],
-            videoTitle: [fileVideo?.title || embedVideo?.title || ''],
-            videoFileId: [fileVideo?.fileId || ''],
-            videoFileUrl: [fileVideo?.url || ''],
-            videoFileName: [fileVideo?.filename || ''],
-            videoFileType: [fileVideo?.mimeType || ''],
-            videoPreviewUrl: ['']
-          });
-          this.sectionsArray.push(sectionForm);
-        });
-
-        if (this.sectionsArray.length === 0) {
-          this.addSection();
-        }
-
-        this.form.patchValue({
-          title: article.title,
-          slug: article.slug || '',
-          summary: article.summary || '',
-          categoryId: article.categoryId || '',
-          subCategoryId: article.subCategoryId || '',
-          tags: (article.tags || []).join(', '),
-          coverImage: article.coverImage || '',
-          published: article.published,
-          scheduledAt: article.publishedAt
-            ? utcDateTimeToLocal(article.publishedAt)
-            : ''
-        });
-        this.coverImagePreview = article.coverImage?.url || null;
-        this.updateFilteredSubcategories();
-        this.cdr.detectChanges();
+        if (this.destroyed) return;
+        this.serverVersion = article.updatedAt || '';
+        this.populateArticle(article);
+        this.loadingArticle = false;
+        this.editorReady = true;
+        void this.initializeRecovery();
       },
       error: () => {
+        this.loadingArticle = false;
+        this.loadFailed = true;
         this.errorMsg = 'No se pudo cargar el artículo';
         this.cdr.detectChanges();
       }
     });
   }
 
+  private populateArticle(article: Article): void {
+    this.sectionsArray.clear();
+    (article.sections || []).forEach((section: any) => {
+      const media = section.media || [];
+      const fileVideo = media.find((item: any) => item.kind === 'video-file');
+      const embedVideo = media.find((item: any) => item.kind === 'video-embed');
+      const sectionForm = this.fb.group({
+        originalSection: [section],
+        originalFileVideo: [fileVideo || null],
+        originalEmbedVideo: [embedVideo || null],
+        initialVideoTitle: [fileVideo?.title || embedVideo?.title || ''],
+        title: [section.title || ''],
+        text: [section.text || ''],
+        links: this.fb.array((section.links || section.originalSection?.links || []).map((link: any) => createBlogLinkForm(this.fb, link))),
+        order: [section.order || this.sectionsArray.length],
+        images: this.fb.array((section.images || []).map((image: any) => this.fb.group({
+          originalImage: [image],
+          url: [image.url || ''],
+          fileId: [image.fileId || ''],
+          filename: [image.filename || ''],
+          mimeType: [image.mimeType || ''],
+          alt: [image.alt || ''],
+          decorative: [image.decorative === true],
+          preview: [image.url || ''],
+          order: [image.order || 0]
+        }))),
+        imageLayout: [section.imageLayout || '1'],
+        existingMedia: [media.filter(
+          (item: any) =>
+            item !== fileVideo && item !== embedVideo
+        )],
+        videoUrl: [this.editableEmbedUrl(embedVideo)],
+        videoTitle: [fileVideo?.title || embedVideo?.title || ''],
+        videoFileId: [fileVideo?.fileId || ''],
+        videoFileUrl: [fileVideo?.url || ''],
+        videoFileName: [fileVideo?.filename || ''],
+        videoFileType: [fileVideo?.mimeType || ''],
+        videoPreviewUrl: ['']
+      });
+      this.sectionsArray.push(sectionForm);
+    });
+
+    if (this.sectionsArray.length === 0) {
+      this.addSection();
+    }
+
+    this.form.patchValue({
+      title: article.title,
+      slug: article.slug || '',
+      summary: article.summary || '',
+      seoTitle: article.seoTitle || '',
+      seoDescription: article.seoDescription || '',
+      seoImage: article.seoImage || '',
+      publishedAt: article.publishedAt || '',
+      categoryId: article.categoryId || '',
+      subCategoryId: article.subCategoryId || '',
+      tags: (article.tags || []).join(', '),
+      coverImage: article.coverImage || '',
+      coverAlt: article.coverImage?.alt || '',
+      coverDecorative: article.coverImage?.decorative === true,
+      published: article.published,
+      scheduledAt: article.publishedAt
+        ? utcDateTimeToLocal(article.publishedAt)
+        : ''
+    });
+    this.coverImagePreview = article.coverImage?.url || null;
+    this.updateFilteredSubcategories();
+    this.cdr.detectChanges();
+  }
+
   addSection() {
     const sectionForm = this.fb.group({
       title: [''],
       text: [''],
+      links: this.fb.array([]),
       order: [this.sectionsArray.length],
       images: this.fb.array([]),
       imageLayout: ['1'], // 1, 2, 3, o 4 columnas
@@ -230,6 +327,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       filename: [''],
       mimeType: [''],
       alt: [''],
+      decorative: [false],
       preview: [''],
       order: [imagesArray.length]
     });
@@ -248,14 +346,14 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         this.errorMsg = 'La imagen no puede ser mayor a 5MB';
         return;
       }
+      const imageForm = this.getSectionImages(sectionIndex).at(imageIndex) as FormGroup;
+      imageForm.patchValue({ fileId: '', url: '' });
       const reader = new FileReader();
       reader.onload = (e) => {
-        const preview = e.target?.result as string;
-        const imagesArray = this.getSectionImages(sectionIndex);
-        (imagesArray.at(imageIndex) as FormGroup).patchValue({ preview });
+        if ((imageForm as any)._file !== file) return;
+        imageForm.patchValue({ preview: e.target?.result as string });
       };
       reader.readAsDataURL(file);
-      const imageForm = this.getSectionImages(sectionIndex).at(imageIndex) as FormGroup;
       (imageForm as any)._file = file;
       void this.uploadSectionImage(sectionIndex, imageIndex).catch(() => undefined);
     }
@@ -277,17 +375,21 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     this.errorMsg = '';
     const upload = (async () => {
       try {
-        const uploaded = await this.uploadService.uploadFile(file);
-        imageForm.patchValue({
-          url: uploaded.url,
-          fileId: uploaded.fileId,
-          filename: uploaded.filename,
-          mimeType: uploaded.mimeType,
-        });
-        this.successMsg = 'Imagen lista para guardar';
-      } catch (e) {
-        this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
-        throw e;
+        while ((imageForm as any)._file) {
+          const selected = (imageForm as any)._file as File;
+          try {
+            const uploaded = await this.uploadService.uploadFile(selected);
+            if ((imageForm as any)._file !== selected) continue;
+            imageForm.patchValue({ ...uploaded, preview: uploaded.url });
+            delete (imageForm as any)._file;
+            this.successMsg = 'Imagen lista para guardar';
+            return;
+          } catch (error) {
+            if ((imageForm as any)._file !== selected) continue;
+            this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(error)}`;
+            throw error;
+          }
+        }
       } finally {
         delete (imageForm as any)._uploadPromise;
         this.uploading = false;
@@ -306,20 +408,20 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
   moveSectionUp(index: number) {
     if (index > 0) {
       const sections = this.sectionsArray;
-      const current = sections.at(index).value;
-      const previous = sections.at(index - 1).value;
-      sections.at(index).patchValue(previous);
-      sections.at(index - 1).patchValue(current);
+      const current = sections.at(index);
+      sections.removeAt(index);
+      sections.insert(index - 1, current);
+      sections.markAsDirty();
     }
   }
 
   moveSectionDown(index: number) {
     if (index < this.sectionsArray.length - 1) {
       const sections = this.sectionsArray;
-      const current = sections.at(index).value;
-      const next = sections.at(index + 1).value;
-      sections.at(index).patchValue(next);
-      sections.at(index + 1).patchValue(current);
+      const current = sections.at(index);
+      sections.removeAt(index);
+      sections.insert(index + 1, current);
+      sections.markAsDirty();
     }
   }
 
@@ -331,8 +433,11 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         return;
       }
       this.selectedCoverFile = file;
+      this.coverPreviewFile = file;
+      this.form.patchValue({ coverImage: '' });
       const reader = new FileReader();
       reader.onload = (e) => {
+        if (this.coverPreviewFile !== file) return;
         this.coverImagePreview = e.target?.result as string;
         this.cdr.markForCheck();
       };
@@ -350,21 +455,23 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
     this.uploading = true;
     this.errorMsg = '';
-    const file = this.selectedCoverFile;
     this.coverUploadPromise = (async () => {
       try {
-        const uploaded = await this.uploadService.uploadFile(file);
-        this.form.patchValue({
-          coverImage: {
-            ...uploaded,
-            alt: this.form.value.title || '',
-          },
-        });
-        this.successMsg = 'Portada lista para guardar';
-        this.selectedCoverFile = null;
-      } catch (e) {
-        this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(e)}`;
-        throw e;
+        while (this.selectedCoverFile) {
+          const file = this.selectedCoverFile;
+          try {
+            const uploaded = await this.uploadService.uploadFile(file);
+            if (this.selectedCoverFile !== file) continue;
+            this.form.patchValue({ coverImage: { ...uploaded, alt: this.form.value.coverAlt || '', decorative: this.form.value.coverDecorative } });
+            this.selectedCoverFile = null;
+            this.successMsg = 'Portada lista para guardar';
+            return;
+          } catch (error) {
+            if (this.selectedCoverFile !== file) continue;
+            this.errorMsg = `Error al subir la imagen: ${this.requestErrorMessage(error)}`;
+            throw error;
+          }
+        }
       } finally {
         this.coverUploadPromise = null;
         this.uploading = false;
@@ -489,9 +596,13 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     return upload;
   }
 
-  openPreview() {
+  async openPreview() {
+    if (this.saving) return;
+    this.saving = true;
     try {
+      await this.uploadPendingMedia();
       const preview = this.form.getRawValue();
+      this.applyCoverDescription(preview);
       preview.tags = typeof preview.tags === 'string'
         ? preview.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
         : preview.tags;
@@ -503,18 +614,44 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
       const returnUrl = this.isNew || !id
         ? adminUrl('blog/new')
         : adminUrl(`blog/${id}/edit`);
+      sessionStorage.setItem('pcg_blog_editor_draft', JSON.stringify({
+        returnUrl,
+        article: preview,
+        scheduledAt: this.form.value.scheduledAt,
+        coverAlt: this.form.value.coverAlt,
+        coverDecorative: this.form.value.coverDecorative,
+        serverVersion: this.serverVersion,
+      }));
       sessionStorage.setItem('pcg_blog_preview', JSON.stringify({
         article: preview,
         returnUrl,
       }));
-      this.router.navigate([adminUrl('blog/preview')]);
+      this.localPending = true;
+      this.changeSequence++;
+      await this.persistLocalDraft();
+      const editorDraft = JSON.parse(sessionStorage.getItem('pcg_blog_editor_draft') || '{}');
+      editorDraft.localToken = this.localToken;
+      sessionStorage.setItem('pcg_blog_editor_draft', JSON.stringify(editorDraft));
+      this.allowNavigation = true;
+      await this.router.navigate([adminUrl('blog/preview')]);
     } catch (error) {
       this.errorMsg = `No se pudo generar la vista previa: ${this.requestErrorMessage(error)}`;
+    } finally {
+      this.form.enable({ emitEvent: false });
+      this.saving = false;
+      if (!this.destroyed) this.allowNavigation = false;
       this.cdr.markForCheck();
     }
   }
 
   async onSave(mode: 'draft' | 'publish' | 'schedule' = 'draft') {
+    if (this.saving || this.historyBusy || this.loadingArticle || this.loadFailed) return;
+    if (this.recoveryCandidate) { this.errorMsg = 'Elige recuperar o descartar la copia local antes de guardar.'; return; }
+    if (mode !== 'draft' && this.reviewReport.errors.length) {
+      this.errorMsg = 'Corrige los errores del panel de revisión antes de publicar o programar.';
+      this.editorDocument.getElementById('publication-review')?.focus();
+      return;
+    }
     if (!this.form.valid) {
       this.errorMsg = 'Por favor completa todos los campos requeridos';
       return;
@@ -526,11 +663,20 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     }
 
     this.saving = true;
+    this.form.disable({ emitEvent: false });
     this.errorMsg = '';
     
     try {
+      if (this.draftStore && !this.isNew) {
+        const latest = await firstValueFrom(this.blogService.getById(this.route.snapshot.params['id']));
+        if ((latest.updatedAt || '') !== this.serverVersion) {
+          this.remoteConflict = true;
+          throw new Error('Otra sesión modificó el artículo. Compara la versión actual antes de guardar. Tu copia local se conserva.');
+        }
+      }
       await this.uploadPendingMedia();
       const formData = this.form.getRawValue();
+      this.applyCoverDescription(formData);
       
       if (typeof formData.tags === 'string') {
         formData.tags = formData.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t);
@@ -538,25 +684,30 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
       if (!formData.slug) {
         formData.slug = formData.title
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
           .toLowerCase()
           .replace(/\s+/g, '-')
           .replace(/[^\w-]/g, '')
           .replace(/-+/g, '-')
-          .substring(0, 50);
+          .substring(0, 80).replace(/^-+|-+$/g, '');
       }
 
+      if (!formData.slug) throw new Error('Escribe una URL con letras y números para el artículo');
       if (mode === 'schedule' && !formData.scheduledAt) {
         this.errorMsg = 'Selecciona la fecha y hora de publicación';
         this.saving = false;
         return;
       }
 
+      if (mode === 'schedule' && Date.parse(localDateTimeToUtc(formData.scheduledAt)) <= Date.now()) {
+        throw new Error('Selecciona una fecha futura para programar la publicación');
+      }
       formData.published = mode !== 'draft';
       formData.publishedAt = mode === 'schedule'
         ? localDateTimeToUtc(formData.scheduledAt)
         : mode === 'publish'
-          ? new Date().toISOString()
-          : null;
+          ? (formData.publishedAt && Date.parse(formData.publishedAt) <= Date.now() ? formData.publishedAt : new Date().toISOString())
+          : formData.publishedAt || null;
       formData.sections = this.buildPersistedSections(
         formData.sections,
         formData.title
@@ -565,21 +716,278 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
       if (this.isNew) {
         await firstValueFrom(this.blogService.create(formData));
+        this.hasUnsavedChanges = false;
+        await this.clearLocalAfterSave();
         this.successMsg = 'Artículo creado exitosamente';
         this.cdr.markForCheck();
         setTimeout(() => this.router.navigate([this.adminBlogUrl]), 1500);
       } else {
         const id = this.route.snapshot.params['id'];
         await firstValueFrom(this.blogService.update(id, formData));
+        this.hasUnsavedChanges = false;
+        await this.clearLocalAfterSave();
         this.successMsg = 'Artículo actualizado exitosamente';
         this.cdr.markForCheck();
         setTimeout(() => this.router.navigate([this.adminBlogUrl]), 1500);
       }
     } catch (e) {
       this.errorMsg = `Error al guardar: ${this.requestErrorMessage(e)}`;
+      await this.persistLocalDraft();
     } finally {
+      this.form.enable({ emitEvent: false });
       this.saving = false;
       this.cdr.markForCheck();
+    }
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  beforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.hasUnsavedChanges || this.allowNavigation) return;
+    void this.persistLocalDraft();
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  canLeaveEditor(): boolean {
+    return this.allowNavigation || !this.hasUnsavedChanges || window.confirm('Hay cambios sin guardar en el CMS. La copia local solo está disponible en este navegador. ¿Salir del editor?');
+  }
+
+  private editorChanged(): void {
+    if (!this.editorReady || this.suppressRecovery || this.saving || this.destroyed || this.recoveryCandidate) return;
+    this.hasUnsavedChanges = true;
+    this.localPending = true;
+    this.changeSequence++;
+    clearTimeout(this.autosaveTimer);
+    this.autosaveTimer = setTimeout(() => void this.persistLocalDraft(), 1000);
+  }
+
+  private async initializeRecovery(): Promise<void> {
+    if (!this.draftStore || this.recoveryInitialized) return;
+    this.recoveryInitialized = true;
+    try {
+      const key = await this.draftStore.scope(this.route.snapshot.params['id']);
+      const record = await this.draftStore.read(key);
+      if (this.destroyed) return;
+      this.localKey = key;
+      this.localToken = record?.token;
+      this.localConflict = false;
+      this.autosaveError = '';
+      if (this.returningFromPreview && (!record || record.token === this.previewLocalToken)) {
+        this.returningFromPreview = false;
+        this.serverVersion = record?.draft.baseVersion || this.serverVersion;
+        this.localSavedAt = record?.savedAt || '';
+        await this.persistLocalDraft();
+      } else if (record) this.recoveryCandidate = record;
+      else if (this.hasUnsavedChanges) await this.persistLocalDraft();
+      this.returningFromPreview = false;
+    } catch {
+      this.autosaveError = 'No se pudo habilitar la recuperación local. Guarda en el CMS para conservar tu trabajo.';
+    }
+    if (!this.destroyed) this.cdr.markForCheck();
+  }
+
+  private captureLocalDraft(): EditorDraft {
+    const raw = structuredClone(this.form.getRawValue());
+    const seen = new Set<object>();
+    const removePreviews = (value: any): void => {
+      if (!value || typeof value !== 'object' || seen.has(value)) return;
+      seen.add(value);
+      delete value.preview;
+      delete value.videoPreviewUrl;
+      Object.values(value).forEach(removePreviews);
+    };
+    removePreviews(raw);
+    return {
+      raw, baseVersion: this.serverVersion, cover: this.selectedCoverFile,
+      images: this.sectionsArray.controls.map(section => (section.get('images') as FormArray).controls.map(image => (image as any)._file || null)),
+      videos: this.sectionsArray.controls.map(section => (section as any)._videoFile || null),
+    };
+  }
+
+  async persistLocalDraft(): Promise<void> {
+    if (!this.draftStore || !this.localKey || !this.hasUnsavedChanges || this.recoveryCandidate || this.localConflict) return;
+    if (!this.localPending && this.localToken) return;
+    const key = this.localKey;
+    const snapshot = this.captureLocalDraft();
+    const sequence = this.changeSequence;
+    this.writes = this.writes.then(async () => {
+      try {
+        const saved = await this.draftStore!.write(key, snapshot, this.localToken);
+        this.localToken = saved.token;
+        this.localSavedAt = saved.savedAt;
+        if (sequence === this.changeSequence) this.localPending = false;
+        this.autosaveError = '';
+      } catch (error) {
+        this.localConflict = error instanceof DraftConflictError;
+        this.autosaveError = this.localConflict ? (error as Error).message : 'No se pudo guardar la copia local (almacenamiento no disponible o sin espacio). Guarda en el CMS.';
+      }
+      if (!this.destroyed) this.cdr.markForCheck();
+    });
+    await this.writes;
+  }
+
+  recoverLocalDraft(): void {
+    if (!this.recoveryCandidate) return;
+    if (this.hasUnsavedChanges && !window.confirm('Recuperar la copia sustituirá los cambios actuales del editor. ¿Continuar?')) return;
+    const record = this.recoveryCandidate;
+    this.applyLocalDraft(record.draft);
+    this.serverVersion = record.draft.baseVersion || '';
+    this.localSavedAt = record.savedAt;
+    this.recoveryCandidate = undefined;
+    this.hasUnsavedChanges = true;
+    this.localPending = false;
+    this.successMsg = 'Copia local recuperada. Revisa el contenido y guarda en el CMS cuando esté listo.';
+    this.cdr.markForCheck();
+  }
+
+  async discardLocalDraft(): Promise<void> {
+    if (!this.draftStore || !this.localKey || !this.recoveryCandidate) return;
+    try {
+      await this.draftStore.remove(this.localKey, this.localToken);
+      this.localToken = undefined;
+      this.recoveryCandidate = undefined;
+      this.autosaveError = '';
+      if (this.hasUnsavedChanges) await this.persistLocalDraft();
+    } catch {
+      this.autosaveError = 'La copia cambió en otra pestaña o no pudo eliminarse. Recarga antes de continuar.';
+    }
+    this.cdr.markForCheck();
+  }
+
+  private applyLocalDraft(draft: EditorDraft): void {
+    this.suppressRecovery = true;
+    try {
+      this.sectionsArray.controls.forEach(section => this.releaseVideoPreview(section as FormGroup));
+      this.recoveredImageUrls.forEach(url => URL.revokeObjectURL(url));
+      this.recoveredImageUrls = [];
+      const raw: any = draft.raw;
+      const article = { ...raw, tags: typeof raw.tags === 'string' ? raw.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : raw.tags,
+        sections: raw.sections.map((section: any) => ({ ...section, media: section.originalSection?.media || section.existingMedia || [] })) };
+      this.populateArticle(article);
+      this.form.patchValue(raw, { emitEvent: false });
+      const imageUrl = (file: File): string => {
+        const url = URL.createObjectURL(file);
+        this.recoveredImageUrls.push(url);
+        return url;
+      };
+      this.selectedCoverFile = draft.cover || null;
+      this.coverPreviewFile = draft.cover || null;
+      if (draft.cover) this.coverImagePreview = imageUrl(draft.cover);
+      this.sectionsArray.controls.forEach((section, index) => {
+        (section.get('images') as FormArray).controls.forEach((image, imageIndex) => {
+          const file = draft.images[index]?.[imageIndex];
+          if (file) { (image as any)._file = file; image.patchValue({ preview: imageUrl(file) }, { emitEvent: false }); }
+          else image.patchValue({ preview: image.value.url || '' }, { emitEvent: false });
+        });
+        const video = draft.videos[index];
+        if (video) {
+          (section as any)._videoFile = video;
+          section.patchValue({ videoPreviewUrl: URL.createObjectURL(video) }, { emitEvent: false });
+        }
+      });
+      this.form.markAsDirty();
+    } finally { this.suppressRecovery = false; }
+  }
+
+  async loadHistory(): Promise<void> {
+    this.historyOpen = true;
+    if (this.isNew || this.historyBusy) return;
+    this.historyBusy = true;
+    this.historyError = '';
+    try { this.revisions = await firstValueFrom(this.blogService.getRevisions(this.route.snapshot.params['id'])); }
+    catch { this.historyError = 'No se pudo cargar el historial. Comprueba la conexión y tus permisos e inténtalo de nuevo.'; }
+    finally { this.historyBusy = false; if (!this.destroyed) this.cdr.markForCheck(); }
+  }
+
+  async restoreRevision(revision: BlogRevision): Promise<void> {
+    if (this.historyBusy || this.saving || this.recoveryCandidate) return;
+    if (this.hasUnsavedChanges && !window.confirm('Abrir esta versión sustituirá los cambios sin guardar del editor. No modificará el artículo en el CMS hasta que guardes. ¿Continuar?')) return;
+    this.historyBusy = true;
+    this.historyError = '';
+    try {
+      const article = await firstValueFrom(this.blogService.getRevision(revision.id, this.route.snapshot.params['id']));
+      if (this.destroyed) return;
+      const { slug, publishedAt, published } = this.form.getRawValue();
+      this.suppressRecovery = true;
+      this.sectionsArray.controls.forEach(section => this.releaseVideoPreview(section as FormGroup));
+      this.selectedCoverFile = null;
+      this.coverPreviewFile = null;
+      this.populateArticle({ ...article, slug, publishedAt, published });
+      this.hasUnsavedChanges = true;
+      this.localPending = true;
+      this.changeSequence++;
+      this.successMsg = `Versión ${revision.id} abierta para revisión. No se ha publicado ni guardado en el CMS.`;
+      this.suppressRecovery = false;
+      await this.persistLocalDraft();
+    } catch { this.historyError = 'No se pudo abrir la versión. El contenido actual se ha conservado.'; }
+    finally { this.suppressRecovery = false; this.historyBusy = false; if (!this.destroyed) this.cdr.markForCheck(); }
+  }
+
+  async loadLatestVersion(): Promise<void> {
+    if (!window.confirm('Descartar los cambios del editor y cargar la versión actual del CMS. ¿Continuar?')) return;
+    this.loadingArticle = true;
+    try {
+      const article = await firstValueFrom(this.blogService.getById(this.route.snapshot.params['id']));
+      this.suppressRecovery = true;
+      this.sectionsArray.controls.forEach(section => this.releaseVideoPreview(section as FormGroup));
+      this.selectedCoverFile = null;
+      this.coverPreviewFile = null;
+      this.populateArticle(article);
+      this.serverVersion = article.updatedAt || '';
+      this.remoteConflict = false;
+      this.hasUnsavedChanges = false;
+      await this.clearLocalAfterSave();
+    } catch { this.errorMsg = 'No se pudo cargar la versión actual del CMS.'; }
+    finally { this.loadingArticle = false; this.suppressRecovery = false; this.cdr.markForCheck(); }
+  }
+
+  retryArticleLoad(): void { this.loadArticle(this.route.snapshot.params['id']); }
+
+  retryRecovery(): void {
+    this.recoveryInitialized = false;
+    void this.initializeRecovery();
+  }
+
+  private async clearLocalAfterSave(): Promise<void> {
+    clearTimeout(this.autosaveTimer);
+    await this.writes;
+    this.localPending = false;
+    if (!this.draftStore || !this.localKey) return;
+    try {
+      await this.draftStore.remove(this.localKey, this.localToken);
+      this.localToken = undefined;
+      this.localSavedAt = '';
+      this.localPending = false;
+    } catch { this.autosaveError = 'El CMS se guardó, pero la copia local cambió en otra pestaña o no pudo eliminarse.'; }
+  }
+
+  private applyCoverDescription(data: any): void {
+    if (data.coverImage?.url) {
+      data.coverImage = { ...data.coverImage, alt: data.coverDecorative ? '' : data.coverAlt?.trim() || '', decorative: data.coverDecorative === true };
+    }
+    delete data.coverAlt;
+    delete data.coverDecorative;
+  }
+
+  private restorePreviewDraft(): boolean {
+    try {
+      const raw = sessionStorage.getItem('pcg_blog_editor_draft');
+      if (!raw) return false;
+      const draft = JSON.parse(raw);
+      const id = this.route.snapshot.params['id'];
+      const returnUrl = id ? adminUrl(`blog/${id}/edit`) : adminUrl('blog/new');
+      if (draft.returnUrl !== returnUrl || !Array.isArray(draft.article?.sections)) return false;
+      this.populateArticle(draft.article);
+      this.serverVersion = draft.serverVersion || this.serverVersion;
+      this.previewLocalToken = draft.localToken;
+      this.form.patchValue({ scheduledAt: draft.scheduledAt || '' });
+      if (typeof draft.coverAlt === 'string') this.form.patchValue({ coverAlt: draft.coverAlt });
+      if (typeof draft.coverDecorative === 'boolean') this.form.patchValue({ coverDecorative: draft.coverDecorative });
+      this.form.markAsDirty();
+      sessionStorage.removeItem('pcg_blog_editor_draft');
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -599,36 +1007,59 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
 
   private buildPersistedSections(sections: any[], articleTitle: string): any[] {
     return sections.map((section: any, index: number) => {
-      const media = [...(section.existingMedia || [])];
-      if (section.videoUrl?.trim()) {
-        const embed = normalizeVideoUrl(section.videoUrl);
-        media.push({
-          ...embed,
-          title: section.videoTitle?.trim() || `Video de ${articleTitle}`,
-        });
+      const { originalSection, originalFileVideo, originalEmbedVideo, initialVideoTitle,
+        existingMedia, videoUrl, videoTitle, videoFileId, videoFileUrl,
+        videoFileName, videoFileType, videoPreviewUrl, images, links, ...persisted } = section;
+      const media = [...(existingMedia || [])];
+      let embedVideo: any;
+      let fileVideo: any;
+      if (videoUrl?.trim()) {
+        const embed = normalizeVideoUrl(videoUrl);
+        const unchanged = embed.provider === originalEmbedVideo?.provider &&
+          embed.externalId === originalEmbedVideo?.externalId;
+        embedVideo = {
+          ...(unchanged ? originalEmbedVideo : {}), ...embed,
+          title: unchanged && videoTitle === initialVideoTitle
+            ? originalEmbedVideo.title : videoTitle?.trim() || `Video de ${articleTitle}`,
+        };
       }
-      if (section.videoFileId && section.videoFileUrl) {
-        media.push({
-          kind: 'video-file',
-          fileId: section.videoFileId,
-          url: section.videoFileUrl,
-          filename: section.videoFileName,
-          mimeType: section.videoFileType,
-          title: section.videoTitle?.trim() || `Video de ${articleTitle}`,
-        });
+      if (videoFileId && videoFileUrl) {
+        const unchanged = videoFileId === originalFileVideo?.fileId;
+        fileVideo = {
+          ...(unchanged ? originalFileVideo : {}),
+          kind: 'video-file', fileId: videoFileId, url: videoFileUrl,
+          ...(videoFileName ? { filename: videoFileName } : {}),
+          ...(videoFileType ? { mimeType: videoFileType } : {}),
+          title: unchanged && videoTitle === initialVideoTitle
+            ? originalFileVideo.title : videoTitle?.trim() || `Video de ${articleTitle}`,
+        };
       }
-      const {
-        existingMedia,
-        videoUrl,
-        videoTitle,
-        videoFileId,
-        videoFileUrl,
-        videoFileName,
-        videoFileType,
-        videoPreviewUrl,
-        ...persisted
-      } = section;
-      return { ...persisted, media, order: index };
+      // Replace only the two videos exposed by the editor, preserving the others in order.
+      const orderedMedia = (originalSection?.media || []).flatMap((item: any) => {
+        if (item === originalFileVideo) return fileVideo ? [fileVideo] : [];
+        if (item === originalEmbedVideo) return embedVideo ? [embedVideo] : [];
+        return media.includes(item) ? [item] : [];
+      });
+      for (const item of media) {
+        if (!orderedMedia.includes(item)) orderedMedia.push(item);
+      }
+      if (embedVideo && !originalEmbedVideo) orderedMedia.push(embedVideo);
+      if (fileVideo && !originalFileVideo) orderedMedia.push(fileVideo);
+      return {
+        ...originalSection, ...persisted, text: normalizeBodyHeadings(persisted.text || ''), media: orderedMedia, order: index,
+        links: (links || originalSection?.links || []).map((entry: any, order: number) => {
+          const { originalLink, ...editable } = entry;
+          const link = { ...originalLink, ...editable, title: (editable.title || '').trim(), link: (editable.link || '').trim() };
+          if (originalLink && !('newTab' in originalLink) && !link.newTab) delete link.newTab;
+          if (originalLink && !('rel' in originalLink) && !link.rel) delete link.rel;
+          if ('order' in (originalLink || entry)) link.order = order;
+          return link;
+        }),
+        images: (images || []).map((image: any) => {
+          const { originalImage, preview, ...editable } = image;
+          return { ...originalImage, ...editable, alt: editable.decorative ? '' : editable.alt || '' };
+        }),
+      };
     });
   }
 
@@ -636,10 +1067,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
     if (this.coverUploadPromise) {
       await this.coverUploadPromise;
     }
-    if (
-      this.selectedCoverFile &&
-      !this.form.value.coverImage?.fileId
-    ) {
+    if (this.selectedCoverFile) {
       await this.uploadCoverImage();
     }
 
@@ -652,7 +1080,7 @@ export class AdminArticleEditorComponent implements OnInit, OnDestroy {
         if (pendingImageUpload) {
           await pendingImageUpload;
         }
-        if ((image as any)._file && !image.value.fileId) {
+        if ((image as any)._file) {
           await this.uploadSectionImage(
             this.sectionsArray.controls.indexOf(section),
             images.controls.indexOf(image)
