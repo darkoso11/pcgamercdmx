@@ -93,7 +93,7 @@ describe('Public catalog navigation', () => {
     const source = (await firstValueFrom(service.getPeripherals()))[0];
     const api = TestBed.inject(DirectusApiService);
     spyOn(api, 'isEnabled').and.returnValue(true);
-    api.readItems = jasmine.createSpy().and.callFake((collection: string) => of({ data: collection === 'pc_categories'
+    api.readItems = jasmine.createSpy().and.callFake((collection: string) => of({ data: collection === 'pc_brands' ? [] : collection === 'pc_categories'
       ? [{ id: 3, slug: 'perifericos', published: true }]
       : [
           { id: 9, name: 'Teclados', slug: 'perifericos-keyboard', category_id: 3, published: true },
@@ -111,7 +111,7 @@ describe('Public catalog navigation', () => {
     let snapshot = TestBed.inject(Router).routerState.snapshot.root;
     while (snapshot.firstChild) snapshot = snapshot.firstChild;
     expect(snapshot.data['canonicalPath']).toBe('/productos/perifericos/keyboard');
-    expect(api.readItems).toHaveBeenCalledTimes(2);
+    expect(api.readItems).toHaveBeenCalledTimes(3);
   });
 
   it('recovers an unknown category within its group and preserves search', async () => {

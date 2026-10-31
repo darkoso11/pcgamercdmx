@@ -16,8 +16,11 @@ import {
   prepareCatalogImagesForSave
 } from '../../shared/catalog-image-save.utils';
 import { asTrimmedText, normalizeCatalogSlug } from '../../shared/catalog-form.utils';
+import { CatalogBrand, DEFAULT_BRANDS, brandMatches } from '../../../catalog-brands';
+import { normalizeCatalogText } from '../../../catalog-filters';
 
 interface AssemblyBrandLogo {
+  brandId?: string;
   src: string;
   alt: string;
 }
@@ -30,14 +33,29 @@ interface AssemblyBrandLogo {
 })
 export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   readonly adminAssembliesUrl = adminUrl('assemblies');
-  readonly brandOptions: ReadonlyArray<AssemblyBrandLogo> = [
-    { src: 'assets/img/marcas/nvidia_tag.svg', alt: 'NVIDIA' },
-    { src: 'assets/img/marcas/intel_tag.svg', alt: 'Intel' },
-    { src: 'assets/img/marcas/ryzen_tag.svg', alt: 'AMD' },
-    { src: 'assets/img/marcas/asuspng.png', alt: 'ASUS' },
-    { src: 'assets/img/marcas/corsairbrand.png', alt: 'Corsair' },
-    { src: 'assets/img/marcas/gigabyte.png', alt: 'Gigabyte' },
-  ];
+  readonly brandsUrl = adminUrl('brands');
+  brandOptions: AssemblyBrandLogo[] = [];
+  private brands: CatalogBrand[] = [];
+  brandLoadError = '';
+
+  loadBrands(): void {
+    this.brandLoadError = '';
+    this.productsAdminService.getBrands().pipe(takeUntil(this.destroy$)).subscribe({
+      next: brands => {
+        this.brands = brands;
+        this.brandOptions = brands.map(brand => ({ brandId: brand.id, src: brand.logo, alt: brand.name }));
+        this.preserveSelectedBrands();
+        this.cdr.detectChanges();
+      },
+      error: () => { this.brandLoadError = 'No se pudieron cargar las marcas. Intenta recargar.'; this.cdr.detectChanges(); }
+    });
+  }
+
+  private preserveSelectedBrands(): void {
+    for (const logo of this.normalizeBrandLogos(this.form.get('brandLogos')?.value)) {
+      if (!this.brandOptions.some(option => this.getBrandKey(option) === this.getBrandKey(logo))) this.brandOptions.push(logo);
+    }
+  }
   form!: FormGroup;
   isEditMode = false;
   loading = false;
@@ -110,6 +128,7 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPowerCertifications();
+    this.loadBrands();
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['id']) {
         this.isEditMode = true;
@@ -533,9 +552,10 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
         return {
           src: asTrimmedText(item.src ?? item.logo),
           alt: asTrimmedText(item.alt ?? item.name),
+          ...(item.brandId ? { brandId: item.brandId } : {}),
         };
       })
-      .filter((logo) => logo.src && logo.alt)
+      .filter((logo) => logo.alt)
       .filter(
         (logo, index, logos) =>
           logos.findIndex((item) => this.getBrandKey(item) === this.getBrandKey(logo)) === index
@@ -543,16 +563,10 @@ export class AdminAssemblyEditorComponent implements OnInit, OnDestroy {
   }
 
   private getBrandKey(brand: AssemblyBrandLogo): string {
-    const identity = `${brand.alt} ${brand.src}`.toLowerCase();
-
-    if (identity.includes('nvidia')) return 'nvidia';
-    if (identity.includes('intel')) return 'intel';
-    if (identity.includes('amd') || identity.includes('ryzen')) return 'amd';
-    if (identity.includes('asus')) return 'asus';
-    if (identity.includes('corsair')) return 'corsair';
-    if (identity.includes('gigabyte')) return 'gigabyte';
-
-    return brand.alt.toLowerCase();
+    if (brand.brandId) return brand.brandId;
+    const match = [...this.brands, ...DEFAULT_BRANDS].find(item => brandMatches(item, brand.alt));
+    if (match) return match.id;
+    return normalizeCatalogText(brand.alt);
   }
 
   ngOnDestroy(): void {

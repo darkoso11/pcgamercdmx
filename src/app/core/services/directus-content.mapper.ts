@@ -5,6 +5,7 @@ import {
   UseCase,
 } from '../../shared/models';
 import type { CatalogProduct } from '../../features/products/services/products.service';
+import { catalogProductBrand } from '../../features/products/catalog-filters';
 import type {
   Category as AdminCategory,
   Product as AdminProduct,
@@ -174,7 +175,8 @@ export function mapDirectusProductToAdminProduct(
     published: Boolean(item.published),
     featured: Boolean(item.featured),
     productType: text(admin['productType'], defaultProductType(category)),
-    brand: text(admin['brand'] ?? guessBrandFromCatalog(catalog), ''),
+    brand: text(admin['brand'] ?? specs['brand'] ?? guessBrandFromCatalog(catalog), ''),
+    brandId: text(admin['brandId'], ''),
     categoryId: text(admin['categoryId'], text(item.category, '')),
     subcategoryId: text(admin['subcategoryId'], text(item.subcategory, '')),
     currency: text(admin['currency'], 'MXN'),
@@ -209,6 +211,7 @@ export function mapAdminProductToDirectusPayload(
   const adminMetadata = {
     productType: product.productType ?? defaultProductType(product.category),
     brand: product.brand ?? '',
+    brandId: product.brandId ?? '',
     categoryId: product.categoryId ?? '',
     subcategoryId: product.subcategoryId ?? '',
     discountPrice: product.discountPrice ?? product.discountedPrice ?? null,
@@ -321,7 +324,7 @@ export function mapDirectusProductToCatalogProduct(
           operatingSystem: text(specs['operatingSystem'] ?? catalogSpecifications['operatingSystem'], ''),
           fans: text(specs['fans'] ?? catalogSpecifications['fans'], ''),
         }
-      : catalog['specifications'];
+      : { ...catalogSpecifications, ...(catalogProductBrand(item) ? { brand: catalogProductBrand(item) } : {}) };
 
     return {
       ...catalog,
@@ -347,6 +350,7 @@ export function mapDirectusProductToCatalogProduct(
       createdAt: toDate(catalog['createdAt']),
       updatedAt: toDate(catalog['updatedAt']),
       specifications,
+      ...(category === ProductCategory.ASSEMBLED ? { brandLogos: mapBrandLogosToCatalog(item.brand_logos ?? catalog['brandLogos']) } : {}),
     } as CatalogProduct;
   }
 
@@ -794,13 +798,14 @@ function normalizeBrandLogos(product: CatalogProduct): unknown[] {
   return normalizeArray(value);
 }
 
-function mapBrandLogosToAdmin(value: unknown): Array<{ src: string; alt: string }> {
+function mapBrandLogosToAdmin(value: unknown): Array<{ src: string; alt: string; brandId?: string }> {
   return normalizeArray(value)
     .map((item) => {
       const logo = toRecord(item);
       return {
         src: text(logo['src'] ?? logo['logo'], ''),
         alt: text(logo['alt'] ?? logo['name'], ''),
+        ...(logo['brandId'] ? { brandId: String(logo['brandId']) } : {}),
       };
     })
     .filter((logo) => logo.src || logo.alt);

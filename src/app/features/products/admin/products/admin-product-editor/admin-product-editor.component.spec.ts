@@ -11,6 +11,7 @@ describe('AdminProductEditorComponent', () => {
   function createComponent(createResult: any = of({ _id: 'product-123', title: 'Mouse Gamer' })) {
     const productsAdminService = {
       getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
+      getBrands: jasmine.createSpy('getBrands').and.returnValue(of([])),
       getProductById: jasmine.createSpy('getProductById').and.returnValue(of(undefined)),
       createProduct: jasmine.createSpy('createProduct').and.returnValue(createResult),
       updateProduct: jasmine.createSpy('updateProduct').and.returnValue(of({ _id: 'product-123', title: 'Mouse Gamer' })),
@@ -287,6 +288,7 @@ describe('AdminProductEditorComponent', () => {
           {
             provide: ProductsAdminService,
             useValue: {
+              getBrands: () => of([]),
               getAllCategories: jasmine.createSpy('getAllCategories').and.returnValue(of([])),
             },
           },

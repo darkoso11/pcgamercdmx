@@ -27,6 +27,7 @@ import {
 import type { Offer } from '../admin/shared/products-admin.service';
 import { buildCatalogCategories, CatalogCategory } from '../catalog-categories';
 import { catalogProductBrand } from '../catalog-filters';
+import { CatalogBrand, DEFAULT_BRANDS, resolveRecordBrands } from '../catalog-brands';
 export type CatalogProduct =
   | AssembledPC
   | ComponentProduct
@@ -92,10 +93,18 @@ export class ProductsService {
 
   constructor(private readonly directus: DirectusApiService) {}
 
+  private loadBrands(): Observable<CatalogBrand[]> {
+    return this.directus.readItems<CatalogBrand>('pc_brands', {
+      fields: 'id,name,key,logo,aliases', limit: -1,
+    }).pipe(map(response => response.data.filter(brand => typeof brand.name === 'string').map(brand => ({ ...brand, id: String(brand.id) }))),
+      catchError(() => of(DEFAULT_BRANDS)));
+  }
+
   getCatalogCategories(requireRemote = false): Observable<CatalogCategory[]> {
     if (!this.directus.isEnabled('catalog')) return of(buildCatalogCategories([], []));
     if (!this.catalogCategories$) {
       this.catalogCategories$ = forkJoin({
+        brands: this.loadBrands(),
         parents: this.directus.readItems<DirectusCategoryRecord>('pc_categories', {
           'filter[published][_eq]': true, fields: 'id,name,slug,published', sort: 'sort,id', limit: -1,
         }),
@@ -103,8 +112,8 @@ export class ProductsService {
           'filter[published][_eq]': true, fields: 'id,name,slug,category_id,category_slug,sort,published', sort: 'sort,id', limit: -1,
         }),
       }).pipe(
-        map(({ parents, children }) => {
-          const categories = buildCatalogCategories(parents.data, children.data);
+        map(({ parents, children, brands }) => {
+          const categories = buildCatalogCategories(parents.data, children.data, brands);
           if (!categories.some(category => (category.values?.length ?? 0) > 1)) {
             throw new Error('El CMS no devolvió taxonomía pública válida para el catálogo.');
           }
@@ -133,6 +142,7 @@ export class ProductsService {
 
     if (!this.homeSliderProducts$) {
       this.homeSliderProducts$ = forkJoin({
+        brands: this.loadBrands(),
         products: this.directus.readItems<DirectusProductRecord>('pc_products', {
           'filter[published][_eq]': true,
           'filter[category][_in]': 'assembled,peripheral',
@@ -149,8 +159,8 @@ export class ProductsService {
           limit: 1000,
         }).pipe(catchError(() => of({ data: [] }))),
       }).pipe(
-        map(({ products, offers }) => {
-          const catalog = products.data.map(mapDirectusProductToCatalogProduct);
+        map(({ products, offers, brands }) => {
+          const catalog = products.data.map(record => mapDirectusProductToCatalogProduct(resolveRecordBrands(record, brands)));
           const effective = this.applyEffectiveOffers(
             catalog.length ? catalog : fallbackProducts,
             offers.data.map((record) => this.mapPublicOffer(record))
@@ -607,6 +617,7 @@ export class ProductsService {
     }
 
     this.catalogProducts$ = forkJoin({
+      brands: this.loadBrands(),
       products: this.directus.readItems<DirectusProductRecord>('pc_products', {
           'filter[published][_eq]': true,
           fields: '*',
@@ -619,8 +630,9 @@ export class ProductsService {
         }).pipe(catchError(() => of({ data: [] }))),
     })
       .pipe(
-        map(({ products: productResponse, offers: offerResponse }) => {
-          const products = productResponse.data.map(record => {
+        map(({ products: productResponse, offers: offerResponse, brands }) => {
+          const products = productResponse.data.map(rawRecord => {
+            const record = resolveRecordBrands(rawRecord, brands);
             const product = mapDirectusProductToCatalogProduct(record);
             const brand = catalogProductBrand(record);
             if (brand && product.category !== ProductCategory.ASSEMBLED) {
