@@ -34,6 +34,7 @@ import { getAdminProductCategoryLabel } from '../../shared/admin-product-display
   templateUrl: './admin-products-dashboard.component.html',
 })
 export class AdminProductsDashboardComponent implements OnInit, OnDestroy {
+  readonly brandsUrl = adminUrl('brands');
   readonly adminHomeUrl = adminUrl();
   stats: CatalogDashboardStats | null = null;
   products: Product[] = [];

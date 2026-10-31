@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CatalogBrand, brandMatches } from '../../../catalog-brands';
 import { Subject } from 'rxjs';
 import { finalize, switchMap, takeUntil, timeout } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
@@ -75,24 +76,25 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
     }
   ];
 
-  // Marcas comunes
-  marcas: string[] = [
-    'Intel',
-    'AMD',
-    'NVIDIA',
-    'ASUS',
-    'MSI',
-    'Gigabyte',
-    'Corsair',
-    'Kingston',
-    'Samsung',
-    'Seagate',
-    'WD',
-    'Logitech',
-    'Razer',
-    'SteelSeries',
-    'Otro'
-  ];
+  readonly brandsUrl = adminUrl('brands');
+  brands: CatalogBrand[] = [];
+  marcas: string[] = [];
+  brandLoadError = '';
+
+  cargarMarcas(): void {
+    this.brandLoadError = '';
+    this.productsAdminService.getBrands().pipe(takeUntil(this.destroy$)).subscribe({
+      next: brands => {
+        this.brands = brands;
+        const current = String(this.form.get('brand')?.value ?? '');
+        const match = brands.find(brand => brandMatches(brand, current));
+        if (match) this.form.get('brand')?.setValue(match.name);
+        this.marcas = [...new Set([...brands.map(brand => brand.name), ...(current && !match ? [current] : [])])];
+        this.cdr.detectChanges();
+      },
+      error: () => { this.brandLoadError = 'No se pudieron cargar las marcas. Intenta recargar.'; this.cdr.detectChanges(); }
+    });
+  }
 
   private destroy$ = new Subject<void>();
 
@@ -166,6 +168,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarCategorias();
+    this.cargarMarcas();
     
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['id']) {
@@ -216,6 +219,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
         next: (product: any) => {
           if (product) {
             this.loadedCategory = product.category || null;
+            if (product.brand && !this.marcas.includes(product.brand)) this.marcas.push(product.brand);
             this.galleryImages = product.gallery || [];
             this.form.patchValue({
               productType: product.productType || '',
@@ -536,6 +540,7 @@ export class AdminProductEditorComponent implements OnInit, OnDestroy {
       slug,
       description: asTrimmedText(rawValue.description),
       image: asTrimmedText(rawValue.image) || 'https://via.placeholder.com/600x400?text=Producto',
+      brandId: this.brands.find(brand => brandMatches(brand, String(rawValue.brand ?? '')))?.id ?? '',
       category: this.resolveSelectedCategorySlug(),
       published,
       gallery: this.galleryImages,

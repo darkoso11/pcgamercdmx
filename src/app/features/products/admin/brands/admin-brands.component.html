@@ -1,0 +1,55 @@
+<app-admin-header />
+<main class="min-h-screen pc-bg-page px-6 py-8 text-white">
+  <div class="mx-auto max-w-6xl">
+    <nav class="mb-6 flex flex-wrap gap-4 text-sm text-cyan-300" aria-label="Administración de catálogo">
+      <a [routerLink]="productsUrl" class="underline">Productos</a>
+      <a [routerLink]="assembliesUrl" class="underline">Ensambles</a>
+    </nav>
+    <h1 class="text-3xl font-black text-cyan-300">Marcas</h1>
+    <p class="mt-2 mb-8 text-slate-300">Agrega y edita las marcas disponibles para productos y ensambles.</p>
+    <p *ngIf="error" role="alert" class="mb-4 rounded-lg border border-red-400/40 bg-red-500/10 p-4 text-red-200">{{ error }}</p>
+    <p *ngIf="success" role="status" class="mb-4 rounded-lg bg-green-500/10 p-4 text-green-200">{{ success }}</p>
+    <div class="grid gap-8 lg:grid-cols-[360px_1fr]">
+      <form (ngSubmit)="save()" class="self-start rounded-xl border border-purple-400/30 bg-pc-admin-panel p-6">
+        <h2 class="mb-5 text-xl font-bold">{{ draft.id ? 'Editar marca' : 'Agregar marca' }}</h2>
+        <fieldset [disabled]="saving || loading" class="space-y-5">
+          <div>
+            <label for="brand-name" class="mb-2 block">Nombre *</label>
+            <input id="brand-name" name="name" [(ngModel)]="draft.name" required maxlength="100" class="w-full rounded border border-white/30 pc-bg-page p-3" placeholder="Ej. ASUS" />
+          </div>
+          <div>
+            <label for="brand-logo" class="mb-2 block">URL del logotipo (opcional)</label>
+            <input id="brand-logo" name="logo" [(ngModel)]="draft.logo" class="w-full rounded border border-white/30 pc-bg-page p-3" placeholder="https://..." />
+          </div>
+          <div>
+            <label for="brand-file" class="mb-2 block">O cargar imagen</label>
+            <input id="brand-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="selectFile($event)" class="w-full text-sm" />
+            <p class="mt-2 text-sm text-slate-400">{{ selectedFile?.name || 'PNG, JPG, WebP o GIF · Máximo 5 MB' }}</p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button type="submit" [disabled]="!draft.name.trim() || saving" class="rounded-lg bg-cyan-400 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{{ saving ? 'Guardando…' : 'Guardar marca' }}</button>
+            <button *ngIf="draft.id" type="button" (click)="reset()" class="rounded-lg border border-white/30 px-4 py-3">Cancelar</button>
+          </div>
+        </fieldset>
+      </form>
+      <section aria-label="Marcas registradas">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h2 class="text-xl font-bold">{{ brands.length }} {{ brands.length === 1 ? 'marca' : 'marcas' }}</h2>
+          <button type="button" (click)="load()" [disabled]="loading || saving" class="rounded-lg border border-white/30 px-4 py-2">Recargar</button>
+        </div>
+        <p *ngIf="loading" role="status" class="py-8 text-slate-300">Cargando marcas…</p>
+        <p *ngIf="!loading && !error && !brands.length" class="rounded-lg border border-dashed border-white/30 p-8 text-slate-300">Todavía no hay marcas. Agrega la primera con el formulario.</p>
+        <ul class="space-y-3">
+          <li *ngFor="let brand of brands" class="flex items-center gap-4 rounded-lg border border-white/10 bg-pc-admin-panel p-4">
+            <span class="flex h-14 w-20 shrink-0 items-center justify-center rounded bg-white p-2">
+              <img *ngIf="brand.logo; else noLogo" [src]="brand.logo" [alt]="brand.name" class="max-h-10 max-w-full object-contain" />
+              <ng-template #noLogo><span class="text-xs text-slate-600">Sin logo</span></ng-template>
+            </span>
+            <span class="min-w-0 flex-1 break-words font-semibold">{{ brand.name }}</span>
+            <button type="button" (click)="edit(brand)" [disabled]="saving" [attr.aria-label]="'Editar ' + brand.name" class="rounded-lg border border-cyan-300/40 px-4 py-2 text-cyan-300">Editar</button>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</main>

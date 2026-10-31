@@ -85,6 +85,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <select
             formControlName="brand"
+            aria-label="Marca"
             class="md:col-span-2 px-4 py-2 pc-bg-page border border-white/20 rounded text-white focus:border-purple-400 focus:outline-none transition"
           >
             <option value="">-- Selecciona una marca --</option>
@@ -97,6 +98,12 @@
           </div>
         </div>
 
+        <div class="mt-4 flex flex-wrap gap-4 text-sm text-purple-200">
+          <a [routerLink]="brandsUrl" target="_blank" rel="noopener" class="underline">Agregar o editar marcas ↗</a>
+          <button type="button" (click)="cargarMarcas()" class="underline">Recargar marcas</button>
+        </div>
+        <p *ngIf="brandLoadError" role="alert" class="mt-3 text-red-300">{{ brandLoadError }}</p>
+        <p *ngIf="!marcas.length && !brandLoadError" class="mt-3 text-sm text-purple-200">Agrega una marca y pulsa «Recargar marcas» para seleccionarla.</p>
         <span *ngIf="getControl('brand')?.invalid && getControl('brand')?.touched" class="text-red-400 text-sm mt-4 block">
           <i class="fas fa-exclamation-circle mr-2"></i>Marca requerida
         </span>

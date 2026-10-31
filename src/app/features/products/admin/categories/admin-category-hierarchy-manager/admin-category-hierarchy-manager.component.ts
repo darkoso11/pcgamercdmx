@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AdminHeaderComponent } from '../../../../admin/admin-header.component';
 import { ProductsAdminService, Category, Subcategory } from '../../shared/products-admin.service';
 import { CatalogDomain } from '../../shared/admin-catalog-flow.utils';
+import { adminUrl } from '../../../../admin/admin-route.config';
 
 @Component({
   selector: 'app-admin-category-hierarchy-manager',
@@ -16,6 +17,7 @@ import { CatalogDomain } from '../../shared/admin-catalog-flow.utils';
   templateUrl: './admin-category-hierarchy-manager.component.html'
 })
 export class AdminCategoryHierarchyManagerComponent implements OnInit, OnDestroy {
+  readonly brandsUrl = adminUrl('brands');
   categorias: Category[] = [];
   readonly catalogDomain: CatalogDomain;
   

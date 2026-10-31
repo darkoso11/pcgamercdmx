@@ -15,6 +15,8 @@ import {
   slugify,
 } from '../../../../core/services/directus-content.mapper';
 import { ProductCategory } from '../../../../shared/models';
+import { CatalogBrand, DEFAULT_BRANDS, brandMatches, isBrandName, resolveRecordBrands } from '../../catalog-brands';
+import { normalizeCatalogText } from '../../catalog-filters';
 import {
   calculateCatalogMetrics,
   CatalogDomain,
@@ -31,6 +33,7 @@ export interface Product {
   category: 'paquetes' | 'perifericos' | 'componentes';
   productType?: string;
   brand?: string;
+  brandId?: string;
   categoryId?: string;
   subcategoryId?: string;
   price: number;
@@ -67,7 +70,7 @@ export interface Product {
   powerCertificationId?: string;
   powerCertificateImage?: string;
   watts?: number;
-  brandLogos: Array<{ src: string; alt: string }>;
+  brandLogos: Array<{ src: string; alt: string; brandId?: string }>;
   stock: number;
   lowStockAlert: number;
   metaTitle?: string;
@@ -217,6 +220,50 @@ export interface CatalogDashboardStats extends CatalogMetrics {
   providedIn: 'root',
 })
 export class ProductsAdminService {
+  private mockBrands = DEFAULT_BRANDS.map(brand => ({ ...brand, aliases: [...brand.aliases] }));
+
+  getBrands(): Observable<CatalogBrand[]> {
+    if (!this.usesDirectus()) return of(this.mockBrands.map(brand => ({ ...brand })));
+    return this.directus.readItems<CatalogBrand>('pc_brands',
+      { fields: 'id,name,key,logo,aliases', sort: 'name', limit: -1 }, { auth: true }).pipe(
+      map(response => response.data.map(brand => ({ ...brand, id: String(brand.id), logo: brand.logo ?? '', aliases: brand.aliases ?? [] })))
+    );
+  }
+
+  saveBrand(input: { id?: string; name: string; logo: string }): Observable<CatalogBrand> {
+    return this.getBrands().pipe(switchMap(brands => {
+      const name = input.name.trim().replace(/\s+/g, ' ');
+      if (!name || name.length > 100) throw new Error('Escribe un nombre de marca de hasta 100 caracteres.');
+      if (['otro', 'otros', 'sin marca', 'no especificado'].includes(normalizeCatalogText(name))) {
+        throw new Error('Escribe el nombre del fabricante, no una etiqueta genérica.');
+      }
+      if (brands.some(brand => brand.id !== input.id && brandMatches(brand, name))) {
+        throw new Error('Esta marca ya existe.');
+      }
+      const previous = brands.find(brand => brand.id === input.id);
+      if (input.id && !previous) throw new Error('La marca ya no existe. Recarga la lista.');
+      const logo = input.logo.trim();
+      if (logo && !/^(https:\/\/|assets\/)/i.test(logo)) throw new Error('Usa una URL HTTPS o carga un logotipo.');
+      const payload = { name, key: normalizeCatalogText(name), logo,
+        aliases: [...new Set([...(previous?.aliases ?? []), ...(previous ? [previous.name] : [])])] };
+      if (!this.usesDirectus()) {
+        const brand = { ...payload, id: input.id ?? crypto.randomUUID() };
+        this.mockBrands = [...this.mockBrands.filter(item => item.id !== brand.id), brand];
+        return of(brand);
+      }
+      const request = input.id
+        ? this.directus.updateItem<CatalogBrand>('pc_brands', input.id, payload, { auth: true })
+        : this.directus.createItem<CatalogBrand>('pc_brands', payload, { auth: true });
+      return request.pipe(map(response => ({ ...response.data, id: String(response.data.id) })));
+    }));
+  }
+
+  private validateCategoryName<T>(name: string | undefined, save: () => Observable<T>): Observable<T> {
+    return this.getBrands().pipe(switchMap(brands => {
+      if (name && isBrandName(name, brands)) throw new Error('Las marcas se administran en Marcas, no en categorías.');
+      return save();
+    }));
+  }
   private readonly productsCollection = 'pc_products';
   private readonly categoriesCollection = 'pc_categories';
   private readonly subcategoriesCollection = 'pc_subcategories';
@@ -640,6 +687,10 @@ export class ProductsAdminService {
   }
 
   createCategory(category: Omit<Category, '_id'>): Observable<Category> {
+    return this.validateCategoryName(category.name, () => this.createCategoryRecord(category));
+  }
+
+  private createCategoryRecord(category: Omit<Category, '_id'>): Observable<Category> {
     if (!this.usesDirectus()) {
       const newCategory: Category = { ...category, _id: Date.now().toString() };
       this.mockCategories.push(newCategory);
@@ -656,6 +707,10 @@ export class ProductsAdminService {
   }
 
   updateCategory(id: string, category: Partial<Category>): Observable<Category | undefined> {
+    return this.validateCategoryName(category.name, () => this.updateCategoryRecord(id, category));
+  }
+
+  private updateCategoryRecord(id: string, category: Partial<Category>): Observable<Category | undefined> {
     if (!this.usesDirectus()) {
       const index = this.mockCategories.findIndex((item) => item._id === id);
       if (index === -1) {
@@ -715,6 +770,10 @@ export class ProductsAdminService {
   }
 
   addSubcategory(categoryId: string, subcategory: Omit<Subcategory, '_id'>): Observable<Subcategory> {
+    return this.validateCategoryName(subcategory.name, () => this.addSubcategoryRecord(categoryId, subcategory));
+  }
+
+  private addSubcategoryRecord(categoryId: string, subcategory: Omit<Subcategory, '_id'>): Observable<Subcategory> {
     if (!this.usesDirectus()) {
       const category = this.mockCategories.find((item) => item._id === categoryId);
       if (!category) {
@@ -738,6 +797,10 @@ export class ProductsAdminService {
   }
 
   updateSubcategory(categoryId: string, subcategoryId: string, subcategory: Partial<Subcategory>): Observable<Subcategory | undefined> {
+    return this.validateCategoryName(subcategory.name, () => this.updateSubcategoryRecord(categoryId, subcategoryId, subcategory));
+  }
+
+  private updateSubcategoryRecord(categoryId: string, subcategoryId: string, subcategory: Partial<Subcategory>): Observable<Subcategory | undefined> {
     if (!this.usesDirectus()) {
       const category = this.mockCategories.find((item) => item._id === categoryId);
       const index = category?.subcategories.findIndex((item) => item._id === subcategoryId) ?? -1;
@@ -781,6 +844,13 @@ export class ProductsAdminService {
   }
 
   getAllCategories(): Observable<Category[]> {
+    return forkJoin({ categories: this.getRawCategories(), brands: this.getBrands() }).pipe(
+      map(({ categories, brands }) => categories.filter(category => !isBrandName(category.name, brands))
+        .map(category => ({ ...category, subcategories: category.subcategories.filter(item => !isBrandName(item.name, brands)) })))
+    );
+  }
+
+  private getRawCategories(): Observable<Category[]> {
     if (!this.usesDirectus()) {
       return of(this.mockCategories);
     }
@@ -1042,7 +1112,9 @@ export class ProductsAdminService {
         { fields: '*', sort: 'sort,title', limit: 1000 },
         auth ? { auth: true } : {}
       )
-      .pipe(map((response) => response.data.map(mapDirectusProductToAdminProduct)));
+      .pipe(switchMap(response => this.getBrands().pipe(
+        map(brands => response.data.map(record => mapDirectusProductToAdminProduct(resolveRecordBrands(record, brands))))
+      )));
   }
 
   private loadDirectusProductById(id: string, auth: boolean): Observable<Product | undefined> {
@@ -1053,7 +1125,9 @@ export class ProductsAdminService {
         { fields: '*' },
         auth ? { auth: true } : {}
       )
-      .pipe(map((response) => mapDirectusProductToAdminProduct(response.data)));
+      .pipe(switchMap(response => this.getBrands().pipe(
+        map(brands => mapDirectusProductToAdminProduct(resolveRecordBrands(response.data, brands)))
+      )));
   }
 
   private applyProductFilters(products: Product[], filters?: any): Product[] {

@@ -5,6 +5,17 @@ import { catalogProductType } from './catalog-filters';
 describe('Catalog taxonomy', () => {
   const parents = [{ id: 2, slug: 'componentes', published: true }, { id: 3, slug: 'perifericos', published: true }];
 
+  it('never offers manufacturers as categories while preserving explicit legacy types', () => {
+    const categories = buildCatalogCategories(parents, [
+      { id: 31, name: 'Asus', slug: 'componentes-asus-tarjeta-madre', category_id: 2, published: true },
+      { id: 32, name: 'AMD', slug: 'componentes-amd', category_id: 2, published: true },
+      { id: 33, name: 'Intel', slug: 'componentes-intel', category_id: 2, published: true },
+    ]);
+    expect(categories.some(item => /^(asus|amd|intel)$/i.test(item.label))).toBeFalse();
+    expect(catalogProductType({ category: ProductCategory.COMPONENT, subcategory: '31' }, categories)).toBe('motherboard');
+    expect(catalogProductType({ category: ProductCategory.COMPONENT, subcategory: '32' }, categories)).toBeUndefined();
+  });
+
   it('shows the same products in Motherboards and the Tarjetas madre type filter', () => {
     const categories = buildCatalogCategories(parents, [
       { id: 30, name: 'Motherboards', slug: 'componentes-tarjeta-madre', category_id: 2, published: true },
@@ -18,9 +29,7 @@ describe('Catalog taxonomy', () => {
     expect(byType.map(product => product.subcategory)).toEqual(['motherboard', '30', '31', 'componentes-asus-tarjeta-madre']);
     expect(products.filter(product => matchesCatalogCategory(product, motherboard))).toEqual(byType);
     expect(matchesCatalogCategory({ category: ProductCategory.PERIPHERAL, subcategory: '31' }, motherboard)).toBeFalse();
-    const asus = categories.find(category => category.slug === 'componentes-asus')!;
-    expect(asus.values).toContain('31');
-    expect(asus.values).toContain('32');
+    expect(categories.some(category => category.slug === 'componentes-asus')).toBeFalse();
   });
 
   it('retains each ID type when brand category names are grouped', () => {
@@ -33,17 +42,15 @@ describe('Catalog taxonomy', () => {
     expect(catalogProductType({ category: ProductCategory.PERIPHERAL, subcategory: '36' }, categories)).toBeUndefined();
   });
 
-  it('keeps brand canonicals independent of editorial sorting', () => {
+  it('excludes manufacturers regardless of editorial sorting', () => {
     for (const brand of ['amd', 'asus', 'msi', 'gigabyte']) {
       const records = [
-        { id: 21, name: brand, slug: `componentes-${brand}`, category_id: 2, published: true, sort: 9 },
-        { id: 49, name: brand, slug: `componentes-${brand}-tarjeta-madre`, category_id: 2, published: true, sort: 1 },
+        { id: 21, name: brand, slug: 'componentes-' + brand, category_id: 2, published: true, sort: 9 },
+        { id: 49, name: brand, slug: 'componentes-' + brand + '-tarjeta-madre', category_id: 2, published: true, sort: 1 },
       ];
-      const before = buildCatalogCategories(parents, records).find(category => category.label.toLowerCase() === brand)!;
-      expect(before.slug).toBe(`componentes-${brand}`);
+      expect(buildCatalogCategories(parents, records).some(category => category.label.toLowerCase() === brand)).toBeFalse();
       records[0].sort = 0;
-      expect(buildCatalogCategories(parents, records).find(category => category.label.toLowerCase() === brand)!.slug).toBe(before.slug);
-      expect(before.aliases).toContain(records[1].slug);
+      expect(buildCatalogCategories(parents, records).some(category => category.label.toLowerCase() === brand)).toBeFalse();
     }
   });
 
