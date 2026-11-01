@@ -96,7 +96,8 @@
               *ngFor="let logo of detail.brandLogos"
               class="rounded-xl border border-white/10 bg-white/5 px-4 py-3"
             >
-              <img [src]="logo.src" [alt]="logo.alt" class="h-8 w-auto" />
+              <img *ngIf="logo.src; else brandName" [src]="logo.src" [alt]="logo.alt" class="h-8 w-auto" />
+              <ng-template #brandName><span class="font-semibold">{{ logo.alt }}</span></ng-template>
             </div>
           </div>
         </section>

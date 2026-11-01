@@ -250,6 +250,13 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: adminRoute('brands'),
+    loadComponent: () => import('./features/products/admin/brands/admin-brands.component').then(m => m.AdminBrandsComponent),
+    title: 'Marcas | Admin',
+    data: { noIndex: true },
+    canActivate: [AuthGuard]
+  },
+  {
     path: adminRoute('products/categories'),
     loadComponent: () => import('./features/products/admin/categories/admin-category-hierarchy-manager/admin-category-hierarchy-manager.component').then(m => m.AdminCategoryHierarchyManagerComponent),
     title: 'Categorías | Admin',
