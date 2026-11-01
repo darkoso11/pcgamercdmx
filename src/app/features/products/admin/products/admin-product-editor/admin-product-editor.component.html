@@ -659,13 +659,13 @@
       </div>
 
       <!-- BOTONES DE ACCIÓN -->
-      <div class="flex justify-between items-center gap-4 pt-6 border-t border-white/10">
+      <div class="flex flex-col gap-4 pt-6 border-t border-white/10 sm:flex-row sm:flex-wrap sm:justify-between">
         <a [routerLink]="adminProductsUrl" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition flex items-center gap-2">
           <i class="fas fa-arrow-left"></i>
           Cancelar
         </a>
 
-        <div class="flex gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
           <button
             type="button"
             (click)="saveDraft()"

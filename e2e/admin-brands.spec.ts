@@ -71,6 +71,13 @@ test('creates and edits shared brands without leaking manufacturers into taxonom
   const subcategories = page.locator('select[formcontrolname="subcategoryId"]');
   await expect(subcategories.locator('option')).toHaveText(['-- Selecciona una subcategoría --', 'Procesadores']);
   await page.getByLabel('Marca', { exact: true }).selectOption('Marca Nueva');
+  for (const name of ['Guardar Privado', 'Guardar Producto']) {
+    const button = page.getByRole('button', { name: new RegExp(name) });
+    const bounds = await button.boundingBox();
+    expect(bounds, name).not.toBeNull();
+    expect(bounds!.x, name).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width, name).toBeLessThanOrEqual(page.viewportSize()!.width);
+  }
   await page.getByRole('button', { name: /Guardar Privado/ }).first().click();
   await expect.poll(() => writes.some(write => write.path.endsWith('product-1'))).toBe(true);
   expect(writes.find(write => write.path.endsWith('product-1'))!.payload.specifications.admin.brandId).toBe('2');
