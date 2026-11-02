@@ -35,9 +35,9 @@ if (access.length !== 1) throw new Error('No hay una única política pública. 
 const policy = access[0].policy;
 const permissions = (await request(`/permissions?filter[policy][_eq]=${policy}&filter[collection][_eq]=pc_brands`)).data;
 if (permissions.some(item => item.action !== 'read')) throw new Error('La colección tiene permisos públicos de escritura inesperados.');
-console.log(JSON.stringify({ url, mode: write ? 'write' : 'dry-run', createCollection: !exists,
+process.stdout.write(JSON.stringify({ url, mode: write ? 'write' : 'dry-run', createCollection: !exists,
   fieldsToCreate: brandFields.filter(field => !fields.some(item => item.field === field.field)).map(field => field.field),
-  brandsToCreate: brands.length, createPublicRead: !permissions.length }, null, 2));
+  brandsToCreate: brands.length, createPublicRead: !permissions.length }, null, 2) + '\n');
 if (write) {
   if (!exists) await request('/collections', 'POST', { collection: 'pc_brands', schema: {},
     meta: { icon: 'sell', display_template: '{{name}}', note: 'Marcas compartidas de productos y ensambles' }, fields: brandFields });
@@ -50,5 +50,5 @@ if (write) {
   });
   const publicRead = await fetch(`${url}/items/pc_brands?fields=${publicBrandFields.join(',')}&limit=1`);
   if (!publicRead.ok) throw new Error(`Falló la comprobación pública (${publicRead.status}).`);
-  console.log('Catálogo de marcas listo. Productos y categorías existentes conservados.');
+  process.stdout.write('Catálogo de marcas listo. Productos y categorías existentes conservados.\n');
 }
