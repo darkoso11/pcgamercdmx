@@ -111,5 +111,4 @@ test('brand manager fits a narrow mobile viewport', async ({ page }) => {
   await page.goto(`${admin}/brands`);
   await expect(page.getByRole('button', { name: 'Editar ASUS', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: 'test-results/brands-mobile.png', fullPage: true });
 });
