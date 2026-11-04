@@ -2,6 +2,7 @@ import { ProductCategory } from '../../shared/models';
 import type { DirectusCategoryRecord, DirectusSubcategoryRecord } from '../../core/services/directus-content.mapper';
 import { catalogTypeForSlug } from './catalog-types';
 import { normalizeCatalogText } from './catalog-filters';
+import { CatalogBrand, DEFAULT_BRANDS, isBrandName } from './catalog-brands';
 
 export interface CatalogCategory {
   slug: string;
@@ -40,7 +41,7 @@ export const catalogCategoryPath = (category: CatalogCategory): string =>
 
 const displayName = (value: string): string => value.replace(/&amp;/g, '&').trim();
 
-export function buildCatalogCategories(parents: DirectusCategoryRecord[], records: DirectusSubcategoryRecord[]): CatalogCategory[] {
+export function buildCatalogCategories(parents: DirectusCategoryRecord[], records: DirectusSubcategoryRecord[], brands: CatalogBrand[] = DEFAULT_BRANDS): CatalogCategory[] {
   const result = CATALOG_CATEGORIES.map(category => ({ ...category, values: [category.slug], aliases: [category.slug],
     typeValues: { [category.slug]: [category.slug] } as Record<string, string[]> }));
   const names = new Map(result.map(category => [`${category.group}:${normalizeCatalogText(category.label)}`, category]));
@@ -66,6 +67,15 @@ export function buildCatalogCategories(parents: DirectusCategoryRecord[], record
   }
   for (const { record, group } of rows) {
     const label = displayName(record.name!);
+    if (isBrandName(label, brands)) {
+      const type = catalogTypeForSlug(record.slug!);
+      const target = result.find(category => category.group === group && category.slug === type);
+      if (target && type) {
+        target.values.push(String(record.id), record.slug!);
+        (target.typeValues[type] ??= []).push(String(record.id), record.slug!);
+      }
+      continue;
+    }
     const key = `${group}:${normalizeCatalogText(label)}`;
     let category = names.get(key);
     if (!category) {

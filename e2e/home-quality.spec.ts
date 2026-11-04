@@ -14,10 +14,14 @@ test('home defers every non-critical image', async ({ page }) => {
   );
   expect(await images.count()).toBeGreaterThan(10);
 
-  for (let index = 0; index < await images.count(); index += 1) {
-    await expect(images.nth(index), `home image ${index}`).toHaveAttribute('loading', 'lazy');
-    await expect(images.nth(index), `home image ${index}`).toHaveAttribute('decoding', 'async');
-  }
+  await expect.poll(() => images.evaluateAll((elements) => elements
+    .filter((image) => image.getAttribute('loading') !== 'lazy' || image.getAttribute('decoding') !== 'async')
+    .map((image) => ({
+      src: image.getAttribute('src'),
+      loading: image.getAttribute('loading'),
+      decoding: image.getAttribute('decoding'),
+    }))
+  )).toEqual([]);
 });
 
 test('initial HTML preloads the LCP image without blocking on third-party styles', async ({ request }) => {

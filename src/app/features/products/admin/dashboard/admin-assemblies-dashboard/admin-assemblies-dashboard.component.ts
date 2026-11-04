@@ -32,6 +32,7 @@ import {
   templateUrl: './admin-assemblies-dashboard.component.html',
 })
 export class AdminAssembliesDashboardComponent implements OnInit, OnDestroy {
+  readonly brandsUrl = adminUrl('brands');
   readonly adminHomeUrl = adminUrl();
   stats: CatalogDashboardStats | null = null;
   assemblies: Product[] = [];

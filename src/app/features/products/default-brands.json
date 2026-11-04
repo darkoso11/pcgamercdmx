@@ -1,0 +1,199 @@
+[
+  {
+    "name": "AMD",
+    "logo": "assets/img/marcas/ryzen_tag.svg",
+    "aliases": [
+      "AMD Ryzen"
+    ]
+  },
+  {
+    "name": "Intel",
+    "logo": "assets/img/marcas/intel_tag.svg",
+    "aliases": []
+  },
+  {
+    "name": "NVIDIA",
+    "logo": "assets/img/marcas/nvidia_tag.svg",
+    "aliases": []
+  },
+  {
+    "name": "ASUS",
+    "logo": "assets/img/marcas/asuspng.png",
+    "aliases": []
+  },
+  {
+    "name": "MSI",
+    "logo": "assets/img/marcas/MSI-qe15ugmr1n5icayomza6ckfcfd05eczx4efzglsmlc.png",
+    "aliases": []
+  },
+  {
+    "name": "Gigabyte",
+    "logo": "assets/img/marcas/gigabyte.png",
+    "aliases": []
+  },
+  {
+    "name": "Corsair",
+    "logo": "assets/img/marcas/corsairbrand.png",
+    "aliases": []
+  },
+  {
+    "name": "Kingston",
+    "logo": "assets/img/marcas/kingston.png",
+    "aliases": []
+  },
+  {
+    "name": "Logitech",
+    "logo": "assets/img/marcas/Logitech.png",
+    "aliases": []
+  },
+  {
+    "name": "HyperX",
+    "logo": "assets/img/marcas/hyperx.png",
+    "aliases": []
+  },
+  {
+    "name": "ASRock",
+    "logo": "assets/img/marcas/Asrock.png",
+    "aliases": []
+  },
+  {
+    "name": "Aerocool",
+    "logo": "assets/img/marcas/aerocool.png",
+    "aliases": []
+  },
+  {
+    "name": "EVGA",
+    "logo": "assets/img/marcas/EVGA.png",
+    "aliases": []
+  },
+  {
+    "name": "InWin",
+    "logo": "assets/img/marcas/inwin.png",
+    "aliases": []
+  },
+  {
+    "name": "Noctua",
+    "logo": "assets/img/marcas/Noctua.png",
+    "aliases": []
+  },
+  {
+    "name": "Redragon",
+    "logo": "assets/img/marcas/Redragon.png",
+    "aliases": []
+  },
+  {
+    "name": "Thermaltake",
+    "logo": "assets/img/marcas/thermaltake.png",
+    "aliases": []
+  },
+  {
+    "name": "Samsung",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Seagate",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "WD",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Razer",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "SteelSeries",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "PNY",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "SAPPHIRE",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "NZXT",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Acteck",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Manhattan",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Adata",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "XPG",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Cooler Master",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "DeepCool",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Lian Li",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Yeyian",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Balam Rush",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Vorago",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Game Factor",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "G.Skill",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "Crucial",
+    "logo": "",
+    "aliases": []
+  },
+  {
+    "name": "TP-Link",
+    "logo": "",
+    "aliases": []
+  }
+]
