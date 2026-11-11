@@ -1,3 +1,4 @@
+import { DEFAULT_BRANDS } from '../../../catalog-brands';
 import { FormBuilder } from '@angular/forms';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
@@ -10,6 +11,7 @@ import { AdminAssemblyEditorComponent } from './admin-assembly-editor.component'
 describe('AdminAssemblyEditorComponent', () => {
   function createComponent(createResult = of({ _id: 'assembly-123', title: 'PC Lista' })) {
     const productsAdminService = {
+      getBrands: jasmine.createSpy('getBrands').and.returnValue(of(DEFAULT_BRANDS)),
       getProductById: jasmine.createSpy('getProductById').and.returnValue(of(undefined)),
       createProduct: jasmine.createSpy('createProduct').and.returnValue(createResult),
       updateProduct: jasmine.createSpy('updateProduct').and.returnValue(createResult),
@@ -246,6 +248,7 @@ describe('AdminAssemblyEditorComponent', () => {
 
   it('recognizes and replaces a legacy AMD Ryzen logo without duplicating the brand', () => {
     const { component } = createComponent();
+    component.loadBrands();
     const amdOption = component.brandOptions.find((brand) => brand.alt === 'AMD')!;
     component.form.patchValue({
       brandLogos: [
@@ -348,6 +351,7 @@ describe('AdminAssemblyEditorComponent', () => {
           {
             provide: ProductsAdminService,
             useValue: {
+              getBrands: () => of([]),
               getPowerCertifications: jasmine.createSpy('getPowerCertifications').and.returnValue(of([])),
             },
           },

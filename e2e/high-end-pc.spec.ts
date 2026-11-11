@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { setupAssemblyCatalog } from './support/assembly-catalog-fixtures';
+
+test.beforeEach(async ({ page }) => setupAssemblyCatalog(page));
 
 test('high-end landing exposes editorial cards, advisor links and accessible FAQ', async ({ page }) => {
   await page.goto('/pc-gamer-gama-alta', { waitUntil: 'networkidle' });
@@ -59,18 +62,20 @@ test('SPA navigation keeps landing schemas and clears them when leaving', async 
   await expect(page.locator('script[data-seo-schema="page"]')).toHaveCount(0);
 });
 
-test('landing is responsive, loads images and honors reduced motion', async ({ page }) => {
-  for (const viewport of [
-    { width: 1280, height: 800, columns: 2 },
-    { width: 390, height: 844, columns: 1 },
-  ]) {
+for (const viewport of [
+  { width: 1280, height: 800, columns: 2 },
+  { width: 390, height: 844, columns: 1 },
+]) {
+  test(`landing is responsive and loads images at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto('/pc-gamer-gama-alta', { waitUntil: 'networkidle' });
 
     const images = page.locator('.high-end-page img');
-    for (let index = 0; index < await images.count(); index += 1) {
+    const imageCount = await images.count();
+    expect(imageCount).toBeGreaterThan(0);
+    for (let index = 0; index < imageCount; index += 1) {
       const image = images.nth(index);
-      await image.scrollIntoViewIfNeeded();
+      await image.evaluate((element) => element.scrollIntoView({ behavior: 'instant', block: 'center' }));
       await expect(image).toHaveJSProperty('complete', true);
       expect(await image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
     }
@@ -88,9 +93,11 @@ test('landing is responsive, loads images and honors reduced motion', async ({ p
 
     expect(layout.columns).toBe(viewport.columns);
     expect(layout.hasHorizontalOverflow).toBe(false);
-  }
+  });
+}
 
+test('landing honors reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.reload({ waitUntil: 'networkidle' });
+  await page.goto('/pc-gamer-gama-alta', { waitUntil: 'networkidle' });
   await expect(page.locator('.signal-glitch--hero')).toHaveCSS('animation-name', 'none');
 });

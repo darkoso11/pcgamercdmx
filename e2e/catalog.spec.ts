@@ -79,7 +79,6 @@ for (const width of [360, 768, 1440]) {
     expect(box!.x + box!.width).toBeLessThanOrEqual(width);
     const audit = await new AxeBuilder({ page }).include('[data-catalog]').analyze();
     expect(audit.violations).toEqual([]);
-    await page.screenshot({ path: `test-results/catalog-${width}.png`, fullPage: true });
   });
 }
 
@@ -133,13 +132,17 @@ test('brand and product type combine and survive reload and history', async ({ p
   expect(await cards.count()).toBeLessThanOrEqual(count);
 });
 
-test('brand category aliases point to the stable generic canonical', async ({ request }) => {
-  for (const [brand, alias] of [
-    ['amd', 'componentes-amd-tarjeta-grafica'], ['asus', 'componentes-asus-tarjeta-madre'],
-    ['msi', 'componentes-msi-tarjeta-madre'], ['gigabyte', 'componentes-gigabyte-tarjeta-madre'],
-  ]) {
-    const response = await request.get(`/productos/hardware-accesorios/${alias}/`);
-    expect(response.ok()).toBe(true);
-    expect(await response.text()).toContain(`href="https://pcgamercdmx.com/productos/hardware-accesorios/componentes-${brand}"`);
+test('manufacturers stay in the brand filter and legacy category links return to the catalog', async ({ page }) => {
+  await page.goto('/productos/hardware-accesorios');
+  await expect(page.locator('[data-catalog] article').first()).toBeVisible();
+  const categories = page.locator('.category-chips');
+  for (const brand of ['AMD', 'ASUS', 'MSI', 'Gigabyte']) {
+    await expect(categories.getByRole('link', { name: new RegExp(`^${brand}$`, 'i') })).toHaveCount(0);
   }
+  await expect(page.getByLabel('Marca', { exact: true }).locator('option[value="Gigabyte"]')).toHaveCount(1);
+  await page.goto('/productos/hardware-accesorios/componentes-gigabyte-tarjeta-madre?brand=gigabyte&type=motherboard');
+  await expect(page).toHaveURL(/\/productos\/hardware-accesorios\?brand=gigabyte&type=motherboard$/);
+  await expect(page.getByLabel('Marca', { exact: true })).toHaveValue('Gigabyte');
+  await expect(page.getByLabel('Tipo de producto', { exact: true })).toHaveValue('motherboard');
+  await expect(page.locator('[data-catalog] article').first()).toBeVisible();
 });

@@ -43,8 +43,9 @@
             />
 
             <div *ngIf="product.brandLogos?.length" class="package-card__logos">
+              <ng-container *ngFor="let logo of product.brandLogos">
               <img
-                *ngFor="let logo of product.brandLogos"
+                *ngIf="logo.src; else brandName"
                 [src]="optimizeImage(logo.src, 96)"
                 [alt]="logo.alt"
                 loading="lazy"
@@ -52,6 +53,8 @@
                 class="package-card__logo"
                 (error)="handleLogoError($event)"
               />
+              <ng-template #brandName><span>{{ logo.alt }}</span></ng-template>
+              </ng-container>
             </div>
 
             <div *ngIf="product.powerCertificate" class="package-card__power">

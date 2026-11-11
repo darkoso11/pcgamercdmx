@@ -315,6 +315,11 @@
           Selecciona solamente las marcas que aparecen en este ensamble.
         </p>
 
+        <div class="mb-4 flex flex-wrap gap-4 text-sm text-cyan-300">
+          <a [routerLink]="brandsUrl" target="_blank" rel="noopener" class="underline">Agregar o editar marcas ↗</a>
+          <button type="button" (click)="loadBrands()" class="underline">Recargar marcas</button>
+        </div>
+        <p *ngIf="brandLoadError" role="alert" class="mb-4 text-red-300">{{ brandLoadError }}</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Marcas del ensamble">
           <label
             *ngFor="let brand of brandOptions"
@@ -331,7 +336,7 @@
               (change)="toggleBrandLogo(brand, $any($event.target).checked)"
             />
             <span class="flex h-10 w-24 shrink-0 items-center justify-center rounded bg-white p-1">
-              <img [src]="brand.src" [alt]="brand.alt" class="max-h-8 max-w-20 object-contain" />
+              <img *ngIf="brand.src" [src]="brand.src" [alt]="brand.alt" class="max-h-8 max-w-20 object-contain" />
             </span>
             <span class="min-w-0 font-semibold text-white">{{ brand.alt }}</span>
           </label>
