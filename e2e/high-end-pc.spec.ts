@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { setupAssemblyCatalog } from './support/assembly-catalog-fixtures';
+
+test.beforeEach(async ({ page }) => setupAssemblyCatalog(page));
 
 test('high-end landing exposes editorial cards, advisor links and accessible FAQ', async ({ page }) => {
   await page.goto('/pc-gamer-gama-alta', { waitUntil: 'networkidle' });

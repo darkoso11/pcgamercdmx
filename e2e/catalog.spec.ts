@@ -79,7 +79,6 @@ for (const width of [360, 768, 1440]) {
     expect(box!.x + box!.width).toBeLessThanOrEqual(width);
     const audit = await new AxeBuilder({ page }).include('[data-catalog]').analyze();
     expect(audit.violations).toEqual([]);
-    await page.screenshot({ path: `test-results/catalog-${width}.png`, fullPage: true });
   });
 }
 

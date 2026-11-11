@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { setupAssemblyCatalog } from './support/assembly-catalog-fixtures';
+
+test.beforeEach(async ({ page }) => setupAssemblyCatalog(page));
 
 const assemblyPath = '/ensambles/cpsula';
 
