@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { setupAssemblyCatalog } from './support/assembly-catalog-fixtures';
 
 test('related product cards expose native keyboard navigation', async ({ page }) => {
+  await setupAssemblyCatalog(page);
   await page.goto('/ensambles/cpsula', { waitUntil: 'domcontentloaded' });
 
   const relatedProduct = page.locator('.product-card').first();
