@@ -38,7 +38,7 @@
           <button type="button" (click)="newProfile()" class="text-sm font-bold text-cyan-300 hover:text-white">Nuevo</button>
         </div>
 
-        <div class="grid gap-4">
+        <fieldset [disabled]="saving" class="grid min-w-0 gap-4">
           <label class="space-y-2">
             <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Nombre</span>
             <input [(ngModel)]="editor.name" name="name" required class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
@@ -50,12 +50,23 @@
           </label>
 
           <label class="space-y-2">
-            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Imagen URL o asset</span>
-            <input [(ngModel)]="editor.image" name="image" required placeholder="assets/img/colaboradores/nombre.jpg" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300" />
+            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">Subir foto del influencer</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" (change)="selectPhoto($event)" aria-describedby="photo-help" class="block w-full min-w-0 rounded-lg border border-white/10 bg-pc-admin-bg p-3 text-sm file:mr-3 file:rounded file:border-0 file:bg-cyan-300 file:px-3 file:py-2 file:font-bold file:text-pc-admin-bg" />
+            <span id="photo-help" class="block text-xs text-slate-400">JPG, PNG, WebP o GIF. Máximo 5 MB. Se subirá al guardar el perfil.</span>
+          </label>
+          <div *ngIf="selectedPhoto" class="flex min-w-0 items-center gap-3 text-sm">
+            <span class="min-w-0 break-all text-slate-300">{{ selectedPhoto.name }}</span>
+            <button type="button" (click)="clearPhoto()" class="shrink-0 font-bold text-cyan-300">Quitar selección</button>
+          </div>
+          <label class="space-y-2">
+            <span class="text-xs uppercase tracking-[0.18em] text-slate-400">O usar imagen URL o asset</span>
+            <input [(ngModel)]="editor.image" name="image" [required]="!selectedPhoto" [disabled]="!!selectedPhoto || saving" placeholder="assets/img/colaboradores/nombre.jpg" class="w-full rounded-lg border border-white/10 bg-pc-admin-bg px-4 py-3 outline-none focus:border-cyan-300 disabled:opacity-50" />
           </label>
 
-          <div *ngIf="editor.image" class="overflow-hidden rounded-lg border border-white/10 bg-pc-admin-bg p-3">
-            <img [src]="editor.image" [alt]="editor.name || 'Preview'" class="mx-auto aspect-square max-h-72 w-full object-cover" />
+          <p *ngIf="photoError" role="alert" class="text-sm text-red-300">{{ photoError }}</p>
+          <p *ngIf="saving" role="status" class="text-sm text-cyan-300">Guardando perfil y foto…</p>
+          <div *ngIf="photoPreview || editor.image" class="overflow-hidden rounded-lg border border-white/10 bg-pc-admin-bg p-3">
+            <img [src]="photoPreview || editor.image" [alt]="editor.name || 'Vista previa de la foto'" class="mx-auto aspect-square max-h-72 w-full object-cover" />
           </div>
 
           <label class="space-y-2">
@@ -97,9 +108,9 @@
           </div>
 
           <button type="submit" class="rounded-lg bg-gradient-to-r from-cyan-400 to-pink-500 px-5 py-3 font-black text-pc-admin-bg">
-            Guardar perfil
+            {{ saving ? 'Guardando…' : 'Guardar perfil' }}
           </button>
-        </div>
+        </fieldset>
       </form>
 
       <section class="rounded-xl border border-white/10 bg-pc-admin-panel p-5">
