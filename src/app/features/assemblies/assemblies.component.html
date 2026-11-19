@@ -1,22 +1,22 @@
 <section class="pc-bg-page min-h-screen font-orbitron text-white">
   <div class="pc-hero-bg">
-    <div class="mx-auto max-w-7xl px-4 pb-6 pt-28 md:px-6 lg:px-8 lg:pb-8 lg:pt-32">
-      <div class="grid gap-8 lg:grid-cols-[0.9fr_0.8fr] lg:items-center">
-        <div class="space-y-7 text-center lg:text-left">
+    <div class="assembly-header mx-auto max-w-[1600px] px-4 md:px-6 lg:px-8">
+      <div class="assembly-intro">
+        <div class="intro-content text-left">
           <span class="pc-cyan-soft pc-text-cyan inline-flex rounded-full border border-cyan-400/30 px-4 py-1 text-xs uppercase tracking-[0.28em]">
             Ensambles PC Gamer CDMX
           </span>
 
-          <div class="space-y-5">
-            <h1 class="mx-auto max-w-4xl text-4xl font-bold leading-tight md:text-5xl lg:mx-0 lg:text-6xl">
+          <div class="intro-copy">
+            <h1 class="max-w-4xl text-3xl font-bold leading-tight md:text-4xl lg:mx-0 lg:text-5xl">
               Elige tu ensamble por objetivo.
             </h1>
-            <p class="pc-text-muted mx-auto max-w-2xl text-base leading-7 md:text-lg lg:mx-0">
-              Compara PCs listas para gaming, streaming, diseño 3D o trabajo profesional y pide tu cotización con una base clara.
+            <p class="pc-text-muted max-w-3xl text-base leading-7 md:text-lg lg:mx-0">
+              Encuentra tu computadora ensamblada en PC Gamer CDMX: equipos para gaming, trabajo, escuela, diseño 3D y workstation. Filtra por presupuesto, gama, procesador Intel o AMD y gráficos NVIDIA para elegir tu próxima PC.
             </p>
           </div>
 
-          <div class="flex flex-wrap justify-center gap-3 lg:justify-start">
+          <div class="intro-actions flex flex-wrap justify-start gap-3">
             <a
               routerLink="/contacto"
               class="pc-cta pc-focus-pink rounded-xl px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-pink-900/30 transition hover:translate-y-[-1px]"
@@ -32,23 +32,12 @@
           </div>
         </div>
 
-        <div class="relative mx-auto flex min-h-[260px] w-full max-w-lg items-end justify-center overflow-hidden md:min-h-[360px] lg:max-w-none">
-          <div class="absolute inset-x-8 bottom-0 h-44 rounded-full bg-cyan-400/15 blur-3xl"></div>
-          <img
-            src="assets/img/gabinetes/rog-hyperion-gr701.png"
-            alt="PC de alto rendimiento para gaming, streaming y diseño"
-            width="420"
-            height="520"
-            fetchpriority="high"
-            decoding="async"
-            class="relative z-10 h-[260px] max-h-[430px] object-contain drop-shadow-2xl md:h-[350px] lg:h-[420px]"
-          />
-        </div>
+
       </div>
     </div>
   </div>
 
-  <div class="mx-auto max-w-7xl px-4 pb-10 pt-4 md:px-6 lg:px-8 lg:pt-2">
+  <div class="mx-auto max-w-[1600px] px-4 pb-10 pt-4 md:px-6 lg:px-8 lg:pt-2">
     <app-packages></app-packages>
   </div>
 </section>

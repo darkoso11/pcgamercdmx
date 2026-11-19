@@ -8,7 +8,7 @@ import {
 } from '../services/products.service';
 import { AssembledPC, PerformanceTier, UseCase } from '../../../shared/models';
 
-type PcTypeFilter = 'all' | 'gaming' | 'streaming' | 'workstation' | 'creator' | 'editing';
+type PcTypeFilter = 'all' | 'gaming' | 'streaming' | 'workstation' | 'creator' | 'editing' | 'work' | 'school';
 type PlatformFilter = 'all' | 'amd' | 'intel' | 'nvidia';
 
 interface EmptyStateSuggestion {
@@ -17,13 +17,6 @@ interface EmptyStateSuggestion {
   pcType: PcTypeFilter;
   platform: PlatformFilter;
 }
-
-const tierWeight: Record<PerformanceTier, number> = {
-  [PerformanceTier.ENTRY]: 1,
-  [PerformanceTier.MID]: 2,
-  [PerformanceTier.HIGH]: 3,
-  [PerformanceTier.ULTRA]: 4,
-};
 
 @Component({
   selector: 'app-packages',
@@ -38,94 +31,29 @@ export class Packages implements OnInit {
 
   products: AssembledPC[] = [];
   cards: ProductCardViewModel[] = [];
-  pcTypeCounts: Record<PcTypeFilter, number> = {
-    all: 0,
-    gaming: 0,
-    streaming: 0,
-    workstation: 0,
-    creator: 0,
-    editing: 0,
-  };
-  pcTypeImages: Record<PcTypeFilter, string> = {
-    all: '',
-    gaming: '',
-    streaming: '',
-    workstation: '',
-    creator: '',
-    editing: '',
-  };
-  platformCounts: Record<PlatformFilter, number> = {
-    all: 0,
-    amd: 0,
-    intel: 0,
-    nvidia: 0,
-  };
+  selectedCpu = 'all';
+  selectedNvidia = false;
+  selectedPrice = 'all';
+  readonly priceOptions = [
+    { value: 'all', label: 'Todos', min: 0, max: Infinity },
+    { value: 'under15', label: 'Menos de $15,000', min: 0, max: 15000 },
+    { value: '15to25', label: '$15,000–$25,000', min: 15000, max: 25000 },
+    { value: '25to40', label: '$25,000–$40,000', min: 25000, max: 40000 },
+    { value: '40plus', label: '$40,000 o más', min: 40000, max: Infinity },
+  ];
   searchTerm = '';
-  selectedUseCase = 'all';
   selectedTier = 'all';
   selectedPcType: PcTypeFilter = 'all';
-  selectedPlatform: PlatformFilter = 'all';
 
-  readonly pcTypeCards: Array<{
-    value: PcTypeFilter;
-    eyebrow: string;
-    title: string;
-    description: string;
-    specs: string;
-  }> = [
-    {
-      value: 'all',
-      eyebrow: 'Catálogo completo',
-      title: 'Todas las PCs',
-      description: 'Explora todos los ensambles listos para cotizar.',
-      specs: 'Gaming, trabajo y creación',
-    },
-    {
-      value: 'gaming',
-      eyebrow: 'Alto FPS',
-      title: 'Gaming',
-      description: 'Equipos para jugar fluido en 1080p, 1440p o 4K.',
-      specs: 'GPU dedicada y upgrades claros',
-    },
-    {
-      value: 'streaming',
-      eyebrow: 'Juego + directo',
-      title: 'Streaming',
-      description: 'Builds para jugar, grabar y transmitir sin perder estabilidad.',
-      specs: 'CPU multinúcleo y NVIDIA NVENC',
-    },
-    {
-      value: 'workstation',
-      eyebrow: 'Carga profesional',
-      title: 'Workstation',
-      description: 'Máquinas para renders, simulación y trabajo sostenido.',
-      specs: 'RAM amplia y enfriamiento serio',
-    },
-    {
-      value: 'creator',
-      eyebrow: 'Modelado y render',
-      title: 'Diseño / 3D',
-      description: 'PCs pensadas para Blender, CAD, motion y escenas pesadas.',
-      specs: 'VRAM, CPU y almacenamiento rápido',
-    },
-    {
-      value: 'editing',
-      eyebrow: 'Postproducción',
-      title: 'Edición de video',
-      description: 'Configuraciones para timeline, codecs y exportaciones largas.',
-      specs: '64GB opcional y GPU RTX',
-    },
-  ];
-
-  readonly platformFilters: Array<{
-    value: PlatformFilter;
-    label: string;
-    description: string;
-  }> = [
-    { value: 'all', label: 'Todas', description: 'Sin filtro de marca' },
-    { value: 'amd', label: 'AMD', description: 'CPU o GPU AMD' },
-    { value: 'intel', label: 'Intel', description: 'Procesador Intel' },
-    { value: 'nvidia', label: 'NVIDIA', description: 'GPU NVIDIA' },
+  readonly pcTypeCards: Array<{ value: PcTypeFilter; title: string }> = [
+    { value: 'all', title: 'Todas las PCs' },
+    { value: 'gaming', title: 'Gaming' },
+    { value: 'work', title: 'Trabajo' },
+    { value: 'school', title: 'Escuela' },
+    { value: 'creator', title: 'Diseño / 3D' },
+    { value: 'workstation', title: 'Workstation' },
+    { value: 'streaming', title: 'Streaming' },
+    { value: 'editing', title: 'Edición de video' },
   ];
 
   readonly emptyStateSuggestions: EmptyStateSuggestion[] = [
@@ -149,20 +77,12 @@ export class Packages implements OnInit {
     },
   ];
 
-  readonly useCaseOptions = [
-    { value: 'all', label: 'Todos los usos' },
-    { value: UseCase.GAMING, label: 'Gaming' },
-    { value: UseCase.STREAMING, label: 'Streaming' },
-    { value: UseCase.EDITING, label: 'Edición' },
-    { value: UseCase.MIXED, label: 'Mixto' },
-  ];
-
   readonly tierOptions = [
     { value: 'all', label: 'Todos los niveles' },
-    { value: PerformanceTier.ENTRY, label: 'Entry' },
-    { value: PerformanceTier.MID, label: 'Mid' },
-    { value: PerformanceTier.HIGH, label: 'High' },
-    { value: PerformanceTier.ULTRA, label: 'Ultra' },
+    { value: PerformanceTier.ENTRY, label: 'Gama de entrada' },
+    { value: PerformanceTier.MID, label: 'Gama media' },
+    { value: PerformanceTier.HIGH, label: 'Gama alta' },
+    { value: PerformanceTier.ULTRA, label: 'Gama ultra' },
   ];
 
   ngOnInit(): void {
@@ -171,7 +91,6 @@ export class Packages implements OnInit {
       this.cards = products.map((product) =>
         this.productsService.toProductCardViewModel(product)
       );
-      this.updateFilterMetadata();
       this.cdr.detectChanges();
     });
   }
@@ -182,12 +101,15 @@ export class Packages implements OnInit {
     return this.products
       .map((product, index) => ({ product, card: this.cards[index] }))
       .filter(({ product, card }) => {
-        const matchesUseCase =
-          this.selectedUseCase === 'all' || product.useCase === this.selectedUseCase;
         const matchesTier =
           this.selectedTier === 'all' || product.performanceTier === this.selectedTier;
         const matchesPcType = this.matchesPcType(product);
-        const matchesPlatform = this.matchesPlatform(product);
+        const matchesPlatform = (this.selectedCpu === 'all' ||
+          product.performance.cpuBrand.toLowerCase() === this.selectedCpu) &&
+          (!this.selectedNvidia || product.performance.gpuBrand.toLowerCase() === 'nvidia');
+        const range = this.priceOptions.find(option => option.value === this.selectedPrice)!;
+        const price = card.discountedPrice ?? card.price;
+        const matchesPrice = price >= range.min && price < range.max;
         const matchesSearch =
           !normalized ||
           product.title.toLowerCase().includes(normalized) ||
@@ -196,49 +118,45 @@ export class Packages implements OnInit {
             `${spec.label} ${spec.value}`.toLowerCase().includes(normalized)
           );
 
-        return matchesUseCase && matchesTier && matchesPcType && matchesPlatform && matchesSearch;
+        return matchesPrice && matchesTier && matchesPcType && matchesPlatform && matchesSearch;
       });
   }
 
-  selectPcType(type: PcTypeFilter): void {
-    this.selectedPcType = type;
-  }
-
   selectPlatform(platform: PlatformFilter): void {
-    this.selectedPlatform = platform;
+    if (platform === 'nvidia') this.selectedNvidia = !this.selectedNvidia;
+    else this.selectedCpu = this.selectedCpu === platform ? 'all' : platform;
   }
 
   clearFilters(): void {
     this.searchTerm = '';
-    this.selectedUseCase = 'all';
     this.selectedTier = 'all';
     this.selectedPcType = 'all';
-    this.selectedPlatform = 'all';
+    this.selectedCpu = 'all';
+    this.selectedNvidia = false;
+    this.selectedPrice = 'all';
   }
 
   applyFilterSuggestion(suggestion: EmptyStateSuggestion): void {
-    this.searchTerm = '';
-    this.selectedUseCase = 'all';
-    this.selectedTier = 'all';
+    this.clearFilters();
+    this.selectPlatform(suggestion.platform);
     this.selectedPcType = suggestion.pcType;
-    this.selectedPlatform = suggestion.platform;
   }
 
   get hasActiveFilters(): boolean {
     return (
       !!this.searchTerm.trim() ||
-      this.selectedUseCase !== 'all' ||
       this.selectedTier !== 'all' ||
       this.selectedPcType !== 'all' ||
-      this.selectedPlatform !== 'all'
+      this.selectedCpu !== 'all' || this.selectedNvidia || this.selectedPrice !== 'all'
     );
   }
 
   get activeFilterSummary(): string {
     const activeLabels = [
       this.getPcTypeLabel(this.selectedPcType),
-      this.getPlatformLabel(this.selectedPlatform),
-      this.getUseCaseLabel(this.selectedUseCase),
+      this.selectedCpu === 'all' ? '' : this.selectedCpu === 'amd' ? 'AMD' : 'Intel',
+      this.selectedNvidia ? 'NVIDIA' : '',
+      this.selectedPrice === 'all' ? '' : this.priceOptions.find(option => option.value === this.selectedPrice)?.label,
       this.getTierLabel(this.selectedTier),
       this.searchTerm.trim() ? `"${this.searchTerm.trim()}"` : '',
     ].filter(Boolean);
@@ -252,67 +170,23 @@ export class Packages implements OnInit {
     return `Mostrando ${count} ${resultLabel} para ${activeLabels.join(' + ')}`;
   }
 
-  getSummary(product: AssembledPC): string {
-    return [product.performance.totalRam, product.performance.storageCapacity].join(' · ');
-  }
-
-  getPcTypeCount(type: PcTypeFilter): number {
-    return this.pcTypeCounts[type];
-  }
-
-  getPcTypeImage(type: PcTypeFilter): string {
-    return this.pcTypeImages[type];
-  }
-
-  getPlatformCount(platform: PlatformFilter): number {
-    return this.platformCounts[platform];
-  }
-
-  private updateFilterMetadata(): void {
-    this.pcTypeCounts = this.pcTypeCards.reduce(
-      (counts, card) => ({
-        ...counts,
-        [card.value]: this.products.filter((product) => this.matchesPcType(product, card.value)).length,
-      }),
-      {} as Record<PcTypeFilter, number>
-    );
-    this.pcTypeImages = this.pcTypeCards.reduce(
-      (images, card) => ({
-        ...images,
-        [card.value]: this.getRepresentativeProduct(card.value)?.image ?? '',
-      }),
-      {} as Record<PcTypeFilter, string>
-    );
-    this.platformCounts = this.platformFilters.reduce(
-      (counts, platform) => ({
-        ...counts,
-        [platform.value]: this.products.filter((product) => this.matchesPlatform(product, platform.value)).length,
-      }),
-      {} as Record<PlatformFilter, number>
-    );
-  }
-
-  private getRepresentativeProduct(type: PcTypeFilter): AssembledPC | undefined {
-    const matchingProducts = this.products.filter((product) => this.matchesPcType(product, type));
-    const candidates = matchingProducts.length ? matchingProducts : this.products;
-
-    return [...candidates].sort((a, b) => {
-      const tierDifference = tierWeight[b.performanceTier] - tierWeight[a.performanceTier];
-
-      return tierDifference || b.price - a.price;
-    })[0];
-  }
-
   private matchesPcType(product: AssembledPC, type = this.selectedPcType): boolean {
     if (type === 'all') {
       return true;
+    }
+
+    if (type === 'work' || type === 'school') {
+      const text = `${product.title} ${product.description} ${product.subcategory}`.toLowerCase();
+      return product.useCase === UseCase.MIXED || (type === 'work'
+        ? /trabajo|oficina|office|productividad/.test(text)
+        : /escuela|escolar|estudi|educaci/.test(text));
     }
 
     if (type === 'creator') {
       return [UseCase.EDITING, UseCase.WORKSTATION, UseCase.MIXED].includes(product.useCase);
     }
 
-    const useCaseByType: Record<Exclude<PcTypeFilter, 'all' | 'creator'>, UseCase> = {
+    const useCaseByType: Record<Exclude<PcTypeFilter, 'all' | 'creator' | 'work' | 'school'>, UseCase> = {
       gaming: UseCase.GAMING,
       streaming: UseCase.STREAMING,
       workstation: UseCase.WORKSTATION,
@@ -322,35 +196,8 @@ export class Packages implements OnInit {
     return product.useCase === useCaseByType[type] || product.subcategory === `pc-${type}`;
   }
 
-  private matchesPlatform(product: AssembledPC, platform = this.selectedPlatform): boolean {
-    if (platform === 'all') {
-      return true;
-    }
-
-    if (platform === 'nvidia') {
-      return product.performance.gpuBrand.toLowerCase() === 'nvidia';
-    }
-
-    if (platform === 'intel') {
-      return product.performance.cpuBrand.toLowerCase() === 'intel';
-    }
-
-    return (
-      product.performance.cpuBrand.toLowerCase() === 'amd' ||
-      product.performance.gpuBrand.toLowerCase() === 'amd'
-    );
-  }
-
   private getPcTypeLabel(type: PcTypeFilter): string {
     return this.pcTypeCards.find((card) => card.value === type && type !== 'all')?.title ?? '';
-  }
-
-  private getPlatformLabel(platform: PlatformFilter): string {
-    return this.platformFilters.find((filter) => filter.value === platform && platform !== 'all')?.label ?? '';
-  }
-
-  private getUseCaseLabel(useCase: string): string {
-    return this.useCaseOptions.find((option) => option.value === useCase && useCase !== 'all')?.label ?? '';
   }
 
   private getTierLabel(tier: string): string {

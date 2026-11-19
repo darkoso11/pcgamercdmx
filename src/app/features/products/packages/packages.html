@@ -1,219 +1,73 @@
-<div class="space-y-8 text-white">
-  <section class="space-y-5">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p class="pc-text-cyan text-xs uppercase tracking-[0.24em]">Elige tu tipo de PC</p>
-        <h2 class="mt-2 text-2xl font-semibold text-white">Ensambles por objetivo</h2>
-      </div>
-      <p class="pc-text-muted max-w-xl text-sm leading-6">
-        Empieza por el uso principal y después ajusta marca, búsqueda o nivel de rendimiento.
-      </p>
+<div class="space-y-6 text-white">
+  <section class="assembly-filters" aria-labelledby="filter-heading">
+    <h2 id="filter-heading" class="sr-only">Encuentra tu ensamble</h2>
+    <label class="search-field"><span>Buscar ensamble</span>
+      <input [(ngModel)]="searchTerm" type="search" placeholder="Modelo, RTX 5070, 32GB…" class="pc-field pc-focus-cyan" />
+    </label>
+    <p class="mobile-filter-hint" id="filter-scroll-hint">Desliza para ver más filtros →</p>
+    <div class="filter-dropdowns" role="region" aria-label="Filtros de ensambles" tabindex="0">
+      <label class="filter-dropdown"><span>Uso principal</span>
+        <select [(ngModel)]="selectedPcType" [class.is-active]="selectedPcType !== 'all'" class="pc-focus-cyan">
+          <option *ngFor="let type of pcTypeCards" [value]="type.value">{{ type.title }}</option>
+        </select>
+      </label>
+      <label class="filter-dropdown"><span>Precio en MXN</span>
+        <select [(ngModel)]="selectedPrice" [class.is-active]="selectedPrice !== 'all'" class="pc-focus-cyan">
+          <option *ngFor="let option of priceOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+      <label class="filter-dropdown"><span>Rendimiento</span>
+        <select [(ngModel)]="selectedTier" [class.is-active]="selectedTier !== 'all'" class="pc-focus-cyan">
+          <option *ngFor="let option of tierOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+      <label class="filter-dropdown"><span>Procesador</span>
+        <select [(ngModel)]="selectedCpu" [class.is-active]="selectedCpu !== 'all'" class="pc-focus-cyan">
+          <option value="all">Todos</option><option value="amd">AMD</option><option value="intel">Intel</option>
+        </select>
+      </label>
+      <label class="filter-dropdown"><span>Tarjeta gráfica</span>
+        <select [(ngModel)]="selectedNvidia" [class.is-active]="selectedNvidia" class="pc-focus-cyan">
+          <option [ngValue]="false">Todas</option><option [ngValue]="true">NVIDIA</option>
+        </select>
+      </label>
     </div>
-
-    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      <button
-        *ngFor="let type of pcTypeCards"
-        type="button"
-        (click)="selectPcType(type.value)"
-        class="pc-focus-cyan group relative min-h-52 overflow-hidden rounded-2xl border p-5 text-left transition duration-300"
-        [ngClass]="
-          selectedPcType === type.value
-            ? 'border-cyan-300/70 pc-cyan-soft shadow-lg shadow-cyan-950/40'
-            : 'pc-border pc-card hover:border-cyan-300/40 hover:bg-white/5'
-        "
-        [attr.aria-pressed]="selectedPcType === type.value"
-      >
-        <img
-          *ngIf="pcTypeImages[type.value]"
-          [src]="pcTypeImages[type.value]"
-          [alt]="type.title"
-          width="208"
-          height="160"
-          loading="lazy"
-          decoding="async"
-          class="absolute bottom-0 right-0 h-36 w-44 object-contain object-bottom opacity-80 transition duration-300 group-hover:scale-105 group-hover:opacity-100 sm:h-40 sm:w-52"
-        />
-        <div class="pc-card-image-fade absolute inset-0"></div>
-        <div
-          class="absolute inset-0 transition"
-          [ngClass]="selectedPcType === type.value ? 'bg-cyan-400/10' : 'bg-transparent'"
-        ></div>
-
-        <div class="relative z-10 flex items-start justify-between gap-4">
-          <span class="pc-text-cyan text-[11px] font-semibold uppercase tracking-[0.22em]">
-            {{ type.eyebrow }}
-          </span>
-          <span
-            class="rounded-full border px-2.5 py-1 text-xs font-semibold"
-            [ngClass]="
-              selectedPcType === type.value
-                ? 'border-cyan-300/50 bg-cyan-300/15 text-cyan-100'
-                : 'pc-border bg-white/5 pc-text-muted'
-            "
-          >
-            {{ pcTypeCounts[type.value] }}
-          </span>
-        </div>
-        <div class="relative z-10 max-w-[72%]">
-          <h3 class="mt-5 text-xl font-semibold text-white">{{ type.title }}</h3>
-          <p class="pc-text-muted mt-3 text-sm leading-6">{{ type.description }}</p>
-          <p class="pc-text-subtle mt-5 text-xs uppercase tracking-[0.18em]">{{ type.specs }}</p>
-        </div>
+    <div class="filter-results-row"><p class="filter-results" role="status" aria-live="polite" aria-atomic="true">{{ activeFilterSummary }}</p>
+      <button *ngIf="hasActiveFilters" type="button" (click)="clearFilters()" class="clear-filters pc-focus-cyan">Limpiar filtros</button></div>
+    <div *ngIf="hasActiveFilters" class="active-filters" role="group" aria-label="Filtros seleccionados">
+      <button *ngIf="selectedPcType !== 'all'" type="button" class="active-filter pc-focus-cyan" aria-label="Quitar filtro de uso" (click)="selectedPcType = 'all'">
+        <ng-container *ngFor="let type of pcTypeCards"><ng-container *ngIf="type.value === selectedPcType">{{ type.title }}</ng-container></ng-container><span aria-hidden="true">×</span>
       </button>
-    </div>
-
-    <div class="pc-panel flex flex-col gap-3 rounded-2xl border pc-border p-4 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <p class="pc-text-subtle text-xs uppercase tracking-[0.22em]">Plataforma</p>
-        <p class="pc-text-muted mt-1 text-sm">Combina la categoría con AMD, Intel o NVIDIA.</p>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <button
-          *ngFor="let platform of platformFilters"
-          type="button"
-          (click)="selectPlatform(platform.value)"
-          class="pc-focus-pink rounded-xl border px-4 py-3 text-left transition"
-          [ngClass]="
-            selectedPlatform === platform.value
-              ? 'border-pink-300/70 bg-pink-400/15 text-white'
-              : 'pc-border pc-field pc-text-muted hover:border-pink-300/40'
-          "
-          [attr.aria-pressed]="selectedPlatform === platform.value"
-          [title]="platform.description"
-        >
-          <span class="block text-sm font-semibold">{{ platform.label }}</span>
-          <span class="pc-text-subtle mt-1 block text-xs">{{ platformCounts[platform.value] }} ensambles</span>
-        </button>
-      </div>
+      <button *ngIf="selectedPrice !== 'all'" type="button" class="active-filter pc-focus-cyan" aria-label="Quitar filtro de precio" (click)="selectedPrice = 'all'">
+        <ng-container *ngFor="let option of priceOptions"><ng-container *ngIf="option.value === selectedPrice">{{ option.label }}</ng-container></ng-container><span aria-hidden="true">×</span>
+      </button>
+      <button *ngIf="selectedTier !== 'all'" type="button" class="active-filter pc-focus-cyan" aria-label="Quitar filtro de rendimiento" (click)="selectedTier = 'all'">
+        <ng-container *ngFor="let option of tierOptions"><ng-container *ngIf="option.value === selectedTier">{{ option.label }}</ng-container></ng-container><span aria-hidden="true">×</span>
+      </button>
+      <button *ngIf="selectedCpu !== 'all'" type="button" class="active-filter pc-focus-cyan" [attr.aria-label]="'Quitar filtro de procesador ' + (selectedCpu === 'amd' ? 'AMD' : 'Intel')" (click)="selectedCpu = 'all'">{{ selectedCpu === 'amd' ? 'AMD' : 'Intel' }}<span aria-hidden="true">×</span></button>
+      <button *ngIf="selectedNvidia" type="button" class="active-filter pc-focus-cyan" aria-label="Quitar filtro NVIDIA" (click)="selectedNvidia = false">NVIDIA<span aria-hidden="true">×</span></button>
+      <button *ngIf="searchTerm.trim()" type="button" class="active-filter pc-focus-cyan" aria-label="Quitar búsqueda" (click)="searchTerm = ''">Búsqueda: {{ searchTerm.trim() }}<span aria-hidden="true">×</span></button>
     </div>
   </section>
 
-  <section class="pc-panel space-y-4 rounded-2xl border pc-border p-5">
-    <div class="flex flex-col gap-3 border-b pc-border pb-4 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <p class="pc-text-subtle text-xs uppercase tracking-[0.22em]">Refinar búsqueda</p>
-        <p class="pc-text-muted mt-1 text-sm">{{ activeFilterSummary }}</p>
-      </div>
-      <button
-        type="button"
-        (click)="clearFilters()"
-        [disabled]="!hasActiveFilters"
-        class="pc-focus-cyan rounded-xl border pc-border px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-cyan-300/40 hover:bg-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-45"
-      >
-        Limpiar filtros
-      </button>
-    </div>
-
-    <div class="grid gap-4 lg:grid-cols-[1.2fr_1fr_1fr]">
-    <label class="space-y-2">
-      <span class="pc-text-subtle block text-xs uppercase tracking-[0.22em]">Buscar ensamble</span>
-      <input
-        [(ngModel)]="searchTerm"
-        type="text"
-        placeholder="RTX 4070, streaming, 64GB..."
-        class="pc-field pc-focus-cyan w-full rounded-xl border pc-border px-4 py-3 text-sm text-white transition placeholder:text-slate-500 focus:border-cyan-400/50"
-      />
-    </label>
-
-    <label class="space-y-2">
-      <span class="pc-text-subtle block text-xs uppercase tracking-[0.22em]">Uso principal</span>
-      <select
-        [(ngModel)]="selectedUseCase"
-        class="pc-field pc-focus-cyan w-full rounded-xl border pc-border px-4 py-3 text-sm text-white focus:border-cyan-400/50"
-      >
-        <option *ngFor="let option of useCaseOptions" [value]="option.value">{{ option.label }}</option>
-      </select>
-    </label>
-
-    <label class="space-y-2">
-      <span class="pc-text-subtle block text-xs uppercase tracking-[0.22em]">Tier de rendimiento</span>
-      <select
-        [(ngModel)]="selectedTier"
-        class="pc-field pc-focus-cyan w-full rounded-xl border pc-border px-4 py-3 text-sm text-white focus:border-cyan-400/50"
-      >
-        <option *ngFor="let option of tierOptions" [value]="option.value">{{ option.label }}</option>
-      </select>
-    </label>
-    </div>
-  </section>
-
-  <section *ngIf="filteredProducts.length; else emptyState" class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-    <article
-      *ngFor="let item of filteredProducts"
-      class="assembly-card pc-card min-w-0 rounded-2xl border pc-border p-6 shadow-lg shadow-black/20"
-    >
-      <div class="pc-text-cyan flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.22em]">
-        <span *ngFor="let badge of item.card.badges" class="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1">
-          {{ badge }}
-        </span>
-      </div>
-
-      <div class="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div class="pc-field flex min-w-0 items-center justify-center rounded-2xl p-4">
-          <img
-            [src]="item.card.image"
-            [alt]="item.card.title"
-            width="360"
-            height="288"
-            loading="lazy"
-            decoding="async"
-            class="min-w-0 max-h-72 max-w-full object-contain"
-          />
+  <section *ngIf="filteredProducts.length; else emptyState" class="assembly-grid">
+    <article *ngFor="let item of filteredProducts" class="assembly-card pc-card pc-border">
+      <a [routerLink]="['/ensambles', item.card.slug]" class="assembly-image pc-focus-cyan">
+        <img [src]="item.card.image" [alt]="item.card.title" width="360" height="288" loading="lazy" decoding="async" />
+      </a>
+      <div class="assembly-body">
+        <h3 class="assembly-title"><a [routerLink]="['/ensambles', item.card.slug]" class="pc-focus-cyan">{{ item.card.title }}</a></h3>
+        <div class="assembly-badges"><span *ngFor="let badge of item.card.badges">{{ badge }}</span></div>
+        <div class="assembly-price">
+          <p class="pc-text-pink">${{ (item.card.discountedPrice ?? item.card.price) | number }}</p>
+          <p *ngIf="item.card.discountedPrice" class="original-price">${{ item.card.price | number }}</p>
         </div>
-
-        <div class="min-w-0 space-y-4">
-          <div>
-            <h3 class="text-2xl font-semibold">{{ item.card.title }}</h3>
-            <p class="pc-text-muted mt-2 text-sm leading-6">{{ item.card.description }}</p>
-          </div>
-
-          <div class="grid grid-cols-1 gap-3 text-sm">
-            <div
-              *ngFor="let spec of item.card.specHighlights"
-              class="flex min-w-0 items-center justify-between gap-3 rounded-xl border pc-border bg-white/5 px-4 py-3"
-            >
-              <span class="pc-text-subtle">{{ spec.label }}</span>
-              <span class="min-w-0 text-right text-white">{{ spec.value }}</span>
-            </div>
-          </div>
-
-          <div class="rounded-xl border border-pink-400/20 bg-pink-400/10 px-4 py-3 text-sm text-pink-100">
-            {{ getSummary(item.product) }}
-          </div>
-
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p class="pc-text-subtle text-xs uppercase tracking-[0.2em]">Precio referencial</p>
-              <p *ngIf="item.card.discountedPrice" class="mt-1 text-xs text-slate-400 line-through">
-                ${{ item.card.price | number }}
-              </p>
-              <p class="pc-text-pink mt-1 text-2xl font-semibold">
-                ${{ (item.card.discountedPrice ?? item.card.price) | number }}
-              </p>
-            </div>
-            <a
-              [routerLink]="['/ensambles', item.card.slug]"
-              class="pc-cta pc-focus-pink rounded-xl px-5 py-3 text-sm font-semibold text-white"
-            >
-              Ver detalle
-            </a>
-          </div>
-
-          <div class="pc-text-muted flex flex-wrap gap-3 text-sm">
-            <a
-              [routerLink]="['/contacto']"
-              [queryParams]="{ product: item.card.slug }"
-              class="pc-focus-cyan rounded-lg border pc-border px-4 py-2 transition hover:border-cyan-400/40 hover:bg-cyan-400/10"
-            >
-              Solicitar cotización
-            </a>
-            <a
-              [routerLink]="['/ensambles', item.card.slug]"
-              class="pc-focus-pink rounded-lg border pc-border px-4 py-2 transition hover:border-pink-400/40 hover:bg-pink-400/10"
-            >
-              Comparar especificaciones
-            </a>
-          </div>
+        <dl class="assembly-specs">
+          <div *ngFor="let spec of item.card.specHighlights"><dt>{{ spec.label }}</dt><dd>{{ spec.value }}</dd></div>
+        </dl>
+        <div class="assembly-actions">
+          <a [routerLink]="['/ensambles', item.card.slug]" class="pc-cta pc-focus-pink">Ver detalle</a>
+          <a [routerLink]="['/contacto']" [queryParams]="{ product: item.card.slug }" class="pc-focus-cyan">Cotizar</a>
         </div>
       </div>
     </article>
