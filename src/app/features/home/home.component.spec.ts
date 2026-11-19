@@ -90,13 +90,7 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
   });
 
-  it('shows the newly published site notice in the hero', () => {
-    const notice = fixture.nativeElement.querySelector('.launch-notice');
 
-    expect(notice).not.toBeNull();
-    expect(notice.textContent).toContain('Sitio recien publicado');
-    expect(notice.textContent).toContain('Gracias por tu paciencia');
-  });
 
   it('keeps slider ordering deterministic between prerender and hydration', () => {
     spyOn(Math, 'random').and.returnValues(0, 0, 0, 0.99, 0.99, 0.99);

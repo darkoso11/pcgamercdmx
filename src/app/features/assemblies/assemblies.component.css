@@ -1,3 +1,16 @@
-:host {
-  display: block;
+:host { display: block; }
+/* Clear the fixed navigation, then leave 10px / 20px of breathing room. */
+.assembly-header { padding-top: 76px; padding-bottom: 10px; }
+.intro-content, .intro-copy { display: grid; gap: 10px; }
+.intro-actions { display: none; }
+h1 { font-size: 26px; }
+.intro-copy p { font-size: 14px; line-height: 1.7; }
+.intro-content > span { justify-self: start; font-size: 10px; letter-spacing: .2em; }
+@media (min-width: 890px) {
+  .assembly-header { padding-top: 94px; padding-bottom: 20px; }
+  .intro-content, .intro-copy { gap: 16px; }
+  .intro-actions { display: flex; }
+  h1 { font-size: 48px; }
+  .intro-copy p { font-size: 18px; }
+  .intro-content > span { font-size: 12px; }
 }
