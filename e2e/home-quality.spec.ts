@@ -33,7 +33,7 @@ test('initial HTML preloads the LCP image without blocking on third-party styles
     '<link rel="preload" as="image" href="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp"'
   );
   expect(html).toContain('imagesrcset="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp 480w');
-  expect(html).toContain('Sitio recien publicado');
+  expect(html).not.toContain('Sitio recien publicado');
   expect(html).not.toContain('<app-products-slider');
   expect(scriptEnabledHtml).not.toMatch(/<link\s+rel="stylesheet"\s+href="https:\/\//);
   expect(scriptEnabledHtml).not.toMatch(/<link rel="stylesheet" href="styles-[^"]+\.css">/);

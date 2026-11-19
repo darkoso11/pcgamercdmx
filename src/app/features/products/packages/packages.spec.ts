@@ -143,8 +143,8 @@ describe('Packages', () => {
     expect(component).toBeTruthy();
   });
 
-  it('filters by selected PC type card', () => {
-    component.selectPcType('gaming');
+  it('filters by selected PC use', () => {
+    component.selectedPcType = 'gaming';
 
     expect(component.filteredProducts.map((item) => item.product.title)).toEqual([
       'Gaming AMD NVIDIA',
@@ -153,7 +153,7 @@ describe('Packages', () => {
   });
 
   it('combines PC type and platform filters', () => {
-    component.selectPcType('editing');
+    component.selectedPcType = 'editing';
     component.selectPlatform('intel');
 
     expect(component.filteredProducts.map((item) => item.product.title)).toEqual([
@@ -173,7 +173,7 @@ describe('Packages', () => {
   });
 
   it('uses subcategory to match workstation cards', () => {
-    component.selectPcType('workstation');
+    component.selectedPcType = 'workstation';
 
     expect(component.filteredProducts.map((item) => item.product.title)).toEqual([
       'Workstation AMD NVIDIA',
@@ -182,29 +182,24 @@ describe('Packages', () => {
 
   it('clears all filters', () => {
     component.searchTerm = 'rtx';
-    component.selectedUseCase = UseCase.GAMING;
     component.selectedTier = PerformanceTier.HIGH;
-    component.selectPcType('gaming');
+    component.selectedPcType = 'gaming';
     component.selectPlatform('nvidia');
 
     component.clearFilters();
 
     expect(component.searchTerm).toBe('');
-    expect(component.selectedUseCase).toBe('all');
     expect(component.selectedTier).toBe('all');
     expect(component.selectedPcType).toBe('all');
-    expect(component.selectedPlatform).toBe('all');
+    expect(component.selectedCpu).toBe('all');
+    expect(component.selectedNvidia).toBeFalse();
   });
 
   it('builds a readable active filter summary', () => {
-    component.selectPcType('gaming');
+    component.selectedPcType = 'gaming';
     component.selectPlatform('nvidia');
 
     expect(component.activeFilterSummary).toBe('Mostrando 2 ensambles para Gaming + NVIDIA');
-  });
-
-  it('uses the highest tier matching product as the card image', () => {
-    expect(component.getPcTypeImage('gaming')).toBe('assets/gaming-ultra.png');
   });
 
   it('applies suggested filter combinations', () => {
@@ -216,6 +211,70 @@ describe('Packages', () => {
     expect(component.searchTerm).toBe('');
     expect(component.selectedTier).toBe('all');
     expect(component.selectedPcType).toBe('gaming');
-    expect(component.selectedPlatform).toBe('nvidia');
+    expect(component.selectedNvidia).toBeTrue();
   });
+  it('combines processor and NVIDIA tags, and toggles a tag off', () => {
+    component.selectPlatform('amd');
+    component.selectPlatform('nvidia');
+    expect(component.filteredProducts.map(item => item.product.title)).toEqual([
+      'Gaming AMD NVIDIA', 'Workstation AMD NVIDIA',
+    ]);
+    component.selectPlatform('nvidia');
+    expect(component.filteredProducts.length).toBe(3);
+  });
+
+  it('renders dropdown filters without category images', () => {
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelectorAll('button img').length).toBe(0);
+    expect(element.querySelectorAll('.filter-dropdowns select').length).toBe(5);
+    expect(element.textContent).toContain('Escuela');
+    expect(element.textContent).toContain('Precio en MXN');
+  });
+
+  it('uses the displayed offer price and excludes the upper range boundary', () => {
+    component.cards[0].price = 30000;
+    component.cards[0].discountedPrice = 15000;
+    component.cards[1].price = 25000;
+    component.selectedPrice = '15to25';
+    expect(component.filteredProducts.map(item => item.product.title)).toEqual(['Gaming AMD NVIDIA']);
+    component.selectedPrice = 'under15';
+    expect(component.filteredProducts.some(item => item.product.title === 'Gaming AMD NVIDIA')).toBeFalse();
+  });
+
+  it('combines all dimensions and resets them after an empty result', () => {
+    component.selectedPcType = 'gaming';
+    component.selectPlatform('amd');
+    component.selectPlatform('nvidia');
+    component.selectedTier = PerformanceTier.MID;
+    component.selectedPrice = 'under15';
+    component.searchTerm = 'Gaming';
+    expect(component.filteredProducts.length).toBe(1);
+    component.selectedPrice = '40plus';
+    expect(component.filteredProducts.length).toBe(0);
+    component.clearFilters();
+    expect(component.filteredProducts.length).toBe(products.length);
+    expect(component.hasActiveFilters).toBeFalse();
+  });
+
+  it('matches work and school from mixed use or explicit catalog descriptions', () => {
+    component.products[0].description = 'Equipo para escuela';
+    component.products[1].description = 'Equipo para oficina';
+    component.selectedPcType = 'school';
+    expect(component.filteredProducts.map(item => item.product.title)).toEqual(['Gaming AMD NVIDIA', 'Workstation AMD NVIDIA']);
+    component.selectedPcType = 'work';
+    expect(component.filteredProducts.map(item => item.product.title)).toEqual(['Editing Intel NVIDIA', 'Workstation AMD NVIDIA']);
+  });
+
+  it('removes only the selected active filter chip', () => {
+    component.selectPlatform('amd');
+    component.selectPlatform('nvidia');
+    fixture.detectChanges();
+    const chip: HTMLButtonElement | null = fixture.nativeElement.querySelector('[aria-label="Quitar filtro de procesador AMD"]');
+    expect(chip).not.toBeNull();
+    chip?.click();
+    fixture.detectChanges();
+    expect(component.selectedCpu).toBe('all');
+    expect(component.selectedNvidia).toBeTrue();
+  });
+
 });

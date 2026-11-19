@@ -44,7 +44,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/assemblies/assemblies.component').then(m => m.AssembliesComponent),
     title: 'Ensambles | PC Gamer CDMX',
     data: {
-      description: 'Explora ensambles de PC listos para gaming, streaming y trabajo creativo en PC Gamer CDMX.',
+      description: 'Encuentra ensambles de PC para gaming, trabajo, escuela y diseño 3D en CDMX. Compara precios, gamas, procesadores Intel o AMD y gráficos NVIDIA.',
       keywords: 'ensambles pc gamer, pc prearmada, pc gaming mexico, pc gamer cdmx'
     }
   },
