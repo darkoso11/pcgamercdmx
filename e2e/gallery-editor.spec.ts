@@ -118,10 +118,12 @@ test('shows a recoverable public error instead of fallback images', async ({ pag
   await page.route('**/items/pc_gallery_images?*', route => route.fulfill({ status: 503, json: {} }));
   await page.goto('/galeria');
   await expect(page.getByRole('alert')).toContainText('No se pudo cargar');
-  await expect(page.getByRole('button', { name: /^Abrir / })).toHaveCount(0);
+  const gallery = page.locator('.masonry-grid');
+  await expect(gallery).toBeAttached();
+  await expect(gallery.getByRole('button')).toHaveCount(0);
   await page.unroute('**/items/pc_gallery_images?*');
   await page.getByRole('button', { name: 'Reintentar', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Abrir Original', exact: true })).toBeVisible();
+  await expect(gallery.getByRole('button', { name: 'Abrir Original', exact: true })).toBeVisible();
 });
 
 test('brings mobile validation errors into view without saving invalid tags', async ({ page }) => {
