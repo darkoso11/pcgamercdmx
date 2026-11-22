@@ -75,6 +75,12 @@ interface AdminModuleCard {
 export class AdminDashboardComponent {
   readonly modules: AdminModuleCard[] = [
     {
+      title: 'Admin Galería',
+      description: 'Sube imágenes, organiza categorías y etiquetas y controla la publicación y el SEO de la galería.',
+      icon: 'fas fa-images', route: adminUrl('gallery'), accent: 'cyan',
+      actions: ['Biblioteca de imágenes', 'Categorías y etiquetas', 'Publicadas y borradores', 'Página y SEO'],
+    },
+    {
       title: 'Admin Home',
       description: 'Edita la primera impresion del sitio: banner superior, carrusel grande, anuncios y proximos eventos.',
       icon: 'fas fa-bullhorn',

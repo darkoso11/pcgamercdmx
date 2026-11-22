@@ -5,6 +5,7 @@ import { adminRoute } from './features/admin/admin-route.config';
 import { ProductsService } from './features/products/services/products.service';
 
 export const serverRoutes: ServerRoute[] = [
+  { path: 'galeria', renderMode: RenderMode.Server },
   ...['productos', 'productos/perifericos', 'productos/hardware-accesorios'].map((path): ServerRoute => ({ path, renderMode: RenderMode.Prerender })),
   ...['perifericos', 'hardware-accesorios'].map((group): ServerRoute => ({
     path: `productos/${group}/:category`,
