@@ -1,0 +1,68 @@
+<app-admin-header />
+<main class="gallery-admin">
+  <header class="heading"><div><p class="eyebrow">GESTIÓN DE CONTENIDO</p><h1>Admin Galería</h1><p>Organiza tus creaciones y decide cuáles mostrar al mundo.</p></div><a routerLink="/galeria">Ver galería pública ↗</a></header>
+  <nav class="tabs" aria-label="Secciones de galería">
+    <button type="button" [class.active]="tab === 'images'" (click)="changeTab('images')" [disabled]="saving">Imágenes <span>{{images.length}}</span></button>
+    <button type="button" [class.active]="tab === 'page'" (click)="changeTab('page')" [disabled]="saving">Página y SEO</button>
+  </nav>
+  <p #feedback role="status" aria-live="polite">{{loading ? 'Cargando galería…' : message}}</p>
+  <div *ngIf="error" class="error" role="alert">{{error}} <button *ngIf="!ready && !loading" (click)="load()">Reintentar</button></div>
+  <ng-container *ngIf="ready && !loading">
+    <div *ngIf="tab === 'images'" class="workspace">
+      <section aria-label="Biblioteca de imágenes" class="library">
+        <div class="section-heading"><h2>Biblioteca</h2><button type="button" (click)="edit()" [disabled]="saving">+ Nueva imagen</button></div>
+        <label>Buscar imágenes<input type="search" [(ngModel)]="query" placeholder="Título, categoría o etiqueta" /></label>
+        <div class="row"><label>Filtrar categoría<select [(ngModel)]="category"><option value="">Todas</option><option *ngFor="let c of categories" [value]="c">{{c | titlecase}}</option></select></label>
+        <label>Estado<select [(ngModel)]="status"><option value="">Todos</option><option value="published">Publicadas</option><option value="draft">Borradores</option></select></label></div>
+        <p class="hint">{{filtered.length}} imágenes · Ordenadas de menor a mayor</p>
+        <div class="image-list">
+          <article *ngFor="let item of filtered" class="image-card" [class.selected]="editor.id === item.id">
+            <img [src]="item.src" [alt]="item.alt" loading="lazy" />
+            <div class="card-body"><span class="badge" [class.published]="item.published">{{item.published ? 'Publicada' : 'Borrador'}}</span><h3>{{item.title}}</h3><p>{{item.category | titlecase}} · Orden {{item.sort_order}}</p><p class="tags">{{item.tags.join(' · ')}}</p>
+            <div class="actions"><button type="button" (click)="edit(item)" [attr.aria-label]="'Editar ' + item.title" [disabled]="saving">Editar</button><button type="button" class="danger" (click)="remove(item)" [attr.aria-label]="'Eliminar ' + item.title" [disabled]="saving">Eliminar</button></div></div>
+          </article>
+        </div>
+        <p *ngIf="!filtered.length" class="empty">{{images.length ? 'No hay coincidencias con estos filtros.' : 'Tu biblioteca está vacía. Sube la primera imagen.'}}</p>
+      </section>
+      <section #editorPanel class="editor" aria-label="Editor de imagen">
+        <h2>{{editor.id ? 'Editar imagen' : 'Nueva imagen'}}</h2><p class="hint">Los campos con * son obligatorios.</p>
+        <form #imageForm="ngForm" (ngSubmit)="saveImage()">
+          <fieldset [disabled]="saving">
+            <div class="preview"><img *ngIf="preview || editor.src; else emptyPreview" [src]="preview || editor.src" [alt]="editor.alt || 'Vista previa'" /><ng-template #emptyPreview><span>La próxima creación empieza aquí</span></ng-template></div>
+            <label>Subir imagen<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" (change)="selectFile($event)" /></label>
+            <p class="hint">JPG, PNG, WebP o AVIF · Máximo 10 MB. Elegir otra imagen reemplaza la actual al guardar.</p>
+            <label>Título *<input name="title" [(ngModel)]="editor.title" maxlength="255" required /></label>
+            <label>Texto alternativo *<textarea name="alt" [(ngModel)]="editor.alt" maxlength="500" rows="2" required></textarea></label>
+            <p class="hint">Describe lo que aparece en la imagen para lectores de pantalla y buscadores.</p>
+            <label>Descripción<textarea name="description" [(ngModel)]="editor.description" maxlength="5000" rows="3"></textarea></label>
+            <label>Categoría *<input name="category" [(ngModel)]="editor.category" list="gallery-categories" maxlength="100" required placeholder="Ej. ensambles" /></label>
+            <datalist id="gallery-categories"><option *ngFor="let c of categories" [value]="c"></option></datalist>
+            <label>Etiquetas<input name="tagsText" [(ngModel)]="tagsText" placeholder="rgb, refrigeración líquida, blanco" /></label>
+            <p class="hint">Separadas por comas. Hasta 20 etiquetas; las repetidas se unifican.</p>
+            <p class="hint" *ngIf="tags.length">En uso: {{tags.join(', ')}}</p>
+            <div class="row"><label>Autor<input name="author" [(ngModel)]="editor.author" maxlength="255" /></label><label>Fecha<input type="date" name="date" [(ngModel)]="editor.date" /></label></div>
+            <div class="row"><label>Orden<input type="number" name="sort_order" [(ngModel)]="editor.sort_order" min="0" step="1" required /></label><label class="check"><input type="checkbox" name="published" [(ngModel)]="editor.published" />Publicada</label></div>
+            <p class="hint">Los borradores no aparecen en la galería pública.</p>
+            <button class="primary" type="submit" [disabled]="saving || imageForm.invalid">{{saving ? 'Guardando…' : 'Guardar imagen'}}</button>
+          </fieldset>
+        </form>
+      </section>
+    </div>
+    <section *ngIf="tab === 'page'" class="editor page-editor">
+      <h2>Página y SEO</h2><p class="hint">Controla la presentación de la galería en el sitio, buscadores y redes sociales.</p>
+      <form #pageForm="ngForm" (ngSubmit)="savePage()"><fieldset [disabled]="saving">
+        <label>Encabezado *<input name="heading" [(ngModel)]="settings.heading" maxlength="255" required /></label>
+        <label>Subtítulo<textarea name="subtitle" [(ngModel)]="settings.subtitle" maxlength="1000" rows="2"></textarea></label>
+        <label>Título SEO *<input name="seo_title" [(ngModel)]="settings.seo_title" maxlength="255" required /></label>
+        <p class="hint">{{settings.seo_title.length}} caracteres · Procura un título claro y específico.</p>
+        <label>Descripción SEO *<textarea name="seo_description" [(ngModel)]="settings.seo_description" maxlength="1000" rows="3" required></textarea></label>
+        <p class="hint">{{settings.seo_description.length}} caracteres · Resume lo que encontrará el visitante.</p>
+        <label>Imagen para redes sociales<select name="social_image_id" [(ngModel)]="settings.social_image_id"><option [ngValue]="null">Primera imagen publicada</option><option *ngFor="let image of published" [ngValue]="image.id">{{image.title}}</option></select></label>
+        <p class="hint">Si la imagen elegida se elimina o pasa a borrador, se utilizará la primera publicada.</p>
+        <div class="search-preview"><p>pcgamercdmx.com › galeria</p><h3>{{settings.seo_title}}</h3><p>{{settings.seo_description}}</p></div>
+        <p class="hint">Vista previa orientativa. Los buscadores pueden mostrar textos distintos.</p>
+        <button type="submit" class="primary" [disabled]="saving || pageForm.invalid">{{saving ? 'Guardando…' : 'Guardar página'}}</button>
+      </fieldset></form>
+    </section>
+  </ng-container>
+</main>
