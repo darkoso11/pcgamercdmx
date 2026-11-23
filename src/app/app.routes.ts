@@ -1,3 +1,4 @@
+import { galleryEditorCanDeactivate } from './features/gallery/gallery-editor.guard';
 import { blogEditorCanDeactivate } from './features/blog/admin/blog-editor.guard';
 import { Routes } from '@angular/router';
 import { AuthGuard } from './features/admin/services/auth.guard';
@@ -93,7 +94,7 @@ export const routes: Routes = [
     path: 'galeria',
     loadComponent: () => import('./features/gallery/gallery.component').then(m => m.GalleryComponent),
     title: 'Galeria | PC Gamer CDMX',
-    data: { description: 'Galeria de ensambles, gabinetes personalizados y setups creados por PC Gamer CDMX.' }
+    data: { seoManagedByComponent: true }
   },
   {
     path: 'sorteos',
@@ -140,6 +141,14 @@ export const routes: Routes = [
     data: { seoManagedByComponent: true }
   },
 
+  {
+    path: adminRoute('gallery'),
+    loadComponent: () => import('./features/gallery/admin-gallery.component').then(m => m.AdminGalleryComponent),
+    title: 'Admin Galería | PC Gamer CDMX',
+    data: { noIndex: true },
+    canActivate: [AuthGuard],
+    canDeactivate: [galleryEditorCanDeactivate],
+  },
   // Admin Blog routes
   {
     path: adminRoute(),

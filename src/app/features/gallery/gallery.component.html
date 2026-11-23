@@ -2,13 +2,15 @@
   <!-- Header -->
   <div class="text-center mb-8">
     <h1 class="mb-2 text-4xl font-bold text-cyan-300 md:text-6xl glow-text">
-      GALERÍA CYBER
+      {{settings.heading || 'Galería'}}
     </h1>
-    <p class="text-gray-400 text-lg">Explora nuestras creaciones y productos en un universo digital</p>
+    <p class="text-gray-400 text-lg">{{settings.subtitle}}</p>
   </div>
 
+  <p *ngIf="loading" role="status" class="text-center py-8">Cargando galería…</p>
+  <div *ngIf="error" role="alert" class="text-center py-8"><p>{{error}}</p><button type="button" class="mt-4 px-5 py-2 border rounded" (click)="load()">Reintentar</button></div>
   <!-- Filtros -->
-  <div class="filters flex flex-wrap justify-center gap-3 mb-8">
+  <div *ngIf="!loading && !error && images.length" class="filters flex flex-wrap justify-center gap-3 mb-8">
     <button
       class="btn px-6 py-2 rounded-full border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black transition-all duration-300 glow-on-hover"
       [class.active]="activeCategory==='all'"
@@ -24,6 +26,12 @@
     </button>
   </div>
 
+  <div *ngIf="tags.length && !loading && !error" class="text-center mb-6">
+    <label for="gallery-tag" class="mr-3 text-gray-300">Filtrar por etiqueta</label>
+    <select id="gallery-tag" [(ngModel)]="activeTag" (ngModelChange)="applyFilter()" class="bg-gray-900 border border-purple-400 rounded px-4 py-2 max-w-full">
+      <option value="">Todas las etiquetas</option><option *ngFor="let tag of tags" [value]="tag">{{tag}}</option>
+    </select>
+  </div>
   <!-- Masonry Grid -->
   <div class="masonry-grid">
     <button
@@ -34,7 +42,7 @@
       [attr.aria-label]="'Abrir ' + (img.title || 'imagen de galería')"
       (click)="open(img)">
       <div class="relative">
-        <img [src]="img.src" [alt]="img.title||'imagen'" loading="lazy" class="w-full h-auto object-cover" />
+        <img [src]="img.src" [alt]="img.alt" loading="lazy" class="w-full h-auto object-cover" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
         <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
           <h3 class="text-cyan-400 font-semibold text-sm mb-1">{{img.title}}</h3>
@@ -48,8 +56,8 @@
   </div>
 
   <!-- No images message -->
-  <div *ngIf="filtered.length === 0" class="text-center py-20">
-    <p class="text-gray-400 text-lg">No hay imágenes en esta categoría.</p>
+  <div *ngIf="!loading && !error && filtered.length === 0" class="text-center py-20">
+    <p class="text-gray-400 text-lg">{{images.length ? 'No hay imágenes con estos filtros.' : 'No hay imágenes publicadas.'}}</p>
   </div>
 
   <!-- Modal -->
@@ -71,10 +79,11 @@
         (click)="close()">
         ✕
       </button>
-      <img [src]="modalImage.src" [alt]="modalImage.title||'imagen'" class="w-full h-auto rounded-t-lg" />
+      <img [src]="modalImage.src" [alt]="modalImage.alt" class="w-full h-auto rounded-t-lg" />
       <div class="p-6">
         <h3 id="gallery-dialog-title" class="text-2xl font-bold text-cyan-400 mb-2">{{modalImage.title}}</h3>
         <p class="text-gray-300 mb-4">{{modalImage.category | titlecase}}</p>
+        <p *ngIf="modalImage.description" class="text-gray-300 mb-4">{{modalImage.description}}</p>
         <div class="flex flex-wrap gap-2 mb-4" *ngIf="modalImage.tags">
           <span class="text-xs bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full" *ngFor="let tag of modalImage.tags">{{tag}}</span>
         </div>

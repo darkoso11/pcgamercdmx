@@ -30,7 +30,7 @@ app.use((request, response, next) => {
   response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   response.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
-  if (request.path === '/blog' || request.path.startsWith('/blog/')) response.setHeader('Cache-Control', 'no-store');
+  if (request.path === '/galeria' || request.path === '/blog' || request.path.startsWith('/blog/')) response.setHeader('Cache-Control', 'no-store');
   next();
 });
 app.get('/healthz', (_request, response) => { response.type('text/plain').send('ok'); });
