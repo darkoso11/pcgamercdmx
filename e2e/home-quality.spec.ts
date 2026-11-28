@@ -3,14 +3,14 @@ import AxeBuilder from '@axe-core/playwright';
 
 test('home defers every non-critical image', async ({ page }) => {
   await page.setViewportSize({ width: 412, height: 915 });
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'load' });
   if (await page.locator('[data-home-deferred-placeholder]').count()) {
     await page.locator('[data-home-deferred-placeholder]').scrollIntoViewIfNeeded();
   }
   await expect(page.locator('app-products-slider')).toBeVisible();
 
   const images = page.locator(
-    'app-home img:not(.pc-ensamble-img):not([src*="leon-"]):not([src$="/leon.png"]):not([src$="assets/img/leon.png"])'
+    'app-home img:not([src*="leon-"]):not([src$="/leon.png"]):not([src$="assets/img/leon.png"])'
   );
   expect(await images.count()).toBeGreaterThan(10);
 
@@ -24,15 +24,12 @@ test('home defers every non-critical image', async ({ page }) => {
   )).toEqual([]);
 });
 
-test('initial HTML preloads the LCP image without blocking on third-party styles', async ({ request }) => {
+test('initial HTML avoids the retired cabinet preload and blocking third-party styles', async ({ request }) => {
   const response = await request.get('/');
   const html = await response.text();
   const scriptEnabledHtml = html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '');
 
-  expect(html).toContain(
-    '<link rel="preload" as="image" href="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp"'
-  );
-  expect(html).toContain('imagesrcset="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp 480w');
+  expect(html).not.toContain('Gabinete-NZXT-H9-Flow-01');
   expect(html).not.toContain('Sitio recien publicado');
   expect(html).not.toContain('<app-products-slider');
   expect(scriptEnabledHtml).not.toMatch(/<link\s+rel="stylesheet"\s+href="https:\/\//);
@@ -47,7 +44,7 @@ test('home loads the Orbitron display font from a local WOFF2 asset', async ({ p
   expect(fontResponse.ok()).toBe(true);
   expect(fontResponse.headers()['content-type']).toMatch(/font\/woff2|application\/font-woff2/);
 
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
 
   await expect(page.locator('app-home h1')).toHaveCSS('font-family', /Orbitron/);
@@ -64,7 +61,7 @@ test('home loads the Orbitron display font from a local WOFF2 asset', async ({ p
 
 test('keyboard arrows control only the focused carousel', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'load' });
   if (await page.locator('[data-home-deferred-placeholder]').count()) {
     await page.locator('[data-home-deferred-placeholder]').scrollIntoViewIfNeeded();
   }
@@ -92,7 +89,7 @@ test('keyboard arrows control only the focused carousel', async ({ page }) => {
 });
 
 test('home has no automatically detectable accessibility violations', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'load' });
   if (await page.locator('[data-home-deferred-placeholder]').count()) {
     await page.locator('[data-home-deferred-placeholder]').scrollIntoViewIfNeeded();
   }

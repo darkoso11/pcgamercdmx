@@ -102,39 +102,39 @@ describe('HomeComponent', () => {
     expect(browserOrder).toEqual(serverOrder);
   });
 
-  it('keeps the above-the-fold assembly image stable instead of rotating the LCP', fakeAsync(() => {
-    const isolatedFixture = TestBed.createComponent(HomeComponent);
-    isolatedFixture.detectChanges();
-    const isolatedComponent = isolatedFixture.componentInstance;
-    const initialIndex = isolatedComponent.pcIndex;
-
-    tick(8_000);
-
-    expect(isolatedComponent.pcIndex).toBe(initialIndex);
-    isolatedFixture.destroy();
-  }));
-
-  it('prioritizes and reserves space for the above-the-fold assembly image', () => {
-    const images = Array.from(
-      fixture.nativeElement.querySelectorAll('.pc-ensamble-img')
-    ) as HTMLImageElement[];
-
-    expect(images.length).toBe(2);
-    for (const image of images) {
-      expect(image.getAttribute('fetchpriority')).toBe('high');
-      expect(image.getAttribute('loading')).toBe('eager');
-      expect(image.getAttribute('decoding')).toBe('sync');
-      expect(image.getAttribute('width')).toBe('1100');
-      expect(image.getAttribute('height')).toBe('1200');
-      expect(image.getAttribute('sizes')).toBe(
-        '(max-width: 767px) calc(100vw - 32px), 50vw'
-      );
+  it('renders the welcome immediately and links the home CTA to the configured store', () => {
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain(component.fullText);
+    const links = Array.from(fixture.nativeElement.querySelectorAll('a.store-link')) as HTMLAnchorElement[];
+    expect(links.length).toBe(2);
+    for (const link of links) {
+      expect(link.href).toBe(component.business.mapDirectionsUrl);
+      expect(link.textContent).toContain('Ir a la tienda');
     }
   });
 
+  it('writes the welcome progressively and rotates banners without arrows', fakeAsync(() => {
+    const isolated = TestBed.createComponent(HomeComponent);
+    isolated.detectChanges();
+    expect(isolated.componentInstance.typingText).toBe('');
+    tick(580);
+    expect(isolated.componentInstance.typingText.length).toBeGreaterThan(0);
+    expect(isolated.componentInstance.typingText.length).toBeLessThan(isolated.componentInstance.fullText.length);
+    tick(1500);
+    expect(isolated.componentInstance.typingText).toBe(isolated.componentInstance.fullText);
+    expect(isolated.nativeElement.querySelector('.slider-arrow')).toBeNull();
+    isolated.destroy();
+  }));
+
+  it('keeps the official logo first after home settings load', fakeAsync(() => {
+    const isolated = TestBed.createComponent(HomeComponent);
+    isolated.detectChanges();
+    tick(3500);
+    expect(isolated.componentInstance.sliderImages[0]?.src).toBe('assets/img/leon-160.webp');
+    isolated.destroy();
+  }));
+
   it('keeps the assembly slider empty when the backend returns no assemblies', () => {
     expect(component.carruselProducts).toEqual([]);
-    expect(component.filteredCarruselProducts).toEqual([]);
   });
 
   it('links the packages section to the high-end PC landing page', async () => {

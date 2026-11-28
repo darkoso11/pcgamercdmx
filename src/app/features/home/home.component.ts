@@ -6,6 +6,8 @@ import {
   ViewChild,
   ChangeDetectorRef,
 } from '@angular/core';
+import { selectFeaturedAssembly } from './home-featured-assembly';
+import { HomeVideoComponent } from './components/home-video.component';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
@@ -31,7 +33,7 @@ import { HomeCommunitySectionComponent } from './components/home-community-secti
 import { HomeCustomCasesSectionComponent } from './components/home-custom-cases-section.component';
 import { HomeProjectRequestSectionComponent } from './components/home-project-request-section.component';
 import { HomeServicesSectionComponent } from './components/home-services-section.component';
-import { HomeContentService, HomeEvent, HomeHeroBanner } from './services/home-content.service';
+import { DEFAULT_HOME_CONTENT_SETTINGS, HomeBanner, HomeContentService, HomeEvent, HomeHeroBanner } from './services/home-content.service';
 
 interface HomePeripheralItem {
   id: number;
@@ -52,6 +54,7 @@ interface HomePeripheralItem {
   standalone: true,
   imports: [
     CommonModule,
+    HomeVideoComponent,
     RouterModule,
     HeroSliderComponent,
     ProductsSliderComponent,
@@ -69,116 +72,20 @@ interface HomePeripheralItem {
 })
 export class HomeComponent implements OnInit, OnDestroy {
   readonly business = BUSINESS_INFO;
+  featuredAssembly: AssembledPC | null = null;
+  private static lastFeaturedImage: string | null = null;
+  private homeProductsSubscription?: Subscription;
+  // Set only after the authorized media and its audio track have been verified.
+  readonly heroVideoSource = 'assets/video/home-pc-gamer-cdmx.mp4';
+  readonly heroVideoHasAudio = true;
+  readonly logoBanner: HomeHeroBanner = {
+    id: 'home-official-logo', src: 'assets/img/leon-160.webp', link: '/',
+    alt: 'PC Gamer CDMX', active: true, sortOrder: 0,
+  };
 
-  // Slider superior derecho - -
-  sliderImages: HomeHeroBanner[] = [
-    {
-      id: 'hero-nzxt-h9',
-      src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
-      link: '/ensambles',
-      alt: 'Slider 1',
-      active: true,
-      sortOrder: 1,
-    },
-    {
-      id: 'hero-hbjnkhgnm',
-      src: 'assets/img/gabinetes/HBJNKHGNM.png',
-      link: '/ensambles',
-      alt: 'Slider 2',
-      active: true,
-      sortOrder: 2,
-    },
-    {
-      id: 'hero-product-section',
-      src: 'assets/img/gabinetes/product-section-01.png',
-      link: '/ensambles',
-      alt: 'Slider 3',
-      active: true,
-      sortOrder: 3,
-    },
-  ];
-  // Imagen de PCs para el slider inferior derecho
-  pcBuilds = [
-    { img: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp', link: '/ensambles/cpu-pre-armado-1' },
-    { img: 'assets/img/gabinetes/HBJNKHGNM.png', link: '/ensambles/cpu-pre-armado-2' },
-    { img: 'assets/img/gabinetes/product-section-01.png', link: '/ensambles/cpu-pre-armado-3' },
-  ];
-  pcIndex = 0;
-
-  // Datos para las nuevas secciones
-  popularGames = [
-    {
-      title: 'Cyberpunk 2077',
-      image: 'https://picsum.photos/id/231/600/400',
-      fps: '120+',
-      specs: 'RTX 4070 | Ultra Settings',
-    },
-    {
-      title: 'Call of Duty: Modern Warfare',
-      image: 'https://picsum.photos/id/232/600/400',
-      fps: '144+',
-      specs: 'RTX 4060 | High Settings',
-    },
-    {
-      title: 'Fortnite',
-      image: 'https://picsum.photos/id/233/600/400',
-      fps: '240+',
-      specs: 'RTX 4080 | Competitive Settings',
-    },
-    {
-      title: 'League of Legends',
-      image: 'https://picsum.photos/id/234/600/400',
-      fps: '360+',
-      specs: 'RTX 3060 | Max Settings',
-    },
-    {
-      title: 'GTA V',
-      image: 'https://picsum.photos/id/235/600/400',
-      fps: '100+',
-      specs: 'RTX 3070 | Very High Settings',
-    },
-    {
-      title: 'Valorant',
-      image: 'https://picsum.photos/id/236/600/400',
-      fps: '400+',
-      specs: 'GTX 1660 | Max Settings',
-    },
-  ];
+  sliderImages: HomeHeroBanner[] = [this.logoBanner, ...DEFAULT_HOME_CONTENT_SETTINGS.heroBanners];
 
   influencers: CommunityCollaborator[] = [];
-
-  pcNeeds = [
-    {
-      id: 'streaming',
-      title: 'Streaming Profesional',
-      description: 'PC para transmisiones en vivo de alta calidad.',
-      bgImage: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
-    },
-    {
-      id: 'gaming',
-      title: 'Gaming Competitivo',
-      description: 'Máximo rendimiento para e-sports y torneos.',
-      bgImage: 'assets/img/gabinetes/HBJNKHGNM.png',
-    },
-    {
-      id: 'content',
-      title: 'Creación de Contenido',
-      description: 'Edición de video y renderizado optimizado.',
-      bgImage: 'assets/img/gabinetes/product-section-01.png',
-    },
-    {
-      id: 'design',
-      title: 'Diseño 3D',
-      description: 'Modelado y renderizado profesional.',
-      bgImage: 'assets/img/gabinetes/rog-hyperion-gr701.png',
-    },
-    {
-      id: 'ai',
-      title: 'Inteligencia Artificial',
-      description: 'Entrenamiento de modelos y deep learning.',
-      bgImage: 'assets/img/gabinetes/BR-938686_2.png',
-    },
-  ];
 
   services = [
     {
@@ -210,96 +117,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Productos para el carrusel de ensambles
   carruselProducts: Product[] = [];
 
-  public filteredCarruselProducts = [...this.carruselProducts];
-  public searchTerm: string = '';
-  public wasFiltered: boolean = false;
-  public filterProducts(): void {
-    const term = this.searchTerm.toLowerCase().trim();
-    if (term === '') {
-      // No filter term, show all products
-      this.filteredCarruselProducts = [...this.carruselProducts];
-      this.wasFiltered = false;
-    } else {
-      // Filter products based on search term
-      this.filteredCarruselProducts = this.carruselProducts.filter((product) => {
-        const propsToCheck = [
-          product.title,
-          product.processor,
-          product.motherboard,
-          product.ram,
-          product.storage,
-          product.graphicsCard,
-          product.price?.toString(),
-          product.slug,
-          product.image,
-          product.powerCertificate,
-          product.watts?.toString(),
-          product.id?.toString(),
-        ];
-
-        if (Array.isArray(product.brandLogos)) {
-          product.brandLogos.forEach((logo) => {
-            propsToCheck.push(logo.src, logo.alt, logo.position ?? '');
-          });
-        }
-
-        return propsToCheck.some(
-          (prop) => typeof prop === 'string' && prop.toLowerCase().includes(term)
-        );
-      });
-      this.wasFiltered = true;
-    }
-  }
-
-  public onCarouselReset(): void {
-    if (this.wasFiltered) {
-      this.wasFiltered = false;
-    }
-  }
-
   // Para el efecto typing - usando un enfoque con Observable para mejor fiabilidad
   typingText = '';
   fullText = 'Bienvenido a Pc Gamer CDMX.';
   private typingSubscription?: Subscription;
 
-  // Datos para el slider de banners promocionales
-  banners: any[] = [
-    {
-      id: 1,
-      title: 'Ensambles Personalizados',
-      description:
-        'Construimos la PC de tus sueños con los mejores componentes y la máxima calidad.',
-      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp',
-      link: '/cotiza-tu-pc',
-      ctaText: 'Personaliza tu PC',
-      badgeText: 'POPULAR',
-    },
-    {
-      id: 2,
-      title: 'Ofertas Especiales',
-      description:
-        'Aprovecha nuestras promociones exclusivas con descuentos de hasta 30% en productos seleccionados.',
-      imageUrl: 'assets/img/gabinetes/product-section-01.png',
-      link: '/productos',
-      ctaText: 'Ver Ofertas',
-      badgeText: 'OFERTA',
-    },
-    {
-      id: 3,
-      title: 'Sorteos Mensuales',
-      description:
-        'Participa en nuestros sorteos mensuales y gana componentes premium para tu setup.',
-      imageUrl: 'assets/img/gabinetes/rog-hyperion-gr701.png',
-      link: '/sorteos',
-      ctaText: 'Participar Ahora',
-      badgeText: 'SORTEO',
-    },
-  ];
+  banners: HomeBanner[] = [...DEFAULT_HOME_CONTENT_SETTINGS.banners];
 
   showUpcomingEvents = true;
   upcomingEvents: HomeEvent[] = [];
   @ViewChild('bannersSlider') bannersSlider?: BannersSliderComponent;
   private homeContentSubscription?: Subscription;
+  private typingTimer?: ReturnType<typeof setTimeout>;
   private deferredContentTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
@@ -335,9 +164,13 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.loadHomeContent();
         this.loadLatestPosts();
       }, 3500);
-
-      setTimeout(() => {
-        this.startTypingWithObservable();
+      this.typingTimer = setTimeout(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          this.typingText = this.fullText;
+          this.cdr.detectChanges();
+        } else {
+          this.startTypingWithObservable();
+        }
       }, 500);
 
     }
@@ -348,9 +181,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.banners = settings.banners
         .filter((banner) => banner.active)
         .sort((a, b) => a.sortOrder - b.sortOrder);
-      this.sliderImages = settings.heroBanners
-        .filter((banner) => banner.active)
-        .sort((a, b) => a.sortOrder - b.sortOrder);
+      this.sliderImages = [this.logoBanner, ...settings.heroBanners
+        .filter((banner) => banner.active && banner.src !== this.logoBanner.src)
+        .sort((a, b) => a.sortOrder - b.sortOrder)];
       this.showUpcomingEvents = settings.showUpcomingEvents;
       this.upcomingEvents = settings.events.filter((event) => event.active);
       this.cdr.detectChanges();
@@ -358,8 +191,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadHomeSliderProducts(): void {
-    this.productsService.getHomeSliderProducts().subscribe({
+    this.homeProductsSubscription = this.productsService.getHomeSliderProducts().subscribe({
       next: ({ assemblies, peripherals }) => {
+        this.selectHomeAssembly(assemblies);
         const assemblyItems = this.orderSliderItems(assemblies)
           .slice(0, 12)
           .map((product, index) => this.toPackageSliderItem(product, index));
@@ -368,7 +202,6 @@ export class HomeComponent implements OnInit, OnDestroy {
           .map((product, index) => this.toPeripheralSliderItem(product, index));
 
         this.carruselProducts = assemblyItems;
-        this.filteredCarruselProducts = [...assemblyItems];
         if (peripheralItems.length) {
           this.peripherals = peripheralItems;
         }
@@ -376,11 +209,24 @@ export class HomeComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.carruselProducts = [];
-        this.filteredCarruselProducts = [];
         this.peripherals = [];
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private selectHomeAssembly(assemblies: AssembledPC[]): void {
+    let previousImage = HomeComponent.lastFeaturedImage;
+    try {
+      previousImage = window.sessionStorage.getItem('pcgamer.home.featured-image') ?? previousImage;
+    } catch { /* Keep in-memory rotation if storage is unavailable. */ }
+    this.featuredAssembly = selectFeaturedAssembly(assemblies, previousImage);
+    if (this.featuredAssembly) {
+      HomeComponent.lastFeaturedImage = this.featuredAssembly.image;
+      try {
+        window.sessionStorage.setItem('pcgamer.home.featured-image', this.featuredAssembly.image);
+      } catch { /* The catalog link remains usable without storage. */ }
+    }
   }
 
   private toPackageSliderItem(product: AssembledPC, index: number): Product {
@@ -547,6 +393,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Mejorar método de destrucción para asegurar la limpieza de recursos
   ngOnDestroy(): void {
+    this.homeProductsSubscription?.unsubscribe();
+    if (this.typingTimer) clearTimeout(this.typingTimer);
 
     // Limpiar todas las suscripciones y timers
     if (this.typingSubscription) {

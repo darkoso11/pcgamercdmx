@@ -1,10 +1,10 @@
 <div class="font-orbitron">
-  <section class="relative h-screen w-full flex flex-col bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0ea5e9] overflow-hidden">
+  <section class="home-hero">
     <div class="hero-top-banner z-20 hidden md:block">
-      <app-hero-slider [items]="sliderImages" [options]="{ autoplay: true, autoplayDelay: 4000 }"></app-hero-slider>
+      <app-hero-slider [items]="sliderImages" [options]="{ autoplay: true, autoplayDelay: 4000, showArrows: false }"></app-hero-slider>
     </div>
 
-    <nav class="absolute bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start ultra:bottom-24 ultra:left-6" aria-label="Accesos destacados">
+    <nav class="hero-shortcuts absolute bottom-32 left-12 z-20 hidden md:flex flex-col gap-0 items-start ultra:bottom-24 ultra:left-6" aria-label="Accesos destacados">
       <ul class="flex flex-col min-w-[180px] ultra:min-w-[140px] ultra:text-sm">
         <li>
           <a routerLink="/sorteos" class="menu-secundario block py-1 px-4 border-t-2 border-white/80 font-bold transition-colors duration-200 ultra:py-0.5 ultra:px-2" style="--hover-bg: #ec4899; --hover-text: #fff">Play</a>
@@ -27,51 +27,46 @@
       </ul>
     </nav>
 
-    <div class="fixed top-20 md:left-12 left-4 z-50 flex gap-2" aria-hidden="true">
+    <div class="absolute top-20 md:left-12 left-4 z-20 flex gap-2" aria-hidden="true">
       <div class="w-2 h-2 md:w-3 md:h-3 bg-pink-500 rounded-sm shadow-neon cyber-dot-magenta"></div>
       <div class="w-2 h-2 md:w-3 md:h-3 bg-cyan-400 rounded-sm shadow-neon cyber-dot-cyan"></div>
       <div class="w-2 h-2 md:w-3 md:h-3 bg-purple-500 rounded-sm shadow-neon cyber-dot-purple"></div>
       <div class="w-2 h-2 md:w-3 md:h-3 bg-yellow-400 rounded-sm shadow-neon cyber-dot-yellow"></div>
     </div>
 
-    <div class="flex-1 flex flex-col md:flex-row items-center justify-center z-10">
-      <div class="flex flex-col items-center justify-center gap-1 w-full md:w-1/2 max-h-80 py-2 md:py-4">
-        <div class="w-16 h-16 md:w-20 md:h-20 mx-auto z-30 relative -mt-6 md:mt-0">
-          <img src="assets/img/leon-160.webp" alt="PC Gamer CDMX" width="160" height="160" class="w-full h-full object-contain" />
-        </div>
+    <img class="hero-mobile-logo" src="assets/img/leon-160.webp" alt="PC Gamer CDMX" width="160" height="160" />
 
-        <h1 class="text-xl md:text-2xl lg:text-4xl font-bold text-white text-center tracking-wide drop-shadow-[0_0_15px_#0ea5e9] whitespace-pre-line leading-none mx-4">
-          <span>{{ typingText }}</span>
-        </h1>
 
-      </div>
+    <app-home-video class="hero-media" [source]="heroVideoSource" [hasAudio]="heroVideoHasAudio"></app-home-video>
 
-      <a [routerLink]="pcBuilds[pcIndex].link" class="hero-assembly-stage hidden md:flex" aria-label="Ver paquete de ensamble">
-        <img [src]="pcBuilds[pcIndex].img" srcset="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp 480w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-768.webp 768w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp 1100w" sizes="(max-width: 767px) calc(100vw - 32px), 50vw" alt="PC gamer ensamblada" width="1100" height="1200" loading="eager" decoding="sync" fetchpriority="high" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
+    @if (featuredAssembly; as assembly) {
+      <a class="hero-featured-assembly" [routerLink]="['/ensambles', assembly.slug]"
+         [attr.aria-label]="'Ver este ensamble: ' + assembly.title">
+        <img [src]="assembly.image" [alt]="assembly.title" width="600" height="700"
+             loading="lazy" decoding="async" (error)="featuredAssembly = null" />
+        <span class="hero-assembly-cta">Ver este ensamble</span>
       </a>
+    }
 
-      <a [routerLink]="pcBuilds[pcIndex].link" class="flex flex-col items-center w-full md:hidden mt-2 mb-5 px-4" aria-label="Ver paquete de ensamble">
-        <div class="w-full max-w-[420px] h-[42vh] min-h-[280px] max-h-[420px] flex items-end justify-center">
-          <img [src]="pcBuilds[pcIndex].img" srcset="assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp 480w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-768.webp 768w, assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp 1100w" sizes="(max-width: 767px) calc(100vw - 32px), 50vw" alt="PC gamer ensamblada" width="1100" height="1200" loading="eager" decoding="sync" fetchpriority="high" class="pc-ensamble-img w-full h-full object-contain object-bottom" />
-        </div>
-      </a>
-
-      <div class="hero-buy-mobile md:hidden w-full flex justify-center mt-8">
-        <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber py-3 px-8 w-[80%] text-center rounded-lg text-white bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg hover:shadow-pink-500/50">
-          Comprar
-        </a>
-      </div>
+    <div class="hero-buy-mobile">
+      <a [href]="business.mapDirectionsUrl" target="_blank" rel="noopener noreferrer"
+         aria-label="Ir a la tienda en Google Maps (abre otra pestaña)"
+         class="store-link btn-comprar-cyber">Ir a la tienda</a>
     </div>
 
-    <div class="w-full hidden md:flex items-center px-8 py-3 bg-black/70 backdrop-blur border-t border-white z-40">
-      <div class="flex gap-6">
+    <div class="hero-bottom-bar z-20">
+      <div class="hero-socials flex gap-6">
         <a [href]="business.social.tiktok" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
         <a [href]="business.social.facebook" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
         <a [href]="business.social.instagram" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
         <a [href]="business.whatsappUrl" target="_blank" rel="noopener noreferrer" class="social-btn-cyber" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
       </div>
+      <h1 class="hero-welcome" [attr.aria-label]="fullText">
+        <span class="welcome-reserve" aria-hidden="true">{{ fullText }}</span>
+        <span class="welcome-typed" aria-hidden="true">{{ typingText }}</span>
+      </h1>
       <div class="hero-buy-zone">
-        <a [routerLink]="pcBuilds[pcIndex].link" class="btn-comprar-cyber ultra:text-sm">Comprar</a>
+        <a [href]="business.mapDirectionsUrl" target="_blank" rel="noopener noreferrer" aria-label="Ir a la tienda en Google Maps (abre otra pestaña)" class="store-link btn-comprar-cyber ultra:text-sm">Ir a la tienda</a>
       </div>
     </div>
   </section>
@@ -89,7 +84,7 @@
     </h2>
 
     <div class="relative w-full max-w-7xl px-4">
-      <app-products-slider [products]="filteredCarruselProducts" [showArrows]="true" [showMobileIndicator]="true" [wasFiltered]="wasFiltered" (filterChange)="onCarouselReset()"></app-products-slider>
+      <app-products-slider [products]="carruselProducts" [showArrows]="true" [showMobileIndicator]="true"></app-products-slider>
     </div>
 
     <div class="flex flex-wrap justify-center gap-3 text-center mt-12">
