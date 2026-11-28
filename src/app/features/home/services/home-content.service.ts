@@ -46,14 +46,6 @@ export const DEFAULT_HOME_CONTENT_SETTINGS: HomeContentSettings = {
   showUpcomingEvents: true,
   heroBanners: [
     {
-      id: 'hero-nzxt-h9',
-      src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp',
-      link: '/ensambles',
-      alt: 'Gabinete NZXT H9 Flow',
-      active: true,
-      sortOrder: 1,
-    },
-    {
       id: 'hero-hbjnkhgnm',
       src: 'assets/img/gabinetes/HBJNKHGNM.png',
       link: '/ensambles',
@@ -76,7 +68,7 @@ export const DEFAULT_HOME_CONTENT_SETTINGS: HomeContentSettings = {
       title: 'Ensambles Personalizados',
       description:
         'Construimos la PC de tus suenos con los mejores componentes y la maxima calidad.',
-      imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp',
+      imageUrl: 'assets/img/gabinetes/HBJNKHGNM.png',
       link: '/cotiza-tu-pc',
       ctaText: 'Personaliza tu PC',
       badgeText: 'POPULAR',
@@ -184,13 +176,15 @@ export class HomeContentService {
       ...settings,
       heroBanners: this.sortHeroBanners(
         settings.heroBanners ?? DEFAULT_HOME_CONTENT_SETTINGS.heroBanners
-      ).map((banner, index) => ({
+      ).filter(banner => !banner.src.includes('Gabinete-NZXT-H9-Flow-01')).map((banner, index) => ({
         ...banner,
         id: banner.id || this.slugify(banner.alt || `hero-banner-${index + 1}`),
         sortOrder: Number(banner.sortOrder) || index + 1,
       })),
       banners: this.sortBanners(settings.banners).map((banner, index) => ({
         ...banner,
+        imageUrl: banner.imageUrl.includes('Gabinete-NZXT-H9-Flow-01')
+          ? 'assets/img/gabinetes/HBJNKHGNM.png' : banner.imageUrl,
         id: banner.id || this.slugify(banner.title || `banner-${index + 1}`),
         sortOrder: Number(banner.sortOrder) || index + 1,
       })),

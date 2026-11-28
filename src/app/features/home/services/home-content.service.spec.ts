@@ -57,6 +57,18 @@ describe('HomeContentService', () => {
     expect(promoBanners.length).toBe(DEFAULT_HOME_CONTENT_SETTINGS.banners.length);
   });
 
+  it('retires the old cabinet from saved hero and promo settings without losing the promo destination', async () => {
+    service.saveSettings({
+      ...DEFAULT_HOME_CONTENT_SETTINGS,
+      heroBanners: [{ ...DEFAULT_HOME_CONTENT_SETTINGS.heroBanners[0], src: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01.webp' }],
+      banners: [{ ...DEFAULT_HOME_CONTENT_SETTINGS.banners[0], imageUrl: 'assets/img/gabinetes/Gabinete-NZXT-H9-Flow-01-480.webp' }],
+    });
+    const settings = await firstValueFrom(service.getSettings());
+    expect(settings.heroBanners).toEqual([]);
+    expect(settings.banners[0].imageUrl).not.toContain('Gabinete-NZXT-H9-Flow-01');
+    expect(settings.banners[0].link).toBe(DEFAULT_HOME_CONTENT_SETTINGS.banners[0].link);
+  });
+
   it('persists the events visibility switch and editable event data', async () => {
     service.saveSettings({
       ...DEFAULT_HOME_CONTENT_SETTINGS,
